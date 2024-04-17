@@ -2,6 +2,8 @@
 
 The description and formal specification of the Jam protocol, a potential successor to the Polkadot Relay chain.
 
+Build with xelatex.
+
 ## Remaining for v0.1
 
 ### Content
