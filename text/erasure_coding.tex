@@ -1,0 +1,53 @@
+\section{Erasure Coding}\label{sec:erasurecoding}
+
+\newcommand*{\transpose}{{}^\text{T}}
+\newcommand{\join}{\text{join}}
+\newcommand{\spl}{\text{split}}
+
+We assume a piece-encode function $E_{piece}: \Y_{2048} \to \seq{\Y_6}_{1024}$ and decode function $E^{-1}_{piece}: \seq{\Y_6}_{342} \to \Y_{2048}$. This is a Reed-Solomon erasure codec with a rate of 1:3 and basis as defined by \cite{lin2014novel}. For our 1,023 validators, we use a message size of $n=1024$ to take advantage of a suitable FFT for fast encoding (\ie $2^{10}$).
+
+We assume some data blob $\mathbf{d} \in \Y_{2048\cdot k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 2,048 octets. We denote these pieces $\mathbf{p} \in \seq{\Y_{2048}} = \spl_{2048}(\mathbf{p})$. Each piece is then split into 1,024 chunks each a six octet sequence. The resulting matrix of chunks is grouped by its index in its piece and concatenated to form 1,024 super-chunks, made up of many six octet subsequences one from each piece. Any 342 of these super-chunks may then be used to reconstruct the original data $\mathbf{d}$.
+
+Formally we begin by defining two utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for joining subsequences back into a single large sequence:
+\begin{align}
+  \forall n, k \in \N :\ &\spl_n(\mathbf{d} \in \Y_{k\cdot n}) \in \seq{\Y_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
+  \forall n, k \in \N :\ &\join(\mathbf{c} \in \seq{\Y_n}_k) \in \Y_{k\cdot n} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots
+\end{align}
+
+We define ${}^\text{T}\mathbf{x}$ as the transposition of the sequence-of-sequences $\mathbf{x}$:
+\begin{equation}
+  {}^\text{T}[[\mathbf{x}_{0, 0}, \mathbf{x}_{0, 1}, \mathbf{x}_{0, 2}, \dots], [\mathbf{x}_{1, 0}, \mathbf{x}_{1, 1}, \dots], \dots] \equiv [[\mathbf{x}_{0, 0}, \mathbf{x}_{1, 0}, \mathbf{x}_{2, 0}, \dots], [\mathbf{x}_{0, 1}, \mathbf{x}_{1, 1}, \dots], \dots]
+\end{equation}
+
+We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 2,048 octets and results in 1,024 sequences of sequences each of smaller blobs:
+\begin{equation}\label{eq:erasurecoding}
+  \forall k \in \N : \mathcal{C}\colon\left\{\begin{aligned}
+    \Y_{2048\cdot k} &\to \seq{\Y_{6k}}_{1024} \\
+    \mathbf{d} &\mapsto [ \join(\mathbf{c}) \mid \mathbf{c} \orderedin {}^{\text{T}}[E_{piece}(\mathbf{p}) \mid \mathbf{p} \orderedin \text{split}_{2048}(\mathbf{d})] ]
+  \end{aligned}\right.
+\end{equation}
+
+It may be inverted with only one-third-plus-one of the items of its result (\ie 342) needed to rebuild the original blob:
+\begin{equation}\label{eq:erasurecodinginv}
+  \forall k \in \N : \mathcal{C}^{-1}\colon\left\{\begin{aligned}
+    \seq{\Y_{6k}}_{342} &\to \Y_{2048\cdot k} \\
+    \mathbf{c} &\mapsto \join([ E^{-1}_{piece}(x) \mid \mathbf{x} \orderedin \transpose[ \spl_6(\mathbf{x}) \mid \mathbf{x} \orderedin \mathbf{c}] ])
+  \end{aligned}\right.
+\end{equation}
+
+
+
+
+%To ensure the availability of work-package data in an adversarial environment, we use a Reed-Solomon code over the field $GF(2^{16})$ with rate of three to get a three times redundant data to be distributed among validators. This ensures that one-third of the validators may be dishonest or malfunctioning and yet any party is still able to reconstruct a work-package once we are assured that two-thirds-plus-one of the validators have each received their set of chunks for said work-package.
+
+%A guarantor is responsible for making such an encoding for any work-package which they report and to ensure it is distributed among each validator. Further, validators 
+
+%Essentially, we define a function:
+
+%Define Reed-Soloman, the base, the 341 and the 1024.
+
+%We divide the WP $\mathbf{p}$ into $c$ chunks of $n*2$ bytes where $c = \ceil{|p| / n*2}$ bytes (appending with zeroes as needed for the last chunk), and $c$ chunks each encoded of size $2*3n$ bytes, with each chunk requiring $n*2$ bytes to reconstruct and thus a total of $2cn$ to reconstruct $p$, assuming $2n$ bytes for each decoded chunk (\ie there is correspondance).
+
+%We would send $3 * 2$ bytes to every validator (with $3 * 2$ bytes unsent). Then $1023/3+1$ validators could give us $(1023/3+1)*3*2$ bytes = 1026* 2 bytes, which is enough to reconstruct. In practice of course we'll batch this a lot to divide the $3*(unencoded size)$ data into 1024 chunks, 1 of which we send to each validator.
+
+%The work-report should contain the root of a Merkle tree of these chunks. The guarantors (or validators sending chunks to auditors for recosnstruction) should send the Merkle proofs along with the chunks to each validator, which identifies that this chunk comes from this WP for availability voting/reconstruction. An auditor should encode the WP after obtaining it and recontruct this Merkle root to verify it. (Otherwise, it is possible that another auditor would not be able to reconstruct the same WP from $(1023/3+1)$ chunks with valid Merkle proofs, even if the first auditor reconstructed a WP with a matching WP hash from the report).

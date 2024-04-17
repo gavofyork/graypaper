@@ -1,0 +1,92 @@
+\section{State Serialization and Merklization}\label{sec:statemerklization}
+
+The Merklization process defines a cryptographic commitment from which arbitrary information within state may be provided as being authentic in a concise and swift fashion. We describe this in two stages; the first defines a mapping from 32-octet sequences to (unlimited) octet sequences in a process called \emph{state serialization}. The second forms a 32-octet commitment from this mapping in a process called \emph{Merklization}.
+
+\subsection{State Serialization}
+
+The serialization of state primarily involves placing all the various components of $\sigma$ into a single mapping from 32-octet sequence \emph{state-keys} to octet sequences of indefinite length. The state-key is constructed from a hash component and a chapter component, equivalent to either the index of a state component or, in the case of the inner dictionaries of $\delta$, a service index.
+
+We define the state-key constructor functions $C$ as:
+\begin{equation}
+  C\colon\left\{\begin{aligned}
+    \N_{2^8} \cup (\N_{2^8}, \N_S) \cup \tup{\N_S, \Y} &\to \H \\
+    i \in \N_{2^8} &\mapsto [i, 0, 0, \dots] \\
+    (i, s \in \N_S) &\mapsto [i, n_0, n_1, n_2, n_3, 0, 0, \dots]\ \where n = \se_4(s) \\
+    (s, h) &\mapsto [n_0, h_0, n_1, h_1, n_2, h_2, n_3, h_3, h_4, h_5, \dots, h_{27}]\ \where n = \se_4(s)
+  \end{aligned}
+  \right.
+\end{equation}
+
+The state serialization is then defined as the dictionary built from the amalgamation of each of the components. Cryptographic hashing ensures that there will be no duplicate state-keys given that there are no duplicate inputs to $C$. Formally, we define $T$ which transforms some state $\sigma$ into its serialized form:
+\begin{equation}
+  T(\sigma) \equiv \left\{\begin{aligned}
+    &&C(1) &\mapsto \se([\var{x}\mid x\orderedin \alpha]) \;, \\
+    &&C(2) &\mapsto \se(\varphi) \;, \\
+    &&C(3) &\mapsto \se(\var{[(h, \se_M(\mathbf{b}), s, \var{\mathbf{p}})\mid (h, \mathbf{b}, s, \mathbf{p})\orderedin \beta]}) \;, \\
+    &&C(4) &\mapsto \se\left(\tup{\gamma_\mathbf{k}, \gamma_z, \left\{\,\begin{aligned}
+      0\ &\when \gamma_\mathbf{s} \in \seq{\mathbb{C}}_\mathsf{E}\\
+      1\ &\when \gamma_\mathbf{s} \in \seq{\H_B}_\mathsf{E}\\
+    \end{aligned}\right\}, \gamma_\mathbf{s},
+    \var{\gamma_\mathbf{a}}}\right) \;, \\
+    &&C(5) &\mapsto \se(\var{\orderby{x}{x \in \psi_\mathbf{a}}}, \var{\orderby{x}{x \in \psi_\mathbf{b}}}, \var{\orderby{x}{x \in \psi_\mathbf{p}}}, \psi_\mathbf{k}) \;, \\
+    &&C(6) &\mapsto \se(\eta) \;, \\
+    &&C(7) &\mapsto \se(\iota) \;, \\
+    &&C(8) &\mapsto \se(\kappa) \;, \\
+    &&C(9) &\mapsto \se(\lambda) \;, \\
+    &&C(10) &\mapsto \se([\maybe{(w, \var{\mathbf{g}}, \se_4(t))} \mid (w, t, \mathbf{g}) \orderedin \rho]) \;, \\
+    &&C(11) &\mapsto \se_4(\tau) \;, \\
+    &&C(12) &\mapsto \se_4(\chi) \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \delta: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_l) \concat \se_4(\mathbf{a}_i) \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, h) &\mapsto \mathbf{v} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, h) &\mapsto \mathbf{p} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat (\lnot h_{4:})) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
+  \end{aligned}\right\}
+\end{equation}
+
+Note that most rows describe a single mapping between an integer-derived key and the serialization of a state component. However, the final four rows each define sets of mappings since these items act over all service accounts and in the case of the final three rows, the keys of a nested dictionary with the service.
+
+Also note that all non-discriminator integer serialization in state is done in fixed-length according to the size of the term.
+
+\subsection{Merklization}
+
+With $T$ defined, we now define the rest of $\mathcal{M}_S$ which primarily involves transforming the serialized mapping into a cryptographic commitment. We define this commitment as the root of the binary Patricia Merkle Trie with a format optimized for modern compute hardware, primarily by optimizing sizes to fit succinctly into typical memory layouts and reducing the need for unpredictable branching.
+
+\subsubsection{Node Encoding and Trie Identification}
+We identify (sub-)tries as the hash of their root node, with one exception: empty (sub-)tries are identified as the zero-hash, $\H^0$.
+
+Nodes are fixed in size at 486 bit (60 bytes and six bits) in order to fit 63 into a 4,096-byte memory page, typical for modern hardware. (We actually make the nodes a round 488 bits, or 61 bytes, but we fix the first two bits as zero, so they need not be stored explicitly on disk.) Each node is either a branch, a leaf or an embedded-value leaf. The first two bits discriminate between these.
+
+In the case of an embedded-value leaf, then the value is stored directly in the node and 5 bits following the first may be used to determine the length of the embedded data. Of the remaining 480 bits, the first 224 bits are dedicated to the last 224 bits of the key and 256 are defined as the value, filling with zeroes if its length is less than 32 bytes.
+
+In the case of a branch, the remaining 484 bits are split between the two child node hashes, using the first 242 bits of each of the sub-trie identities.
+
+In the case of a regular leaf, the remaining 484 bits are dedicated to the last 228 bits of the key and the 256 bits of the hash of the value.
+
+Formally, we define the encoding functions $B$ and $L$:
+\begin{align}
+  B&\colon\left\{\begin{aligned}
+    (\H, \H) &\to \mathbb{B}_{488}\\
+    (l, r) &\mapsto [0, 0, 0, 0] \frown l_{13:16} \frown r_{13:16} \frown l_{16:} \frown r_{16:}
+  \end{aligned}\right.\\
+  L&\colon\left\{\begin{aligned}
+    (\H, \Y) &\to \mathbb{B}_{488}\\
+    (k, v) &\mapsto \begin{cases}
+      [0, 0, 1] \frown \text{bits}(\se_1(|v| - 1))_{:5} \frown \text{bits}(k)_{32:} \frown \text{bits}(v) \frown [0, 0, \dots] &\when 0 < |v| \le 32\\
+      [0, 0, 0, 1] \frown \text{bits}(k)_{28:} \frown \text{bits}(\mathcal{H}(v)) &\otherwise
+    \end{cases}
+  \end{aligned}\right.
+\end{align}
+
+We may then define, the Merklization function $\mathcal{M}_S$ is as:
+\begin{align}
+  \mathcal{M}_S(\sigma) &\equiv M(\{ (\text{bits}(k) \mapsto \tup{k, v}) \mid (k \mapsto v) \in T(\sigma) \})\\
+  M(d: \dict{\mathbb{B}}{(\H, \Y)}) &\equiv \begin{cases}
+    \H^0 &\when |d| = 0\\
+    \mathcal{H}(\text{bits}^{-1}(L(k, v))) &\when \mathcal{V}(d) = \{ (k, v) \}\\
+    \mathcal{H}(\text{bits}^{-1}(B(l, r))) &\otherwise, \where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b_{1:} \mapsto d) \in \begin{cases}
+      l &\when b_0 = 0 \\
+      r &\when b_0 = 1
+    \end{cases}
+  \end{cases}
+\end{align}
+

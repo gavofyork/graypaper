@@ -1,0 +1,147 @@
+\section{Accumulation}\label{sec:accumulation}
+
+Accumulation may be defined as some function whose arguments are $\mathbf{R}$ and $\delta$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\delta'$ together with additional state elements $\iota'$, $\varphi'$ and $\chi'$.
+
+The proposition of accumulation is in fact quite simple: we merely wish to execute the \emph{Accumulate} logic of the service code of each of the services which has at least one work output, passing to it the work outputs and useful contextual information. However, there are three main complications. Firstly, we must define the execution environment of this logic and in particular the host functions available to it. Secondly, we must define the amount of gas to be allowed for each service's execution. Finally, we must determine the nature of transfers within Accumulate which, as we will see, leads to the need for a second entry-point, \emph{on-transfer}.
+
+
+
+\subsection{Preimage Integration}
+
+Prior to accumulation, we must first integrate all preimages provided in the lookup extrinsic. The lookup extrinsic is a sequence of pairs of service indices and data. These pairs must be ordered and without duplicates (equation \ref{eq:preimagesareordered} requires this). The data must have been solicited by a service but not yet be provided. Formally:
+\begin{align}
+  \mathbf{E}_P &\in \lseq \ltuple\N_S\ts\Y\rtuple \rseq \\
+  \label{eq:preimagesareordered}\mathbf{E}_P &= \orderuniqby{i}{i \in \mathbf{E}_P} \\
+  \forall \tup{s\ts\mathbf{p}} \in \mathbf{E}_P &: \left\{\ 
+    \begin{aligned}
+      &\keys{\delta[s]_\mathbf{p}}\ \not\ni\ \mathcal{H}(\mathbf{p})\ ,\\
+      &\delta[s]_\mathbf{l}[\tup{\mathcal{H}(\mathbf{p}), |\mathbf{p}|}]\ =\ []
+    \end{aligned}
+  \right.
+\end{align}
+
+We define $\delta^\dagger$ as the state after the integration of the preimages:
+\begin{align}
+    \delta^\dagger = \delta \text{ ex. } \forall \tup{s\ts\mathbf{p}} \in \mathbf{E}_P : \left\{\,\begin{aligned}
+      \quad\delta^\dagger[s]_\mathbf{p}[\mathcal{H}(\mathbf{p})] &= \mathbf{p} \\
+      \delta^\dagger[s]_\mathbf{l}[\mathcal{H}(\mathbf{p}), |\mathbf{p}|] &= [\tau']
+    \end{aligned}\right.\!\!
+\end{align}
+
+
+
+\subsection{Gas Accounting}
+
+We define $\mathbf{S}$, the set of all services which will be accumulated in this block; this is all services which have at least one work output within $\mathbf{R}$, together with all privileged services, $\chi$. Formally:
+\begin{align}\label{eq:servicestoaccumulate}
+  \mathbf{S} \equiv \{ r_s \mid w \in \mathbf{R}, r \in w_r \} \cup \{ \chi_m, \chi_a, \chi_v \}
+\end{align}
+
+We calculate the gas attributable for each service as the sum of each of the service's work outputs' share of their report's elective accumulation gas together with the subtotal of minimum gas requirements:
+\begin{equation}
+  G\colon\left\{\;\begin{aligned}
+    \N_S &\to \Z_G \\
+    \displaystyle s &\mapsto \!\!\sum_{w \in \mathbf{R}}\sum_{r \in w_r , r_s = s}{\!\!\!\!\!\!\!\delta^\dagger[s]_g + \left \lfloor r_g\cdot\frac{\displaystyle \mathsf{G}_A - \sum_{r \in w_r}{\delta^\dagger[r_s]_g}}{\sum_{r \in w_r}{r_g}} \right \rfloor }
+  \end{aligned}\right.\!\!\!\!\!\!
+\end{equation}
+
+\subsection{Wrangling}
+
+We finally define the results which will be given as an operand into the accumulate function for each service in $\mathbf{S}$. This is a sequence of operand tuples $\mathbb{O}$, one sequence for each service in $\mathbf{S}$. Each sequence contains one element per work output (or error) to be accumulated for that service, together with said work output's payload hash, package hash and authorization output. The tuples are sequenced in the same order as they appear in $\mathbf{R}$. Formally:
+\begin{align}
+  \mathbb{O} \equiv \ltuple\isa{o}{\Y \cup \mathbb{J}}\ts\isa{l}{\H}\ts\isa{k}{\H}\ts\isa{a}{\Y}\rtuple
+\end{align}
+\begin{align}
+  M\colon\left\{\ \begin{aligned}
+    \N_S &\to \lseq\mathbb{O}\rseq \\
+    \displaystyle s &\mapsto \left[ \ltup\begin{alignedat}{3}
+        \is{o&}{r_o}\ts\is{&l&}{r_p}\ts\\
+        \is{a&}{w_o}\ts\is{&k&}{(w_s)_h}
+    \end{alignedat}\rtup
+      \,\middle\vert\ 
+    \begin{aligned}
+      w &\in \mathbf{R},\\
+      r &\in w_r,\\
+      r_s &= s
+    \end{aligned}\ \right]
+  \end{aligned}\right.
+\end{align}
+
+\subsection{Invocation}
+
+Within this section, we define $A$, the function which conducts the accumulation of a single service. Formally speaking, $A$ assumes omnipresence of timeslot $\mathbf{H}_t$ and some prior state components $\delta^\dagger$, $\nu$, $\mathbf{R}_\mathbf{d}$, and takes as specific arguments the service index $s \in \mathbf{S}$ (from which it may derive the wrangled results $M(s)$ and gas limit $G(s)$) and yields values for $\bm{\delta^\dagger}[s]$ and staging assignments into $\varphi$, $\iota$ together with a series of lookup solicitations/forgets, a series of deferred transfers and $\mathbf{C}$ mapping from service index to \textsc{Beefy} commitment hashes.
+
+We first denote the set of deferred transfers as $\mathbb{T}$, noting that a transfer includes a memo component $m$ of 64 octets, together with the service index of the sender $s$, the service index of the receiver $d$, the amount of tokens to be transferred $a$ and the gas limit $g$ for the transfer. Formally:
+\begin{align}
+  \mathbb{T} \equiv \ltuple\isa{s}{\N_S}\ts\isa{d}{\N_S}\ts\isa{a}{\N_B}\ts\isa{m}{\Y_{\mathsf{M}}}\ts\isa{g}{\Z_G}\rtuple
+\end{align}
+
+We may then define $A$, the mapping from the index of accumulated services to the various components in terms of which we will be imminently defining our posterior state:
+\begin{align}
+  A \colon \left\{\begin{aligned}
+      \N_S &\to \ltuple\ \begin{aligned}
+        \isa{\mathbf{s}&}{\mathbb{A}\bm{?}}\ts\quad
+        \isa{\mathbf{v}}{\mathbb{K}_\mathsf{V}}\ts\quad
+        \isa{\mathbf{t}}{\seq{\mathbb{T}}}\ts\quad
+        \isa{r}{\H}\ts\\
+        \isa{\mathbf{c}&}{\lseq\lseq\H\rseq_\mathsf{Q}\rseq_\mathsf{C}}\ts\qquad
+        \isa{\mathbf{n}}{\dict{\N_S}{\mathbb{A}}}\ts\\
+        \isa{p&}{\ltuple\isa{m}{\N_S}\ts\isa{a}{\N_S}\ts\isa{v}{\N_S}\rtuple}\\
+      \end{aligned}\rtuple \\
+      s &\mapsto \Psi_A(\delta^\dagger, s, M(s), G(s))
+    \end{aligned}\right.
+\end{align}
+
+As can be seen plainly, our accumulation mapping $A$ combines portions of the prior state into arguments for a virtual-machine invocation. Specifically the service accounts $\delta^\dagger$ together with the index of the service in question $s$ and its wrangled refine-results $M(s)$ and gas limit $G(s)$ are arranged to create the arguments for $\Psi_A$, itself using a virtual-machine invocation as defined in appendix \ref{sec:accumulateinvocation}.
+
+The \textsc{Beefy} commitment map is a function mapping all accumulated services to their accumulation result (the $r$ component of the result of $A$). This is utilized in determining the accumulation-result tree root for the present block, useful for the \textsc{Beefy} protocol:
+\begin{equation}\label{eq:beefycommitment}
+  \mathbf{C} \equiv \{ (s, A(s)_r) \mid s \in \mathbf{S}, A(s)_r \ne \none \}
+\end{equation}
+
+Given our mapping $A$, which may be calculated exhaustively from the \textsc{vm} invocations of each accumulated service $\mathbf{S}$, we may define the posterior state $\delta'$, $\chi'$, $\varphi'$ and $\iota'$ as the result of integrating $A$ into our state.
+
+\subsubsection{Privileged Transitions}
+The staging core assignments, and validator keys and privileged service set are each altered based on the effects of the accumulation of each of the three privileged services:
+\begin{align}
+  \chi' \equiv A(\chi_m)_p \ ,\quad
+  \varphi' \equiv A(\chi_a)_\mathbf{c} \ ,\quad
+  \iota' \equiv A(\chi_v)_\mathbf{v}
+\end{align}
+
+\subsubsection{Service Account Transitions}
+Finally, we integrate all changes to the service accounts into state.
+
+We note that all newly added service indices, defined as $\keys{A(s)_\mathbf{n}}$ for any accumulated service $s$, must not conflict with the indices of existing services or newly added services. This should never happen, since new indices are explicitly selected to avoid such conflicts, but in the unlikely event it happens, the block would be invalid. Formally:
+\begin{equation}
+  \begin{aligned}
+  \forall s \in \mathbf{S} :\ &\keys{A(s)_\mathbf{n}} \cap \keys{\delta^\dagger} = \none, \\
+  \forall t \in \mathbf{S} \setminus \{s\} :\ &\keys{A(s)_\mathbf{n}} \cap \keys{A(t)_\mathbf{n}} = \none
+\end{aligned}
+\end{equation}
+
+We first define $\delta^\ddagger$, an intermediate state after main accumulation but before the transfers have been credited and handled:
+\begin{equation}\begin{aligned}
+  \keys{\delta^\ddagger} &\equiv \left ( \keys{\delta^\dagger} \cup \bigcup_{s \in \mathbf{S}} \keys{A(s)_\mathbf{n}} \right ) \setminus \left\{s\ \middle\vert\ \begin{aligned}s &\in \mathbf{S},\\s_\mathbf{s} &= \none\end{aligned}\ \right\}\!\!\\
+  \delta^\ddagger[s] &\equiv \begin{cases}
+    A(s)_\mathbf{s} &\when s \in \mathbf{S}\\
+    A(t)_\mathbf{n}[s] &\when \exists! t : t \in \mathbf{S}, s \in \keys{A(t)_\mathbf{n}} \\
+    \delta^\dagger[s] &\otherwise
+  \end{cases}
+\end{aligned}\end{equation}
+
+
+We denote $R(s)$ the sequence of transfers received by a given service of index $s$, in order of them being sent from services of ascending index. (If some service $s$ received no transfers or simply does not exist then $R(s)$ would be validly defined as the empty sequence.) Formally:
+\begin{align}
+  R\colon \left\{\;\begin{aligned}
+    \N_S &\to \lseq\mathbb{T}\rseq \\
+    d &\mapsto \left[\,t \mid s \orderedin \mathbf{S},\ t \orderedin A(s)_\mathbf{t},\ t_d = d\,\right]
+  \end{aligned}\right.
+\end{align}
+
+The posterior state $\delta'$ may then be defined as the intermediate state with all the deferred effects of the transfers applied:
+\begin{equation}
+  \delta' = \{ s \mapsto \Psi_T(\delta^\ddagger, a, R(a)) \mid (s \mapsto a) \in \delta^\ddagger \}
+\end{equation}
+
+Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such that it results in $\delta^\ddagger[d]$, \ie no difference to the account's intermediate state, if $R(d) = []$, \ie said account received no transfers.

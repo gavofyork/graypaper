@@ -1,0 +1,29 @@
+\section{Authorization}\label{sec:authorization}
+
+We have previously discussed the model of work-packages and services in section \ref{sec:coremodelandservices}, however we have yet to make a substantial discussion of exactly how some \emph{coretime} resource may be apportioned to some work-package and its associated service. In the \emph{YP} Ethereum model, the underlying resource, gas, is procured at the point of introduction on-chain and the purchaser is always the same agent who authors the data which describes the work to be done (\ie the transaction). Conversely, in Polkadot the underlying resource, a parachain slot, is procured with a substantial deposit for typically 24 months at a time and the procurer, generally a parachain team, will often have no direct relation to the author of the work to be done (\ie a parachain block).
+
+On a principle of flexibility, we would wish \Jam capable of supporting a range of interaction patterns both Ethereum-style and Polkadot-style. In an effort to do so, we introduce the \emph{authorization system}, a means of disentangling the intention of usage for some coretime from the specification and submission of a particular workload to be executed on it. We are thus able to disassociate the purchase and assignment of coretime from the specific determination of work to be done with it, and so are able to support both Ethereum-style and Polkadot-style interaction patterns.
+
+\subsection{Authorizers and Authorizations}
+
+The authorization system involves two key concepts: \emph{authorizers} and \emph{authorizations}. An authorization is simply a piece of opaque data to be included with a work-package. An authorizer meanwhile, is a piece of pre-parameterized logic which accepts as an additional parameter an authorization and, when executed within a \textsc{vm} of prespecified computational limits, provides a Boolean output denoting the veracity of said authorization.
+
+Authorizations are identified as the hash of their logic (specified as the \textsc{vm} code) and their pre-parameterization. The process by which work-packages are determined to be authorized (or not) is not the competence of on-chain logic and happens entirely in-core and as such is discussed in section \ref{sec:packagesanditems}. However, on-chain logic must identify each set of authorizers assigned to each core in order to verify that a work-package is legitimately able to utilize that resource. It is this subsystem we will now define.
+
+\subsection{Pool and Queue}
+
+We define the set of authorizers allowable for a particular core $c$ as the \emph{authorizer pool} $\alpha[c]$. To maintain this value, a further portion of state is tracked for each core: the core's current \emph{authorizer queue} $\varphi[c]$, from which we draw values to fill the pool. Formally:
+\begin{equation}\label{eq:authstatecomposition}
+  \alpha \in \seq{\seq{\H}_{:\mathsf{O}}}_\mathsf{C}\ , \qquad
+  \varphi \in \seq{\seq{\H}_{\mathsf{Q}}}_\mathsf{C}
+\end{equation}
+
+Note: The portion of state $\varphi$ may be altered only through an exogenous call made from the accumulate logic of an appropriately privileged service.
+
+The state transition of a block involves placing a new authorization into the pool from the queue:
+\begin{align}
+  \forall c \in \N_\mathsf{C} : \alpha'[c] &\equiv {\overleftarrow{F(c) \doubleplus \varphi'[c] [ \mathbf{H}_t ]^{\circlearrowleft}}}^{\mathsf{O}} \\
+  F(c) &\equiv \begin{cases} \alpha[c] \seqminusl \{g_a\} & \when \exists g \in E_G : g_c = c \\ \alpha[c] & \otherwise \end{cases}\!\!\!\!\!
+\end{align}
+
+Since $\alpha'$ is dependent on $\varphi'$, practically speaking, this step must be computed after accumulation, the stage in which $\varphi'$ is defined.

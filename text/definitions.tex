@@ -1,0 +1,283 @@
+\section{Index of Notation}\label{sec:definitions}
+
+\subsection{Sets}
+
+\subsubsection{Regular Notation}
+\begin{description}
+  \item[$\N$] The set of positive integers including zero. Subscript denotes one greater than the maximum. See section \ref{sec:numbers}.
+  \begin{description}
+    \item[$\N^+$] The set of positive integers not including zero.
+    \item[$\N_B$] The set of balance values. Equivalent to $\N_{2^{64}}$. See equation \ref{eq:balance}.
+    \item[$\N_G$] The set of unsigned gas values. Equivalent to $\mathbb{N}_{2^{64}}$. See equation \ref{eq:gasregentry}.
+    \item[$\N_L$] The set of blob length values. Equivalent to $\N_{2^{32}}$. See section \ref{sec:numbers}.
+    \item[$\N_S$] The index of a service. Equivalent to $\N_{2^{32}}$. See section \ref{eq:serviceaccounts}.
+    \item[$\N_T$] The set of timeslot values. Equivalent to $\N_{2^{32}}$. See equation \ref{eq:time}.
+  \end{description}
+  \item[$\mathbb{Q}$] The set of rational numbers. Unused.
+  \item[$\mathbb{R}$] The set of real numbers. Unused.
+  \item[$\mathbb{Z}$] The set of integers. Subscript denotes range. See section \ref{sec:numbers}.
+  \begin{description}
+    \item[$\Z_G$] The set of signed gas values. Equivalent to $\mathbb{Z}_{-2^{63}:2^{63}}$. See equation \ref{eq:gasregentry}.
+  \end{description}
+\end{description}
+
+\subsubsection{Custom Notation}
+\begin{description}
+  \item[$\mathbb{A}$] The set of service accounts. See equation \ref{eq:serviceaccount}.
+  \item[$\mathbb{B}$] The set of Boolean sequences/bitstrings. Subscript denotes length. See section \ref{sec:sequences}.
+  \item[$\mathbb{C}$] The set of seal-key tickets. See equation \ref{eq:ticket}. \emph{Not used as the set of complex numbers.}
+  \item[$\mathbb{D}$] The set of dictionaries. See section \ref{sec:dictionaries}.
+  \begin{description}
+    \item[$\dict{K}{V}$] The set of dictionaries making a partial bijection of domain $K$ to range $V$. See section \ref{sec:dictionaries}.
+  \end{description}
+  \item[$\mathbb{E}$] The set of valid Ed25519 signatures. A subset of $\Y_{64}$. See section \ref{sec:cryptography}.
+  \begin{description}
+    \item[$\sig{K}{M}$] The set of valid Ed25519 signatures of the key $K$ and message $M$. A subset of $\mathbb{E}$. See section \ref{sec:cryptography}.
+  \end{description}
+  \item[$\mathbb{F}$] The set of Bandersnatch signatures. A subset of $\Y_{64}$. See section \ref{sec:cryptography}. \emph{NOTE: Not used as finite fields.}
+  \begin{description}
+    \item[$\bandersig{K}{C}{M}$] The set of Bandersnatch signatures of the public key $K$, context $C$ and message $M$. A subset of $\mathbb{F}$. See section \ref{sec:cryptography}.
+    \item[$\bar{\mathbb{F}}$] The set of Bandersnatch Ring\textsc{vrf} proofs. See section \ref{sec:cryptography}.
+    \item[$\bandersnatch{R}{C}{M}$] The set of Bandersnatch Ring\textsc{vrf} proofs of the root $R$, context $C$ and message $M$. A subset of $\bar{\mathbb{F}}$. See section \ref{sec:cryptography}.
+  \end{description}
+  \item[$\mathbb{G}$] Unused.
+  \item[$\H$] The set of 32-octet cryptographic values. A subset of $\Y_{32}$. $\H$ without a subscript generally implies a hash function result. See section \ref{sec:cryptography}. \emph{NOTE: Not used as quaternions.}
+  \begin{description}
+    \item[$\H_B$] The set of Bandersnatch public keys. A subset of $\Y_{32}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+    \item[$\H_E$] The set of Ed25519 public keys. A subset of $\Y_{32}$. See section \ref{sec:signing}.
+    \item[$\Y_R$] The set of Bandersnatch ring roots. A subset of $\Y_{32}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+  \end{description}
+  \item[$\mathbb{I}$] The set of work items. See equation \ref{eq:workitem}.
+  \item[$\mathbb{J}$] The set of work execution errors.
+  \item[$\mathbb{K}$] The set of validator key-sets. See equation \ref{eq:validatorkeys}.
+  \item[$\mathbb{L}$] The set of work results.
+  \item[$\mathbb{M}$] The set of \textsc{pvm} \textsc{ram} states. A superset of $\Y_{2^{32}}$. See appendix \ref{sec:virtualmachine}.
+  \item[$\mathbb{O}$] The accumulation operand element, corresponding to a single work result.
+  \item[$\mathbb{P}$] The set of work-packages. See equation \ref{eq:workpackage}.
+  \item[$\mathbb{S}$] The set of work-package specifications.
+  \item[$\mathbb{T}$] The set of deferred transfers.
+  \item[$\mathbb{U}$] Unused.
+  \item[$\mathbb{V}_{\mu}$] The set of validly readable indices for \textsc{pvm} \textsc{ram} $\mu$. See appendix \ref{sec:virtualmachine}.
+  \item[$\mathbb{V}^*_{\mu}$] The set of validly writable indices for \textsc{pvm} \textsc{ram} $\mu$. See appendix \ref{sec:virtualmachine}.
+  \item[$\mathbb{W}$] The set of work-reports.
+  \item[$\mathbb{X}$] The set of refinement contexts.
+  \item[$\Y$] The set of octet strings/``blobs''. Subscript denotes length. See section \ref{sec:sequences}.
+  \begin{description}
+    \item[$\Y_{BLS}$] The set of BLS public keys. A subset of $\Y_{144}$. See section \ref{sec:signing}.
+    \item[$\Y_R$] The set of Bandersnatch ring roots. A subset of $\Y_{196608}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+  \end{description}
+\end{description}
+
+\subsection{Functions}
+
+\begin{description}
+%  \item[$\Gamma$] Unused. %	Γ
+%  \item[$\Delta$] Unused. %	Δ
+%  \item[$\Theta$] Unused. %	Θ
+%  \item[$\Pi$] Unused. %	Π
+  \item[$\Lambda$] The historical lookup function. See equation \ref{eq:historicallookup}. % Λ
+  \item[$\Xi$] The work result computation function. See equation \ref{eq:workresultfunction}. %	Ξ
+  \item[$\Upsilon$] The general state transition function. See equations \ref{eq:statetransition}, \ref{eq:transitionfunctioncomposition}. %	ϒ
+%  \item[$\Sigma$] Unused. %	Σ
+%  \item[$\Phi$] Unused. %	Φ
+  \item[$\Psi$] The whole-program \textsc{pvm} machine state-transition function. See equation \ref{sec:virtualmachine}. %	Ψ
+  \begin{description}
+    \item[$\Psi_1$] The single-step (\textsc{pvm}) machine state-transition function. See appendix \ref{sec:virtualmachine}. %	Ψ
+    \item[$\Psi_A$] The Accumulate \textsc{pvm} invocation function. See appendix \ref{sec:virtualmachineinvocations}.
+    \item[$\Psi_H$] The host-function invocation (\textsc{pvm}) with host-function marshalling. See appendix \ref{sec:virtualmachine}. %	Ψ
+    \item[$\Psi_I$] The Is-Authorized \textsc{pvm} invocation function. See appendix \ref{sec:virtualmachineinvocations}.
+    \item[$\Psi_M$] The marshalling whole-program \textsc{pvm} machine state-transition function. See appendix \ref{sec:virtualmachine}. %	Ψ
+    \item[$\Psi_R$] The Refine \textsc{pvm} invocation function. See appendix \ref{sec:virtualmachineinvocations}.
+    \item[$\Psi_T$] The On-Transfer \textsc{pvm} invocation function. See appendix \ref{sec:virtualmachineinvocations}.
+  \end{description}
+  \item[$\Omega$] Virtual machine host-call functions. See appendix \ref{sec:virtualmachineinvocations}. %	Ω
+  \begin{description}
+    \item[$\Omega_A$] Assign-core host-call.
+    \item[$\Omega_C$] Checkpoint host-call.
+    \item[$\Omega_D$] Designate-validators host-call.
+    \item[$\Omega_E$] Empower-service host-call.
+    \item[$\Omega_F$] Forget-preimage host-call.
+    \item[$\Omega_G$] Gas-remaining host-call.
+    \item[$\Omega_H$] Historical-lookup-preimage host-call.
+    \item[$\Omega_I$] Information-on-service host-call.
+    \item[$\Omega_K$] Kickoff-\textsc{pvm} host-call.
+    \item[$\Omega_L$] Lookup-preimage host-call.
+    \item[$\Omega_M$] Make-\textsc{pvm} host-call.
+    \item[$\Omega_N$] New-service host-call.
+    \item[$\Omega_O$] Poke-\textsc{pvm} host-call.
+    \item[$\Omega_P$] Peek-\textsc{pvm} host-call.
+    \item[$\Omega_Q$] Quit-service host-call.
+    \item[$\Omega_S$] Solicit-preimage host-call.
+    \item[$\Omega_R$] Read-storage host-call.
+    \item[$\Omega_T$] Transfer host-call.
+    \item[$\Omega_U$] Upgrade-service host-call.
+    \item[$\Omega_W$] Write-storage host-call.
+    \item[$\Omega_X$] Expunge-\textsc{pvm} host-call.
+  \end{description}
+\end{description}
+
+\subsection{Utilities, Externalities and Standard Functions}
+
+\begin{description}
+  \item[$\mathcal{A}(\dots)$] The Merkle mountain range append function. See equation \ref{eq:mmrappend}.
+  \item[$\mathcal{B}_n(\dots)$] The octets-to-bits function for $n$ octets. Superscripted ${}^{-1}$ to denote the inverse. See equation \ref{eq:bitsfunc}.
+  \item[$\mathcal{C}_n(\dots)$] The erasure coding function for $n$ chunks. Superscripted ${}^{-1}$ to denote the inverse. See equation \ref{eq:erasurecoding}.
+%  \item[$\mathcal{D}$] Unused.
+  \item[$\se(\dots)$] The \textsc{scale} encode function. Superscripted ${}^{-1}$ to denote the inverse. See appendix \ref{sec:serialization}.
+  \item[$\mathcal{F}(\dots)$] The Fisher-Yates shuffle function. See equation \ref{eq:suffle}.
+  \item[$\mathcal{H}(\dots)$] The Blake 2b 256-bit hash function. See section \ref{sec:cryptography}.
+  \item[$\mathcal{H}_K(\dots)$] The Keccak 256-bit hash function. See section \ref{sec:cryptography}.
+  %  \item[$\mathcal{G}$] Unused.
+  %  \item[$\mathcal{I}$] Unused.
+  %  \item[$\mathcal{J}$] Unused.
+  \item[$\mathcal{K}(\dots)$] The domain, or set of keys, of a dictionary. See section \ref{sec:dictionaries}.
+  %  \item[$\mathcal{L}$] Unused.
+  \item[$\mathcal{M}_2(\dots)$] The binary Merklization function. See appendix \ref{sec:merklization}.
+  \item[$\mathcal{M}_S(\dots)$] The state Merklization function. See appendix \ref{sec:statemerklization}.
+  \item[$\mathcal{N}(\dots)$] The erasure-coding chunks function. See appendix \ref{sec:erasurecoding}.
+  %\item[$\mathcal{O}$] Unused.
+  \item[$\mathcal{P}_n(\dots)$] The octet-array zero-padding function. See equation \ref{eq:zeropadding}.
+  \item[$\mathcal{Q}(\dots)$] The numeric-sequence-from-hash function. See equation \ref{eq:sequencefromhash}.
+  \item[$\mathcal{R}(\dots)$] The Bandersnatch ring root function. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+  \item[$\mathcal{S}_k(\dots)$] The general signature function. See section \ref{sec:cryptography}.
+  \item[$\mathcal{T}$] The current time expressed in seconds after the start of the \Jam Common Era. See section \ref{sec:commonera}.
+  \item[$\mathcal{U}(\dots)$] The substitute-if-nothing function. See equation \ref{eq:substituteifnothing}.
+  \item[$\mathcal{V}(\dots)$] The range, or set of values, of a dictionary or sequence. See section \ref{sec:dictionaries}.
+%  \item[$\mathcal{W}$] Unused.
+%  \item[$\mathcal{X}$] Unused.
+  \item[$\mathcal{Y}(\dots)$] The alias/output/entropy function of a Bandersnatch \textsc{vrf} signature/proof. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+  \item[$\mathcal{Z}_n(\dots)$] The into-signed function for a value in $\N_{2^{8n}}$. Superscripted with ${}^{-1}$ to denote the inverse. See equation \ref{eq:signedfunc}.
+  \item[$\wp(\dots)$] Power set function.
+\end{description}
+
+\subsection{Values}
+
+\subsubsection{Block-context Terms}
+
+These terms are all contextualized to a single block. They may be superscripted with some other term to alter the context and reference some other block.
+\begin{description}
+  \item[$\mathbf{A}$] The ancestor set of the block. See equation \ref{eq:ancestors}.
+  \item[$\mathbf{B}$] The block. See equation \ref{eq:block}.
+  \item[$\mathbf{C}$] The service accumulation-commitment, used to form the \textsc{Beefy} root. See equation \ref{eq:beefycommitment}.
+  \item[$\mathbf{E}$] The block extrinsic. See equation \ref{eq:extrinsic}.
+  \item[$\mathbf{F}_v$] The \textsc{Beefy} signed commitment of validator $v$. See equation \ref{eq:beefysignedcommitment}.
+  \item[$\mathbf{H}$] The block header. See equation \ref{eq:header}.
+  \item[$\mathbf{G}$] The mapping from cores to guarantor keys. See section \ref{sec:coresandvalidators}.
+  \item[$\mathbf{G^*}$] The mapping from cores to guarantor keys for the previous rotation. See section \ref{sec:coresandvalidators}.
+  \item[$\mathbf{Q}$] The selection of ready work-reports which a validator determined they must audit. See equation \ref{eq:auditselection}.
+  \item[$\mathbf{R}$] The set of work-reports which have now become available and ready for accumulation. See equation \ref{eq:availableworkreports}.
+  \item[$\mathbf{S}$] The set of indices of services which have been accumulated (``progressed'') in the block. See equation \ref{eq:servicestoaccumulate}.
+  \item[$\mathbf{T}$] The ticketed condition, true if the block was sealed with a ticket signature rather than a fallback. See equations \ref{eq:ticketconditiontrue} and \ref{eq:ticketconditionfalse}.
+  \item[$\mathbf{U}$] The audit condition, equal to $\top$ once the block is audited. See section \ref{sec:auditing}.
+\end{description}
+
+Without any superscript, the block is assumed to the block being imported or, if no block is being imported, the head of the best chain (see section \ref{sec:bestchain}). Explicit block-contextualizing superscripts include:
+\begin{description}
+  \item[$\mathbf{B}^\natural$] The latest finalized block. See equation \ref{sec:bestchain}.
+  \item[$\mathbf{B}^\flat$] The block at the head of the best chain. See equation \ref{sec:bestchain}.
+\end{description}
+
+\subsubsection{State components}
+
+Here, the prime annotation indicates posterior state. Individual components may be identified with a letter subscript.
+\begin{description}
+  \item[$\alpha$] The core $\alpha$uthorizations pool. See equation \ref{eq:authstatecomposition}. %	α
+  \item[$\beta$] Information on the most recent $\beta$locks. %	β
+  \item[$\gamma$] State concerning Safrole. See equation \ref{eq:consensusstatecomposition}. %	γ
+  \begin{description}
+    \item[$\gamma_\mathbf{a}$] The sealing-key contest ticket accumulator.
+    \item[$\gamma_\mathbf{k}$] The validator keys for the following epoch.
+    \item[$\gamma_\mathbf{s}$] The sealing-key series of the current epoch.
+    \item[$\gamma_z$] The current epoch's Bandersnatch root.
+  \end{description}
+  \item[$\delta$] The (prior) state of the service accounts. %	δ
+  \begin{description}
+    \item[$\delta^\dagger$] The post-preimage integration, pre-accumulation intermediate state. %	δ
+    \item[$\delta^\ddagger$] The post-accumulation, pre-transfer intermediate state. %	δ
+  \end{description}
+  \item[$\eta$] The e$\eta$tropy accumulator and epochal ra$\eta$domness. %	η
+  \item[$\iota$] The validator keys and metadata to be drawn from next. %	ι
+  \item[$\kappa$] The validator $\kappa$eys and metadata currently active. %	κ
+  \item[$\lambda$] The validator keys and metadata which were active in the prior epoch. %	λ
+  \item[$\rho$] The $\rho$ending reports, per core, which are being made available prior to accumulation. %	ρ
+  \begin{description}
+    \item[$\rho^\dagger$] The post-judgement, pre-guarantees-extrinsic intermediate state. %	δ
+    \item[$\rho^\ddagger$] The post-guarantees-extrinsic, pre-assurances-extrinsic, intermediate state. %	δ
+  \end{description}
+  \item[$\sigma$] The $\sigma$verall state of the system. See equations \ref{eq:statetransition}, \ref{eq:statecomposition}. %	σ
+  \item[$\tau$] The most recent block's $\tau$imeslot. %	τ
+  \item[$\varphi$] The authorization queue. %	ϕ
+  \item[$\psi$] Votes regarding any ongoing disputes. %	ψ
+  \item[$\chi$] The privileged service indices. %	χ
+  \begin{description}
+    \item[$\chi_m$] The index of the empower service.
+    \item[$\chi_v$] The index of the designate service.
+    \item[$\chi_a$] The index of the assign service.
+  \end{description}
+%  \item[$\pi$] Unused.
+\end{description}
+
+\subsubsection{Virtual Machine components}
+
+\begin{description}
+  \item[$\varepsilon$] The instruction sequence. %	ε
+  \item[$\nu$] The immediate values of an instruction. %	ν
+  \item[$\mu$] The memory sequence; a member of the set $\mathbb{M}$. %	μ
+  \item[$\xi$] The gas counter. %	ξ
+  \item[$\omega$] The registers. %	ω
+  \item[$\zeta$] The exit-reason resulting from all machine state transitions. %	ζ
+  \item[$\varpi$] The sequence of basic blocks of the program.
+  \item[$\imath$] The instruction counter.
+\end{description}
+
+\subsubsection{Constants}
+
+\begin{description}
+  \item[$\mathsf{A} = 8$] The period, in seconds, between audit tranches.
+  \item[$\mathsf{B}_I = 10$] The additional minimum balance required per item of elective service state.
+  \item[$\mathsf{B}_L = 1$] The additional minimum balance required per octet of elective service state.
+  \item[$\mathsf{B}_S = 100$] The basic minimum balance which all services require.
+  \item[$\mathsf{C} = 341$] The total number of cores.
+  \item[$\mathsf{D} = 28,800$] The period in timeslots after which an unreferenced preimage may be expunged.
+  \item[$\mathsf{E} = 600$] The length of an epoch in timeslots.
+  \item[$\mathsf{F} = 2$] The audit bias factor, the expected number of additional validators who will audit a work-report in the following tranche for each no-show in the previous.
+  \item[$\mathsf{G}_A$] The total gas allocated to a core for Accumulation.
+  \item[$\mathsf{G}_I$] The gas allocated to invoke a work-package's Is-Authorized logic.
+  \item[$\mathsf{G}_R$] The total gas allocated for a work-package's Refine logic.
+  \item[$\mathsf{H} = 8$] The size of recent history, in blocks.
+  \item[$\mathsf{I} = 4$] The maximum amount of work items in a package.
+  \item[$\mathsf{K} = 16$] The maximum number of tickets which may be submitted in a single extrinsic.
+  \item[$\mathsf{L} = 14,400$] The maximum age in timeslots of the lookup anchor.
+  \item[$\mathsf{M} = 128$] The size of a transfer memo in octets.
+  \item[$\mathsf{N} = 2$] The number of ticket entries per validator.
+  \item[$\mathsf{O} = 8$] The maximum number of items in the authorizations pool.
+  \item[$\mathsf{P} = 6$] The slot period, in seconds.
+  \item[$\mathsf{Q} = 80$] The maximum number of items in the authorizations queue.
+  \item[$\mathsf{R} = 10$] The rotation period of validator-core assignments, in timeslots.
+  \item[$\mathsf{S} = 4,000,000$] The maximum size of service code in octets.
+  \item[$\mathsf{U} = 5$] The period in timeslots after which reported but unavailable work may be replaced.
+  \item[$\mathsf{V} = 1023$] The total number of validators.
+  \item[$\mathsf{W}_P = 6\cdot2^{20} + 2^{16}$] The maximum size of an encoded work-package in octets.
+  \item[$\mathsf{W}_R = 96\cdot2^{10}$] The maximum size of an encoded work-report in octets.
+  \item[$\mathsf{X}$] Context strings, see below.
+  \item[$\mathsf{Y} = 500$] The number of slots into an epoch at which ticket-submission ends.
+  \item[$\mathsf{Z}_A = 4$] The \textsc{pvm} dynamic address alignment factor. See equation \ref{eq:jumptablealignment}.
+  \item[$\mathsf{Z}_I = 2^{24}$] The standard \textsc{pvm} program initialization input data size. See equation \ref{sec:standardprograminit}.
+  \item[$\mathsf{Z}_P = 2^{14}$] The standard \textsc{pvm} program initialization page size. See section \ref{sec:standardprograminit}.
+  \item[$\mathsf{Z}_Q = 2^{16}$] The standard \textsc{pvm} program initialization segment size. See section \ref{sec:standardprograminit}.
+\end{description}
+
+\subsubsection{Signing Contexts}
+
+\begin{description}
+  \item[$\mathsf{X}_A = \token{\$jam\_available}$] \emph{Ed25519} Availability assurances.
+  \item[$\mathsf{X}_B = \token{\$jam\_beefy}$] \emph{\textsc{bls}} Accumulate-result-root-\textsc{mmr} commitment.
+  \item[$\mathsf{X}_F = \token{\$jam\_fallback\_seal}$] \emph{Bandersnatch} Fallback block seal.
+  \item[$\mathsf{X}_G = \token{\$jam\_guarantee}$] \emph{Ed25519} Guarantee statements.
+  \item[$\mathsf{X}_I = \token{\$jam\_announce}$] \emph{Ed25519} Audit announcement statements.
+  \item[$\mathsf{X}_S = \token{\$jam\_seal}$] \emph{Bandersnatch} Regular block seal.
+  \item[$\mathsf{X}_T = \token{\$jam\_ticket}$] \emph{Bandersnatch Ring\textsc{vrf}} Ticket generation.
+  \item[$\mathsf{X}_U = \token{\$jam\_audit}$] \emph{Bandersnatch} Audit selection entropy.
+  \item[$\mathsf{X}_\top = \token{\$jam\_valid}$] \emph{Ed25519} Judgements for valid work-reports.
+  \item[$\mathsf{X}_\bot = \token{\$jam\_invalid}$] \emph{Ed25519} Judgements for invalid work-reports.
+\end{description}

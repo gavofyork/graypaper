@@ -1,0 +1,147 @@
+\section{Serialization Codec}\label{sec:serialization}
+
+\subsection{Common Terms}
+
+Our codec function $\mathcal{E}$ is used to serialize some term into a sequence of octets. We define the deserialization function $\de = \mathcal{E}^{-1}$ as the inverse of $\mathcal{E}$ and able to decode some sequence into the original value. The codec is designed such that exactly one value is encoded into any given sequence of octets, and in cases where this is not desirable then we use special codec functions.
+
+\subsubsection{Trivial Encodings}
+We define the serialization of $\varnothing$ as the empty sequence:
+\begin{equation}
+  \se(\none) \equiv []
+\end{equation}
+
+We also define the serialization of an octet-sequence as itself:
+\begin{equation}
+  \se(x \in \Y) \equiv x
+\end{equation}
+
+We define anonymous tuples to be encoded as the concatenation of their encoded elements:
+\begin{equation}
+  \se(\tup{a, b, \dots}) \equiv \se(a) \concat \se(b) \concat \dots
+\end{equation}
+
+Passing multiple arguments to the serialization functions is equivalent to passing a tuple of those arguments. Formally:
+\begin{align}
+  \se(a, b, c, \dots) &\equiv \se(\tup{a, b, c, \dots})
+\end{align}
+
+\subsubsection{Integer Encoding}
+We first define the trivial integer serialization functions which are subscripted by the number of octets of the final sequence. Values are encoded in a regular little-endian fashion. Formally:
+\begin{equation}
+  \se_{l \in \N}\colon\left\{\begin{aligned}
+    \N_{2^{8l}} &\to \Y_l \\
+    x &\mapsto \begin{cases}
+      [] &\when l = 0 \\
+      [x \bmod 256] \concat \se_{l - 1}\left(\left\lfloor \frac{x}{256} \right\rfloor\right) &\otherwise
+    \end{cases}
+  \end{aligned}\right.
+\end{equation}
+
+We also define the variable-size prefix 29-bit integer serialization function $\se_{4*}$:
+\begin{equation}
+  \se_{4*}\colon\left\{\begin{aligned}
+    \N_{2^{29}} &\to \Y_{1:4} \\
+    x &\mapsto \begin{cases}
+      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \se_l(x \bmod 2^{8l}) &\when \exists l \in \N_3 : 2^{7l} \le x < 2^{7(l+1)} \\
+      \left[2^8-2^5 + \ffrac{x}{2^{24}}\right] \concat \se_3(x \bmod 2^{24}) &\when 2^{21} \le x < 2^{29} \\
+    \end{cases}
+  \end{aligned}\right.
+\end{equation}
+
+We define general integer serialization, able to encode integers of up to $2^{64}$, as:
+\begin{equation}
+  \se\colon\left\{\begin{aligned}
+    \N_{2^{64}} &\to \Y_{1:9} \\
+    x &\mapsto \begin{cases}
+      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \se_l(x \bmod 2^{8l}) &\when \exists l \in \N_8 : 2^{7l} \le x < 2^{7(l+1)} \\
+      [2^8-1] \concat \se_8(x) &\when x < 2^{64} \\
+    \end{cases}
+  \end{aligned}\right.
+\end{equation}
+
+\subsubsection{Sequence Encoding}
+We define the sequence serialization function $\se(\seq{T})$ for any $T$ which is itself a subset of the domain of $\se$. We simply concatenate the serializations of each element in the sequence in turn:
+\begin{equation}
+  \se([i_0, i_1, ...]) \equiv \se(i_0) \concat \se(i_1) \concat \dots
+\end{equation}
+
+Thus, conveniently, fixed length octet sequences (\eg hashes $\H$ and its variants) have an identity serialization.
+
+\subsubsection{Discriminator Encoding}
+When we have sets of heterogeneous items such as a union of different kinds of tuples or sequences of different length, we require a discriminator to determine the nature of the encoded item for successful deserialization. Discriminators are encoded as a general integer and are encoded immediately prior to the item.
+
+We generally use a \emph{length discriminator} which serializing sequence terms which have variable length (\eg general blobs $\Y$ or unbound numeric sequences $\seq{\N}$) (though this is omitted in the case of fixed-length terms such as hashes $\H$).\footnote{Note that since specific values may belong to both sets which would need a discriminator and those that would not then we are sadly unable to introduce a function capable of serializing corresponding to the \emph{term}'s limitation. A more sophisticated formalism than basic set-theory would be needed, capable of taking into account not simply the value but the term from which or to which it belongs in order to do this succinctly.} In this case, we simply prefix the term its length prior to encoding. Thus, for some term $y \in \tup{x \in \Y, \dots}$, we would generally define its serialized form to be $\se(|x|)\concat\se(x)\concat\dots$. To avoid repetition of the term in such cases, we define the notation $\var{x}$ to mean that the term of value $x$ is variable in size and requires a length discriminator. Formally:
+\begin{equation}
+  \var{x} \equiv \tup{|x|, x}\text{ thus }\se(\var{x}) \equiv \se(|x|)\concat\se(x)
+\end{equation}
+
+We also define a convenient discriminator operator $\maybe{x}$ specifically for terms defined by some serializable set in union with $\none$ (generally denoted for some set $S$ as $S\bm{?}$):
+\begin{align}
+  \maybe{x} \equiv \begin{cases}
+    0 &\when x = \none \\
+    (1, x) &\otherwise
+  \end{cases}
+\end{align}
+
+\subsubsection{Bit Sequence Encoding}
+A sequence of bits $b \in \mathbb{B}$ is a special case since encoding each individual bit as an octet would be very wasteful. We instead pack the bits into octets in order of least significant to most, and arrange into an octet stream. In the case of a variable length sequence, then the length is prefixed as in the general case.
+\begin{align}
+  \se(b \in \mathbb{B}) &\equiv \begin{cases}
+    [] &\when b = [] \\
+    \left[\sum\limits_{i=0}^{\min(8, |b|)}{b_i\cdot 2^i}\right] \concat \se(b_{8\dots}) &\otherwise\\
+  \end{cases}
+\end{align}
+
+\subsubsection{Dictionary Encoding}
+Dictionaries whose key and value domains are encodable and whose key domains are ordered are themselves encodable in one of two manners. The first is as a sequence of encoded key/value pairs ordered by the key. This is generally used when the expected number of entries is somewhat less than the number of possible keys (i.e. the size of the active domain is somewhat less than the domain).
+
+\begin{equation}
+  \forall K, V: \se(d \in \dict{K}{V}) \equiv \se(\var{\orderby{k}{\tup{\se(k), \se(d[k])} \mid k \in \keys{d}}})
+\end{equation}
+
+The second is as a sequence of encoded values only, with each entry having an implicit key according to an enumeration over its domain. This is typically used when the domain is small in magnitude and typically similar in magnitude to the active domain. In order to account for the possibility of a key not existing in the dictionary (\ie the domain and the active domain not being equal) we prefix each value with an octet of one to indicate that the key is indeed present in the dictionary and place an octet of zero if the implied key is not.
+
+We provide a function $\mathcal{S}$ to deliver this from a regular dictionary:
+\begin{equation}
+  \forall K, V: \mathcal{S}(d \in \dict{K}{V}) \equiv \var{\orderby{k}{\begin{aligned}
+    &[1] \frown \se(d[k]) &&\ \when k \in \keys{d} \\
+    &[0] &&\ \otherwise
+  \end{aligned}
+  \,\middle\mid\, k \in K}}
+\end{equation}
+
+%Finally, we may also encode a dictionary only insofar as we encode the keys and encode the values; in this case the result is not a sequence of octets but rather a mapping of octet-sequences to octet-sequences. This is useful in defining the process of Merklization. We define the function $\se_D$ to deliver this from a regular dictionary:
+%\begin{equation}
+%  \forall K, V: \se_D(d \in \dict{K}{V}) \equiv r \suchthat k \in \keys{d} \Leftrightarrow \se(k) \in \keys{r} \wedge \forall k \in \keys{d} : r[\se(k)] = \se(d[k])
+%\end{equation}
+
+\subsection{Block Serialization}
+
+A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\se_U$ (the latter has no inverse). Formally:
+\begin{align}
+  \se(\mathbf{B}) &= \se\,\left\lparen\;\begin{aligned}
+    &\mathbf{H},\ 
+    \var{\mathbf{E}_T},\ 
+    \var{[(r, [(v, \se_2(i), s) \mid (v, i, s) \orderedin \mathbf{v}]) \mid (r, \mathbf{v}) \orderedin \mathbf{E}_J]},\\
+    &\var{[\tup{s, \var{p}} \mid \tup{s, p} \orderedin \mathbf{E}_P]},\ 
+    \var{\mathbf{E}_A},\ 
+    \var{[\tup{c, w, \var{a}} \mid \tup{c, w, a} \orderedin \mathbf{E}_G]}
+  \end{aligned}\;\right\rparen \\
+  \se(\mathbf{H}) &= \se_U(\mathbf{H})\concat\se(\mathbf{H}_s) \\
+  \se_U(\mathbf{H}) &= \se(\mathbf{H}_p,\mathbf{H}_r,\mathbf{H}_x)\concat\se_4(\mathbf{H}_t)\concat\se(\maybe{\mathbf{H}_e},\maybe{\mathbf{H}_w},\se_4(\mathbf{H}_k),\mathbf{H}_v)\\
+  \se(x \in \mathbb{X}) &\equiv \se(x_a, x_s, x_b, x_l)\concat\se_4(x_t)\concat\se(\maybe{x_p})\\
+  \se(x \in \mathbb{S}) &\equiv \se(x_h) \concat \se_4(x_l)\concat\se(x_u) \\
+  \se(x \in \mathbb{L}) &\equiv \se_4(x_s)\concat\se(x_c, x_l)\concat\se_8(x_g)\concat\se(O(x_o))\\
+  \se(x \in \mathbb{W}) &\equiv \se(x_a, \var{x_o}, x_x, x_s, \var{x_r}) \\
+  \se(x \in \mathbb{P}) &\equiv \se(\var{x_\mathbf{j}}, \se_4(x_h), x_c, \var{x_\mathbf{p}}, x_\mathbf{x}, \var{x_\mathbf{i}}) \\
+  \se(x \in \mathbb{C}) &\equiv \se(x_\mathbf{y}, x_r) \\
+  O(o \in \mathbb{J} \cup \Y) &\equiv \begin{cases}
+    (0, \var{o}) &\when o \in \Y \\
+    1 &\when o = \infty \\
+    2 &\when o = \panic \\
+    3 &\when o = \token{BAD} \\
+    4 &\when o = \token{BIG} \\
+  \end{cases}
+\end{align}
+
+Note the use of $O$ above to succinctly encode the result of a work item and the slight transformations of $\mathbf{E}_G$ and $\mathbf{E}_P$ to take account of the fact their inner tuples contain variable-length sequence terms $a$ and $p$ which need length discriminators.

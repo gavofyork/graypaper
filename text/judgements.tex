@@ -1,0 +1,89 @@
+\section{Judgements}\label{sec:judgements}
+
+\Jam provides a means of recording a vote amongst all validators over the validity of a \emph{work-report}, a unit of work done within \Jam (for greater detail on the nature of a work-report, see section \ref{sec:reporting}). Such a vote is not expected to happen very often in practice (if at all), however it is an important security backstop, allowing a convenient manner of removing troublesome keys from the validator set at short notice where there is consensus over their malfunction. It also helps coordinate the ability of unfinalized chain-extensions to be reverted and replaced with an extension which does not contain some invalid work-report.
+
+Generally speaking, judgement data will come about as a result of a dispute between validators, an off-chain process described in section \ref{sec:judgements}. A judgement against a report will imply that the chain will have been reverted to immediately prior to the accumulation of that report. Placing the judgement on-chain has the effect of cancelling its accumulation. The specific strategy for chain selection is described fully in section \ref{sec:bestchain}.
+
+In the case that a sufficient number of validator nodes \emph{do} make some judgement in $\mathbf{E}_J$, then an indexed record of that judgement is placed on-chain (in $\psi$, the portion of state handling dispute judgements).
+
+Having a persistent on-chain record is helpful in a number of ways. Firstly it provides a very simple means of recognizing the circumstances under which action against a validator must be taken by any higher-level validator-selection logic. Should \Jam be used for a public network such as \emph{Polkadot}, this would imply the slashing of the offending validator's stake on the staking parachain.
+
+As mentioned, recording reports found to have a high confidence of invalidity is important to ensure that said reports are not allowed to be resubmitted. Conversely, recording reports found to be valid ensures that additional disputes cannot be raised in the future of the chain.
+
+\subsection{State}
+
+The judgements state includes three items, an allow-set ($\psi_\mathbf{a}$), a ban-set ($\psi_\mathbf{b}$) and a punish-set ($\psi_\mathbf{p}$). The allow-set contains the hashes of all work-reports which were disputed and judged to be accurate. The ban-set contains the hashes of all work-reports which were disputed and whose accuracy could not be confidently confirmed. The punish-set is a set of keys of Bandersnatch keys which were found to have guaranteed a report which was confidently found to be invalid.
+\begin{equation}
+  \psi \equiv \tup{\psi_\mathbf{a}, \psi_\mathbf{b}, \psi_\mathbf{p}, \psi_\mathbf{k}}
+\end{equation}
+
+We store the last epoch's validator set in $\psi_\mathbf{k}$:
+\begin{equation}
+  \psi'_\mathbf{k} = \begin{cases}
+    \kappa &\when \displaystyle\ffrac{\tau'}{\mathsf{E}} \ne \ffrac{\tau}{\mathsf{E}}\\
+    \psi_\mathbf{k} &\otherwise
+  \end{cases}
+\end{equation}
+
+\subsection{Extrinsic}
+
+The judgements extrinsic, $\mathbf{E}_J$ may contain one or more judgements as a compilation of signatures coming from exactly two-thirds plus one of either the active validator set (\ie the Ed25519 keys of $\kappa$) or the previous epoch's validator set (\ie the keys of $\psi_\mathbf{k}$):
+\begin{equation}
+  \mathbf{E}_J \in \seq{\tup{\H, \seq{\tup{\{\top, \bot\}, \N_{\mathsf{V}}, \mathbb{F}}}_{\floor{\nicefrac{2}{3}\mathsf{V}} + 1}}}\!\!\!
+\end{equation}
+
+All signatures must be valid in terms of one of the two allowed validator key-sets. Note that the two epoch's key-sets may not be mixed! Formally:
+\begin{equation}
+  \begin{aligned}
+    \forall (r, \mathbf{v}) \in \mathbf{E}_J ,\, &\forall (v, i, s) \in \mathbf{v} : s \in \sig{\mathbf{k}[i]_e}{\mathsf{X}_v \concat r}\\
+    \where \mathsf{X}_\top &= \text{{\small \texttt{\$jam\_valid}}} \\
+    \text{and } \mathsf{X}_\bot &= \text{{\small \texttt{\$jam\_invalid}}} \\
+    \mathbf{k} &\in \{ \kappa , \psi_\mathbf{k} \}
+  \end{aligned}
+\end{equation}
+
+Judgements must be ordered by report hash and there may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
+\begin{align}
+  \mathbf{E}_J = \orderuniqby{r}{\tup{r, \mathbf{v}} \in \mathbf{E}_J} \\
+  \{r \mid \tup{r, \mathbf{v}}\} \disjoint \psi_\mathbf{a} \cup \psi_\mathbf{b}
+\end{align}
+
+The votes of all judgements must be ordered by validator index and there may be no duplicate such indices. Formally:
+\begin{equation}
+  \forall (r, \mathbf{v}) \in \mathbf{E}_J : \mathbf{v} = \orderuniqby{i}{\tup{v, i, s} \in \mathbf{v}}
+\end{equation}
+
+We define $\mathbf{J}$ as the sequence of judgements introduced in the block's extrinsic (and ordered respectively), with the sequence of signatures substituted with the sum of votes over the signatures. We require this total to be exactly zero, two-thirds-plus-one or one-third-plus-one of the validator set indicating, respectively, that we are confident of the report's validity, confident of its invalidity, or lacking confidence in either. This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{stewart2018efficient} discusses the security implications in depth).
+
+Formally:
+\begin{align}
+  \mathbf{J} &\in \seq{\tup{\H, \seq{\H_B}_{2:3}, \N}} \\
+  \mathbf{J} &= \sq{\tup{r, \sum_{\tup{v, i, s} \in \mathbf{v}}\!\!\!\! v}\ \middle\mid\ \tup{r, \mathbf{v}} \orderedin \mathbf{E}_J} \\
+  &\forall \tup{r, t} \in \mathbf{J} : t \in \{0, \floor{\nicefrac{1}{3}\mathsf{V}}, \floor{\nicefrac{2}{3}\mathsf{V}} + 1 \}
+\end{align}
+
+Note that $t$ is the threshold of judgements that the report is \emph{valid}, calculated by summing Boolean values in their implicit equivalence to binary digits of the set $\N_2$.
+
+We clear any work-reports judged to be non-valid from their core:
+\begin{equation}
+  \forall c \in \N_\mathsf{C} : \rho^\dagger[c] = \begin{cases}
+    \none &\when \{ (\rho[c]_r, t) \in \mathbf{J}, t < \floor{\nicefrac{2}{3}\mathsf{V}} \} \\
+    \rho_c &\otherwise
+  \end{cases}
+\end{equation}
+
+The allow-set assimilates the hashes of any reports we judge to be valid. The ban-set assimilates any other judged report-hashes. Finally, the punish-set accumulates the guarantor keys of any report judged to be invalid:
+\begin{align}
+  \psi'_\mathbf{a} &\equiv \psi_\mathbf{a} \cup \{r \mid \tup{r, \floor{\nicefrac{2}{3}\mathsf{V}} + 1} \in \mathbf{J} \} \\
+  \psi'_\mathbf{b} &\equiv \psi_\mathbf{b} \cup \{r \mid \tup{r, t} \in \mathbf{J}, t \ne \floor{\nicefrac{2}{3}\mathsf{V}} + 1 \} \\
+  \psi'_\mathbf{p} &\equiv \psi_\mathbf{p} \cup \{ \rho[c]_g \mid (\rho[c]_r, 0) \in \mathbf{J} \}
+\end{align}
+
+Note that the augmented punish-set is utilized when determining $\kappa'$ to nullify any validator keys which appear in the punish-list.
+
+\subsection{Header}\label{sec:judgementmarker}
+
+The judgement marker must contain exactly the sequence of report hashes judged not as confidently valid (\ie either controversial or invalid). Formally:
+\begin{equation}
+  \mathbf{H}_j \equiv \sq{r \mid \tup{r, t} \orderedin \mathbf{J}, t \ne 0}
+\end{equation}

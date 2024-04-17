@@ -1,0 +1,262 @@
+\section{Overview}\label{sec:overview}
+
+As in the Yellow Paper, we begin our formalisms by recalling that a blockchain may be defined as a pairing of some initial state together with a block-level state-transition function. The latter defines the posterior state given a pairing of some prior state and a block of data applied to it. Formally, we say:
+\begin{align}\label{eq:statetransition}
+\sigma' \equiv \Upsilon(\sigma, \mathbf{B})
+\end{align}
+
+Where $\sigma$ is the prior state, $\sigma'$ is the posterior state, $B$ is some valid block and $\Upsilon$ is our block-level state-transition function.
+
+Broadly speaking, \Jam (and indeed blockchains in general) may be defined simply by specifying $\Upsilon$ and some \emph{genesis state} $\sigma^0$.\footnote{Practically speaking, blockchains sometimes make assumptions of some fraction of participants whose behavior is simply \emph{honest}, and not provably incorrect nor otherwise economically disincentivized. While the assumption may be reasonable, it must nevertheless be stated apart from the rules of state-transition.} We also make several additional assumptions of agreed knowledge: a universally known clock, and the practical means of sharing data with other systems operating under the same consensus rules. The latter two were both assumptions silently made in the \emph{YP}.
+
+\subsection{The Block}
+
+To aid comprehension and definition of our protocol, we partition as many of our terms as possible into their functional components. We begin with the block $B$ which may be restated as the header $H$ and some input data external to the system and thus said to be \emph{extrinsic}, $\mathbf{E}$:
+\begin{align}
+  \label{eq:block}\mathbf{B} &\equiv (\mathbf{H}, \mathbf{E}) \\
+  \label{eq:extrinsic}\mathbf{E} &\equiv (\mathbf{E}_T, \mathbf{E}_J, \mathbf{E}_P, \mathbf{E}_A, \mathbf{E}_G)
+\end{align}
+
+The header is a collection of metadata primarily concerned with cryptographic references to the blockchain ancestors and the operands and result of the present transition. As an immutable known \emph{a priori}, it is assumed to be available throughout the functional components of block transition. The extrinsic data is split into its several portions:
+
+\begin{description}
+  \item[tickets] Tickets, used for the mechanism which manages the selection of validators for the permissioning of block authoring. This component is denoted $\mathbf{E}_T$.
+  \item[judgements] Votes, by validators, on dispute(s) arising between them presently taking place. This is denoted $\mathbf{E}_J$.
+  \item[preimages] Static data which is presently being requested to be available for workloads to be able to fetch on demand. This is denoted $\mathbf{E}_P$.
+  \item[availability] Assurances by each validator concerning which of the input data of workloads they have correctly received and are storing locally. This is denoted $\mathbf{E}_A$.
+  \item[reports] Reports of newly completed workloads whose accuracy is guaranteed by specific validators. This is denoted $\mathbf{E}_G$.
+\end{description}
+
+\subsection{The State}
+
+Our state may be logically partitioned into several largely independent segments which can both help avoid visual clutter within our protocol description and provide formality over elements of computation which may be simultaneously calculated (i.e. parallelized). We therefore pronounce an equivalence between $\sigma$ (some complete state) and a tuple of partitioned segments of that state:
+\begin{align}\label{eq:statecomposition}
+  \sigma &\equiv (\alpha, \beta, \gamma, \delta, \eta, \iota, \kappa, \lambda, \rho, \tau, \varphi, \chi, \psi)
+\end{align}
+
+In summary, $\delta$ is the portion of state dealing with \emph{services}, analogous in \Jam to the Yellow Paper's (smart contract) \emph{accounts}, the only state of the \emph{YP}'s Ethereum. The identities of services which hold some privileged status are tracked in $\chi$.
+
+Validators, who are the set of economic actors uniquely privileged to help build and maintain the \Jam chain, are identified within $\kappa$, archived in $\lambda$ and enqueued from $\iota$. All other state concerning the determination of these keys is held within $\gamma$. Note this is a departure from the \emph{YP} proof-of-work definitions which were mostly stateless, and this set was not enumerated but rather limited to those with sufficient compute power to find a partial hash-collision in the \textsc{sha}\oldstylenums{2}-\oldstylenums{256} cryptographic hash function. An on-chain entropy pool is retained in $\eta$.
+
+Our state also tracks two aspects of each core: $\alpha$, the authorization requirement which work done on that core must satisfy at the time of being reported on-chain, together with the queue which fills this, $\varphi$; and $\rho$, each of the cores' currently assigned \emph{report}, the availability of whose \emph{work-package} must yet be assured by a super-majority of validators.
+
+Finally, details of the most recent blocks and time are tracked in $\beta$ and $\tau$ respectively and ongoing disputes are tracked in $\bm{\psi}$.
+
+\subsubsection{State Transition Dependency Graph}
+
+Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulating all items of posterior state in terms of the prior state and block. To aid the architecting of implementations which parallelize this computation, we minimize the depth of the dependency graph where possible. The overall dependency graph is specified here:
+\begin{align}\label{eq:transitionfunctioncomposition}
+  \tau' &\prec \mathbf{H} \\
+  \beta^\dagger &\prec (\mathbf{H}, \beta) \label{eq:betadagger} \\
+  \beta' &\prec (\mathbf{H}, \mathbf{E}_G, \beta^\dagger, \mathbf{C}) \\
+  \gamma' &\prec (\mathbf{H}, \tau, \mathbf{E}_T, \gamma, \iota, \eta', \kappa') \\
+  \eta' &\prec (\mathbf{H}, \tau, \eta) \\
+  \kappa' &\prec (\mathbf{H}, \tau, \kappa, \gamma, \psi') \\
+  \lambda' &\prec (\mathbf{H}, \tau, \lambda, \kappa) \\
+  \psi' &\prec (\mathbf{E}_J, \psi) \\
+  \delta^\dagger &\prec (\mathbf{E}_P, \delta, \tau') \label{eq:deltadagger} \\
+  \rho^\dagger &\prec (\mathbf{E}_J, \rho) \label{eq:rhodagger} \\
+  \rho^\ddagger &\prec (\mathbf{E}_A, \rho^\dagger) \label{eq:rhoddagger} \\
+  \rho' &\prec (\mathbf{E}_G, \rho^\ddagger, \kappa, \tau') \\
+  \begin{rcases*}
+    \delta' \\
+    \chi' \\
+    \iota' \\
+    \varphi' \\
+    \mathbf{C}
+  \end{rcases*} &\prec (\mathbf{E}_A, \rho', \delta^\dagger, \chi, \iota, \varphi) \\
+  \alpha' &\prec (\mathbf{E}_G, \varphi', \alpha)
+\end{align}
+
+The only synchronous entangements are visible through the intermediate components superscripted with a dagger and defined in equations \ref{eq:betadagger}, \ref{eq:deltadagger} and \ref{eq:rhoddagger}. The latter two mark a merge and join in the dependency graph and, concretely, imply that the preimage lookup extrinsic must be folded into state before the availability extrinsic may be fully processed and accumulation of work happen.
+
+\subsection{Which History?}
+
+A blockchain is a sequence of blocks, each cryptographically referencing some prior block by including a hash of its header, all the way back to some first block which references the genesis header. We already presume consensus over this genesis header $\mathbf{H}^0$ and the state it represents already defined as $\sigma^0$.
+
+By defining a deterministic function for deriving a single posterior state for any (valid) combination of prior state and block, we are able to define a unique \emph{canonical} state for any given block. We generally call the block with the most ancestors the \emph{head} and its state the \emph{head state}.
+
+It is generally possible for two blocks to be valid and yet reference the same prior block in what is known as a \emph{fork}. This implies the possibility of two different heads, each with their own state. While we know of no way to strictly preclude this possibility, for the system to be useful we must nonetheless attempt to minimize it. We therefore strive to ensure that:
+
+\begin{enumerate}
+  \item\label{enum:wh:minimize} It be generally unlikely for two heads to form.
+  \item\label{enum:wh:resolve} When two heads do form they be quickly resolved into a single head.
+  \item\label{enum:wh:finalize} It be possible to identify a block not much older than the head which we can be extremely confident will form part of the blockchain's history in perpetuity. When a block becomes identified as such we call it \emph{finalized} and this property naturally extends to all of its ancestor blocks.
+\end{enumerate}
+
+These goals are achieved through a combination of two consensus mechanisms: \emph{Safrole}, which governs the (not-necessarily forkless) extension of the blockchain; and \emph{Grandpa}, which governs the finalization of some extension into canonical history. Thus, the former delivers point \ref{enum:wh:minimize}, the latter delivers point \ref{enum:wh:finalize} and both are important for delivering point \ref{enum:wh:resolve}. We describe these portions of the protocol in detail in sections \ref{sec:blockproduction} and \ref{sec:grandpa} respectively.
+
+While Safrole limits forks to a large extent (through cryptography, economics and common-time, below), there may be times when we wish to intentionally fork since we have come to know that a particular chain extension must be reverted. In regular operation this should never happen, however we cannot discount the possibility of malicious or malfunctioning nodes. We therefore define such an extension as any which contains a block in which data is reported which \emph{any other} block's state has tagged as invalid (see section \ref{sec:judgements} on how this is done). We further require that Grandpa not finalize any extension which contains such a block. See section \ref{sec:bestchain} for more information here.
+
+\subsection{Time}\label{sec:commonera}
+
+We presume a pre-existing consensus over time specifically for block production and import. While this was not an assumption of Polkadot, pragmatic and resilient solutions exist including the \textsc{ntp} protocol and network. We utilize this assumption on only one way: we require that blocks be considered temporarily invalid if their timeslot is in the future. This is specified in detail in section \ref{sec:blockproduction}.
+
+Formally, we define the time in terms of seconds passed since the beginning of the \Jam\emph{Common Era}, 1200 UTC on January 1, 2024.\footnote{1,704,110,400 seconds after the Unix Epoch.} Midday CET is selected to ensure that all significant timezones are on the same date at any exact 24-hour multiple from the beginning of the common era. Formally, this value is denoted $\mathcal{T}$.
+
+\subsection{Best block}
+
+Given the recognition of a number of valid blocks, it is necessary to determine which should be treated as the ``best'' block, by which we mean the most recent block we believe will ultimately be within of all future \Jam chains. The simplest and least risky means of doing this would be to inspect the Grandpa finality mechanism which is able to provide a block for which there is a very high degree of confidence it will remain an ancestor to any future chain head.
+
+However, in reducing the risk of the resulting block ultimately not being within the canonical chain, Grandpa will typically return a block some small period older than the most recently authored block. (Existing deployments suggest around 1-2 blocks in the past under regular operation.) There are often circumstances when we may wish to have less latency at the risk of the returned block not ultimately forming a part of the future canonical chain. \Eg we may be in a position of being able to author a block, and we need to decide what its parent should be. Alternatively, we may care to speculate about the most recent state for the purpose of providing information to a downstream application reliant on the state of \Jam.
+
+In these cases, we define the best block as the head of the best chain, itself defined in section \ref{sec:bestchain}.
+
+\subsection{Economics}
+
+The present work describes a crypto-economic system, \ie one combining elements of both cryptography and economics and game theory to deliver a self-sovereign digital service. In order to codify and manipulate economic incentives we define a token which is native to the system, which we will simply call \emph{tokens} in the present work.
+
+A value of tokens is generally referred to as a \emph{balance}, and such a value is said to be a member of the set of balances, $\N_B$, which is exactly equivalent to the set of 64-bit unsigned integers:
+\begin{align}\label{eq:balance}
+  \N_B \equiv \N_{2^{64}}
+\end{align}
+
+Though unimportant for the present work, we presume that there be a standard named denomination for $10^{9}$ tokens. This is different to both Ethereum (which uses a denomination of $10^{18}$), Polkadot (which uses a denomination of $10^{10}$) and Polkadot's experimental cousin Kusama (which uses $10^{12}$).
+
+The fact that balances are represented as a 64-bit integer implies that there may never be more than around $18\times10^{9}$ tokens (each divisible into portions of $10^{-9}$) within \Jam. We would expect that the total number of tokens ever issued will be a substantially smaller amount than this.
+
+We further presume that a number of constant \emph{prices} stated in terms of tokens are known. However we leave the specific values to be determined in following work:
+
+\begin{description}\label{eq:prices}
+  \item[$\mathsf{B}_I$] the additional minimum balance implied for a single item within a mapping.
+  \item[$\mathsf{B}_L$] the additional minimum balance implied for a single octet of data within a mapping.
+  \item[$\mathsf{B}_S$] the minimum balance implied for a service.
+\end{description}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{The Virtual Machine and Gas}\label{sec:virtualmachineandgas}
+
+In the present work, we presume the definition of a \emph{Polka Virtual Machine} (\textsc{pvm}). This virtual machine is based around the \textsc{risc-v} instruction set architecture, specifically the \textsc{rv}\oldstylenums{32}\textsc{ecm} variant, and is the basis for introducing permissionless logic into our state-transition function.
+
+The \textsc{pvm} is comparable to the \textsc{evm} defined in the Yellow Paper, but somewhat simpler: the complex instructions for cryptographic operations are missing as are those which deal with environmental interactions. Overall it is far less opinionated since it alters a pre-existing general purpose design, \textsc{risc-v}, and optimizes it for our needs. This gives us excellent pre-existing tooling, since \textsc{pvm} remains essentially compatible with \textsc{risc-v}, including support from the compiler toolkit \textsc{llvm} and languages such as Rust and C++. Furthermore, the instruction set simplicity which \textsc{risc-v} and \textsc{pvm} share, together with the register size (32-bit), active number (13) and endianness (little) make it especially well-suited for creating efficient recompilers on to common hardware architectures.
+
+The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for contextualization we will briefly summarize the basic invocation function $\Psi$ which computes the resultant state of a \textsc{pvm} instance initialized with some registers ($\lseq\N_R\rseq_{13}$) and \textsc{ram} ($\mathbb{M}$) and has executed for up to some amount of gas ($\N_G$), a number of approximately time-proportional computational steps:
+\begin{equation}
+  \Psi\colon
+  \tuple{\,
+    \begin{alignedat}{3}
+      &\Y\ts\ \ \N_R\ts\ \ &&\N_G\ts\\
+      &\!\lseq\N_R\rseq_{13}\ts\ \ &&\mathbb{M}\\
+    \end{alignedat}
+  \,}
+  \to
+  \tuple{\,
+    \begin{aligned}
+      &\{\halt, \panic, \oog\} \cup \{\fault,\host\} \times \N_R,\\
+      &\N_R,\ \ \Z_G,\ \ \seq{\N_R}_{13},\ \ \mathbb{M}
+    \end{aligned}
+  \,}
+\end{equation}
+
+We refer to the time-proportional computational steps as \emph{gas} (much like in the \emph{YP}) and limit it to a 64-bit quantity. We may use either $\N_G$ or $\Z_G$ to bound it, the first as a prior argument since it is known to be positive, the latter as a result where a negative value indicates an attempt to execute beyond the gas limit. Within the context of the \textsc{pvm}, $\xi \in \N_G$ is typically used to denote gas.
+\begin{equation}\label{eq:gasregentry}
+  \Z_G \equiv \mathbb{Z}_{-2^{63}:2^{63}}\ ,\quad
+  \N_G \equiv \mathbb{N}_{2^{64}}\ ,\quad
+  \N_R \equiv \N_{2^{32}}
+\end{equation}
+
+It is left as a rather important implementation detail to ensure that the amount of time taken while computing the function $\Psi(\dots, \xi, \dots)$ has a maximum computation time approximately proportional to the value of $\xi$ regardless of other operands.
+
+The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 32-bit integer, denoted $\N_R$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\omega \in \seq{\N_R}_{13}$ is typically used to denote the registers.
+\begin{align}
+  \mathbb{M} &\equiv \ltuple\isa{\mathbf{V}}{\Y_{2^{32}}}\ts\isa{\mathbf{A}}{\lseq\{\text{W}, \text{R}, \none\}\rseq_{2^{32}}}\rtuple
+\end{align}
+
+The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets where each octet may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\mathbb{M}$ includes two components: a value $\mathbf{V}$ and access $\mathbf{A}$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\mu \in \mathbb{M}$ is typically used to denote \textsc{ram}.
+\begin{align}
+  \mathbb{V}_{\mu} \equiv \{i \mid \mu_\mathbf{A}[i] \ne \none \} \qquad
+  \mathbb{V}^*_{\mu} \equiv \{i \mid \mu_\mathbf{A}[i] = \text{W} \}
+\end{align}
+
+We define two sets of indices for the \textsc{ram} $\mu$: $\mathbb{V}_{\mu}$ is the set of indices which may be read from; and $\mathbb{V}^*_{\mu}$ is the set of indices which may be written to.
+
+Invocation of the \textsc{pvm} has an exit-reason as the first item in the resultant tuple. It is either:
+\begin{itemize}
+  \item Regular program termination caused by an explicit halt instruction, $\halt$.
+  \item Irregular program termination caused by some exceptional circumstance, $\panic$.
+  \item Exhaustion of gas, $\oog$.
+  \item A page fault (attempt to access some address in \textsc{ram} which is not accessible), $\fault$. This includes the address at fault.
+  \item An attempt at progressing a host-call, $\host$. This allows for the progression and integration of a context-dependent state-machine beyond the regular \textsc{pvm}.
+\end{itemize}
+
+The full definition follows in appendix \ref{sec:virtualmachine}.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Epochs and Slots}\label{sec:epochsandslots}
+
+Unlike the \emph{YP} Ethereum with its proof-of-work consensus system, \Jam defines a proof-of-authority consensus mechanism, with the authorized validators presumed to be identified by a set of public keys and decided by a \emph{staking} mechanism residing within some system hosted by \Jam. The staking system is out of scope for the present work; instead there is an \textsc{api} which may be utilized to update these keys, and we presume that whatever logic is needed for the staking system will be introduced and utilize this \textsc{api} as needed.
+
+The Safrole mechanism subdivides time following genesis into fixed length \emph{epoch}s with each epoch divided into $\mathsf{E} = 600$ time\emph{slot}s each of uniform length $\mathsf{P} = 6$ seconds, given an epoch period of $\mathsf{E}\cdot\mathsf{P} = 3600$ seconds or one hour.
+
+This six-second slot period represents the minimum time between \Jam blocks, and through Safrole we aim to strictly minimize forks arising both due to contention within a slot (where two valid blocks may be produced within the same six-second period) and due to contention over multiple slots (where two valid blocks are produced in different time slots but with the same parent).
+
+Formally when identifying a timeslot index, we use a 32-bit integer indicating the number of six-second timeslots from the \Jam Common Era. For use in this context we introduce the set $\N_T$:
+\begin{align}\label{eq:time}
+  \N_T \equiv \N_{2^{32}}
+\end{align}
+
+This implies that the lifespan of the proposed protocol takes us to mid-August of the year 2840, which with the current course that humanity is on should be ample.
+
+\subsection{The Core Model and Services}\label{sec:coremodelandservices}
+
+Whereas in the Ethereum Yellow Paper when defining the state machine which is held in consensus amongst all network participants, we presume that all machines maintaining the full network state and contributing to its enlargement---or, at least, hoping to---evaluate all computation. This ``everybody does everything'' approach might be called the \emph{on-chain consensus model}. It is unfortunately not scalable, since the network can only process as much logic in consensus that it could hope any individual node is capable of doing itself within any given period of time.
+
+\subsubsection{In-core Consensus}
+In the present work, we achieve scalability of the work done through introducing a second model for such computation which we call the \emph{in-core consensus model}. In this model, and under normal circumstances, only a subset of the network is responsible for actually executing any given computation and assuring the availability of any input data it relies upon to others. By doing this and assuming a certain amount of computational parallelism within the validator nodes of the network, we are able to scale the amount of computation done in consensus commensurate with the size of the network, and not with the computational power of any single machine. In the present work we expect the network to be able to do upwards of 300 times the amount of computation \emph{in-core} as that which could be performed by a single machine running the virtual machine at full speed.
+
+Since in-core consensus is not evaluated or verified by all nodes on the network, we must find other ways to become adequately confident that the results of the computation are correct, and any data used in determining this is available for a practical period of time. We do this through a crypto-economic game of three stages called \emph{guaranteeing}, \emph{assuring}, \emph{auditing} and, potentially, \emph{judging}. Respectively, these attach a substantial economic cost to the invalidity of some proposed computation; then a sufficient degree of confidence that the inputs of the computation will be available for some period of time; and finally, a sufficient degree of confidence that the validity of the computation (and thus enforcement of the first guarantee) will be checked by some party who we can expect to be honest.
+
+All execution done in-core must be reproducible by any node synchronized to the portion of the chain which has been finalized. Execution done in-core is therefore designed to be as stateless as possible. The requirements for doing it include only the refinement code of the service, the code of the authorizer and any preimage lookups it carried out during its execution.
+
+When a work-report is presented on-chain, a specific block known as the \emph{lookup-anchor} is identified. Correct behavior requires that this must be in the finalized chain and reasonably recent, both properties which may be proven and thus are acceptable for use within a consensus protocol.
+
+We describe this pipeline in detail in the relevant sections later.
+
+\subsubsection{On Services and Accounts}
+
+% TODO Move these next two sections elsewhere.
+
+In \emph{YP} Ethereum, we have two kinds of accounts: \emph{contract accounts} (whose actions are defined deterministically based on the account's associated code and state) and \emph{simple accounts} which act as gateways for data to arrive into the world state and are controlled by knowledge of some secret key. In \Jam, all accounts are \emph{service accounts}. Like Ethereum's contract accounts, they have an associated balance, some code and state. Since they are not controlled by a secret key, they do not need a nonce.
+
+The question then arises: how can external data be fed into the world state of \Jam? And, by extension, how does overall payment happen if not by deducting the account balances of those who sign transactions? The answer to the first lies in the fact that our service definition actually includes \emph{multiple} code entry-points, one concerning \emph{refinement} and the other concerning \emph{accumulation}. The former acts as a sort of high-performance stateless processor, able to accept arbitrary input data and distill it into some much smaller amount of output data. The latter code is more stateful, providing access to certain on-chain functionality including the possibility of transferring balance and invoking the execution of code in other services. Being stateful this might be said to more closely correspond to the code of an Ethereum contract account.
+
+To understand how \Jam breaks up its service code is to understand \Jam's fundamental proposition of generality and scalability. All data extrinsic to \Jam is fed into the refinement code of some service. This code is not executed \emph{on-chain} but rather is said to be executed \emph{in-core}. Thus, whereas the accumulator code is subject to the same scalability constraints as Ethereum's contract accounts, refinement code is executed off-chain and subject to no such constraints, enabling \Jam services to scale dramatically both in the size of their inputs and in the complexity of their computation.
+
+While refinement and accumulation take place in consensus environments of a different nature, both are executed by the members of the same validator set. The \Jam protocol through its rewards and penalties ensures that code executed \emph{in-core} has a comparable level of crypto-economic security to that executed \emph{on-chain}, leaving the primary difference between them one of scalability versus synchroneity.
+
+As for managing payment, \Jam introduces a new abstraction mechanism based around Polkadot's Agile Coretime. Within the Ethereum transactive model, the mechanism of account authorization is somewhat combined with the mechanism of purchasing blockspace, both relying on a cryptographic signature to identify a single ``transactor'' account. In \Jam, these are separated and there is no such concept of a ``transactor''.
+
+In place of Ethereum's gas model for purchasing and measuring blockspace, \Jam has the concept of \emph{coretime}, which is prepurchased and assigned to an authorization agent. Coretime is analogous to gas insofar as it is the underlying resource which is being consumed when utilizing \Jam. Its procurement is out of scope in the present work and is expected to be managed by a system parachain operating within a parachains service itself blessed with a number of cores for running such system services. The authorization agent allows external actors to provide input to a service without necessarily needing to identify themselves as with Ethereum's transaction signatures. They are discussed in detail in section \ref{sec:authorization}.

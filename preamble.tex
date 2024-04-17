@@ -1,0 +1,141 @@
+\usepackage{url}
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{multicol,caption}
+\usepackage{multirow}
+\usepackage{subfig}
+
+\usepackage{mathabx}
+\usepackage{mathtools}
+\usepackage{mathbbol}
+\usepackage{MnSymbol}
+\usepackage{bm}
+\usepackage{longtable}
+\usepackage[hidelinks]{hyperref}
+\usepackage[a4paper,width=170mm,top=18mm,bottom=22mm,includeheadfoot]{geometry}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{nicefrac}
+\usepackage{relsize}
+\usepackage{stackengine}
+\usepackage{tikz}
+\unitlength=1mm
+\usetikzlibrary{decorations.markings,calc}
+\usepackage{xcolor}
+\usepackage{pagecolor}
+\usepackage{eso-pic}
+\usepackage[math]{cellspace}
+\usepackage{makecell}
+\usepackage[backend=biber,style=authoryear,autocite=inline]{biblatex}
+\usepackage{ifthen}
+\usepackage{hyperref}
+\usepackage{changepage}
+\strictpagecheck
+\addbibresource{biblio.bib}
+
+\allowdisplaybreaks
+
+\renewcommand\stacktype{L}
+\renewcommand\stackgap{8pt}
+\stackMath
+
+\definecolor{verydarkgray}{gray}{0.15}
+\definecolor{verylightgray}{gray}{0.85}
+
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\makeatletter
+\newcommand{\superimpose}[2]{{%
+  \ooalign{%
+    \hfil$\m@th#1\@firstoftwo#2$\hfil\cr
+    \hfil$\m@th#1\@secondoftwo#2$\hfil\cr
+  }%
+}}
+\makeatother
+
+\def\drawplusplus#1#2#3{\hbox to 0pt{\hbox to #1{\hfill\vrule height #3 depth
+      0pt width #2\hfill\vrule height #3 depth 0pt width #2\hfill
+      }}\vbox to #3{\vfill\hrule height #2 depth 0pt width
+      #1 \vfill}}
+      %Poor man's typography
+\def\doubleplus{\mathrel{\drawplusplus {7pt}{0.6pt}{5pt}}}
+\def\concat{\ensuremath{\frown}}
+\def\seqminusl{\nwspoon}
+\def\seqminusr{\sespoon}
+\newcommand*\eg{e.g.\@\xspace}
+\newcommand*\Eg{E.g.\@\xspace}
+\newcommand*\ie{i.e.\@\xspace}
+\newcommand*\Ie{I.e.\@\xspace}
+\newcommand*\etc{\&c.\@\xspace}
+\newcommand*\nb{\textsc{nb}\@\xspace}
+\newcommand*\rem{\ \text{\scriptsize{\%}}\ }
+\newcommand*\remainder{\text{\hspace{2pt}\footnotesize{\textsf{R}}\hspace{2pt}}}
+\newcommand*\fold{\ \thicksim\mathchoice{\!\!\!\!\!\!\!}{\!\!\!\!\!\!}{\!\!\!\!\!\!}{\!\!\!\!\!\!}\int}
+\newcommand*{\sig}[2]{\mathbb{E}_{#1}\langle#2\rangle}
+\newcommand*{\bandersnatch}[3]{\bar{\mathbb{F}}_{#1}^{#3}\langle#2\rangle}
+\newcommand*{\bandersig}[3]{\mathbb{F}_{#1}^{#3}\langle#2\rangle}
+\newcommand*{\banderout}[1]{\mathcal{Y}(#1)}
+\newcommand*{\dict}[2]{\mathbb{D}\langle #1\to#2\rangle}
+\newcommand*{\order}[1]{\left[#1\right]}
+\newcommand*{\orderby}[2]{\left[#1\,\middle\lwavy\,#2\right]}
+\newcommand*{\orderuniqby}[2]{\left[#1\,\middle\lWavy\,#2\right]}
+\newcommand*{\token}[1]{\text{{\small \texttt{#1}}}}
+\renewcommand*{\H}{\mathbb{H}}
+\newcommand*{\N}{\mathbb{N}}
+\newcommand*{\Y}{\mathbb{Y}}
+\newcommand*{\Z}{\mathbb{Z}}
+\newcommand*{\orderedin}{\ensuremath{\mathrel{\mathrlap{<}{\scalebox{0.95}[1]{$-$}}}}}
+\newcommand*{\using}{\text{let }}
+\newcommand*{\where}{ \text{where }}
+\newcommand*{\also}{ \text{and }}
+\newcommand*{\otherwise}{\text{otherwise}}
+\newcommand*{\otherwhen}{\text{otherwise if }}
+\newcommand*{\when}{\text{if }}
+\newcommand*{\exc}{\text{ except }}
+\newcommand*{\oog}{\infty}
+\newcommand*{\error}{\nabla}
+\newcommand*{\panic}{\lightning}
+\newcommand*{\host}{\hbar}
+\newcommand*{\halt}{\blacksquare}
+\newcommand*{\fault}{\text{\raisebox{6pt}{\rotatebox{180}{\textsf{F}}}}}
+\newcommand*{\none}{\emptyset}
+\newcommand*{\disjoint}{\downspoon}
+\newcommand*{\Jam}{\raisebox{-1.2pt}{J}\textsc{am}\@\xspace}
+\newcommand*{\suchthat}{\text{ such that }}
+\newcommand*{\keys}[1]{\mathcal{K}(#1)}
+\let\originalleft\left
+\let\originalright\right
+\renewcommand{\left}{\mathopen{}\mathclose\bgroup\originalleft}
+\renewcommand{\right}{\aftergroup\egroup\originalright}
+\newcommand*{\var}[1]{\left\updownarrow#1\right.\!}
+\newcommand*{\maybe}[1]{\mathord{\text{¿}}#1}
+\newcommand*{\se}{\mathcal{E}}
+\newcommand*{\de}{\mathcal{E}^{-1}}
+\newcommand*{\tricolon}{\!\mathrel{\vcenter{\offinterlineskip%
+\hbox{\scalebox{0.5}[0.5]{${\scriptscriptstyle \blacktriangleright}$}}
+\vskip.15ex
+\hbox{\scalebox{0.5}[0.5]{${\scriptscriptstyle \blacktriangleright}$}}
+}}}
+\newcommand*{\is}[2]{#1\tricolon#2}
+\newcommand*{\isa}[2]{#1\in #2}
+\newcommand*{\ts}{,\,}
+\newcommand*{\lseq}{\left\lsem}
+\newcommand*{\rseq}{\right\rsem}
+\newcommand*{\ltup}{\!\left\lgroup}
+\newcommand*{\rtup}{\right\rgroup\!}
+\newcommand*{\ltuple}{\!\left\lgroup}
+\newcommand*{\rtuple}{\right\rgroup\!}
+\newcommand*{\sq}[1]{\left[#1\right]}
+\newcommand*{\seq}[1]{\lseq#1\rseq}
+\newcommand*{\tup}[1]{\ltup#1\rtup}
+\newcommand*{\tuple}[1]{\ltuple#1\rtuple}
+\newcommand*{\floor}[1]{\left\lfloor#1\right\rfloor}
+\newcommand*{\ceil}[1]{\left\lceil#1\right\rceil}
+\newcommand*{\fnfrac}[2]{\left\lfloor\nicefrac{#1}{#2}\right\rfloor}
+\newcommand*{\ffrac}[2]{\left\lfloor\frac{#1}{#2}\right\rfloor}
+
+\title[JAM: Join-Accumulate Machine \\ {\smaller \textbf{Draft 0.1.1 - \today}}]{Join-Accumulate Machine: A Semi-Coherent Scalable Trustless VM \\ {\smaller Draft 0.1.1 - \today}}
+\author{
+  Dr. Gavin Wood\\
+  Founder, Polkadot \& Ethereum\\%, Parity, Web3 Foundation, Fellowship\\
+   gavin@parity.io }

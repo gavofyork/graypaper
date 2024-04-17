@@ -1,0 +1,319 @@
+\section{Work Packages and Work Reports}\label{sec:workpackagesandworkreports}
+
+\subsection{Honest Behavior}
+
+We have so far specified how to recognize blocks for a correctly transitioning \Jam blockchain. Through defining the state transition function and a state Merklization function, we have also defined how to recognize a valid header. While it is not especially difficult to understand how a new block may be authored for any node which controls a key which would allow the creation of the two signatures in the header, nor indeed to fill in the other header fields, readers will note that the contents of the extrinsic remain unclear.
+
+We define not only correct behavior through the creation of correct blocks but also \emph{honest behavior}, which involves the node taking part in several \emph{off-chain} activities. This does have analogous aspects within \emph{YP} Ethereum, though it is not mentioned so explicitly in said document: the creation of blocks along with the gossiping and inclusion of transactions within those blocks would all count as off-chain activities for which honest behavior is helpful. In \Jam's case, honest behavior is well-defined and expected of at least $\nicefrac{2}{3}$ of validators.
+
+Beyond the production of blocks, incentivized honest behavior includes:
+\begin{itemize}
+    \item the guaranteeing and reporting of work-packages, along with chunking and distribution of both the chunks and the work-package itself, discussed in section \ref{sec:guaranteeing};
+    \item assuring the availability of work-packages after being in receipt of their data;
+    \item making and submitting judgements on the correctness of work-reports;
+    \item determining which work-reports to audit, fetching and auditing them, and creating and distributing an adverse judgement to other nodes based on the outcome of the audit;
+    \item submitting the correct amount of work seen being done by other validators, discussed in section \ref{sec:ratings}.
+\end{itemize}
+
+We begin with the first of these, the guaranteeing of work-packages.
+
+\subsection{Packages and Items}\label{sec:packagesanditems}
+
+We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constituent \emph{work item}s, of set $\mathbb{I}$. A work-package includes a simple blob acting as an authorization token $\mathbf{j}$, a service identifier for where authorization code is hosted $h$, an authorization code hash $c$ and a parameterization blob $\mathbf{p}$, a context $\mathbf{x}$ and a sequence of work items limited in size $\mathbf{i}$:
+\begin{equation}\label{eq:workpackage}
+  \mathbb{P} \in \tuple{\isa{\mathbf{j}}{\Y}, \isa{h}{\N_\mathsf{S}}, \isa{c}{\H}, \isa{\mathbf{p}}{\Y}, \isa{\mathbf{x}}{\mathbb{X}}, \isa{\mathbf{i}}{\mathbb{I}_{1:\mathsf{I}}}}
+\end{equation}
+
+We limit the encoded size of work-packages to a little over 6\textsc{mb} in order to allow for 1\textsc{mb}/s/core data throughput:
+\begin{align}
+  |\se(\mathbb{P})| &\le \mathsf{W}_P\\
+  \mathsf{W}_P &= 6\cdot2^{20} + 2^{16}
+\end{align}
+
+A work item includes the identifier of the service to which it relates $s$, the code hash of the service at the time of reporting, and whose preimage must be available from the perspective of the lookup anchor block $c$, a payload blob $y$, and a gas limit $g$:
+\begin{equation}\label{eq:workitem}
+    \mathbb{I} \in \tuple{\isa{s}{\N_\mathsf{S}}, \isa{c}{\H}, \isa{\mathbf{y}}{\Y}, \isa{g}{\N_G}}
+\end{equation}
+
+We define the work-package's implied authorizer as $\mathbf{p}_a$, the hash of the concatenation of the authorization code and the parameterization. We define the authorization code as $\mathbf{p}_\mathbf{c}$ and require that it be available at the time of the lookup anchor block from the historical lookup of service $h$. Formally:
+\begin{equation}
+  \forall \mathbf{p} \in \mathbb{P}: \left\{\,\begin{aligned}
+    \mathbf{p}_a &\equiv \mathcal{H}(\mathbf{p}_\mathbf{c} \concat \mathbf{p}_\mathbf{p}) \\
+    \mathbf{p}_\mathbf{c} &\equiv H(\delta[\mathbf{p}_h], (\mathbf{p}_x)_t, \mathbf{p}_c) \\
+    \mathbf{p}_\mathbf{c} &\in \Y
+  \end{aligned}\right.
+\end{equation}
+
+($\Lambda$ is the historical lookup function defined in equation \ref{eq:historicallookup}.)
+
+We now come to the work result computation function $\Xi$. This forms the basis for all utilization of cores on \Jam. It operates on some work-package $\mathbf{p}$ for some nominated core $c$ and results in either an error $\error$ or the work result, which is deterministic and, thanks to the historical lookup functionality, can be evaluated by any node which has a recently finalized chain for up to 24 epochs after the lookup-anchor block.
+
+Formally:
+\begin{equation}\label{eq:workresultfunction}
+  \Xi \colon \left\{\,\begin{aligned}
+    (\mathbb{P}, \N_C) &\to \mathbb{W} \\
+    (\mathbf{p}, c) &\mapsto \begin{cases}
+        \error &\when \mathbf{o} \not\in \Y \\
+        \tup{\is{a}{\mathbf{p}_a}, \mathbf{o}, \is{x}{\mathbf{p}_x}, s, r} &\otherwise
+    \end{cases}
+  \end{aligned}\right.
+\end{equation}
+
+where:
+\begin{align*}
+  \ \mathbf{o} &= \Psi_I(\mathbf{p}, c) \\
+  \ s &= \tup{h, \is{l}{|\se(\mathbf{p})|}, \is{u}{\mathcal{M}_2([\mathcal{H}(x) \mid x \orderedin \mathcal{C}(\mathcal{P}_{2^{11}}(\se(\mathbf{p})))])}}\!\!\!\!\!\!\! \\
+  \ r &= [\Psi_R(c, g, s, h, \mathbf{y}, \mathbf{p}_\mathbf{x}, \mathbf{p}_a, \mathbf{o}) \mid \tup{s, c, \mathbf{y}, g} \orderedin \mathbf{p}_\mathbf{i}] \\
+  \ h &= \mathcal{H}(\mathbf{p})
+\end{align*}
+
+And $\mathcal{P}$ is the zero-padding function to take an octet array to some multiple of $n$ in length:
+\begin{equation}\label{eq:zeropadding}
+  \mathcal{P}_{n \in \N_{1:}}\colon\left\{\begin{aligned}
+    \Y &\to \Y_{k\cdot n}\\
+    \mathbf{x} &\mapsto \mathbf{x} \concat [0, 0, ...]_{((|x|+n - 1) \bmod n) + 1 \dots n}
+  \end{aligned}\right.
+\end{equation}
+
+We define the binary Merklization function $\mathcal{M}_2$ in equation \ref{eq:binarymerkleroot}. Note that $\mathcal{C}$ represents the erasure-coding function for the chunks and is defined in appendix \ref{sec:erasurecoding}.
+
+Validators are incentivized to distribute each work-package chunk to each other validator, since they are not paid for guaranteeing unless a work-report is considered to be \emph{available}. Given our work-package $\mathbf{p}$, we should therefore send chunk $\mathcal{C}(\se(\mathbf{p}))_v$ to each validator whose keys are $\kappa_v$. In the case of a coming epoch change, they may also maximize expected reward by distributing to the new validator set (and thus also send the chunk to $(\gamma_\mathbf{k})_v$).
+
+We will see this function utilized in the next sections, for guaranteeing, auditing and judging.
+
+\subsection{Guaranteeing}\label{sec:guaranteeing}
+
+Guaranteeing work-packages involves the creation and distribution of a corresponding \emph{work-report} which requires certain conditions to be met. Along with the report, a signature demonstrating the validator's commitment to its correctness is needed. With two guarantor signatures, the work-report may be distributed to the forthcoming \Jam chain block author in order to be used in the $\mathbf{E}_G$, which leads to a reward for the guarantors.
+
+We presume that in a public system, validators will be punished severely if they malfunction and commit to a report which does not faithfully represent the result of $\Xi$ applied on a work-package. Overall, the process is:
+
+\begin{enumerate}
+    \item Evaluation of the work-package's authorization, and cross-referencing against the authorization pool in the most recent \Jam chain state.
+    \item Chunking of the work-package report according to the erasure codec.
+    \item Creation and publication of a work-package report.
+    \item Distributing the chunks and package as needed to other nodes.
+\end{enumerate}
+
+For any work-package $\mathbf{p}$ we are in receipt of, we may determine the work result, if any, it corresponds to for the core $c$ that we are assigned to. When \Jam chain state is needed, we always utilize the chain state of the most recent block.
+
+For any guarantor of index $v$ assigned to core $c$ and a work-package $\mathbf{p}$, we define the work result $\mathbf{r}$ simply as:
+\begin{equation}
+  \mathbf{r} = \Xi(\mathbf{p}, c)
+\end{equation}
+
+Such guarantors may safely create and distribute the payload $(s, v)$. The component $s$ may be created according to equation \ref{eq:guarantorsig}; specifically it is a signature using the validator's registered Ed25519 key on a payload $l$:
+\begin{equation}
+  l = \mathcal{H}(c, \mathbf{r})
+\end{equation}
+
+To maximize profit, the guarantor should require the work result meets all expectations which are in place during the guarantee extrinsic described in section \ref{sec:workreportguarantees}. This includes contextual validity, inclusion of the authorization in the authorization pool, and ensuring total gas is at most $\mathsf{G}_A$. No doing so does not result in punishment, but will prevent the block author from including the package and so reduces rewards.
+
+Advanced nodes may maximize the likelihood that their reports will be includable on-chain by attempting to predict the state of the chain at the time that the report will get to the block author. Naive nodes may simply use the current chain head when verifying the work-report. To minimize work done, nodes should make all such evaluations \emph{prior} to evaluating the $\Psi_R$ function to calculate the report's work results.
+
+Once evaluated as a reasonable work-package to guarantee, guarantors should maximize the chance that their work is not wasted by attempting to form consensus over the core. To achieve this they should send the work-package to any other guarantors on the same core which they do not believe already know of it.
+
+In order to minimize the work for block authors and thus maximize expected profits, guarantors should attempt to construct their core's next guarantee extrinsic from the work-report, core index and set of attestations including their own and as many others as possible.
+
+In order to minimize the chance of any block authors disregarding the guarantor for anti-spam measures, guarantors should sign an average of no more than two work-reports per timeslot.
+
+\subsection{Availability Assurance}\label{sec:assurance}
+
+Validators should issue signed statements, called \emph{assurances}, when they are in possession of their corresponding erasure-coding chunk of the work-package for any corresponding work-reports which are currently pending availability.
+
+The correct erasure-coding chunk can be determined through a proof using the commitment to the work-package chunks Merkle root specified in the work-report.
+
+
+
+\subsection{Auditing and Judging}\label{sec:auditing}
+
+The auditing and judging system is theoretically equivalent to that in \textsc{Elves}, introduced by \cite{stewart2018efficient}. For a full security analysis of the mechanism, see this work. The main differences are in terminology, whereby the terms \emph{backing} and \emph{approval} there refer to our guaranteeing and auditing, respectively.
+
+\subsubsection{Overview}
+
+The auditing process involves each node requiring themselves to fetch, evaluate and issue judgement on a random but deterministic set of work-reports from each \Jam chain block in which the work-report becomes available (\ie from $\mathbf{R}$). Prior to any evaluation, a node declares and proves its requirement. At specific common junctures in time thereafter the set of work-reports which a node requires itself to evaluate from each block's $\mathbf{R}$ may be enlarged if any declared intentions are not matched by a positive judgement in a reasonable time or in the event of a negative judgement being seen. These enlargement events are called tranches.
+
+If all declared intentions for a work-report are matched by a positive judgement at any given juncture, then the work-report is considered \emph{audited}. Once all of any given block's newly available work-reports are audited, then we consider the block to be \emph{audited}. One prerequisite of a node finalizing a block is for it to view the block as audited. Note that while there will be eventual consensus on whether a block is audited, there may not be consensus at the time that the block gets finalized. This does not affect the crypto-economic guarantees of this system.
+
+In regular operation, no negative judgements will ultimately be found for a work-report, and there will be no direct consequences of the auditing stage. In the unlikely event that a negative judgement is found, then one of several things happens; if there are still more than $\nicefrac{2}{3}\mathsf{V}$ positive judgements, then validators issuing negative judgements may receive a punishment for time-wasting. If there are greater than $\nicefrac{1}{3}\mathsf{V}$ negative judgements, then the block which includes the work-report is ban-listed. It and all its descendants are disregarded and may not be built on. In all cases, once there are enough votes, a judgement extrinsic can be constructed by a block author and placed on-chain to denote the outcome. See section \ref{sec:judgements} for details on this.
+
+All announcements and judgements are published to all validators along with metadata describing the signed material. On receipt of sure data, validators are expected to update their perspective accordingly (later defined as $J$ and $A$).
+
+\subsubsection{Auditing Specifics}
+
+Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth now consider ourselves a specific validator of index $v$ and assume ourselves focused on some block $\mathbf{B}$ with other terms corresponding, so $\sigma'$ is said block's posterior state, $\mathbf{H}$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
+
+We define the sequence of work-reports which we may be required to audit as $\mathbf{Q}$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
+\begin{align}\label{eq:auditselection}
+  \mathbf{Q} &\in \seq{\mathbb{W}?}_\mathsf{C} \\
+  \mathbf{Q} &\equiv \left[\begin{rcases}
+    \rho[c]_w &\when \rho[c]_w \in \mathbf{R} \\
+    \none &\otherwise
+  \end{rcases} \,\middle\vert\,c \orderedin \N_\mathsf{C}\right]
+\end{align}
+
+We define our initial audit tranche in terms of a verifiable random quantity $s_0$ created specifically for it:
+\begin{align}
+  s_0 &\in \bandersig{\kappa[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}}{[]} \\
+  \mathsf{X}_U &= \token{\$jam\_audit}
+\end{align}
+
+We may then define $\mathbf{a}_0$ as the non-empty items to audit through a verifiably random selection of ten cores:
+\begin{align}
+  \mathbf{a}_0 &= \{\tup{c, w} \mid \tup{c, w} \in \mathbf{p}_{\dots+10}, w \ne \none\} \\
+  \where \mathbf{p} &= \mathcal{F}([\tup{c, \mathbf{Q}_c} \mid c \in \N_\mathsf{C}], r) \\
+  \also r &= \banderout{s_0}
+\end{align}
+
+Every $\mathsf{A} = 8$ seconds following a new time slot, a new tranche begins, and we may determine that additional cores warrant an audit from us. Such items are defined as $\mathbf{a}_n$ where $n$ is the current tranche. Formally:
+\begin{equation}
+  \using n = \ffrac{\mathcal{T} - \mathsf{P}\cdot\tau'}{\mathsf{A}}
+\end{equation}
+
+New tranches may contain items from $\mathbf{Q}$ stemming from one of two reasons: either a negative judgement has been received; or the number of judgements from the previous tranche is less than the number of announcements from said tranche. In the first case, the validator is always required to issue a judgement on the work-report. In the second case, a new special-purpose \textsc{vrf} must be constructed to determine if an audit and judgement is warranted from us.
+
+In all cases, we publish a signed statement of which of the cores we believe we are required to audit (an \emph{announcement}) together with evidence of the \textsc{vrf} signature to select them and the other validators' announcements from the previous tranche unmatched with a judgement in order that all other validators are capable of verifying the announcement. \emph{Publication of an announcement should be taken as a contract to complete the audit regardless of any future information.}
+
+Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $s_n$ and all signed data. Validator's announcement statements must be in the set:
+\begin{align}
+  &\sig{\kappa[v]_e}{\mathsf{X}_I \doubleplus n \concat \se([\se_2(c) \frown \mathbf{H}(w) \mid \tup{c, w} \in \mathbf{a}_0])} \\
+  &\mathsf{X}_I = \token{\$jam\_announce}
+\end{align}
+
+We define $A_n$ as our perception of which validator is required to audit each of the work-reports (identified by their associated core) at tranche $n$. This comes from each other validators' announcements (defined above). It cannot be correctly evaluated until $n$ is current. We have absolute knowledge about our own audit requirements.
+\begin{align}
+  A_n: \mathbb{W} &\to \wp(\N_\mathsf{V}) \\
+  \forall (c, w) &\in \mathbf{a}_0 : v \in q_0(w)
+\end{align}
+
+We further define $J_\top$ and $J_\bot$ to be the validator indices who we know to have made respectively, positive and negative, judgements mapped from each work-report's core. We don't care from which tranche a judgement is made.
+\begin{align}
+  J_{\{\bot, \top\}}: \mathbb{W} \to \wp(\N_\mathsf{V})
+\end{align}
+
+We are able to define $\mathbf{a}_n$ for tranches beyond the first on the basis of the number of validators who we know are required to conduct an audit yet from whom we have not yet seen a judgement. It is possible that the late arrival of information alters $\mathbf{a}_n$ and nodes should reevaluate and act accordingly should this happen.
+
+We can thus define $\mathbf{a}_n$ beyond the initial tranche through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
+\begin{align}
+  \nonumber&\!\!\!\!\!\!\!\!\forall n > 0:\\
+  &\ s_n(w) \in \bandersig{\kappa[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}\concat\mathcal{H}(w)\doubleplus n}{[]} \\
+  &\ \mathbf{a}_n \equiv \{ w \in \mathbf{Q} \mid \textstyle\frac{\mathsf{F}}{256\mathsf{V}}\banderout{s_n(w)}_0 < |A_{n - 1}(w) \setminus J_\top(w)| \}\!\!\!\!
+\end{align}
+
+We define our bias factor $\mathsf{F} = 2$, which is the expected number of validators which will be required to issue a judgement for a work-report given a single no-show in the tranche before. Modeling by \cite{stewart2018efficient} shows that this is optimal.
+
+Later audits must be announced in a similar fashion to the first. If audit requirements lesson on the receipt of new information (\ie a positive judgement being returned for a previous \emph{no-show}), then any audits already announced are completed and judgements published. If audit requirements raise on the receipt of new information (\ie an additional announcement being found without an accompanying judgement), then we announce the additional audit(s) we will undertake.
+
+As $n$ increases with the passage of time $\mathbf{a}_n$ becomes known and defines our auditing responsibilities. We must attempt to reconstruct all work-packages corresponding to each work-report we must audit. This may be done through requesting erasure-coded chunks from one-third of the validators. It may also be short-cutted through asking a third-party (\eg an original guarantor) for a reverse-hash lookup using the work-package hash in the work-report's package specification.
+
+Thus, for any such work-report $w$ we are assured we will be able to fetch some candidate work-package encoding $F(w)$ which comes either from reconstructing erasure-coded chunks verified through the erasure coding's Merkle root, or alternatively from the preimage of the work-package hash. We decode this candidate blob into a work-package and attempt to reproduce the report on the core to give $e_n$, a mapping from cores to evaluations: \vskip -7pt
+\begin{equation}
+  \begin{aligned}
+  %  \forall (c, w) \in \mathbf{a}_n \!: e_n(w) \!\Leftrightarrow\! \begin{cases}
+  %    w = \Xi(p, c)\!\!\!\!\! &\when \exists p \in \mathbb{P}: \se(p) = F(w) \\
+  %    \bot &\otherwise
+  %  \end{cases}
+    \forall (c, w) \in \mathbf{a}_n :\ \ &\\[-10pt]
+    e_n(w) \Leftrightarrow &\begin{cases}
+      w = \Xi(p, c)\!\!\! &\when \exists p \in \mathbb{P}: \se(p) = F(w) \\
+      \bot &\otherwise
+    \end{cases}
+  \end{aligned}\!\!
+\end{equation}
+
+Note that a failure to decode implies an invalid work-report.
+
+From this mapping the validator issues a set of judgements $\mathbf{j}_n$:
+\begin{align}
+  \mathbf{j}_n &= \{ \mathcal{S}_{\kappa[v]_e}(\mathsf{X}_{e(w)} \concat \mathcal{H}(w)) \mid (c, w) \in \mathbf{a}_n \}
+\end{align}
+
+%We denote the guarantors of a work-package $w$ as $\mathbf{G}(w)$ from a particular chain head, and this may be derived from the guarantees extrinsic $\mathbf{E}_G$ of the ancestor block which introduced the work-report. Our restrictions on the guarantees extrinsic (described in section \ref{sec:accumulation}) ensures that this is unique.
+%\begin{equation}
+%\begin{aligned}
+%    \mathbf{G}(w) &\equiv [ v \mid (s, v) \orderedin a ] \\
+%    \where (c, w, a) &\in \mathbf{E}_G \\
+%    (\mathbf{H}, \mathbf{E}) &\in \mathbf{A}
+%\end{aligned}
+%\end{equation}
+
+All judgements $\mathbf{j}_*$ should be published to other validators in order that they build their view of $J$ and in the case of a negative judgement arising, can form an extrinsic for $\mathbf{E}_J$.
+
+We consider a work-report as audited under two circumstances. Either, when it has no negative judgements and there exists some tranche in which we see a positive judgement from all validators who we believe are required to audit it; or when we see positive judgements for it from greater than two-thirds of the validator set.
+\begin{align}
+%  U(w) &\Leftrightarrow J_\bot(w) = \emptyset \wedge \exists n : A_n(w) \subset J_\top(w) \vee |J_\top(w)| > \nicefrac{2}{3}\mathsf{V}%\!\!\!\!\!\!\!\!\!\!\!\!\!\!
+  U(w) &\Leftrightarrow \bigvee\,\left\{\,\begin{aligned}
+      &J_\bot(w) = \emptyset \wedge \exists n : A_n(w) \subset J_\top(w) \\
+      &|J_\top(w)| > \nicefrac{2}{3}\mathsf{V}
+  \end{aligned}\right.
+\end{align}
+
+Our block $\mathbf{B}$ may be considered audited, a condition denoted $\mathbf{U}$, when all the work-reports which were made available are considered audited. Formally:
+\begin{align}
+  \mathbf{U} &\Leftrightarrow \forall w \in \mathbf{R} : U(w)
+\end{align}
+
+For any block we must judge it to be audited (\ie $\mathbf{U} = \top$) before we vote for the block to be finalized in \textsc{Grandpa}. See section \ref{sec:grandpa} for more information here.
+
+Furthermore, we pointedly disregard chains which include the accumulation of a report which we know at least $\nicefrac{1}{3}$ of validators judge as being invalid. Any chains including such a block are not eligible for authoring on. The \emph{best block}, \ie that on which we build new blocks, is defined as the chain with the most regular Safrole blocks which does \emph{not} contain any such disregarded block. Implementation-wise, this may require reversion to an earlier head or alternative fork.
+
+As a block author, we include a judgement extrinsic which collects judgement signatures together and reports them on-chain. In the case of a non-valid judgement (\ie one which is not two-thirds-plus-one of judgements confirming validity) then this extrinsic will be introduced in a block in which accumulation of the non-valid work-report is about to take place. The non-valid judgement extrinsic removes it from the pending work-reports, $\rho$. Refer to section \ref{sec:judgements} for more details on this.
+
+%Unselected work-reports may also be evaluated at a later stage if the node finds that auditing process does not complete adequately. Prior to evaluation of a report, the node announces its intention to audit along with a proof that the intention was derived honestly. Once fetched and evaluated, a judgement is published to all other validators.
+
+%At its foundation this sequence is a random selection of an average of ten reports from each block. It is, however, affected by its perspective on the announcements and judgements of other nodes.
+
+%If it does not see enough positive judgements on any given report, or it sees too many announcements with too few follow-up judgements, then it will eventually decide to conduct the audit itself.
+
+%If an honest validator sees a judgement that a report is invalid it will prioritize the verification of said report and avert finalization of its block until it verifies the report itself.
+
+\section{Beefy Distribution}\label{sec:beefy}
+
+For each finalized block $\mathbf{B}$ which a validator imports, said validator shall make a \textsc{bls} signature on the \textsc{bls}\oldstylenums{12}-\oldstylenums{381} curve, as defined by \cite{bls12-381}, affirming the Keccak hash of the block's most recent \textsc{Beefy} \textsc{mmr}. This should be published and distributed freely, along with the signed material. These signatures may be aggregated in order to provide concise proofs of finality to third-party systems. The signing and aggregation mechanism is defined fully by \cite{cryptoeprint:2022/1611}.
+
+Formally, let $\mathbf{F}_v$ be the signed commitment of validator index $v$ which will be published:
+\begin{align}\label{eq:beefysignedcommitment}
+  \mathbf{F}_v &\equiv \mathcal{S}_{\kappa_v}(\mathsf{X}_B\concat\mathcal{H}_K(\se_M(\text{last}(\beta)_\mathbf{b}]))\\
+  \mathsf{X}_B &= \token{\$jam\_beefy}
+\end{align}
+
+\section{Grandpa and the Best Chain}\label{sec:bestchain}\label{sec:grandpa}
+
+Nodes take part in the \textsc{Grandpa} protocol as defined by \cite{stewart2020grandpa}.
+
+\newcommand{\final}{\natural}
+\newcommand{\best}{\flat}
+
+We define the latest finalized block as $\mathbf{B}^\final$. All associated terms concerning block and state are similarly superscripted. We consider the \emph{best block}, $\mathbf{B}^\best$ to be that which is drawn from the set of acceptable blocks of the following criteria:
+
+\begin{itemize}
+  \item Has the finalized block as an ancestor.
+  \item Contains no unfinalized blocks where we see an equivocation (two valid blocks at the same timeslot).
+  \item Is considered audited.
+\end{itemize}
+
+Formally:
+\begin{align}
+  \mathbf{A}(\mathbf{H}^\best) &\owns \mathbf{H}^\final \\
+  \mathbf{U}^\best &\equiv \top \\
+  \not\exists \mathbf{H}^A, \mathbf{H}^B &: \bigwedge \left\{\,\begin{aligned}
+    \mathbf{H}^A &\ne \mathbf{H}^B \\
+    \mathbf{H}^A_T &= \mathbf{H}^B_T \\
+    \mathbf{H}^A &\in \mathbf{A}(\mathbf{H}^\best) \\
+    \mathbf{H}^A &\not\in \mathbf{A}(\mathbf{H}^\final)
+  \end{aligned}\right.
+\end{align}
+
+Of these acceptable blocks, that which contains the most ancestor blocks whose author used a seal-key ticket, rather than a fallback key should be selected as the best head, and thus the chain on which the participant should make \textsc{Grandpa} votes.
+
+Formally, we aim to select $\mathbf{B}^\best$ to maximize the value $m$ where:
+\begin{equation}
+  m = \sum_{\mathbf{H}^A \in \mathbf{A}^\best} \mathbf{T}^A
+\end{equation}
+
+\section{Ratings and Rewards}\label{sec:ratings}
+
+The \Jam chain does not explicitly issue rewards---we leave this as a job to be done by the staking subsystem (a system parachain---hosted without fees---in the current imagining of a public \Jam network). However, much as with validator punishment information, it is important for the \Jam chain to facilitate the arrival of performance information in to the staking subsystem so that it may be acted upon.
+
+Such performance information cannot directly cover all aspects of validator activity; whereas block production, guarantor reports and availability assurance can easily be tracked on-chain, \textsc{Grandpa}, \textsc{Beefy} and auditing activity cannot. In the latter case, this is instead tracked with validator voting activity: validators vote on their impression of each other's efforts and a median may be accepted as the truth for any given validator. With an assumption of 50\% honest validators, this gives an adequate means of oraclizing this information.
+
+%TODO: Al do we need to count this stuff explicitly per epoch? Any feedback required for Coretime?

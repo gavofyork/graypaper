@@ -1,0 +1,151 @@
+\section{Service Accounts}\label{sec:accounts}
+
+As we already noted, a service in \Jam is somewhat analogous to a smart contract in Ethereum in that it includes amongst other items, a code component, a storage component and a balance. Unlike Ethereum, the code is split over two isolated entry-points each with their own environmental conditions; one, \emph{refinement}, is essentially stateless and happens in-core, and the other, \emph{accumulation}, which is stateful and happens on-chain. It is the latter which we will concern ourselves with now.
+
+Service accounts are held in state under $\delta$, a partial mapping from a service identifier $\N_S$ into a tuple of named elements which specify the attributes of the service relevant to the \Jam protocol. Formally:
+\begin{align}\label{eq:serviceaccounts}
+  \N_S &\equiv \N_{2^{32}} \\
+  \delta &\in \dict{\N_S}{\mathbb{A}}
+\end{align}
+
+The service account is defined as the tuple of storage dictionary $\mathbf{s}$, preimage lookup dictionaries $\mathbf{p}$ and $\mathbf{l}$, code hash $c$, and balance $b$ as well as the two code gas limits $g$ \& $m$. Formally:
+\begin{align}\label{eq:serviceaccount}
+  \mathbb{A} \equiv \ltuple\ \begin{aligned}
+  \mathbf{s} &\in \dict{\H}{\Y}\ ,\qquad \mathbf{p} \in \dict{\H}{\Y}\ ,\\
+  \mathbf{l} &\in \dict{\ltuple\H\ts\N_L\rtuple}{[\N_T]_{:3}}\ ,\\
+  c &\in \H\ ,\quad b \in \N_B\ ,\quad  g \in \Z_G\ ,\quad m \in \Z_G
+\end{aligned}\,\rtuple
+\end{align}
+
+Thus, the balance of the service of index $s$ would be denoted $\delta[s]_b$ and the storage item of key $k \in \H$ for that service is written $\delta[s]_\mathbf{s}[k]$.
+
+
+
+
+
+
+
+
+\subsection{Code and Gas}
+
+The code $c$ of a service account is represented by a hash which, if the service is to be functional, must be present within its preimage lookup (see section \ref{sec:lookups}). We thus define the actual code $\mathbf{c}$:
+\begin{align}
+  \forall \mathbf{a} \in \mathbb{A} : \mathbf{a}_\mathbf{c} \equiv \begin{cases}
+    \mathbf{a}_\mathbf{p}[\mathbf{a}_c] &\when \mathbf{a}_c \in \mathbf{a}_\mathbf{p} \\
+    \none &\otherwise
+  \end{cases}
+\end{align}
+
+There are three entry-points in the code:
+\begin{description}
+  \item[0 \texttt{refine}]Refinement, executed in-core and stateless.\footnote{Technically there is some small assumption of state, namely that some modestly recent instance of each service's preimages. The specifics of this are discussed in section \ref{sec:packagesanditems}.}
+  \item[1 \texttt{accumulate}] Accumulation, executed on-chain and stateful.
+  \item[2 \texttt{on\_transfer}] Transfer handler, executed on-chain and stateful.
+\end{description}
+
+Whereas the first, executing in-core, is described in more detail in section \ref{sec:packagesanditems}, the latter two are defined in the present section.
+
+As stated in appendix \ref{sec:virtualmachine}, execution time in the \Jam virtual machine is measured deterministically in units of \emph{gas}, represented as a 64-bit integer formally denoted $\Z_G$. There are two limits specified in the account, $g$, the minimum gas required in order to execute the \emph{Accumulate} entry-point of the service's code, and $m$, the minimum required for the \emph{On Transfer} entry-point.
+
+
+
+
+
+
+
+
+
+
+\subsection{Preimage Lookups}\label{sec:lookups}
+
+In addition to storing data in arbitrary key/value pairs available only on-chain, an account may also solicit data to be made available also in-core, and thus available to the Refine logic of the service's code. State concerning this facility is held under the service's $\mathbf{p}$ and $\mathbf{l}$ components.
+
+There are several differences between preimage-lookups and storage. Firstly, preimage-lookups act as a mapping from a hash to its preimage, whereas general storage maps arbitrary keys to values. Secondly, preimage data is supplied extrinsically, whereas storage data originates as part of the service's accumulation. Thirdly preimage data, once supplied, may not be removed freely; instead it goes through a process of being marked as unavailable, and only after a period of time may it be removed from state. This ensures that historical information on its existence is retained. The final point especially is important since preimage data is designed to be queried in-core, under the Refine logic of the service's code, and thus it is important that the historical availability of the preimage is known.
+
+We begin by reformulating the portion of state concerning our data-lookup system. The purpose of this system is to provide a means of storing static data on-chain such that it may later be made available within the execution of any service code as a function accepting only the hash of the data and its length in octets.
+
+During the on-chain execution of the \emph{Accumulate} function, this is trivial to achieve since there is inherently a state which all validators verifying the block necessarily have complete knowledge of, \ie $\sigma$. However, for the in-core execution of \emph{Refine}, there is no such state inherently available to all validators; we thus name a historical state, the \emph{lookup anchor} which must be considered recently finalized before the work result may be accumulated hence providing this guarantee.
+
+By retaining historical information on its availability, we become confident that any validator with a recently finalized view of the chain is able to determine whether any given preimage was available at any time within the period where auditing may occur. This ensures confidence that judgements will be deterministic even without consensus on chain state.
+
+Restated, we must be able to define some \emph{historical} lookup function $\Lambda$ which determines whether the preimage of some hash $h$ was available for lookup by some service account $\mathbf{a}$ at some timeslot $t$, and if so, provide its preimage:
+\begin{equation}
+\begin{aligned}
+  \Lambda\colon \left\{\ \begin{aligned}
+    (\mathbb{A}, \N_{\mathbf{H}_t - C_D\dots\mathbf{H}_t}, \mathbb{H}) &\to \mathbb{Y}\bm{?} \\
+    (\mathbf{a}, t, \mathcal{H}(\mathbf{p})) &\mapsto v : v \in \{ \mathbf{p}, \none \}
+  \end{aligned}\right.
+\end{aligned}
+\end{equation}
+
+This function is defined shortly below in equation \ref{eq:historicallookup}.
+
+The preimage lookup for some service of index $s$ is denoted $\delta[s]_\mathbf{p}$ is a dictionary mapping a hash to its corresponding preimage. Additionally, there is metadata associated with the lookup denoted $\delta[s]_\mathbf{l}$ which is a dictionary mapping some hash and presupposed length into historical information.
+
+\subsubsection{Invariants}
+
+The state of the lookup system naturally satisfies a number of invariants. Firstly, any preimage value must correspond to its hash, equation \ref{eq:preimageconstraints}. Secondly, a preimage value being in state implies that its hash and length pair has some associated status, also in equation \ref{eq:preimageconstraints}. Formally:
+\begin{equation}\label{eq:preimageconstraints}
+  \forall a \in \mathbb{A}, (h \mapsto \mathbf{p}) \in a_\mathbf{p} \Rightarrow
+    h = \mathcal{H}(\mathbf{p})\wedge
+    \tup{h \ts |\mathbf{p}|} \in \keys{a_\mathbf{l}}
+\end{equation}
+
+\subsubsection{Semantics}
+
+The historical status component $h \in [\N_T]_{:3}$ is a sequence of up to three time slots and the cardinality of this sequence implies one of four modes:
+\begin{itemize}
+  \item{$h = []$}: The preimage is \emph{requested}, but has not yet been supplied.
+  \item{$h \in \seq{\N_T}_1$}: The preimage is \emph{available} and has been from time $h_0$.
+  \item{$h \in \seq{\N_T}_2$}: The previously available preimage is now \emph{unavailable} since time $h_1$. It had been available from time $h_0$.
+  \item{$h \in \seq{\N_T}_3$}: The preimage is \emph{available} and has been from time $h_2$. It had previously been available from time $h_0$ until time $h_1$.
+\end{itemize}
+
+The historical lookup function $\Lambda$ may now be defined as:
+\begin{equation}
+  \begin{aligned}\label{eq:historicallookup}
+    &\Lambda\colon (\mathbb{A}, \N_T, \H) \to \Y\bm{?} \\
+    &\Lambda(\mathbf{a}, t, h) \equiv \begin{cases}
+      \mathbf{a}_\mathbf{p}[h]\!\!\!\! &\when h \in \keys{\mathbf{a}_\mathbf{p}} \wedge I(\mathbf{a}_\mathbf{l}[h, |\mathbf{a}_\mathbf{p}[h]|], t) \!\!\!\!\! \\
+      \none &\otherwise
+    \end{cases}\\
+    &\where I(\mathbf{l}, t) = \begin{cases}
+      \bot &\when [] = \mathbf{l} \\
+      x \le t &\when [x] = \mathbf{l} \\
+      x \le t < y &\when [x, y] = \mathbf{l} \\
+      x \le t < y \vee z \le t &\when [x, y, z] = \mathbf{l} \\
+    \end{cases}
+  \end{aligned}
+\end{equation}
+
+
+
+
+
+
+
+\subsection{Account Footprint and Threshold Balance}
+
+We define the dependent values $i$ and $l$ as the storage footprint of the service, specifically the number of items in storage and the total number of octets used in storage. They are defined purely in terms of the storage map of a service, and it must be assumed that whenever a service's storage is changed, these change also.
+
+Furthermore, as we will see in the account serialization function in section \ref{sec:serialization}, these are expected to be found explicitly within the Merklized state data. Because of this we make explicit their set.
+
+We may then define a second dependent term $t$, the minimum, or \emph{threshold}, balance needed for any given service account in terms of its storage footprint.
+\begin{align}
+  \forall a \in \mathcal{V}(\delta):\ \begin{cases}
+    a_i \in \N_{2^{32}} &\equiv 2\cdot|\,a_\mathbf{l}\,| + |\,a_\mathbf{s}\,| \\
+    a_l \in \N_{2^{64}} &\equiv \sum\limits_{\,(h, z) \in \keys{a_\mathbf{l}}\,} 81 + z \\
+    &\phantom{\equiv} + \sum\limits_{x \in \mathcal{V}(a_\mathbf{s})} 32 + |x| \\
+    a_t \in \N_B &\equiv \mathsf{B}_S + \mathsf{B}_I \cdot a_i + \mathsf{B}_L \cdot a_l
+  \end{cases}
+\end{align}
+
+
+
+
+
+\subsection{Service Privileges}
+Up to three services may be recognized as privileged. The portion of state in which this is held is denoted $\chi$ and has three components, each a service index. $m$ is the index of the \emph{manager} service, the service able to effect an alteration of $\chi$ from block to block. $a$ and $v$ are each the indices of services able to alter $\varphi$ and $\iota$ from block to block. Formally:
+\begin{align}
+  \chi \equiv \ltuple\isa{\chi_m}{\N_S}\ts\isa{\chi_a}{\N_S}\ts\isa{\chi_v}{\N_S}\rtuple
+\end{align}

@@ -1,0 +1,736 @@
+
+\section{Virtual Machine Invocations}\label{sec:virtualmachineinvocations}
+
+\newcommand*{\pvm}{\mathbf{M}}
+
+\subsection{Host-Call Result Constants}
+
+\begin{description}
+  \item[$\mathtt{NONE} = 2^{32} - 1$] The return value indicating an item does not exist.
+  \item[$\mathtt{OOB} = 2^{32} - 2$] The return value for when a memory index is provided for reading/writing which is not accessible.
+  \item[$\mathtt{WHO} = 2^{32} - 3$] Index unknown.
+  \item[$\mathtt{FULL} = 2^{32} - 4$] Storage full.
+  \item[$\mathtt{CORE} = 2^{32} - 5$] Core index unknown.
+  \item[$\mathtt{CASH} = 2^{32} - 6$] Insufficient funds.
+  \item[$\mathtt{LOW} = 2^{32} - 7$] Gas limit too low.
+  \item[$\mathtt{HIGH} = 2^{32} - 8$] Gas limit too high.
+  \item[$\mathtt{WHAT} = 2^{32} - 9$] Name unknown.
+  \item[$\mathtt{HUH} = 2^{32} - 10$] The item is already solicited or cannot be forgotten.
+  \item[$\mathtt{OK} = 0$] The return value indicating general success.
+\end{description}
+
+Inner \textsc{pvm} invocations have their own set of result codes:
+\begin{description}
+  \item[$\mathtt{HALT} = 0$] The invocation completed and halted normally.
+  \item[$\mathtt{PANIC} = 2^{32} - 12$] The invocation completed with a panic.
+  \item[$\mathtt{FAULT} = 2^{32} - 13$] The invocation completed with a page fault.
+  \item[$\mathtt{HOST} = 2^{32} - 14$] The invocation completed with a host-call fault.
+\end{description}
+
+Note return codes for a host-call-request exit are any non-zero value less than $2^{32} - 13$.
+
+\subsection{Is-Authorized Invocation}\label{sec:isauthorizedinvocation}
+
+The Is-Authorized invocation is the first and simplest of the four, being totally stateless. It provides only a single host-call function, $\Omega_G$ for determining the amount of gas remaining. It accepts as arguments the work-package as a whole, $\mathbf{p}$ and the core on which it should be executed, $c$. Formally, it is defined as $\Psi_I$:
+
+\begin{align}
+  \Psi_I &\colon \left\{\begin{aligned}
+    (\mathbb{P}, \N_C) &\to \Y \cup \mathbb{J} \\
+    (\mathbf{p}, c) &\mapsto \begin{cases}
+      \mathbf{r} &\otherwhen \mathbf{r} \in \{ \oog, \panic \}  \\
+      \mathbf{o} &\otherwhen \mathbf{r} = \tup{g, \mathbf{o}} \\
+      \multicolumn{2}{l}{\quad\where (\mathbf{r}, \none) = \Psi_M(\mathbf{p}_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(p, c), F, \none)}
+    \end{cases} \\
+  \end{aligned}\right. \\
+  \label{eq:isauthorizedmutator}F&\colon\left\{\begin{aligned}
+    (\Y_\$, \N_G, \lseq\N_R\rseq_6, \mathbb{M}) &\to (\Z_G, \lseq\N_R\rseq_2, \mathbb{M})\\
+    (\mathbf{n}, \xi, \omega, \mu) &\mapsto \begin{cases}
+      \Omega_G(\xi, \omega, \mu) &\when\mathbf{n} = \mathtt{\$gas} \\
+      (\xi - 10, [\mathtt{WHAT}, \omega_1, \dots], \mu) &\otherwise
+    \end{cases}
+  \end{aligned}
+  \right.
+\end{align}
+Note for the Is-Authorized host-call dispatch function $F$ in equation \ref{eq:isauthorizedmutator}, we elide the host-call context since, being essentially stateless, it is always $\none$.
+
+\subsection{Refine Invocation}\label{sec:refineinvocation}
+
+We define the Refine service-account invocation function as $\Psi_R$. It is stateless, with the only exceptions being the ability to make a historical lookup and the ability to create inner instances of the \textsc{pvm}.
+
+The historical-lookup host-call function, $\Omega_H$, is designed to give the same result regardless of the state of the chain for any time when auditing may occur (which we bound to be less than two epochs from being accumulated). However, the lookup anchor may be up to $\mathsf{L}$ timeslots before the recent history and therefore adds to the potential age at the time of audit. We therefore set $\mathsf{D} = 28,800$, a safe amount of 48 hours.
+
+The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $pvm$. It holds some program code, instruction counter and \textsc{ram}:
+\begin{equation}
+  \pvm \equiv \tuple{\isa{\mathbf{p}}{\Y}, \isa{\mathbf{u}}{\ram}, \isa{i}{\N_R}}
+\end{equation}
+
+The Refine invocation function implicitly draws upon some recent head state $\delta$ and explicitly accepts the work payload, $\mathbf{y}$ together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{x}$ and the authorizer hash $a$ together with its output $\mathbf{o}$. It results in either some error $\mathbb{J}$ or some refinement output blob. Formally:
+\begin{align}
+  \Psi_R &\colon \left\{\begin{aligned}
+    % TODO: Check this
+    (\H, \N_G, \N_S, \H, \Y, \mathbb{X}, \H, \Y) &\to \Y \cup \mathbb{J} \\
+    (c, g, s, p, \mathbf{y}, \mathbf{x}, a, \mathbf{o}) &\mapsto \begin{cases}
+      \token{BAD} &\when s \not\in \keys{\delta} \vee H(\delta[s], \mathbf{x}_t, c) = \none \\
+      \token{BIG} &\otherwhen |H(\delta[s], \mathbf{x}_t, c)| > \mathsf{S} \\
+      &\otherwise\ \using (\mathbf{r}, \none) = \Psi_M(H(\delta[s], \mathbf{x}_t, c), 1, g, \mathcal{E}(s, p, \mathbf{y}, \mathbf{x}, a, \mathbf{o}), F, \emptyset)\colon\\
+      \mathbf{r} &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
+      \mathbf{u} &\quad\when \mathbf{r} = \tup{g, \mathbf{u}} \\
+    \end{cases} \\
+  \end{aligned}\right. \\
+  \label{eq:refinemutator}
+  F&\colon\left\{\begin{aligned}
+    (\Y_\$, \N_G, \lseq\N_R\rseq_6, \mathbb{M}, \dict{\N}{\pvm}) &\to (\N_G, \lseq\N_R\rseq_2, \mathbb{M}, \dict{\N}{\pvm})\\
+    (\mathbf{n}, \xi, \omega, \mu, \mathbf{m}) &\mapsto \begin{cases}
+      \Omega_H(\xi, \omega, \mu, \mathbf{m}, s, \delta, \mathbf{x}_t) &\when\mathbf{n} = \mathtt{\$lookup}\\
+      \Omega_G(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$gas} \\
+      \Omega_M(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$machine}\\
+      \Omega_P(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$peek}\\
+      \Omega_O(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$poke}\\
+      \Omega_K(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$invoke}\\
+      \Omega_X(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$expunge}\\
+      (\xi - 10, [\mathtt{WHAT}, \omega_1, \dots], \mu) &\otherwise
+    \end{cases}
+  \end{aligned}
+  \right.
+\end{align}
+
+Note for the Refine host-call dispatcher $F$ in equation \ref{eq:refinemutator}, we elide the host-call context since, being essentially stateless, it is always $\none$.
+
+\subsection{Accumulate Invocation}\label{sec:accumulateinvocation}
+
+Since this is a transition which can directly affect a substantial amount of on-chain state, our invocation context is accordingly complex. It is a tuple with elements for each of the aspects of state which can be altered through this invocation and beyond the account of the service itself includes the deferred transfer list and several dictionaries for alterations to preimage lookup state, core assignments, validator key assignments, newly created accounts and alterations to account privilege levels.
+
+Formally, we define our result context to be $\mathbf{X}$, and our invocation context to be a pair of these contexts, $\mathbf{X} \times \mathbf{X}$, with one dimension being the regular dimension and generally named $\mathbf{x}$ and the other being the exceptional dimension and being named $\mathbf{y}$. The only function which actually alters this second dimension is $\mathtt{checkpoint}$, $\Omega_C$ and so it is rarely seen.
+
+We track both regular and exceptional dimensions within our context mutator, but collapse the result of the invocation to one or the other depending on whether the termination was regular or exceptional (\ie out-of-gas or panic).
+\begin{equation}
+  \mathbf{X} \equiv \ltuple\begin{array}{lll}
+    \isa{\mathbf{s}}{\mathbb{A}\bm{?}}\ts&
+    \isa{\mathbf{c}}{[\left[\H\right]_\mathsf{Q}]_\mathsf{C}}\ts&
+    \isa{\mathbf{v}}{\mathbb{K}_\mathsf{V}}\ts\quad
+    \isa{i}{\N_S}\ts\\
+    \isa{\mathbf{t}}{\left[\mathbb{T}\right]}\ts&
+    \isa{\mathbf{n}}{\dict{\N_S}{\mathbb{A}}}\ts&
+    \isa{p}{\tuple{\isa{m}{\N_S}\ts\isa{a}{\N_S}\ts\isa{v}{\N_S}}}
+  \end{array}\rtuple
+\end{equation}
+
+We define $\Psi_A$, the Accumulation invocation function as:
+\begin{align}
+  \Psi_A &:
+  \begin{cases}
+    \left(
+        \dict{\N_S}{\mathbb{A}},\N_S,\N_G,\lseq\mathbb{O}\rseq
+    \right)
+    &\to
+    \mathbf{X} \times \tuple{\isa{r}{\H?}}\\
+    (\delta^\dagger, s, g, \mathbf{o}) &\mapsto \begin{cases}
+      \delta^\dagger[s] &\when \delta^\dagger[s]_\mathbf{c} = \none \vee \mathbf{o} = [] \\
+      C(\Psi_M(\delta^\dagger[s]_\mathbf{c}, 2, g, \mathcal{E}(\mathbf{o}), F, I(\delta^\dagger[s], s))) &\otherwise
+    \end{cases} \\
+  \end{cases}
+\end{align}
+\begin{align}
+  I(\mathbf{a} \in \mathbb{A}, s \in \N_S) &\equiv (\mathbf{x}, \mathbf{y}) \text{ where }
+  \left\{ \begin{aligned}
+    \mathbf{x} &= \mathbf{y} = \tup{\is{\mathbf{s}}{\mathbf{a}}\ts\is{\mathbf{t}}{[]}\ts i\ts\is{p}{\chi}\ts\is{\mathbf{c}}{\varphi}\ts\is{\mathbf{v}}{\iota}\ts\is{\mathbf{n}}{\emptyset}}\ ,\\
+    i &= \text{check}((\de_4(\mathcal{H}(s, \bm{\eta'}_0, \mathbf{H}_t)) \bmod (2^{32}-2^9)) + 2^8)
+  \end{aligned} \right. \\
+  F(\mathbf{n}, \xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\equiv \begin{cases}
+    G(\Omega_R(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$read} \\
+    G(\Omega_W(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}), (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$write} \\
+    G(\Omega_L(\xi, \omega, \mu, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$lookup} \\
+    G(\Omega_G(\xi, \omega, \mu), (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$gas} \\
+    G(\Omega_I(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$info} \\
+    \Omega_E(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$empower}\\
+    \Omega_A(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$assign}\\
+    \Omega_D(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$designate}\\
+    \Omega_C(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$checkpoint} \\
+    \Omega_N(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$new} \\
+    \Omega_U(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s) &\when\mathbf{n} = \mathtt{\$upgrade} \\
+    \Omega_T(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s, \delta^\dagger) &\when\mathbf{n} = \mathtt{\$transfer} \\
+    \Omega_Q(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s) &\when\mathbf{n} = \mathtt{\$quit} \\
+    \Omega_S(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when\mathbf{n} = \mathtt{\$solicit} \\
+    \Omega_F(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when\mathbf{n} = \mathtt{\$forget} \\
+    (\xi - 10, [\mathtt{WHAT}, \omega_1, \dots], \mu, \mathbf{x}) &\otherwise
+  \end{cases} \\
+  %TODO: Argument order should be consistent
+  G((\xi', \omega', \mu', \mathbf{s}'), (\mathbf{x}, \mathbf{y})) &\equiv (\xi', \omega', \mu', (\mathbf{x}, \mathbf{y}))\ \where \mathbf{x} = \mathbf{x}' \exc \mathbf{x}_\mathbf{s} = \mathbf{s}' \\
+  C((\mathbf{x}\in\mathbf{X}, \mathbf{y}\in\mathbf{X}), \mathbf{o} \in \mathbb{Y} \cup \{\oog, \panic\}) &\equiv \begin{cases}
+    \mathbf{x} \times \tup{\is{r}{\mathbf{o}}} & \when \mathbf{o} \in \mathbb{H} \\
+    \mathbf{x} \times \tup{\is{r}{\none}} & \when \mathbf{o} \in \mathbb{Y} \setminus \H \\
+    \mathbf{y} \times \tup{\is{r}{\none}} & \when \mathbf{o} \in \{\oog, \panic\} \\
+  \end{cases}
+\end{align}
+
+The mutator $F$ governs how this context will alter for any given parameterization, and the collapse function $C$ selects one of the two dimensions of context depending on whether the virtual machine's halt was regular or exceptional.
+
+The initializer function $I$ maps some service account $\mathbf{s}$ along with its index $s$ to yield a mutator context such that no alterations to state are implied (beyond those already inherent in $\mathbf{s}$) in either exit scenario. Note that the component $a$ utilizes the random accumulator $\eta_0$ and the block's timeslot $\mathbf{H}_t$ to create a deterministic sequence of identifiers which are extremely likely to be unique.
+
+Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\eta_0$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
+\begin{equation}
+  \text{check}(i \in \N_S) \equiv \begin{cases}
+    i &\when i \not\in \mathcal{K}(\delta^\dagger)\\
+    \text{check}((i - 2^8 + 1) \bmod (2^{32}-2^9) + 2^8)&\otherwise
+  \end{cases}
+\end{equation}
+
+\nb In the highly unlikely event that a block executes to find that a single service index has inadvertently been attached to two different services, then the block is considered invalid. Since no service can predict the identifier sequence ahead of time, they cannot intentionally disadvantage the block author.
+
+\subsection{On-Transfer Invocation}\label{sec:ontransferinvocation}
+
+We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
+\begin{align}
+  \Psi_T &: \begin{cases}
+    (\dict{\N_S}{\mathbb{A}}, \N_S, [\mathbb{T}]) &\to \mathbb{A} \\
+    (\delta^\ddagger, s, \mathbf{t}) &\mapsto \begin{cases}
+    \mathbf{s} &\when \mathbf{s}_\mathbf{c} = \none \vee \mathbf{t} = [] \\
+    \Psi_M(\mathbf{s}_\mathbf{c}, 3, \sum_{r \in \mathbf{t}}{(r_g)}, \mathcal{E}(\mathbf{t}), F, \mathbf{s}) &\otherwise
+    \end{cases} \\
+  \end{cases} \\
+  \where \mathbf{s} &= \delta^\ddagger[s]\exc\mathbf{s}_b = \delta^\ddagger[s]_b + \sum_{r \in \mathbf{t}}{r_a} \\
+  F(\mathbf{n}, \xi, \omega, \mu, \mathbf{s}) &\equiv \begin{cases}
+    \Omega_L(\xi, \omega, \mu, \mathbf{s}, s, \delta^\ddagger) &\when\mathbf{n} = \mathtt{\$lookup} \\
+    \Omega_R(\xi, \omega, \mu, \mathbf{s}, s, \delta^\ddagger) &\when\mathbf{n} = \mathtt{\$read} \\
+    \Omega_W(\xi, \omega, \mu, \mathbf{s}) &\when\mathbf{n} = \mathtt{\$write} \\
+    \Omega_G(\xi, \omega, \mu) &\when\mathbf{n} = \mathtt{\$gas} \\
+    \Omega_I(\xi, \omega, \mu, \mathbf{s}, s, \delta^\ddagger) &\when\mathbf{n} = \mathtt{\$info} \\
+    (\xi - 10, [\mathtt{WHAT}, \omega_1, \dots], \mu, \mathbf{s}) &\otherwise
+  \end{cases}
+\end{align}
+
+\nb When considering the mutator functions $\Omega_R$ and $\Omega_I$, the final arguments passed are both the post-accumulation accounts state, $\delta^\ddagger$. Within the function, this parameter however is denoted simply $\mathbf{d}$. This is intentional and avoids potential confusion since the functions are also utilized for the Accumulation Invocation where the argument is $\delta^\dagger$.
+
+
+
+
+
+
+
+\subsection{General Functions}\label{sec:generalfunctions}
+
+This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' \in [\N_R]_2, \mu', \mathbf{s}') = \Omega_\square(\xi \in \N_G, \omega \in [\N_R]_6, \mu \in \mathbb{M}, \mathbf{s} \in \mathbf{A}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+
+Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context, but merely a service account $\mathbf{s}$.
+
+The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an ellipsis to denote that any additional parameters may be taken and are provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
+
+\begin{align}
+  \xi' &\equiv \xi - g\\
+  (\omega', \mu', \mathbf{s}') &\equiv \begin{cases}
+    (\omega, \mu, \mathbf{s}) &\when \xi < g\\
+    (\omega, \mu, \mathbf{s}) \text{ except as indicated below} &\otherwise
+  \end{cases}
+\end{align}
+
+\aboverulesep = 1.5mm \belowrulesep = 2mm
+
+\begin{longtable}{p{3.5cm} p{12.5cm}}
+  \toprule
+  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
+  \thead{\textbf{Mutations}} \\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \endhead
+  \makecell*[l]{
+  $\Omega_L(\xi, \omega, \mu, \mathbf{s}, s, \mathbf{d})$ \\
+  \texttt{lookup} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using \mathbf{a} &= \begin{cases} \mathbf{s} &\when \omega_0 \in \{ s, 2^{32} - 1 \} \\ \mathbf{d}[\omega_0] &\otherwise \end{cases} \\
+    \using [h_o, b_o, b_z] &= \omega_{1..4} \\
+    \using h &= \begin{cases}
+      \mathcal{H}(\mu_{h_o\dots+32}) &\when \mathbb{Z}_{h_o \dots+ 32} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using \mathbf{v} &= \begin{cases}
+      \mathbf{a}_\mathbf{p}[h] &\when \mathbf{a} \ne \none \wedge h \in \keys{\mathbf{a}_\mathbf{p}} \\
+      \none &\otherwise
+    \end{cases} \\
+    \forall i \in \N_{\min(b_z, |\mathbf{v}|)} : \mu'_{b_o + i} &\equiv \begin{cases}
+      \mathbf{v}_i & \when \mathbf{v} \ne \none \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\mu} \\
+      \mu_{b_o + i} & \otherwise
+    \end{cases} \\
+    \omega'_0 &\equiv \begin{cases}
+      \begin{rcases}
+        \mathtt{NONE} & \when \mathbf{v} = \none \\
+        |\mathbf{v}| &\otherwise \\
+      \end{rcases} &\when k \ne \error \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\mu} \\
+      \mathtt{OOB} &\otherwise
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_R(\xi, \omega, \mu, \mathbf{s}, s, \mathbf{d})$ \\
+  \texttt{read} \\
+  $g = 10$} &
+  % gas cost for cold reads dependent on trie depth.
+  $\begin{aligned}
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{s} &\when \omega_0 \in \{ s, 2^{32} - 1 \} \\
+      \mathbf{d}[\omega_0] &\otherwhen \omega_0 \in \keys{\mathbf{d}} \\
+      \none &\otherwise
+    \end{cases} \\
+    \using [k_o, k_z, b_o, b_z] &= \omega_{1..5} \\
+    \using k &= \begin{cases}
+      \mathcal{H}(\se_4(s) \concat \mu_{k_o\dots+k_z}) &\when \mathbb{Z}_{k_o \dots+ k_z} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using \mathbf{v} &= \begin{cases}
+      \mathbf{a}_\mathbf{s}[k] &\when \mathbf{a} \ne \none \wedge k \in \keys{\mathbf{a}_\mathbf{s}} \\
+      \none &\otherwise
+    \end{cases} \\
+    \forall i \in \N_{\min(b_z, |\mathbf{v}|)} : \mu'_{b_o + i} &\equiv \begin{cases}
+      \mathbf{v}_i & \when \mathbf{v} \ne \none \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\mu} \\
+      \mu_{b_o + i} & \otherwise
+    \end{cases} \\
+    \omega'_0 &\equiv \begin{cases}
+      \begin{rcases}
+        \mathtt{NONE} & \when \mathbf{v} = \none \\
+        |\mathbf{v}| &\otherwise \\
+      \end{rcases} &\when k \ne \error \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\mu} \\
+      \mathtt{OOB} &\otherwise
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_W(\xi, \omega, \mu, \mathbf{s})$ \\
+  \texttt{write} \\
+  $g = 10$
+  } &
+  $\begin{aligned}
+    \using [k_o, k_z, v_o, v_z] &= \omega_{0..4} \\
+    \using k &= \begin{cases}
+      \mathcal{H}(\se_4(s) \concat \mu_{k_o\dots+k_z}) &\when \mathbb{Z}_{k_o \dots+ k_z} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{s} \exc \begin{rcases}
+        \keys{\mathbf{a}_\mathbf{s}} = \keys{\mathbf{a}_\mathbf{s}} \setminus \{k\} & \when v_z = 0 \\
+        \mathbf{a}_\mathbf{s}[k] = \mu_{v_o\dots+v_z} &\otherwise \\
+      \end{rcases} &\when \mathbb{Z}_{v_o \dots+ v_z} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using l &= \begin{cases}
+      |\mathbf{s}_\mathbf{s}[k]| &\when k \in \keys{\mathbf{s}_\mathbf{s}} \\
+      \mathtt{NONE} &\otherwise
+    \end{cases} \\
+    (\omega'_0, \mathbf{s}') &\equiv \begin{cases}
+      (l, \mathbf{a}) &\when k \ne \error \wedge \mathbf{a} \ne \error \wedge \mathbf{a}_t \le \mathbf{a}_b\\
+      (\mathtt{FULL}, \mathbf{s}) &\when \mathbf{a}_t > \mathbf{a}_b \\
+      (\mathtt{OOB}, \mathbf{s}) &\otherwise
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_G(\xi, \omega, \dots)$ \\
+  \texttt{gas} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \omega'_0 &\equiv \xi' \bmod 2^{32} \\
+    \omega'_1 &\equiv \left\lfloor \xi' \div 2^{32}\right\rfloor
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_I(\xi, \omega, \mu, \mathbf{s}, s, \mathbf{d})$ \\
+  \texttt{info} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using \mathbf{t} &= \begin{cases} \mathbf{s} &\when \omega_0 \in \{s, 2^{32} - 1\} \\ (\mathbf{d} \cup \mathbf{x}_\mathbf{n})[\omega_0] &\otherwise \end{cases} \\
+    \using o &= \omega_1 \\
+    \using \mathbf{m} &= \begin{cases}
+      \mathcal{E}(\mathbf{t}_c, \mathbf{t}_b, \mathbf{t}_t, \mathbf{t}_g, \mathbf{t}_m, \mathbf{t}_l, \mathbf{t}_i) &\when \mathbf{t} \ne \none \\
+      \none &\otherwise
+    \end{cases} \\
+    \forall i \in \N_{|\mathbf{m}|} : \mu'_{o + i} &\equiv \begin{cases}
+      \mathbf{m}_i & \when \mathbf{m} \ne \none \wedge \mathbb{Z}_{o \dots+ |\mathbf{m}|} \subset \mathbb{V}^*_{\mu} \\
+      \mu_{b_o + i} & \otherwise
+    \end{cases} \\
+    \omega'_0 &\equiv \begin{cases}
+      \mathtt{OK} & \when \mathbf{m} \ne \none \wedge \mathbb{Z}_{o \dots+ |\mathbf{m}|} \subset \mathbb{V}^*_{\mu} \\
+      \mathtt{NONE} & \when \mathbf{m} = \none \\
+      \mathtt{OOB} & \otherwise \\
+    \end{cases}
+  \end{aligned}$ \\
+  \bottomrule
+\end{longtable}
+
+\subsection{Accumulate Functions}\label{sec:accumulatefunctions}
+
+This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' \in [\N_R]_2, \mu', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\xi \in \N_G, \omega \in [\N_R]_6, \mu \in \mathbb{M}, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+\begin{align}
+  \xi' &\equiv \xi - g\\
+  (\omega', \mu', \mathbf{x}', \mathbf{y}') &\equiv \begin{cases}
+    (\omega, \mu, \mathbf{x}, \mathbf{y}) &\when \xi < g\\
+    (\omega, \mu, \mathbf{x}, \mathbf{y}) \text{ except as indicated below} &\otherwise
+  \end{cases}
+\end{align}
+
+\begin{longtable}{p{3.5cm} p{12.5cm}}
+  \toprule
+  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
+  \thead{\textbf{Mutations}} \\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \endhead
+  \makecell*[l]{
+  $\Omega_E(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
+  \texttt{empower} \\
+  $g = 10$}&
+  $\begin{aligned}
+    (\mathbf{x}'_p)_m = \omega_0 \\
+    (\mathbf{x}'_p)_a = \omega_1 \\
+    (\mathbf{x}'_p)_v = \omega_2 \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_A(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
+  \texttt{assign} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using o &= \omega_1 \\
+    \using \mathbf{c} &= \begin{cases}
+      \left[\mu_{o + 32i \dots+ 32} \mid i \orderedin \N_\mathsf{Q}\right] &\when \mathbb{Z}_{o \dots+ 32\mathsf{Q}} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    (\omega'_0, \mathbf{x}') &= \begin{cases}
+      (\mathtt{OK}, \mathbf{x} \exc \mathbf{x}'_\mathbf{c}[\omega_0] = \mathbf{c}) &\when \omega_0 < \mathsf{C} \wedge \mathbf{c} \ne \error \\
+      (\mathtt{OOB}, \mathbf{x}) &\when \mathbf{c} = \error \\
+      (\mathtt{CORE}, \mathbf{x}) &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_D(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
+  \texttt{designate} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using o &= \omega_0 \\
+    \using \mathbf{v} &= \begin{cases}
+      \left[\mu_{o + 176i \dots+ 176} \mid i \orderedin \N_\mathsf{V}\right] &\when \mathbb{Z}_{o \dots+ 176\mathsf{V}} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    (\omega'_0, \mathbf{x}') &= \begin{cases}
+      (\mathtt{OK}, \mathbf{x} \exc \mathbf{x}'_\mathbf{v} = \mathbf{v}) &\when \mathbf{v} \ne \error \\
+      (\mathtt{OOB}, \mathbf{x}) &\otherwise
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_C(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
+  \texttt{checkpoint} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \mathbf{y'} &\equiv \mathbf{x} \\
+    \omega'_0 &\equiv \xi' \bmod 2^{32} \\
+    \omega'_1 &\equiv \left\lfloor \xi' \div 2^{32}\right\rfloor
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_N(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
+  \texttt{new} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [o, l, g_l, g_h, m_l, m_h] &= \omega_{0..6} \\
+    \using c &= \begin{cases}
+      \mu_{o\dots+32} &\when \N_{o\dots+32} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases}\\
+    \using g &= 2^{32}\cdot g_h + g_l \\
+    \using m &= 2^{32}\cdot m_h + m_l \\
+    \using \mathbf{a} \in \mathbb{A} \cup \{\error\} &= \begin{cases}
+      (c, \mathbf{s}: \{\}, \mathbf{l}: \{ (c, l) \mapsto [] \}, b: \mathbf{a}_t, g, m) &\when c \ne \error\\
+      \error &\otherwise
+    \end{cases} \\
+    \using b &= (\mathbf{x}_\mathbf{s})_b - \mathbf{a}_t \\
+    (\omega'_0, \mathbf{x}'_i, \mathbf{x}'_\mathbf{n}, (\mathbf{x}'_\mathbf{s})_b) &\equiv \begin{cases}
+      (\mathbf{x}_i, \text{check}(\text{bump}(\mathbf{x}_i)), \mathbf{x}_\mathbf{n} \cup \{ \mathbf{x}_i \mapsto \mathbf{a} \}, b) &\when \mathbf{a} \ne \error \wedge b \ge (\mathbf{x}_\mathbf{s})_t \\
+      (\mathtt{OOB}, \mathbf{x}_T) &\when c = \error \\
+      (\mathtt{CASH}, \mathbf{x}_T) &\otherwise
+    \end{cases} \\
+    \where \text{bump}(i \in \N_S) &= 2^8 + (i - 2^8 + 42) \bmod (2^{32} - 2^9)
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+    $\Omega_U(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s)$ \\
+    \texttt{upgrade} \\
+    $g = 10$
+  } &
+  $\begin{aligned}
+    \using [o, g_h, g_l, m_h, m_l] &= \omega_{0..5} \\
+    \using c &= \begin{cases}
+      \mu_{o\dots+32} &\when \N_{o \dots+ 32} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using g &= 2^{32}\cdot g_h + g_l \\
+    \using m &= 2^{32}\cdot m_h + m_l \\
+    (\omega'_0, \mathbf{x}'[s]_c, \mathbf{x}'[s]_g, \mathbf{x}'[s]_m) &\equiv \begin{cases}
+      (\mathtt{OK}, c, g, m) &\when c \ne \error\\
+      (\mathtt{OOB}, \mathbf{x}[s]_c, \mathbf{x}[s]_g, \mathbf{x}[s]_m) &\otherwise
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_T(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s, \delta)$ \\
+  \texttt{transfer} \\
+  $g = 10 + \omega_1 + 2^{32}\cdot\omega_2 $} &
+  $\begin{aligned}
+    \using (d, a_l, a_h, g_l, g_h, o) &= \omega_{0..6},  \\
+    \using a &= 2^{32}\cdot a_h + a_l \\
+    \using g &= 2^{32}\cdot g_h + g_l \\
+    \using \mathbf{t} \in \mathbb{T} \cup \{\error\} &= \begin{cases}
+      (s, d, a, m, g): m = \de(\mu_{o\dots+\mathsf{M}}) &\when \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using b &= (\mathbf{x}_\mathbf{s})_b - a \\
+    (\omega'_0, \mathbf{x}'_\mathbf{t}, (\mathbf{x}'_\mathbf{s})_b) &\equiv \begin{cases}
+      (\mathtt{OOB}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\when t = \error \\
+      (\mathtt{WHO}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen d \not \in \keys{\delta \cup \mathbf{x}_\mathbf{n}} \\
+      (\mathtt{LOW}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen g < (\delta \cup \mathbf{x}_\mathbf{n})[d]_m \\
+      (\mathtt{HIGH}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen \xi < g \\
+      (\mathtt{CASH}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen b < (\mathbf{x}_\mathbf{s})_t \\
+      (\mathtt{OK}, \mathbf{x}_\mathbf{t} \doubleplus \mathbf{t}, b) &\otherwise
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_X(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s)$ \\
+  \texttt{quit} \\
+  $g = 10 + \omega_1 + 2^{32}\cdot\omega_2 $} &
+  $\begin{aligned}
+    \using [d, o] &= \omega_{0,1} \\
+    \using a &= (\mathbf{x}_\mathbf{s})_b - (\mathbf{x}_\mathbf{s})_t + \mathsf{B}_S \\
+    \using g &= \xi \\
+    \using \mathbf{t} \in \mathbb{T} \cup \{\error,\none\} &= \begin{cases}
+      \none &\when d \in \{ s, 2^{32} - 1 \} \\
+      (s, d, a, m, g): m = \de(\mu_{o\dots+\mathsf{M}}) &\otherwhen \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    (\omega'_0, \mathbf{x}'_\mathbf{s}, \mathbf{x}'_\mathbf{t}) &\equiv \begin{cases}
+      (\mathtt{OK}, \none, \mathbf{x}_\mathbf{t}),\ \textbf{virtual machine halts} &\when \mathbf{t} = \none \\
+      (\mathtt{OOB}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen t = \error \\
+      (\mathtt{WHO}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen d \not \in \keys{\delta \cup \mathbf{x}_\mathbf{n}} \\
+      (\mathtt{LOW}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen g < (\delta \cup \mathbf{x}_\mathbf{n})[d]_m \\
+      (\mathtt{OK}, \none, \mathbf{x}_\mathbf{t} \doubleplus \mathbf{t}),\ \textbf{virtual machine halts} &\otherwise
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_S(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
+  \texttt{solicit} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [o, z] &= \omega_{0, 1} \\
+    \using h &= \begin{cases}
+      \mu_{o\dots+32} &\when \mathbb{Z}_{o \dots+ 32} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{x}_\mathbf{s} \text{ except: } &\\
+      \quad \mathbf{a}_\mathbf{l}[\tup{h, z}] = [] &\when h \ne \error \wedge (h, z) \not\in (\mathbf{x}_\mathbf{s})_\mathbf{l} \\
+      \quad \mathbf{a}_\mathbf{l}[\tup{h, z}] = (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] \doubleplus t &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] = [x, y] \\
+      \error &\otherwise\\
+    \end{cases} \\
+    (\omega'_0, \mathbf{x}'_\mathbf{s}) &\equiv \begin{cases}
+      (\mathtt{OOB}, \mathbf{x}_\mathbf{s}) &\when h = \error \\
+      (\mathtt{HUH}, \mathbf{x}_\mathbf{s}) &\otherwhen \mathbf{a} = \error \\
+      (\mathtt{FULL}, \mathbf{x}_\mathbf{s}) &\otherwhen \mathbf{a}_b < \mathbf{a}_t \\
+      (\mathtt{OK}, \mathbf{a}) &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_F(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), t)$ \\
+  \texttt{forget} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [o, z] &= \omega_{0, 1} \\
+    \using h &= \begin{cases}
+      \mu_{o\dots+32} &\when \mathbb{Z}_{o \dots+ 32} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{x}_\mathbf{s} \text{ except:} &\\
+      \quad \left.
+        \begin{aligned}
+          \keys{\mathbf{a}_\mathbf{l}} &= \keys{(\mathbf{x}_\mathbf{s})_\mathbf{l}} \setminus \{\tup{h, z}\}\ ,\\[2pt]
+          \keys{\mathbf{a}_\mathbf{p}} &= \keys{(\mathbf{x}_\mathbf{s})_\mathbf{p}} \setminus \{h\}
+        \end{aligned}
+      \ \right\} &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] \in \{[], [x, y]\},\ y < t - \mathsf{D} \\
+      \quad \mathbf{a}_\mathbf{l}[h, z] = (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] \doubleplus t &\when |(\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z]| = 1 \\
+      \quad \mathbf{a}_\mathbf{l}[h, z] = [(\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z]_2, t] &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] = [x, y, w],\ y < t - \mathsf{D} \\
+      \error &\otherwise\\
+    \end{cases} \\
+    (\omega'_0, \mathbf{x}'_\mathbf{s}) &\equiv \begin{cases}
+      (\mathtt{OOB}, \mathbf{x}_\mathbf{s}) &\when h = \error \\
+      (\mathtt{HUH}, \mathbf{x}_\mathbf{s}) &\otherwhen \mathbf{a} = \error \\
+      (\mathtt{OK}, \mathbf{a}) &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_V(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
+  \texttt{invoke} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [o, z] &= \omega_{0, 1} \\
+    \using h &= \begin{cases}
+      \mu_{o\dots+32} &\when \mathbb{Z}_{o \dots+ 32} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{x}_\mathbf{s} \text{ except: } &\\
+      \quad \mathbf{a}_\mathbf{l}[\tup{h, z}] = [] &\when h \ne \error \wedge (h, z) \not\in (\mathbf{x}_\mathbf{s})_\mathbf{l} \\
+      \quad \mathbf{a}_\mathbf{l}[\tup{h, z}] = (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] \doubleplus t &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] = [x, y] \\
+      \error &\otherwise\\
+    \end{cases} \\
+    (\omega'_0, \mathbf{x}'_\mathbf{s}) &\equiv \begin{cases}
+      (\mathtt{OOB}, \mathbf{x}_\mathbf{s}) &\when h = \error \\
+      (\mathtt{HUH}, \mathbf{x}_\mathbf{s}) &\otherwhen \mathbf{a} = \error \\
+      (\mathtt{FULL}, \mathbf{x}_\mathbf{s}) &\otherwhen \mathbf{a}_b < \mathbf{a}_t \\
+      (\mathtt{OK}, \mathbf{a}) &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \bottomrule
+\end{longtable}
+
+\subsection{Refine Function}\label{sec:refinefunctions}
+
+These assume some refine context $\mathbf{M} \in \dict{\N_R}{\tuple{\Y, \mathbb{M}, \seq{\N_R}_{13}, \N_R}}$, initially empty and which tends to be stated as $\mathbf{m}$ (posterior $\mathbf{m}'$).
+
+\begin{longtable}{p{3.5cm} p{12.5cm}}
+  \toprule
+  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
+  \thead{\textbf{Mutations}} \\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \endhead
+  \makecell*[l]{
+  $\Omega_H(\xi, \omega, \mu, \mathbf{m}, s, \delta, t)$ \\
+  \texttt{historical\_lookup} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using \mathbf{a} &= \begin{cases}
+      \delta[s] &\when \omega_0 = 2^{32} - 1 \wedge s \in \keys{\delta} \\
+      \delta[\omega_0] &\when \omega_0 \in \keys{\delta} \\
+      \none &\otherwise
+    \end{cases} \\
+    \using [h_o, b_o, b_z] &= \omega_{1..4} \\
+    \using h &= \begin{cases}
+      \mathcal{H}(\mu_{h_o\dots+32}) &\when \mathbb{Z}_{h_o \dots+ 32} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using \mathbf{v} &= H(\mathbf{a}, t, h) \\
+    \forall i \in \N_{\min(b_z, |\mathbf{v}|)} : \mu'_{b_o + i} &\equiv \begin{cases}
+      \mathbf{v}_i & \when \mathbf{v} \ne \none \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\mu} \\
+      \mu_{b_o + i} & \otherwise
+    \end{cases} \\
+    \omega'_0 &\equiv \begin{cases}
+      \begin{rcases}
+        |\mathbf{v}| & \when \mathbf{v} \ne \none \\
+        \mathtt{NONE} &\otherwise \\
+      \end{rcases} &\when k \ne \error \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\mu} \\
+      \mathtt{OOB} &\otherwise
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_M(\xi, \omega, \mu, \mathbf{m})$ \\
+  \texttt{machine} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [p_o, p_z, i] &= \omega_{0 \dots 2} \\
+    \using \mathbf{p} &= \begin{cases}
+      \mu_{p_o\dots+p_z} &\when \mathbb{Z}_{p_o \dots+ p_z} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using n &= \min(n \in \N, n \not\in \keys{\mathbf{m}}) \\
+    \using \mathbf{u} &= \tup{\is{\mathbf{V}}{[0, 0, \dots]},\is{\mathbf{A}}{[\none, \none, \dots]}} \\
+    (\omega'_0, \mathbf{m}) &\equiv \begin{cases}
+      (\mathtt{OOB}, \mathbf{m}) &\when \mathbf{p} = \error \\
+      (n, \mathbf{m} \cup \{ n \mapsto \tup{\mathbf{p}, \mathbf{u}, i} \} ) &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_P(\xi, \omega, \mu, \mathbf{m})$ \\
+  \texttt{peek} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [n, a, b, l] &= \omega_{0 \dots 4} \\
+    \using \mathbf{s} &= \begin{cases}
+      \none &\when n \not\in \keys{\mathbf{m}}\\
+      \error &\when \N_{b\dots+i} \not\in \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \\
+      \mathbf{m}[n]_{\mathbf{u}_{b\dots+i}} &\otherwise
+    \end{cases}\\
+    (\omega'_0, \mem') &\equiv \begin{cases}
+      (\mathtt{OOB}, \mem) &\when \mathbf{s} = \error \\
+      (\mathtt{WHO}, \mem) &\when \mathbf{s} = \none \\
+      (\mathtt{OK}, \mem') \ \where \mem' = \mem \exc \mem'_{a\dots+l} = \mathbf{s} &\otherwise
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_O(\xi, \omega, \mu, \mathbf{m})$ \\
+  \texttt{poke} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [n, a, b, l] &= \omega_{0 \dots 4} \\
+    \using \mathbf{u} &= \begin{cases}
+      \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
+      \error &\otherwise\\
+    \end{cases} \\
+    \using \mathbf{s} &= \begin{cases}
+      \mem_{a\dots+i} &\when \N_{a\dots+i} \in \mathbb{V}_\mathbf{u}\\
+      \error &\otherwise
+    \end{cases}\\
+    \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
+      (\mathbf{u}'_\mathbf{V})_{b\dots+l} = \mathbf{s} \\
+      (\mathbf{u}'_\mathbf{A})_{b\dots+l} = [\mathrm{W}, \mathrm{W}, ...]
+    \end{cases}\\
+    (\omega'_0, \mathbf{m}') &\equiv \begin{cases}
+      (\mathtt{OOB}, \mathbf{m}) &\when \mathbf{s} = \error \\
+      (\mathtt{WHO}, \mathbf{m}) &\otherwhen \mathbf{u} = \error \\
+      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}' &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_K(\xi, \omega, \mu, \mathbf{m})$ \\
+  \texttt{invoke} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [n, o] &= \omega_{0 \dots 2} \\
+    \using (g, \mathbf{w}) &= \begin{cases}
+      (\de_8(\mem_{o\dots+8}), [\de_4(\mem_{o+8+4x\dots+4}) \mid x \orderedin \N_{13}]) &\when \N_{o \dots+ 60} \subset \mathbb{V}^*_{\mem} \\
+      (\error, \error) &\otherwise
+    \end{cases} \\
+    \using (c, i', g', \mathbf{w}', \mathbf{u}') &= \Psi(\mathbf{m}[n]_\mathbf{p}, \mathbf{m}[n]_i, g, \mathbf{w}, \mathbf{m}[n]_\mathbf{u})\\
+    \using \mem^* &= \mem \exc \mem^*_{o\dots+60} = \se_8(g') \concat \se([\se_4(x) \mid x \orderedin \mathbf{w}'])\\
+    \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
+      \mathbf{m}^*[n]_\mathbf{u} = \mathbf{u}'\\
+      \mathbf{m}^*[n]_i = \begin{cases}
+        i' + 1 &\when c \in \{ \host \} \times \N_R\\
+        i' &\otherwise
+      \end{cases}
+    \end{cases}\\
+    (\omega'_0, \omega'_1, \mem', \mathbf{m}') &\equiv \begin{cases}
+      (\mathtt{OOB}, \omega_1, \mem, \mathbf{m}) &\when g = \error \\
+      (\mathtt{WHO}, \omega_1, \mem, \mathbf{m}) &\otherwhen n \not\in \mathbf{m} \\
+      (\mathtt{HOST}, h, \mem^*, \mathbf{m}^*) &\otherwhen c = \host \times h \\
+      (\mathtt{FAULT}, x, \mem^*, \mathbf{m}^*) &\otherwhen c = \fault \times x \\
+      (\mathtt{PANIC}, \omega_1, \mem^*, \mathbf{m}^*) &\otherwhen c = \panic \\
+      (\mathtt{HALT}, \omega_1, \mem^*, \mathbf{m}^*) &\otherwhen c = \halt \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_X(\xi, \omega, \mu, \mathbf{m})$ \\
+  \texttt{expunge} \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using n &= \omega_{0} \\
+    (\omega'_0, \mathbf{m}') &\equiv \begin{cases}
+      (\mathtt{WHO}, \mathbf{m}) &\when n \ne \keys{\mathbf{m}} \\
+      (\mathbf{m}[n]_i, \mathbf{m} \setminus n) &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \bottomrule
+\end{longtable}

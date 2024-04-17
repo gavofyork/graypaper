@@ -1,0 +1,157 @@
+\section{Notational Conventions}\label{sec:notation}
+
+Much as in the Ethereum Yellow Paper, a number of notational conventions are used throughout the present work. We define them here for clarity. The Ethereum Yellow Paper itself may be referred to henceforth as the \emph{YP}.
+
+\subsection{Typography}\label{sec:typography}
+
+We use a number of different typefaces to denote different kinds of terms. Where a term is used to refer to a value only relevant within some localized section of the document, we use a lower-case roman letter \eg $x$, $y$ (typically used for an item of a set or sequence) or \eg $i$, $j$ (typically used for numerical indices). Where we refer to a Boolean term or a function in a local context, we tend to use a capitalized roman alphabet letter such as $A$, $F$. If particular emphasis is needed on the fact a term is sophisticated or multidimensional, then we may use a bold typeface, especially in the case of sequences and sets.
+
+For items which retain their definition throughout the present work, we use other typographic conventions. Sets are usually referred to with a blackboard typeface, \eg $\N$ refers to all natural numbers including zero. Sets which may be parameterized may be subscripted or be followed by parenthesized arguments. Imported functions, used by the present work but not specifically introduced by it, are written in calligraphic typeface, \eg $\mathcal{H}$ the Blake2 cryptographic hashing function. For other non-context dependent functions introduced in the present work, we use upper case Greek letters, \eg $\Upsilon$ denotes the state transition function.
+
+Values which are not fixed but nonetheless hold some consistent meaning throughout the present work are denoted with lower case Greek letters such as $\sigma$, the state identifier. These may be placed in bold typeface to denote that they refer to an abnormally complex value.
+
+\subsection{Functions and Operators}\label{sec:functions}
+We define the precedes relation to indicate that one term is defined in terms of another. \Eg $y \prec x$ indicates that $y$ may be defined purely in terms of $x$:
+\begin{align}\label{eq:precedes}
+  y \prec x \Longleftrightarrow \exists f: y = f(x)
+\end{align}
+
+%We define $\mathcal{KV}(f)$ to be the set of domain and co-domain element pairs of a function.
+
+%We denote the general fold operator as $\fold$:
+%\begin{align}
+%  \fold^{S}_{I} F \equiv \begin{cases}
+%    I &\when S = [] \\
+%    \displaystyle \fold^{[S_1, \dots ]}_{F(I, S_0)} F &\otherwise
+%  \end{cases}
+%\end{align}
+
+The substitute-if-nothing function $\mathcal{U}$ is equivalent to the first argument which is not $\none$, or $\none$ if no such argument exists:
+\begin{align}\label{eq:substituteifnothing}
+%  \mathcal{U}(a_0, \dots a_n ) \equiv a_x : (a_x \ne \none \vee x = n), \bigwedge_{i=0}^{x-1} a_i = \none
+  \mathcal{U}(a_0, \dots) \equiv a_x : (a_x \ne \none \vee x = n), \bigwedge_{i=0}^{x-1} a_i = \none
+\end{align}
+Thus, \eg $\mathcal{U}(\none, 1, \none, 2) = 1$ and $\mathcal{U}(\none, \none) = \none$.
+
+\subsection{Sets}\label{sec:sets}
+
+We denote the cardinality of some set $\mathbf{s}$, the number of its elements, as the usual $|\mathbf{s}|$. We denote set-disjointness with the relation $\disjoint$. Formally:
+\begin{equation*}
+  A \cap B = \none \Longleftrightarrow A \disjoint B
+\end{equation*}
+
+We commonly use $\none$ to indicate that some term is validly left without a specific value. Its cardinality is defined as zero. We define the operation $\bm{?}$ such that $A\bm{?} \equiv A \cup \{\none\}$ indicating the same set but with the addition of the $\none$ element.
+
+The term $\error$ is utilized to indicate the unexpected failure of an operation or that a value is invalid or unexpected. (We try to avoid the use of the more conventional $\bot$ here to avoid confusion with Boolean false, which may be interpreted as some successful result in some contexts.)
+
+\subsection{Numbers}\label{sec:numbers}
+
+$\N$ denotes the set of naturals including zero whereas $\N_n$ denotes the set of naturals less than $n$. Formally, $\N = \{0, 1, \dots \}$ and $\N_n = \{ x \mid x \in \N, x < n \}$.
+
+$\mathbb{Z}$ denotes the set of integers. We denote $\mathbb{Z}_{a \dots b}$ to be the set of integers within the interval $[a, b)$. Formally, $\mathbb{Z}_{a \dots b} = \{ x \mid x \in \mathbb{Z}, a \le x < b \}$. \Eg $\mathbb{Z}_{2 \dots 5} = \{ 2, 3, 4 \}$. We denote the offset/length form of this set as $\mathbb{Z}_{a \dots +b}$, a short form of $\mathbb{Z}_{a \dots a+b}$.
+
+It can sometimes be useful to represent lengths of sequences and yet limit their size, especially when dealing with sequences of octets which must be stored practically. Typically, these lengths can be defined as the set $\N_{2^{32}}$. To improve clarity, we denote $\N_L$ as the set of lengths of octet sequences and is equivalent to $\N_{2^{32}}$.
+
+We denote the $\rem$ operator as the modulo operator, \eg $5 \rem 3 = 2$. Furthermore, we may occasionally express a division result as a quotient and remainder with the separator $\remainder$, \eg $5 \div 3 = 1 \remainder 3$.
+
+\subsection{Dictionaries}\label{sec:dictionaries}
+
+A \emph{dictionary} is a possibly partial mapping from some domain into some co-domain in much the same manner as a regular function. Unlike functions however, with dictionaries the total set of pairings are necessarily enumerable, and we represent them in some data structure as the set of all $(key \mapsto value)$ pairs. (In such data-defined mappings, it is common to name the values within the range a \emph{key} and the values within the domain a \emph{value}, hence the naming.)
+
+Thus, we define the formalism $\dict{\mathrm{K}}{\mathrm{V}}$ to denote a dictionary which maps from the domain $\mathrm{K}$ to the range $\mathrm{V}$. We define a dictionary as a member of the set of all dictionaries $\mathbb{D}$ and a set of pairs $p = (k \mapsto v)$:
+\begin{align}
+  &\mathbb{D} \subset \big \{ \{ (k \mapsto v) \} \big \}
+\end{align}
+
+A dictionary's members must associate at most one unique value for any key $k$:
+\begin{align}
+  \forall \mathbf{d} \in\ &\mathbb{D} : \forall (k \mapsto v) \in \mathbf{d} : \exists! v' : (k \mapsto v') \in \mathbf{d}
+\end{align}
+
+This assertion allows us to unambiguously define the subscript and subtraction operator for a dictionary $d$:
+\begin{align}
+  \forall \mathbf{d} \in \mathbb{D}&: \mathbf{d}[k] \equiv \begin{cases}
+    v & \text{if}\ \exists k : (k \mapsto v) \in \mathbf{d} \\
+    \none & \otherwise
+  \end{cases}\\
+  \forall \mathbf{d} \in \mathbb{D}&, \mathbf{s}: a \setminus \mathbf{s} \equiv \{ (k \mapsto v): (k \mapsto v) \in \mathbf{d}, k \not \in \mathbf{s} \}
+\end{align}
+
+Note that when using a subscript, it is an implicit assertion that the key exists in the dictionary. Should the key not exist, the result is undefined and any block which relies on it must be considered invalid.
+
+It is typically useful to limit the sets from which the keys and values may be drawn. Formally, we define a typed dictionary $\dict{K}{V}$ as a set of pairs $p$ of the form $(k \mapsto v)$:
+\begin{align}
+  \dict{K}{V} &\subset \mathbb{D} \\
+  \dict{K}{V} &\equiv \big \{ \{ (k \mapsto v) \mid k \in K \wedge v \in V \} \big \}
+\end{align}
+
+To denote the active domain (\ie set of keys) of a dictionary $\mathbf{d} \in \dict{K}{V}$, we use $\keys{\mathbf{d}} \subset K$ and for the range (\ie set of values), $\mathcal{V}(\mathbf{d}) \subset V$. Formally:
+\begin{align}
+  \keys{\mathbf{d} \in \mathbb{D}} &\equiv \{\ k \mid \exists v : (k \mapsto v) \in \mathbf{d}\ \} \\
+  \mathcal{V}(\mathbf{d} \in \mathbb{D}) &\equiv \{\ v \mid \exists k : (k \mapsto v) \in \mathbf{d}\ \}
+\end{align}
+
+Note that since the domain of $\mathcal{V}$ is a set, should different keys with equal values appear in the dictionary, the set will only contain one such value.
+
+\subsection{Tuples}\label{sec:tuples}
+
+Tuples are groups of values where each item typically belongs to a different set. They are denoted with parentheses, \eg the tuple $t$ of the integers $3$ and $5$ is denoted $t = (3, 5)$, and it exists in the set of integer pairs sometimes denoted $\N \times \N$, but denoted in the present work as $(\N, \N)$.
+
+We have frequent need to refer to a specific item within a tuple value and as such find it convenient to declare a name for each item. \Eg we may denote a tuple with two named integer components $a$ and $b$ as $T = \ltuple\isa{a}{\N}\ts\isa{b}{\N}\rtuple$. We would denote an item $t \in T$ through subscripting its name, thus for some $t = \ltup\is{a}{3}\ts\is{b}{5}\rtup$, $t_a = 3$ and $t_b = 5$.
+
+\subsection{Sequences}\label{sec:sequences}
+
+A sequence is a series of elements with particular ordering not dependent on their values. The set of sequences of elements all of which are drawn from some set $T$ is denoted $\seq{T}$, and it defines a partial mapping $\N \to T$. The set of sequences containing exactly $n$ elements each a member of the set $T$ may be denoted $\seq{T}_n$ and accordingly defines a complete mapping $\N_n \to T$. Similarly, sets of sequences of at most $n$ elements and at least $n$ elements may be denoted $\seq{T}_{:n}$ and $\seq{T}_{n:}$ respectively.
+
+Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}[i]$, or where unambiguous, $\mathbf{s}_i$. A range may be denoted using an ellipsis for example: $[0, 1, 2, 3]_{\dots2} == [0, 1]$ and $[0, 1, 2, 3]_{1\dots+2} == [1, 2]$. The length of such a sequence may be denoted $|\mathbf{s}|$.
+
+We denote modulo subscription as $\mathbf{s}[i]^\circlearrowleft \equiv \mathbf{s}[\,i \rem |\mathbf{s}|\,]$. We denote the final element $x$ of a sequence $\mathbf{s} = \sq{..., x}$ through the function $\text{last}(\mathbf{s}) \equiv x$.
+
+\subsubsection{Construction}
+We may wish to define a sequence in terms of incremental subscripts of other values: $[\mathbf{x}_0, \mathbf{x}_1, \dots ]_n$ denotes a sequence of $n$ values beginning $\mathbf{x}_0$ continuing up to $\mathbf{x}_{n-1}$. Furthermore, we may also wish to define a sequence as elements each of which are a function of their index $i$; in this case we denote $[f(i) \mid i \orderedin \N_n] \equiv [f(0), f(1), \dots, f(n - 1)]$. Thus, when the ordering of elements matters we use $\orderedin$ rather than the unordered notation $\in$. The latter may also be written in short form $[f(i \orderedin \N_n)]$. This applies to any set which has an unambiguous ordering, particularly sequences, thus $[\,i^2 \mid i \orderedin [1, 2, 3]\,] = [1, 4, 9]$. Multiple sequences may be combined, thus $[\,i\cdot j \mid i \orderedin [1, 2, 3], j \orderedin [2, 3, 4]\,] = [2, 6, 12]$.
+
+Sequences may be constructed from sets or other sequences whose order should be ignored through sequence ordering notation $\orderby{i_k}{i \in X}$, which is defined to result in the set or sequence of its argument except that all elements $i$ are placed in ascending order of the corresponding value $i_k$.
+
+The key component may be elided in which case it is assumed to be ordered by the elements directly; \ie $\order{i \in X} \equiv \orderby{i}{i \in X}$. $\orderuniqby{i_k}{i \in X}$ does the same, but excludes any duplicate values of $i$. \Eg assuming $\mathbf{s} = [1, 3, 2, 3]$, then $\orderuniqby{i}{i \in \mathbf{s}} = [ 1, 2, 3 ]$ and $\orderby{-i}{i \in \mathbf{s}} = [ 3, 3, 2, 1 ]$.
+
+Sets may be constructed from sequences with the regular set construction syntax, \eg assuming $\mathbf{s} = [1, 2, 3, 1]$, then $\{ a \mid a \in \mathbf{s} \}$ would be equivalent to $\{ 1, 2, 3 \}$.
+
+Sequences of values which themselves have a defined ordering have an implied ordering akin to a regular dictionary, thus $[1, 2, 3] < [1, 2, 4]$ and $[1, 2, 3] < [1, 2, 3, 1]$.
+
+\subsubsection{Editing}
+We define the sequence concatenation operator $\frown$ such that $[\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{y}_0, \mathbf{y}_1, \dots] \equiv \mathbf{x} \frown \mathbf{y}$. Futher, we denote element-concatenation as $x \doubleplus i \equiv x \frown [i]$. We denote the sequence made up of the first $n$ elements of sequence $\mathbf{s}$ to be ${\overrightarrow{\mathbf{s}}}^n \equiv [\mathbf{s}_0, \mathbf{s}_1, \dots, \mathbf{s}_{n-1}]$, and only the final elements as ${\overleftarrow{\mathbf{s}}}^n$.
+
+We denote sequence subtraction with a slight modification of the set subtraction operator; specifically, some sequence $\mathbf{s}$ excepting the left-most element equal to $v$ would be denoted $\mathbf{s}\seqminusl\{v\}$.
+
+\subsubsection{Boolean values}
+$\mathbb{B}_s$ denotes the set of Boolean strings of length $s$, thus $\mathbb{B}_s = [\{\bot, \top\}]_s$. When dealing with Boolean values we may assume an implicit equivalence mapping to a bit whereby $\top = 1$ and $\bot = 0$, thus $\mathbb{B}_\Box = [\N_2]_\Box$. We use the function $\text{bits}(\Y) \in \mathbb{B}$ to denote the sequence of bits, ordered with the least significant first, which represent the octet sequence $\Y$, thus $\text{bits}([5, 0]) = [1, 0, 1, 0, 0, \dots]$.
+
+\subsubsection{Octets and Blobs}
+
+$\Y$ denotes the set of octet strings (``blobs'') of arbitrary length. As might be expected, $\Y_x$ denotes the set of such sequences of length $x$. $\Y_\$$ denotes the subset of $\Y$ which are ASCII-encoded strings. Note that while an octet has an implicit and obvious bijective relationship with natural numbers less than 256, and we may implicitly coerce between octet form and integer form, we do not treat them as exactly equivalent entities. In particular for the purpose of serialization an octet is always serialized in the sequence containing only itself, whereas an integer may be serialized as a sequence of potentially several octets, depending on its magnitude.
+
+\subsubsection{Shuffling}
+
+We define the sequence-shuffle function $\mathcal{F}$, originally introduced by \cite{fisheryates1938statistical}, with an efficient in-place algorithm described by \cite{wikipedia2024fisheryates}. This accepts a sequence and some entropy and returns a sequence of the same length with the same elements but in an order determined by the entropy. The entropy may be provided as either an indefinite sequence of integers or a hash. For a full definition see appendix \ref{sec:shuffle}.
+
+\subsection{Cryptography}\label{sec:cryptography}
+
+\subsubsection{Hashing}
+
+$\H$ denotes the set of 256-bit values typically expected to be arrived at through a cryptographic function, equivalent to $\Y_{32}$, with $\H^0$ being equal to $[0]_{32}$. We assume a function $\mathcal{H}(m \in \Y) \in \H$ denoting the Blake2b 256-bit hash introduced by \cite{rfc7693} and a function $\mathcal{H}_K(m \in \Y) \in \H$ denoting the Keccak 256-bit hash as proposed by \cite{bertoni2013keccak} and utilized by \cite{wood2014ethereum}.
+
+We may sometimes wish to take only the first $x$ octets of a hash, in which case we denote $\mathcal{H}_x(m) \in \Y_x$ to be the first $x$ octets of $\mathcal{H}(m)$. The inputs of a hash function are generally assumed to be serialized with our codec $\mathcal{E}(x) \in \Y$, however for the purposes of clarity or unambiguity we may also explicitly denote the serialization. Similarly, we may wish to interpret a sequence of octets as some other kind of value with the assumed decoder function $\de(x \in \Y)$. In both cases, we may subscript the transformation function with the number of octets we expect the octet sequence term to have. Thus, $r = \mathcal{E}_4(x \in \N)$ would assert $x \in \N_{2^{32}}$ and $r \in \Y_4$, whereas $s = \de_8(y)$ would assert $y \in \Y_8$ and $s \in \N_{2^{64}}$.
+
+\subsubsection{Signing Schemes}\label{sec:signing}
+
+$\sig{k}{m} \subset \Y_{64}$ is the set of valid Ed25519 signatures, defined by \cite{rfc8032}, made through knowledge of a secret key whose public key counterpart is $k \in \Y_{32}$ and whose message is $m$. To aid readability, we denote the set of valid public keys $k \in \H_E$.
+
+We use $\Y_{BLS} \subset \Y_{144}$ to denote the set of public keys for the \textsc{bls} signature scheme, described by \cite{jofc-2004-14130}, on curve \textsc{bls}\oldstylenums{12}-\oldstylenums{381} defined by \cite{bls12-381}.
+
+We denote the set of valid Bandersnatch public keys as $\H_B$, defined in appendix \ref{sec:bandersnatch}. $\bandersig{k \in \H_B}{x \in \Y}{m \in \Y} \subset \Y_{96}$ is the set of valid singly-contextualized signatures of utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
+
+$\bandersnatch{r \in \Y_R}{x \in \Y}{m \in \Y} \subset \Y_{388}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\Y_R \in \Y_{196608}$. We denote $\mathcal{R}(\mathbf{s} \in [\H_B]) \in \Y_R$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
+
+Both the Bandersnatch signature and Ring\textsc{vrf} proof strictly imply that a member utilized their secret key in combination with both the context $x$ and the message $m$; the difference is that the member is identified in the former and is anonymous in the latter. Furthermore, both define a \textsc{vrf} \emph{output}, a high entropy hash influenced by $x$ but not by $m$, formally denoted $\banderout{\bandersnatch{r}{x}{m}} \subset \H$ and $\banderout{\bandersig{k}{x}{m}} \subset \H$.
+
+We define the function $\mathcal{S}$ as the signature function, such that $\mathcal{S}_{k}(m) \in \bandersig{k}{[]}{m} \cup \sig{k}{m}$. We assert that the ability to compute a result for this function relies on knowledge of a secret key.

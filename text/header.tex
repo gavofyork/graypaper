@@ -1,0 +1,55 @@
+\section{The Header}\label{sec:header}
+
+We must first define the header in terms of its components. The header comprises a parent hash and prior state root ($\mathbf{H}_p$ and $\mathbf{H}_r$), an extrinsic hash $\mathbf{H}_x$, a time-slot index $\mathbf{H}_t$, the epoch, winning-tickets and judgements markers $\mathbf{H}_e$, $\mathbf{H}_w$ and $\mathbf{H}_j$, a Bandersnatch block author key $\mathbf{K}_k$ and two Bandersnatch signatures; the entropy-yielding \textsc{vrf} signature $\mathbf{H}_v$ and a block seal $\mathbf{H}_s$. Headers may be serialized to an octet sequence with and without the latter seal component using $\mathcal{E}$ and $\mathcal{E}_U$ respectively. Formally:
+\begin{equation}\label{eq:header}
+  \qquad\mathbf{H} \equiv (\mathbf{H}_p, \mathbf{H}_r, \mathbf{H}_x, \mathbf{H}_t, \mathbf{H}_e, \mathbf{H}_w, \mathbf{H}_j, \mathbf{H}_k, \mathbf{H}_v, \mathbf{H}_s)
+\end{equation}
+
+Blocks considered invalid by this rule may become valid as $\mathcal{T}$ advances.
+
+The blockchain is a sequence of blocks, each cryptographically referencing some prior block by including a hash derived from the parent's header, all the way back to some first block which references the genesis header. We already presume consensus over this genesis header $\mathbf{H}^0$ and the state it represents defined as $\sigma^0$.
+
+Excepting the Genesis header, all block headers $\mathbf{H}$ have an associated parent header, whose hash is $\mathbf{H}_p$. We denote the parent header $\mathbf{H}^- = P(\mathbf{H})$:
+\begin{equation}
+  \mathbf{H}_p \in \H \,,\quad \mathbf{H}_p \equiv \mathcal{H}(P(\mathbf{H}))
+\end{equation}
+
+$P$ is thus defined as being the mapping from one block header to its parent block header. With $P$, we are able to define the set of ancestor headers $\mathbf{A}$:
+\begin{align}\label{eq:ancestors}
+  h \in \mathbf{A} \Leftrightarrow h = \mathbf{H} \vee (\exists i \in \mathbf{A} : h = P(i))
+\end{align}
+
+We only require implementations to store headers of ancestors which were authored in the previous $\mathsf{L} = $ 24 hours of any block $\mathbf{B}$ they wish to validate.
+
+The extrinsic hash is the hash of the block's extrinsic data. Given any block $\mathbf{B} = (\mathbf{H}, \mathbf{E})$, then formally:
+\begin{equation}
+  \mathbf{H}_x \in \H \,,\quad \mathbf{H}_x \equiv \mathcal{H}(\mathcal{E}(\mathbf{E}))
+\end{equation}
+
+A block may only be regarded as valid once the time-slot index $\mathbf{H}_t$ is in the past. It is always strictly greater than that of its parent. Formally:
+\begin{equation}
+  \mathbf{H}_t \in \N_T \,,\quad
+  P(\mathbf{H})_t < \mathbf{H}_t\ \wedge\ \mathbf{H}_t\cdot\mathsf{P} \leq \mathcal{T}
+\end{equation}
+
+The parent state root $\mathbf{H}_r$ is the root of a Merkle trie composed by the mapping of the \emph{prior} state's Merkle root, which by definition is also the parent block's posterior state. This is a departure from both Polkadot and the Yellow Paper's Ethereum, in both of which a block's header contains the \emph{posterior} state's Merkle root. We do this to facilitate the pipelining of block computation and in particular of Merklization.
+\begin{equation}
+  \mathbf{H}_r \in \H \,,\quad \mathbf{H}_r \equiv \mathcal{M}_S(\sigma)
+\end{equation}
+
+We assume the state-Merklization function $\mathcal{M}_S$ is capable of transforming our state $\sigma$ into a 32-octet commitment. See appendix \ref{sec:statemerklization} for a full definition of these two functions.
+
+All blocks have an associated public key to identify the author of the block. We identify this as an index into the current validator set $\kappa$. We denote the Bandersnatch key of the author as $\mathbf{H}_a$ though note that this is merely an equivalence, and is not serialized as part of the header.
+\begin{equation}
+  \mathbf{H}_k \in \N_V \,,\quad \mathbf{H}_a \equiv \kappa[\mathbf{H}_k]
+\end{equation}
+
+\subsection{The Epoch and Winning Tickets Markers}\label{sec:header_epochmarker}
+
+If not $\none$, then the epoch marker specifies key and entropy relevant to the following epoch in case the ticket contest does not complete adequately (a very much unexpected eventuality). Similarly, the winning-tickets marker, if not $\none$, provides the series of 600 slot sealing ``tickets'' for the next epoch (see the next section):
+\begin{equation}
+  \mathbf{H}_e \in \tuple{\H\ts\lseq\H_B\rseq_{\mathsf{V}}}\bm{?}\ , \qquad
+  \mathbf{H}_w \in \seq{\mathbb{C}} _{\mathsf{E}}\bm{?}
+\end{equation}
+
+The terms are fully defined in section \ref{sec:epochmarker}.
