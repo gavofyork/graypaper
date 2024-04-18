@@ -4,6 +4,8 @@ The description and formal specification of the Jam protocol, a potential succes
 
 Build with xelatex.
 
+https://graypaper.com/
+
 ## Remaining for v0.1
 
 ### Content
