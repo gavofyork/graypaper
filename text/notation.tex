@@ -28,8 +28,7 @@ We define the precedes relation to indicate that one term is defined in terms of
 
 The substitute-if-nothing function $\mathcal{U}$ is equivalent to the first argument which is not $\none$, or $\none$ if no such argument exists:
 \begin{align}\label{eq:substituteifnothing}
-%  \mathcal{U}(a_0, \dots a_n ) \equiv a_x : (a_x \ne \none \vee x = n), \bigwedge_{i=0}^{x-1} a_i = \none
-  \mathcal{U}(a_0, \dots) \equiv a_x : (a_x \ne \none \vee x = n), \bigwedge_{i=0}^{x-1} a_i = \none
+  \mathcal{U}(a_0, \dots a_n ) \equiv a_x : (a_x \ne \none \vee x = n), \bigwedge_{i=0}^{x-1} a_i = \none
 \end{align}
 Thus, \eg $\mathcal{U}(\none, 1, \none, 2) = 1$ and $\mathcal{U}(\none, \none) = \none$.
 
@@ -56,7 +55,7 @@ We denote the $\rem$ operator as the modulo operator, \eg $5 \rem 3 = 2$. Furthe
 
 \subsection{Dictionaries}\label{sec:dictionaries}
 
-A \emph{dictionary} is a possibly partial mapping from some domain into some co-domain in much the same manner as a regular function. Unlike functions however, with dictionaries the total set of pairings are necessarily enumerable, and we represent them in some data structure as the set of all $(key \mapsto value)$ pairs. (In such data-defined mappings, it is common to name the values within the range a \emph{key} and the values within the domain a \emph{value}, hence the naming.)
+A \emph{dictionary} is a possibly partial mapping from some domain into some co-domain in much the same manner as a regular function. Unlike functions however, with dictionaries the total set of pairings are necessarily enumerable, and we represent them in some data structure as the set of all $(key \mapsto value)$ pairs. (In such data-defined mappings, it is common to name the values within the domain a \emph{key} and the values within the range a \emph{value}, hence the naming.)
 
 Thus, we define the formalism $\dict{\mathrm{K}}{\mathrm{V}}$ to denote a dictionary which maps from the domain $\mathrm{K}$ to the range $\mathrm{V}$. We define a dictionary as a member of the set of all dictionaries $\mathbb{D}$ and a set of pairs $p = (k \mapsto v)$:
 \begin{align}
@@ -74,7 +73,7 @@ This assertion allows us to unambiguously define the subscript and subtraction o
     v & \text{if}\ \exists k : (k \mapsto v) \in \mathbf{d} \\
     \none & \otherwise
   \end{cases}\\
-  \forall \mathbf{d} \in \mathbb{D}&, \mathbf{s}: a \setminus \mathbf{s} \equiv \{ (k \mapsto v): (k \mapsto v) \in \mathbf{d}, k \not \in \mathbf{s} \}
+  \forall \mathbf{d} \in \mathbb{D}&, \mathbf{s} \subseteq K: \mathbf{d} \setminus \mathbf{s} \equiv \{ (k \mapsto v): (k \mapsto v) \in \mathbf{d}, k \not \in \mathbf{s} \}
 \end{align}
 
 Note that when using a subscript, it is an implicit assertion that the key exists in the dictionary. Should the key not exist, the result is undefined and any block which relies on it must be considered invalid.
@@ -85,17 +84,17 @@ It is typically useful to limit the sets from which the keys and values may be d
   \dict{K}{V} &\equiv \big \{ \{ (k \mapsto v) \mid k \in K \wedge v \in V \} \big \}
 \end{align}
 
-To denote the active domain (\ie set of keys) of a dictionary $\mathbf{d} \in \dict{K}{V}$, we use $\keys{\mathbf{d}} \subset K$ and for the range (\ie set of values), $\mathcal{V}(\mathbf{d}) \subset V$. Formally:
+To denote the active domain (\ie set of keys) of a dictionary $\mathbf{d} \in \dict{K}{V}$, we use $\keys{\mathbf{d}} \subseteq K$ and for the range (\ie set of values), $\mathcal{V}(\mathbf{d}) \subseteq V$. Formally:
 \begin{align}
   \keys{\mathbf{d} \in \mathbb{D}} &\equiv \{\ k \mid \exists v : (k \mapsto v) \in \mathbf{d}\ \} \\
   \mathcal{V}(\mathbf{d} \in \mathbb{D}) &\equiv \{\ v \mid \exists k : (k \mapsto v) \in \mathbf{d}\ \}
 \end{align}
 
-Note that since the domain of $\mathcal{V}$ is a set, should different keys with equal values appear in the dictionary, the set will only contain one such value.
+Note that since the output of $\mathcal{V}$ is a set, should different keys with equal values appear in the dictionary, the set will only contain one such value.
 
 \subsection{Tuples}\label{sec:tuples}
 
-Tuples are groups of values where each item typically belongs to a different set. They are denoted with parentheses, \eg the tuple $t$ of the integers $3$ and $5$ is denoted $t = (3, 5)$, and it exists in the set of integer pairs sometimes denoted $\N \times \N$, but denoted in the present work as $(\N, \N)$.
+Tuples are groups of values where each item may belong to a different set. They are denoted with parentheses, \eg the tuple $t$ of the integers $3$ and $5$ is denoted $t = (3, 5)$, and it exists in the set of integer pairs sometimes denoted $\N \times \N$, but denoted in the present work as $(\N, \N)$.
 
 We have frequent need to refer to a specific item within a tuple value and as such find it convenient to declare a name for each item. \Eg we may denote a tuple with two named integer components $a$ and $b$ as $T = \ltuple\isa{a}{\N}\ts\isa{b}{\N}\rtuple$. We would denote an item $t \in T$ through subscripting its name, thus for some $t = \ltup\is{a}{3}\ts\is{b}{5}\rtup$, $t_a = 3$ and $t_b = 5$.
 
@@ -150,7 +149,7 @@ We use $\Y_{BLS} \subset \Y_{144}$ to denote the set of public keys for the \tex
 
 We denote the set of valid Bandersnatch public keys as $\H_B$, defined in appendix \ref{sec:bandersnatch}. $\bandersig{k \in \H_B}{x \in \Y}{m \in \Y} \subset \Y_{96}$ is the set of valid singly-contextualized signatures of utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
 
-$\bandersnatch{r \in \Y_R}{x \in \Y}{m \in \Y} \subset \Y_{388}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\Y_R \in \Y_{196608}$. We denote $\mathcal{R}(\mathbf{s} \in [\H_B]) \in \Y_R$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
+$\bandersnatch{r \in \Y_R}{x \in \Y}{m \in \Y} \subset \Y_{784}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\Y_R \in \Y_{196608}$. We denote $\mathcal{R}(\mathbf{s} \in [\H_B]) \in \Y_R$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
 
 Both the Bandersnatch signature and Ring\textsc{vrf} proof strictly imply that a member utilized their secret key in combination with both the context $x$ and the message $m$; the difference is that the member is identified in the former and is anonymous in the latter. Furthermore, both define a \textsc{vrf} \emph{output}, a high entropy hash influenced by $x$ but not by $m$, formally denoted $\banderout{\bandersnatch{r}{x}{m}} \subset \H$ and $\banderout{\bandersig{k}{x}{m}} \subset \H$.
 
