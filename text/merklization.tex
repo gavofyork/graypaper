@@ -66,7 +66,7 @@ Formally, we define the encoding functions $B$ and $L$:
 \begin{align}
   B&\colon\left\{\begin{aligned}
     (\H, \H) &\to \mathbb{B}_{488}\\
-    (l, r) &\mapsto [0, 0, 0, 0] \frown l_{13:16} \frown r_{13:16} \frown l_{16:} \frown r_{16:}
+    (l, r) &\mapsto [0, 0, 0, 0] \frown l_{14:16} \frown r_{14:16} \frown l_{16:} \frown r_{16:}
   \end{aligned}\right.\\
   L&\colon\left\{\begin{aligned}
     (\H, \Y) &\to \mathbb{B}_{488}\\
@@ -83,7 +83,7 @@ We may then define, the Merklization function $\mathcal{M}_S$ is as:
   M(d: \dict{\mathbb{B}}{(\H, \Y)}) &\equiv \begin{cases}
     \H^0 &\when |d| = 0\\
     \mathcal{H}(\text{bits}^{-1}(L(k, v))) &\when \mathcal{V}(d) = \{ (k, v) \}\\
-    \mathcal{H}(\text{bits}^{-1}(B(l, r))) &\otherwise, \where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b_{1:} \mapsto d) \in \begin{cases}
+    \mathcal{H}(\text{bits}^{-1}(B(M(l), M(r)))) &\otherwise, \where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b_{1:} \mapsto p) \in \begin{cases}
       l &\when b_0 = 0 \\
       r &\when b_0 = 1
     \end{cases}
