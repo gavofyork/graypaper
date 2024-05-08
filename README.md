@@ -4,10 +4,95 @@ The description and formal specification of the Jam protocol, a potential succes
 
 Build with xelatex.
 
+## DA2
+
+### 4K minimum reconstruction size to allow for some optimization
+  - Every 4K byte segment is inflated to 12K and then split into 1024 * 12 byte chunks of which 342 are needed.
+  - The ensures that SIMD can be utilized when coding/reconstructing.
+
+### Guarantor makes imports additionally available for 8 hours
+
+This means the same data is in DA - one long-term and one short-term. Guarantor is expected to fetch from long-term and re-encode into short-term. Auditors only need reconstruct.
+
+Validator count $V = 1023$
+Minimum segment size $S = 4096$
+Signature size $G = 128$
+Segment-chunk proof size $P_C = 32 * \lceil\log_2(V)\rceil+\lceil\log_2(|E| + |X|)\rceil = 702$ B
+Segment proof size $P = P_C\lceil\frac{V}{3}\rceil \approx 240$ KB
+
+TODO: Consider max segment size = 1MB
+
+$W$: **Package size**; e.g. $S$
+$X$: **Extrinsic**; e.g. $|X| = 1024, \sum X = |X|S$ MB
+$E$: **Export**; e.g. $|E| = 2048, \sum E = |E|S$ MB
+$I$: **Import**; $|I| = 2048, \sum I = |I|S$ MB
+
+Export Merkle path is validator index to two roots and two chunks:
+- WP chunk
+- imports chunk (no need for separating by segment as not re-exported - only used for audits)
+- extrinsic segments chunks-root
+- export segments chunks-root
+
+This ensures that proof distribution need only cover a single proof per validator to these 4 hashes.
+
+For all WPs in DA we store all chunks together with proof to our 4 hashes. This allows a proof to any individual chunk to be constructed as needed:
+Overhead per WP is: $D = 32 * \lceil\log_2(V)\rceil = 320$ B.
+
+TODO: Consider: All segments lengths (as multiples of $S$) are placed in WR (1 byte each). TODO: Consider placing in DA instead, commitment in WR. TODO: Is this really needed? We have our chunk which is committed to and it therefore must be of a particular length; and we know the segment is a multiple of 4K.
+
+- Guaranteeing:
+  - receive: $\sum I + \frac{1}{3}GV$ (reconstructed, optimistic; $VP$ for any segments whose reconstructed root doesn't match, max $|I|VP$; in such cases, slashing happens)
+  - send: $\frac{1}{2}((\sum I + \sum X + \sum E + W) * 3 + VD)$
+- Availability:
+  - send (imports, to guarantors, ex. proof): $\sum I + \frac{1}{3}GV$ (opt: $\frac{1}{3}(I+GV)$)
+  - receive (from guarantors inc. proof): $\sum I + \sum X + \sum E + W + \frac{1}{3}DV$
+  - send (for auditing, inc. proof): $10 * (\sum X + \sum I + W + 32 + D)$
+- Auditing:
+  - receive (inc. proof): $10 * (\sum X + \sum I + W + 32 + D)$
+
+- LT-DA per val per block:
+  - $\sum X + \sum E + W + \frac{1}{3}V(D + 32)$ (extra 32 is the imports hash, which we must store for proof construction even after imports data is discarded)
+    - e.g. $28 * 24 * 600 * (12\text{ MB} + 341 * 352) = 5.1$ TB (individual segments must be individually reconstructable, so proof and spec stored for each)
+- ST-DA per val per block:
+  - $\sum I$ MB
+    - e.g. $12 * 600 * 8\text{ MB} = 57.6$ GB
+- Total items in LT-DA: $T = 28*24*600*341*3*1024*32$
+
+Total DA/val: 5.2 TB
+Send:
+- per 6s: $((\sum I + \sum X + \sum E + W) * 3 + VD) / 2 + \sum I + \frac{1}{3}GV + 10 * (\sum X + \sum I + W + 32 + D) = 12.5 \sum I + 11.5(\sum X + W) + \frac{3}{2}\sum E + \frac{1}{2}VD + \frac{1}{3}GV + 10D + 320$
+- e.g. 12.5 * 8 MB + 11.5 * 4 MB + 1.5 * 8 MB + 220KB = 158 MB/6s = 26MB/s = 210 Mbps + K
+Receive:
+- per 6s: $\sum I + \frac{1}{3}GV + \sum I + \sum X + \sum E + W + \frac{1}{3}VD + 10 * (\sum X + \sum I + W + 32 + D) = 12\sum I + 11(\sum X + W) + \sum E + \frac{1}{3}VD + \frac{1}{3}GV + 10D + 320$
+- e.g. 12 * 8 MB + 11 * 4 MB + 8 MB + 170KB = 148 MB/6s = 25MB/s = 200 Mbps
+
+
+## Constraints
+
+$12(\sum I + \sum X + W) + \frac{3}{2}\sum E < 160$ MB
+
+$X + \sum E + \sum I + |I|\cdot P \le 15$ MB
+$|X| + |E| \le 4096$
+
+
+
+TODO: Consider VRF proof when requesting chunk so validators are equally responsible.
+
 ## Remaining for v0.1
 
 ### Content
 - [ ] Rewards. WAITING ON AL
+- [ ] Think about time and relationship between lookup-anchor block and import/export period.
+- [ ] Make work report field r bold.
+- [x] Need to translate the basic work result into an "L"; do it in the appendix to ease layout
+  - [x] service - easy
+  - [x] service code hash - easy
+  - [x] payload hash - easy
+  - [x] gas prioritization - just from WP?
+- [ ] Refine arguments
+  -  Currently passing in the WP hash, some WP fields and all manifest preimages.
+  - [ ] Consider passing in the whole work-package and a work-item index.
+  - [ ] Consider introducing a host-call for reading manifest data rather than always passing it in.
 
 ### Finesse
 - [ ] Make all subscript names capitalized.
