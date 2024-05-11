@@ -26,27 +26,42 @@ Since it is often useful to shuffle a sequence based on some random seed in the 
 
 \section{General Merklization}\label{sec:merklization}
 
-\subsection{Binary Merkle Tree}
+\subsection{Binary Merkle Trees}
 
-The Merkle tree is a cryptographic data structure yielding a hash commitment to a specific sequence of values. It provides $O(N)$ computation and $O(logN)$ proof size for inclusion. This \emph{well-balanced} formulation ensures that the maximum depth of any leaf is minimal and that the number of leaves at that depth is also minimal.
+The Merkle tree is a cryptographic data structure yielding a hash commitment to a specific sequence of values. It provides $O(N)$ computation and $O(\log(N))$ proof size for inclusion. This \emph{well-balanced} formulation ensures that the maximum depth of any leaf is minimal and that the number of leaves at that depth is also minimal.
 
+\subsubsection{Well-balanced tree}
 We define the well-balanced binary Merkle function as $\mathcal{M}_2$:
 \begin{equation}
   \begin{aligned}
     \mathcal{M}_2&\colon \left\{\begin{aligned}
-      (\seq{\Y_{n > 32}}, \Y \to \H) &\to \H\\
+      (\seq{\Y_{n \ne 32}}, \Y \to \H) &\to \H \\
       (\mathbf{v}, H) &\mapsto \begin{cases}
         \H_0 &\when |\mathbf{v}| = 0\\
         H(\mathbf{v}_0) &\when |\mathbf{v}| = 1 \\
         N(\mathbf{v}, H) &\otherwise
       \end{cases} \\
-    \end{aligned}\right.\label{eq:binarymerkleroot}\\
+    \end{aligned}\right.\label{eq:binarymerkleroot} \\
     \where N&\colon\left\{\begin{aligned}
-      (\seq{\Y_{n > 32}}_{1:}, \Y \to \H) &\to \Y_{n > 32} \cup \H\\
+      (\seq{\Y_{n \ne 32}}_{1:}, \Y \to \H) &\to \Y \\
       (\mathbf{v}, H) &\mapsto \begin{cases}
         \mathbf{v}_0 &\when |\mathbf{v}| = 1 \\
         H(N(\mathbf{v}_{\dots\ceil{\nicefrac{|\mathbf{v}|}{2}}}) \concat N(\mathbf{v}_{\ceil{\nicefrac{|\mathbf{v}|}{2}}\dots})) &\otherwise
       \end{cases}
+    \end{aligned}\right.
+  \end{aligned}
+\end{equation}
+
+\subsubsection{Constant-depth tree}
+We define the constant-depth binary Merkle function as $\mathcal{M}_2^*$:
+\begin{equation}
+  \begin{aligned}
+    \mathcal{M}_2^*&\colon \left\{\begin{aligned}
+      (\seq{\Y_{n \ne 32}}, \Y \to \H) &\to \H\\
+      (\mathbf{v}, H) &\mapsto \mathcal{M}_2(\mathbf{v}', H)\ \where |\mathbf{v}'| = 2^{\ceil{\log_2(|\mathbf{v}|)}}\,,\ \mathbf{v}'_i = \begin{cases}
+        \mathbf{v}_i &\when i < |\mathbf{v}|\\
+        [] &\otherwise
+      \end{cases}\\
     \end{aligned}\right.
   \end{aligned}
 \end{equation}
