@@ -70,8 +70,8 @@ The Refine invocation function also implicitly draws upon some recent head state
 \begin{align}
   \Psi_R &\colon \left\{\begin{aligned}
     \left(\begin{aligned}
-      &\H, \N_G, \N_S, \H, \Y, \mathbb{X}, \H,\\
-      &\Y, \seq{\Y_{\mathsf{W}_S}}, \seq{\Y_{\mathsf{W}_S}}, \N
+      &\H, \N_G, \N_S, \H, \Y, \mathbb{X},\\
+      &\H, \Y, \seq{\G}, \seq{\G}, \N
     \end{aligned}
     \right) &\to (\Y \cup \mathbb{J}, \seq{\Y}) \\
     (c, g, s, p, \mathbf{y}, \mathbf{c}, a, \mathbf{o}, \mathbf{i}, \mathbf{x}, \ell) &\mapsto \begin{cases}
@@ -112,10 +112,10 @@ We track both regular and exceptional dimensions within our context mutator, but
 \begin{equation}
   \mathbf{X} \equiv \ltuple\begin{array}{lll}
     \isa{\mathbf{s}}{\mathbb{A}\bm{?}}\ts&
-    \isa{\mathbf{c}}{[\left[\H\right]_\mathsf{Q}]_\mathsf{C}}\ts&
+    \isa{\mathbf{c}}{\seq{\seq{\H}_\mathsf{Q}}_\mathsf{C}}\ts&
     \isa{\mathbf{v}}{\mathbb{K}_\mathsf{V}}\ts\quad
     \isa{i}{\N_S}\ts\\
-    \isa{\mathbf{t}}{\left[\mathbb{T}\right]}\ts&
+    \isa{\mathbf{t}}{\seq{\mathbb{T}}}\ts&
     \isa{\mathbf{n}}{\dict{\N_S}{\mathbb{A}}}\ts&
     \isa{p}{\tuple{\isa{m}{\N_S}\ts\isa{a}{\N_S}\ts\isa{v}{\N_S}}}
   \end{array}\rtuple
@@ -187,7 +187,7 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
 \begin{align}
   \Psi_T &: \begin{cases}
-    (\dict{\N_S}{\mathbb{A}}, \N_S, [\mathbb{T}]) &\to \mathbb{A} \\
+    (\dict{\N_S}{\mathbb{A}}, \N_S, \seq{\mathbb{T}}) &\to \mathbb{A} \\
     (\delta^\ddagger, s, \mathbf{t}) &\mapsto \begin{cases}
     \mathbf{s} &\when \mathbf{s}_\mathbf{c} = \none \vee \mathbf{t} = [] \\
     \Psi_M(\mathbf{s}_\mathbf{c}, 3, \sum_{r \in \mathbf{t}}{(r_g)}, \mathcal{E}(\mathbf{t}), F, \mathbf{s}) &\otherwise
@@ -214,7 +214,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
 
 \subsection{General Functions}\label{sec:generalfunctions}
 
-This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' \in [\N_R]_2, \mu', \mathbf{s}') = \Omega_\square(\xi \in \N_G, \omega \in [\N_R]_6, \mu \in \mathbb{M}, \mathbf{s} \in \mathbf{A}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' \in \seq{\N_R}_2, \mu', \mathbf{s}') = \Omega_\square(\xi \in \N_G, \omega \in \seq{\N_R}_6, \mu \in \mathbb{M}, \mathbf{s} \in \mathbf{A}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
 Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context, but merely a service account $\mathbf{s}$.
 
@@ -361,7 +361,7 @@ The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an el
 
 \subsection{Accumulate Functions}\label{sec:accumulatefunctions}
 
-This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' \in [\N_R]_2, \mu', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\xi \in \N_G, \omega \in [\N_R]_6, \mu \in \mathbb{M}, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' \in \seq{\N_R}_2, \mu', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\xi \in \N_G, \omega \in \seq{\N_R}_6, \mu \in \mathbb{M}, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 \begin{align}
   \xi' &\equiv \xi - g\\
   (\omega', \mu', \mathbf{x}', \mathbf{y}') &\equiv \begin{cases}

@@ -93,37 +93,37 @@ TODO: Consider VRF proof when requesting chunk so validators are equally respons
 
 ### Content
 - [ ] Rewards.
-- [ ] Constant depth function can probably be improved if not based on regular.
 - [ ] Consider removal of the arrow-above notation in favour of subscript and ellipsis (this only works for the right-arrow).
 - [ ] Think about time and relationship between lookup-anchor block and import/export period.
 - [ ] Make work report field r bold.
-- [x] Need to translate the basic work result into an "L"; do it in the appendix to ease layout
-  - [x] service - easy
-  - [x] service code hash - easy
-  - [x] payload hash - easy
-  - [x] gas prioritization - just from WP?
 - [ ] Refine arguments
   -  Currently passing in the WP hash, some WP fields and all manifest preimages.
   - [ ] Consider passing in the whole work-package and a work-item index.
   - [ ] Consider passing in the work-item.
   - [ ] Consider introducing a host-call for reading manifest data rather than always passing it in.
 - [ ] Segmented DA v2
-  - [ ] Update chunks/segments to new size of 12 bytes / 4KB in the availability sections, especially the work packages and work reports section.
+  - [ ] Include full calculations for bandwidth requirements.
+  - [ ] Update chunks/segments to new size of 12 bytes / 4KB in the availability sections, especially the work packages and work reports section and appendix H.
   - [x] `export` is in multiples of 4096 bytes.
   - [x] Manifest specifies WI (maximum) export count.
   - [x] `import` is provided as concatenated segments of 4096 bytes, as per manifest.
   - [x] Constant-depth merkle root
-  - [ ] (Partial) Merkle proof generation function
-  - [ ] New erasure root (4 items per validator; 2 hashes + 2 roots).
-  - [ ] Specification of import hash (to include concatenated import data and proof).
-    - [ ] Proof spec.
-    - [ ] Specification of segment root.
+  - [x] (Partial) Merkle proof generation function
+  - [x] New erasure root (4 items per validator; 2 hashes + 2 roots).
+  - [x] Specification of import hash (to include concatenated import data and proof).
+    - [x] Proof spec.
+    - [x] Specification of segment root.
   - [x] Additional two segment-roots in WR.
-    - [ ] Specification of segment tree.
-  - [ ] Specification of segment proofs.
+    - [x] Specification of segment tree.
+  - [x] Specification of segment proofs.
   - [ ] Specification of final segments for DA and ER.
   - [ ] Re-erasure-code imports.
-  - [ ] Fetching imports and verification.
+  - [x] Fetching imports and verification.
+  - [ ] Migrate formalization & explanation:
+    - [ ] guaranteeing-specific stuff into relevant section
+    - [ ] assurance-specific stuff into relevant section
+    - [ ] auditing-specific stuff into relevant section
+  - [ ] Formalize as much as possible.
 - [ ] Segmented DA v1
   - [x] Include manifest distribution in bandwidth: 511 * 2048 * 36 = 36 MB / 6s = 6 MB/s = 48Mbps
   - [ ] Amalgamate manifest distribution limit into bandwidth limit.
@@ -246,6 +246,11 @@ TODO: Consider VRF proof when requesting chunk so validators are equally respons
 ## Done
 
 ### Texty
+- [x] Need to translate the basic work result into an "L"; do it in the appendix to ease layout
+  - [x] service - easy
+  - [x] service code hash - easy
+  - [x] payload hash - easy
+  - [x] gas prioritization - just from WP?
 - [x] Edit Previous Work.
 - [x] Edit Discussion.
 - [x] Document guide at beginning.
