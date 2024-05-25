@@ -106,7 +106,7 @@ A work-package \emph{yields} segments which are exported from, or extrinsic to, 
 
 In addition to the segments-roots, guarantors are required to erasure-code and distribute four data sets: the encoded work-package itself, together with self-justifying imported segments, extrinsic segments and exported segments, the latter two including \emph{paged-proofs}. The first two items are short-lived; assurers are expected to keep them only until they believe there is general confidence in the validity of the work-result. Erasure-coded chunks of the latter two are long-lived and expected to be kept for a minimum of 28 days (672 complete epochs) following the reporting of the work-report.
 
-Auditors and any later guarantors who are called upon to import this data, and with exported segments used only for later guarantors (auditors can derive exported segments perfectly through Refine execution alone).
+Extrinsic data is reconstructed by both auditors and any later guarantors who are called upon to import this data for use in a work-package. Imported segment data may be reconstructed only by auditors, and exported segment data may be used only for later guarantors since auditors can derive exported segments perfectly through Refine execution alone.
 
 We define the paged-proofs function $P$ which accepts a series of segments $\mathbf{s}$ and defines some series of additional segments placed into the availability system for erasure-coding and distribution. The function evaluates to pages of hashes, together with subtree proofs, such that justifications of correctness based on a yield root may be made from it:
 \begin{equation}\label{eq:pagedproofs}
