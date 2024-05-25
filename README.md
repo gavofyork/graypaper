@@ -4,6 +4,8 @@ The description and formal specification of the Jam protocol, a potential succes
 
 Build with xelatex.
 
+https://graypaper.com/
+
 ## DA2
 
 ### 4K minimum reconstruction size to allow for some optimization
