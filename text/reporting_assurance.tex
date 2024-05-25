@@ -21,9 +21,23 @@ The state of the reporting and availability portion of the protocol is largely c
 As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\rho'$) are held under the same constraints as the prior value.
 
 \subsubsection{Work Report}\label{sec:workreport}
-A work-report, of the set $\mathbb{W}$, is defined as a tuple of authorizer hash and output, the refinement context, the package specification and the results of the evaluation of each of the items in the package, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
+A work-report, of the set $\mathbb{W}$, is defined as a tuple of authorizer hash and output, the refinement context, the package specification, the availability specifier manifest roots for requirements ($q$) and provisions ($v$), and the results of the evaluation of each of the items in the package, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
 \begin{equation}\label{eq:workreport}
-  \mathbb{W} \equiv \ltuple\isa{a}{\H}\ts\isa{o}{\Y}\ts\isa{x}{\mathbb{X}}\ts\isa{s}{\mathbb{S}}\ts\isa{r}{\seq{\mathbb{L}}_{1:\mathsf{I}}}\rtuple
+  \mathbb{W} \equiv \tuple{
+    \begin{aligned}
+      &\isa{a}{\H}\ts
+      \isa{o}{\Y}\ts
+      \isa{x}{\mathbb{X}}\ts
+      % TODO: ^^^ Rename to c
+      \isa{s}{\mathbb{S}}\ts\\
+      &\isa{t}{\H}\ts
+      % TODO: ^^^ Rename to x
+      \isa{e}{\H}\ts
+      \isa{r}{\seq{\mathbb{L}}_{1:\mathsf{I}}}
+    \end{aligned}
+  }\!\!\!\!\!
+  % TODO: This should be bold o!!
+  % TODO: This should be bold r!!
 \end{equation}
 
 The total serialized size of a work-report may be no greater than $\mathsf{W}_R$ bytes:
@@ -41,11 +55,21 @@ A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the cont
   \end{alignedat}\rtuple
 \end{equation}
 
-\subsubsection{Work Package Specification}
-We define the set of \emph{work-package specifications}, $\mathbb{S}$, as the tuple of the work-package's hash and serialized length together with an erasure root. Formally:
+\subsubsection{Availability}
+We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tuple of the work-package's hash and length together with an erasure-root and two segment-roots, one for the extrinsic segments, $x$, and one for the export segments, $e$. Work-results include the availability specification for the encoding of the corresponding work-package. Formally:
 \begin{align}
-  \mathbb{S} &\equiv \ltuple\isa{h}{\H}\ts\isa{l}{\N_L}\ts\isa{u}{\H}\rtuple
+  \mathbb{S} &\equiv \tuple{
+    \isa{h}{\H}\ts
+    \isa{l}{\N_L}\ts
+    \isa{u}{\H}\ts
+    \isa{x}{\H}\ts
+    \isa{e}{\H}
+  }
 \end{align}
+
+The \emph{availability manifest root} ($u$) is the root of a binary Merkle tree populated with the encoded availability specifications of each of the items in the work-package manifest, together with additional items exported from the work-package's refinement. It is used to verify the availability of all data required to audit the work-result and is discussed properly in section \ref{sec:workpackagesandworkreports}.
+
+The two \emph{segment roots} ($x$ and $e$) are the roots of constant-depth, left-biased and zero-hash-padded binary Merkle trees populated with the encoded segments of each work-item, one for the extrinsic segments and one for the export segments. These are used to verify the correctness of the segments should they later be imported by some other work package and are discussed in section \ref{sec:workpackagesandworkreports}.
 
 \subsubsection{Work Result}
 We finally come to define a \emph{work result}, $\mathbb{L}$, which is the data conduit by which services' states may be altered through the computation done within a work-package.

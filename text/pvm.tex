@@ -261,8 +261,8 @@ In the case that the above condition is not met, then the instruction is conside
   45&\token{branch\_ge\_s\_imm}&0&$\token{branch}(\immed_Y, \signed{\reg_A} \ge \signed{\immed_X})$\\ \mrule
   53&\token{branch\_gt\_s\_imm}&0&$\token{branch}(\immed_Y, \signed{\reg_A} > \signed{\immed_X})$\\ \mrule
   26&\token{store\_imm\_ind\_u8}&0&$\memwr_{\reg_A + \immed_X} = \immed_Y \bmod 2^8$\\ \mrule
-  54&\token{store\_imm\_ind\_u16}&0&$\memwr_{\reg_A + \immed_X} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
-  13&\token{store\_imm\_ind\_u32}&0&$\memwr_{\reg_A + \immed_X} = \se_4(\immed_Y)$\\
+  54&\token{store\_imm\_ind\_u16}&0&$\memwr_{\reg_A + \immed_X \dots+ 2} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
+  13&\token{store\_imm\_ind\_u32}&0&$\memwr_{\reg_A + \immed_X \dots+ 4} = \se_4(\immed_Y)$\\
   \bottomrule
 \end{longtable}
 
@@ -282,8 +282,8 @@ In the case that the above condition is not met, then the instruction is conside
   \midrule
   \endhead
   16&\token{store\_ind\_u8}&0&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
-  29&\token{store\_ind\_u16}&0&$\memwr_{\reg_B + \immed_X} = \se_2(\reg_A \bmod 2^{16})$\\ \mrule
-  3&\token{store\_ind\_u32}&0&$\memwr_{\reg_B + \immed_X} = \se_4(\reg_A)$\\ \mrule
+  29&\token{store\_ind\_u16}&0&$\memwr_{\reg_B + \immed_X \dots+ 2} = \se_2(\reg_A \bmod 2^{16})$\\ \mrule
+  3&\token{store\_ind\_u32}&0&$\memwr_{\reg_B + \immed_X \dots+ 4} = \se_4(\reg_A)$\\ \mrule
   11&\token{load\_ind\_u8}&0&$\reg'_A = \mem_{\reg_B + \immed_X}$\\ \mrule
   21&\token{load\_ind\_i8}&0&$\reg'_A = \unsigned{\signedn{1}{\mem_{\reg_B + \immed_X}}}$\\ \mrule
   37&\token{load\_ind\_u16}&0&$\reg'_A = \de_2(\memr_{\reg_B + \immed_X\dots+2})$\\ \mrule
@@ -448,12 +448,12 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     (\mathbf{c}, \imath, \xi, \omega, \mem, f, \mathbf{x}) &\mapsto \begin{cases}
       (\fault \times a, \imath', \xi', \omega', \mem', \mathbf{x}') &\when \bigwedge\left\{\;\begin{aligned}
         &\zeta = \host \times h\\[2pt]
-        &\fault \times a = f(h, \xi', \omega', \mem', \mathbf{x}')
-      \end{aligned}\right.\\
+        &\fault \times a = f(h, \xi', \omega', \mem', \mathbf{x})\\[2pt]
+      \end{aligned}\right.\\[8 pt]
       \Psi_H(\mathbf{c}, \imath' + 1, \xi'', \omega'', \mem'', f, \mathbf{x}'') &\when \bigwedge\left\{\;\begin{aligned}
-        &\zeta = \host \times \tup{h, i}\\[2pt]
+        &\zeta = \host \times h\\[2pt]
         &(\xi'', \omega'', \mem'', \mathbf{x}'') = f(h, \xi', \omega', \mem', \mathbf{x})
-      \end{aligned}\right.\\
+      \end{aligned}\right.\\[8pt]
       (\zeta, \imath', \xi', \omega', \mem', \mathbf{x}) &\otherwise
     \end{cases} \\
     \where (\zeta, \imath', \xi', \omega', \mem') &= \Psi(\mathbf{c}, \imath, \xi, \omega, \mem)\\

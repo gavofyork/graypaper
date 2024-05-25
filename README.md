@@ -8,7 +8,7 @@ https://graypaper.com/
 
 ## DA2
 
-### 4K minimum reconstruction size to allow for some optimization
+### 4K reconstruction size to allow for some optimization
   - Every 4K byte segment is inflated to 12K and then split into 1024 * 12 byte chunks of which 342 are needed.
   - The ensures that SIMD can be utilized when coding/reconstructing.
 
@@ -16,13 +16,17 @@ https://graypaper.com/
 
 This means the same data is in DA - one long-term and one short-term. Guarantor is expected to fetch from long-term and re-encode into short-term. Auditors only need reconstruct.
 
+In order to ensure that data fetched and made re-available by a guarantor is correct, exported/extrinsic data is hashed and Merklized and a commitment stored in the WR. The paginated hashes which form a 64-entry discrete sub-tree, together with a justification to the commitment are placed in DA as additional segments alongside the extrinsic and export segments. These segments are referenced and distributed in the same way as regular segments in the overall erasure-coding root.
+
+In order to ensure sub-trees are generally 64-entries, the binary Merkle tree is biased in a manner reminiscent of depth-first; all leaves are thus of depth $\lceil \log_2(s) \rceil$ where $s$ is the number of regular segments. Non-existent segments are represented by the null-hash.
+
+Segments from export and segments from extrinsic are kept separate, both in the erasure root and in the segment trees. Two separate segment tree roots are stored in the WR alongside the erasure root.
+
 Validator count $V = 1023$
-Minimum segment size $S = 4096$
+Segment size $S = 4096$
 Signature size $G = 128$
 Segment-chunk proof size $P_C = 32 * \lceil\log_2(V)\rceil+\lceil\log_2(|E| + |X|)\rceil = 702$ B
 Segment proof size $P = P_C\lceil\frac{V}{3}\rceil \approx 240$ KB
-
-TODO: Consider max segment size = 1MB
 
 $W$: **Package size**; e.g. $S$
 $X$: **Extrinsic**; e.g. $|X| = 1024, \sum X = |X|S$ MB
@@ -30,15 +34,22 @@ $E$: **Export**; e.g. $|E| = 2048, \sum E = |E|S$ MB
 $I$: **Import**; $|I| = 2048, \sum I = |I|S$ MB
 
 Export Merkle path is validator index to two roots and two chunks:
-- WP chunk
-- imports chunk (no need for separating by segment as not re-exported - only used for audits)
-- extrinsic segments chunks-root
-- export segments chunks-root
+- WP chunk (only used for audits - kept for 8h)
+- imports chunk (no need for separating by segment as not re-exported - segment-proof included to allow justification of data from manifest; only used for audits and kept for 8h)
+- extrinsic segments chunks-root (segments are always kept for 28d)
+- export segments chunks-root (segments are always kept for 28d)
 
 This ensures that proof distribution need only cover a single proof per validator to these 4 hashes.
 
+Imports chunk is a concatenation of all imported segments ordered as in manifest with each non-duplicate proof-segment in same order following. When passing imports into `refine`, only the work item's concatenated imports are exposed.
+
 For all WPs in DA we store all chunks together with proof to our 4 hashes. This allows a proof to any individual chunk to be constructed as needed:
 Overhead per WP is: $D = 32 * \lceil\log_2(V)\rceil = 320$ B.
+
+WP includes manifest:
+- imports: $\mathbf{i} \in [(\mathbb{H}, \mathbb{N})]$ (the segment-tree root and index into it)
+- extrinsics: $\mathbf{x} \in [\mathbb{Y}]$
+- exports: $\mathbf{e} \in [\mathbb{N}]$ (maximum number of exports per work item, $|\mathbf{x}| + \sum \mathbf{e} \le 3*1024$)
 
 TODO: Consider: All segments lengths (as multiples of $S$) are placed in WR (1 byte each). TODO: Consider placing in DA instead, commitment in WR. TODO: Is this really needed? We have our chunk which is committed to and it therefore must be of a particular length; and we know the segment is a multiple of 4K.
 
@@ -83,7 +94,82 @@ TODO: Consider VRF proof when requesting chunk so validators are equally respons
 ## Remaining for v0.1
 
 ### Content
-- [ ] Rewards. WAITING ON AL
+- [ ] Rewards.
+- [ ] Consider removal of the arrow-above notation in favour of subscript and ellipsis (this only works for the right-arrow).
+- [ ] Think about time and relationship between lookup-anchor block and import/export period.
+- [ ] Make work report field r bold.
+- [ ] Refine arguments
+  -  Currently passing in the WP hash, some WP fields and all manifest preimages.
+  - [ ] Consider passing in the whole work-package and a work-item index.
+  - [ ] Consider passing in the work-item.
+  - [ ] Consider introducing a host-call for reading manifest data rather than always passing it in.
+- [ ] Segmented DA v2
+  - [ ] Include full calculations for bandwidth requirements.
+  - [ ] Update chunks/segments to new size of 12 bytes / 4KB in the availability sections, especially the work packages and work reports section and appendix H.
+  - [x] `export` is in multiples of 4096 bytes.
+  - [x] Manifest specifies WI (maximum) export count.
+  - [x] `import` is provided as concatenated segments of 4096 bytes, as per manifest.
+  - [x] Constant-depth merkle root
+  - [x] (Partial) Merkle proof generation function
+  - [x] New erasure root (4 items per validator; 2 hashes + 2 roots).
+  - [x] Specification of import hash (to include concatenated import data and proof).
+    - [x] Proof spec.
+    - [x] Specification of segment root.
+  - [x] Additional two segment-roots in WR.
+    - [x] Specification of segment tree.
+  - [x] Specification of segment proofs.
+  - [ ] Specification of final segments for DA and ER.
+  - [ ] Re-erasure-code imports.
+  - [x] Fetching imports and verification.
+  - [ ] Migrate formalization & explanation:
+    - [ ] guaranteeing-specific stuff into relevant section
+    - [ ] assurance-specific stuff into relevant section
+    - [ ] auditing-specific stuff into relevant section
+  - [ ] Formalize as much as possible.
+- [ ] Segmented DA v1
+  - [x] Include manifest distribution in bandwidth: 511 * 2048 * 36 = 36 MB / 6s = 6 MB/s = 48Mbps
+  - [ ] Amalgamate manifest distribution limit into bandwidth limit.
+    - [ ] base = (15MB * 3 + proof_size * 1022) / 2 = 22.66 MB
+    - [ ] per_provision = (size * 3 + proof_size * 1022)/2 + 68
+    - [ ] 1024 provisions: 160 MB/WP proof / 6s = 27MB/s = 220Mbps
+    - proof_size = 32 * 10 = 320.
+  - [ ] Limit number of exports, not just size.
+  - [ ] Ensure the 2048 is a limit for total manifest entries (import, extrinsic, export).
+  - [ ] Remove the regular hash from manifests.
+    - [ ] In doing so will need to properly consider how to reconstruct the WP for auditing.
+  - [x] `export` host-call for Refine
+  - [x] `imports` argument for Refine
+  - [x] `require_root` in Work Result
+  - [x] `provide_root` in Work Result
+  - [x] `imports` in Work Package
+  - [x] `extrinsics` in Work Package
+  - [x] Guarantor task
+    - [x] Ensure length of imports + WP <= 15MB, imports_count <= 2048
+    - [x] Fetch/reconstruct all Imports
+    - After execution:
+    - [x] Disregard `export`s which would take length exports + WP > 15MB or exports_count > 2048
+    - [x] Erasure-code all Extrinsic & Exports
+    - [x] Distribute chunks of all Extrinsic & Exports
+    - [x] Merklize erasure-roots to create WR `manifest_root`
+  - [x] Assurer task
+    - [x] Check receipt of WP and exports, as well as prescience of imports preimages, allowing computation of WR's `manifest_root` from first-principles.
+  - [ ] Properly detail auditor verification task
+    - [ ] Fetch/reconstuct WP
+    - [ ] Ensure length of imports + extrinsics + WP <= 15MB (assurer-upload/auditor-download)
+    - [ ] Ensure |imports| + |extrinsics| + |exports| <= 2048 (manifest distribution)
+    - [ ] Fetch/reconstruct imports
+      - Trivial since the import manifest contains erasure roots
+    - [ ] Fetch/reconstruct extrinsics
+      - Harder since WP contains extrinsic hash, but assurers only know by erasure-root.
+      - Option 1: download the manifest and cross-reference - an extra ~136KB.
+      - Option 2: include erasure roots in the WP's extrinsic spec - extra work for author
+    - [ ] Erasure-code all extrinsics
+    - After execution:
+    - [ ] Ensure length of WP + extrinsics + exports <= 15MB (guarantor-upload/assurer-download)
+    - [ ] Disregard `export`s which would take total length exports + WP > 15MB or exports_count > 2048
+    - [ ] Erasure-code each export
+    - [ ] Merklize WP imports field to verify WR `requires_root`
+    - [ ] Merklize erasure-coded {extrinsics, exports} to verify WR `providers_root`
 - [ ] Think about time and relationship between lookup-anchor block and import/export period.
 - [ ] Make work report field r bold.
 - [x] Need to translate the basic work result into an "L"; do it in the appendix to ease layout
@@ -140,82 +226,6 @@ TODO: Consider VRF proof when requesting chunk so validators are equally respons
 - Make memo bounded, rather than fixed.
 - Lookup anchor: maybe it should be 48 hours since lookup anchor can already be up to 24 hours after reporting and we want something available up to 24 hours after that?
 
-### Extra DA
-
-DA lasts 28 days instead of 24h.
-
-WP has additional field `manifest: Vec<ManifestEntry>`:
-```rust
-struct Commitment {
-  hash: Hash,
-  len: u32,
-  erasure_root: Hash,
-}
-type CommitmentTreeRoot = Hash; //binary Merkle tree of `Commitment` leaves
-struct HashCommitment {
-  len: u32,
-  hash: Hash,
-}
-enum PackageManifestEntry {
-  Export(Vec<u8>),
-  Import(Commitment),
-  Renew(Commitment),
-  ExportCache(Vec<u8>),
-  ImportCache(Hash),
-  RenewCache { len: u32, hash: Hash },
-}
-```
-
-WR specification has extra field of type `manifest_root: CommitmentTreeRoot`.
-
-Affinity for validator indexes minimizes renewal xfer costs.
-
-Guarantor ECs WP, each proc-export/export/renewal; checks each import chunk is available for > 8h and fetches.
-Guarantor distributes chunks of proc-exports/exports/renewals.
-Auditor:
-- downloads/reconstitutes WP and all nodes of `manifest_root` and downloads/reconstitutes all exports/renewals.
-- ECs WP/exports/renewals
-
-Guaranteeing involves:
-- Fetching/Reconstucting all Imports & Renews
-- Fetching all ImportCaches & RenewCaches
-- Executing
-- ErasureCoding all Exports & GenExports & Renews
-- Distributing chunks of all Exports & GenExports & Renews
-- Hashing all ExportCaches & GenExportCaches
-- Distributing data of all ExportCaches & GenExportCaches & RenewCaches
-- Merklizing ErasureRoots/Hashes to create WR's `manifest_root`
-
-Auditing involves (10 of):
-- Fetching/Reconstucting all Exports, Imports & Renews
-- Fetching all ExportCaches & RenewCaches
-- ErasureCoding all Exports (Renews & Imports should already be audited)
-- Executing
-- ErasureCoding all GenExports
-- Hashing all GenExportCaches
-- Merklizing ErasureRoots/Hashes to verify WR's `manifest_root`
-
-
-`refine` has new host-call:
-- `export(payload: &[u8], cache: bool)`
-- Calling this introduces an additional node in the manifest tree (`manifest_root`), iff the overall manifest size is  constraints would break then the call fails. The WP does not become invalid.
-
-`refine` has new argument:
-- `, manifest_payloads: Vec<(Hash, Vec<u8>)>`
-
-const BASE: u32 = 2048; // Example - might be less.
-
-
-
-let dist = |WP| + SUM_{Export(payload) in M}(payload.len() + BASE) + SUM_{Renew(c) in M}(c.len + BASE) + SUM_{ExportCache(c) in M}(c.len() * 341 + BASE) + SUM_{RenewCache{len, ..} in M}(len * 341 + BASE)
-
-let ecode = |WP| + SUM_{Export(payload) in M}(payload.len() + BASE) + SUM_{Renew(c) in M}(c.len + BASE) + SUM_{ExportCache(c) in M}(c.len() * 341 + BASE) + SUM_{RenewCache{len, ..} in M}(len * 341 + BASE)
-let reco = |WP| + SUM_{Import(c) in M, Renew(c) in M}(c.len + BASE)
-
-WP is valid iff: max(dist, reco) <= 8MB
-WP is available iff: all imports are in DA now and will still be in DA 8 hours from now
-
-
 ## Additional work
 - [ ] Proper gas schedule.
 - [ ] Networking protocol.
@@ -238,6 +248,11 @@ WP is available iff: all imports are in DA now and will still be in DA 8 hours f
 ## Done
 
 ### Texty
+- [x] Need to translate the basic work result into an "L"; do it in the appendix to ease layout
+  - [x] service - easy
+  - [x] service code hash - easy
+  - [x] payload hash - easy
+  - [x] gas prioritization - just from WP?
 - [x] Edit Previous Work.
 - [x] Edit Discussion.
 - [x] Document guide at beginning.

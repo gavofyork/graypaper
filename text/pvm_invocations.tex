@@ -43,9 +43,9 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
     \end{cases} \\
   \end{aligned}\right. \\
   \label{eq:isauthorizedmutator}F&\colon\left\{\begin{aligned}
-    (\Y_\$, \N_G, \lseq\N_R\rseq_6, \mathbb{M}) &\to (\Z_G, \lseq\N_R\rseq_2, \mathbb{M})\\
-    (\mathbf{n}, \xi, \omega, \mu) &\mapsto \begin{cases}
-      \Omega_G(\xi, \omega, \mu) &\when\mathbf{n} = \mathtt{\$gas} \\
+    (\N, \N_G, \lseq\N_R\rseq_6, \mathbb{M}) &\to (\Z_G, \lseq\N_R\rseq_2, \mathbb{M})\\
+    (n, \xi, \omega, \mu) &\mapsto \begin{cases}
+      \Omega_G(\xi, \omega, \mu) &\when n = \mathtt{gas} \\
       (\xi - 10, [\mathtt{WHAT}, \omega_1, \dots], \mu) &\otherwise
     \end{cases}
   \end{aligned}
@@ -55,46 +55,52 @@ Note for the Is-Authorized host-call dispatch function $F$ in equation \ref{eq:i
 
 \subsection{Refine Invocation}\label{sec:refineinvocation}
 
-We define the Refine service-account invocation function as $\Psi_R$. It is stateless, with the only exceptions being the ability to make a historical lookup and the ability to create inner instances of the \textsc{pvm}.
+We define the Refine service-account invocation function as $\Psi_R$. It has no general access to the state of the \Jam chain, with the slight exception being the ability to make a historical lookup. Beyond this it is able to create inner instances of the \textsc{pvm} and dictate pieces of data to export.
 
-The historical-lookup host-call function, $\Omega_H$, is designed to give the same result regardless of the state of the chain for any time when auditing may occur (which we bound to be less than two epochs from being accumulated). However, the lookup anchor may be up to $\mathsf{L}$ timeslots before the recent history and therefore adds to the potential age at the time of audit. We therefore set $\mathsf{D} = 28,800$, a safe amount of 48 hours.
+The historical-lookup host-call function, $\Omega_H$, is designed to give the same result regardless of the state of the chain for any time when auditing may occur (which we bound to be less than two epochs from being accumulated). The lookup anchor may be up to $\mathsf{L}$ timeslots before the recent history and therefore adds to the potential age at the time of audit. We therefore set $\mathsf{D} = 4,800$, a safe amount of eight hours.
 
-The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $pvm$. It holds some program code, instruction counter and \textsc{ram}:
+The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvm$. It holds some program code, instruction counter and \textsc{ram}:
 \begin{equation}
   \pvm \equiv \tuple{\isa{\mathbf{p}}{\Y}, \isa{\mathbf{u}}{\ram}, \isa{i}{\N_R}}
 \end{equation}
 
-The Refine invocation function implicitly draws upon some recent head state $\delta$ and explicitly accepts the work payload, $\mathbf{y}$ together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{x}$ and the authorizer hash $a$ together with its output $\mathbf{o}$. It results in either some error $\mathbb{J}$ or some refinement output blob. Formally:
+The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\mathsf{W}_S$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
+
+The Refine invocation function also implicitly draws upon some recent head state $\delta$ and explicitly accepts the work payload, $\mathbf{y}$, together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{c}$, the authorizer hash $a$ and its output $\mathbf{o}$, and an export segment offset $\ell$, the import and extrinsic data blobs (both just concatenated segments) as dictated by the work-item, $\mathbf{i}$ and $\mathbf{x}$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   \Psi_R &\colon \left\{\begin{aligned}
-    % TODO: Check this
-    (\H, \N_G, \N_S, \H, \Y, \mathbb{X}, \H, \Y) &\to \Y \cup \mathbb{J} \\
-    (c, g, s, p, \mathbf{y}, \mathbf{x}, a, \mathbf{o}) &\mapsto \begin{cases}
-      \token{BAD} &\when s \not\in \keys{\delta} \vee H(\delta[s], \mathbf{x}_t, c) = \none \\
-      \token{BIG} &\otherwhen |H(\delta[s], \mathbf{x}_t, c)| > \mathsf{S} \\
-      &\otherwise\ \using (\mathbf{r}, \none) = \Psi_M(H(\delta[s], \mathbf{x}_t, c), 1, g, \mathcal{E}(s, p, \mathbf{y}, \mathbf{x}, a, \mathbf{o}), F, \emptyset)\colon\\
-      \mathbf{r} &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
-      \mathbf{u} &\quad\when \mathbf{r} = \tup{g, \mathbf{u}} \\
+    \left(\begin{aligned}
+      &\H, \N_G, \N_S, \H, \Y, \mathbb{X},\\
+      &\H, \Y, \seq{\G}, \seq{\G}, \N
+    \end{aligned}
+    \right) &\to (\Y \cup \mathbb{J}, \seq{\Y}) \\
+    (c, g, s, p, \mathbf{y}, \mathbf{c}, a, \mathbf{o}, \mathbf{i}, \mathbf{x}, \ell) &\mapsto \begin{cases}
+      (\token{BAD}, []) &\when s \not\in \keys{\delta} \vee \Lambda(\delta[s], \mathbf{c}_t, c) = \none \\
+      (\token{BIG}, []) &\otherwhen |\Lambda(\delta[s], \mathbf{c}_t, c)| > \mathsf{S} \\
+      &\otherwise: \\
+      &\quad\using a = \mathcal{E}(s, p, \mathbf{y}, \mathbf{c}, a, \mathbf{o}, \var{\mathbf{i}}, \var{\mathbf{x}})\ ,\\
+      &\quad\also (\mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[s], \mathbf{c}_t, c), 1, g, a, F, (\emptyset, []))\ \colon\\
+      (\mathbf{r}, []) &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
+      (\mathbf{u}, \mathbf{e}) &\quad\when \mathbf{r} = \tup{g, \mathbf{u}} \\
     \end{cases} \\
   \end{aligned}\right. \\
   \label{eq:refinemutator}
   F&\colon\left\{\begin{aligned}
-    (\Y_\$, \N_G, \lseq\N_R\rseq_6, \mathbb{M}, \dict{\N}{\pvm}) &\to (\N_G, \lseq\N_R\rseq_2, \mathbb{M}, \dict{\N}{\pvm})\\
-    (\mathbf{n}, \xi, \omega, \mu, \mathbf{m}) &\mapsto \begin{cases}
-      \Omega_H(\xi, \omega, \mu, \mathbf{m}, s, \delta, \mathbf{x}_t) &\when\mathbf{n} = \mathtt{\$lookup}\\
-      \Omega_G(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$gas} \\
-      \Omega_M(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$machine}\\
-      \Omega_P(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$peek}\\
-      \Omega_O(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$poke}\\
-      \Omega_K(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$invoke}\\
-      \Omega_X(\xi, \omega, \mu, \mathbf{m}) &\when\mathbf{n} = \mathtt{\$expunge}\\
+    (\N, \N_G, \seq{\N_R}_6, \mathbb{M}, (\dict{\N}{\pvm}, \seq{\Y})) &\to (\N_G, \seq{\N_R}_2, \mathbb{M}, (\dict{\N}{\pvm}, \seq{\Y}))\\
+    (n, \xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\mapsto \begin{cases}
+      \Omega_H(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}), s, \delta, \mathbf{c}_t) &\when n = \mathtt{lookup}\\
+      \Omega_Z(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}), \ell) &\when n = \mathtt{export}\\
+      \Omega_G(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas}\\
+      \Omega_M(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
+      \Omega_P(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{peek}\\
+      \Omega_O(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{poke}\\
+      \Omega_K(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{invoke}\\
+      \Omega_X(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{expunge}\\
       (\xi - 10, [\mathtt{WHAT}, \omega_1, \dots], \mu) &\otherwise
     \end{cases}
   \end{aligned}
   \right.
 \end{align}
-
-Note for the Refine host-call dispatcher $F$ in equation \ref{eq:refinemutator}, we elide the host-call context since, being essentially stateless, it is always $\none$.
 
 \subsection{Accumulate Invocation}\label{sec:accumulateinvocation}
 
@@ -106,10 +112,10 @@ We track both regular and exceptional dimensions within our context mutator, but
 \begin{equation}
   \mathbf{X} \equiv \ltuple\begin{array}{lll}
     \isa{\mathbf{s}}{\mathbb{A}\bm{?}}\ts&
-    \isa{\mathbf{c}}{[\left[\H\right]_\mathsf{Q}]_\mathsf{C}}\ts&
+    \isa{\mathbf{c}}{\seq{\seq{\H}_\mathsf{Q}}_\mathsf{C}}\ts&
     \isa{\mathbf{v}}{\mathbb{K}_\mathsf{V}}\ts\quad
     \isa{i}{\N_S}\ts\\
-    \isa{\mathbf{t}}{\left[\mathbb{T}\right]}\ts&
+    \isa{\mathbf{t}}{\seq{\mathbb{T}}}\ts&
     \isa{\mathbf{n}}{\dict{\N_S}{\mathbb{A}}}\ts&
     \isa{p}{\tuple{\isa{m}{\N_S}\ts\isa{a}{\N_S}\ts\isa{v}{\N_S}}}
   \end{array}\rtuple
@@ -136,27 +142,26 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \mathbf{x} &= \mathbf{y} = \tup{\is{\mathbf{s}}{\mathbf{a}}\ts\is{\mathbf{t}}{[]}\ts i\ts\is{p}{\chi}\ts\is{\mathbf{c}}{\varphi}\ts\is{\mathbf{v}}{\iota}\ts\is{\mathbf{n}}{\emptyset}}\ ,\\
     i &= \text{check}((\de_4(\mathcal{H}(s, \bm{\eta'}_0, \mathbf{H}_t)) \bmod (2^{32}-2^9)) + 2^8)
   \end{aligned} \right. \\
-  F(\mathbf{n}, \xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\equiv \begin{cases}
-    G(\Omega_R(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$read} \\
-    G(\Omega_W(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}), (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$write} \\
-    G(\Omega_L(\xi, \omega, \mu, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$lookup} \\
-    G(\Omega_G(\xi, \omega, \mu), (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$gas} \\
-    G(\Omega_I(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$info} \\
-    \Omega_E(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$empower}\\
-    \Omega_A(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$assign}\\
-    \Omega_D(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$designate}\\
-    \Omega_C(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$checkpoint} \\
-    \Omega_N(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when\mathbf{n} = \mathtt{\$new} \\
-    \Omega_U(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s) &\when\mathbf{n} = \mathtt{\$upgrade} \\
-    \Omega_T(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s, \delta^\dagger) &\when\mathbf{n} = \mathtt{\$transfer} \\
-    \Omega_Q(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s) &\when\mathbf{n} = \mathtt{\$quit} \\
-    \Omega_S(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when\mathbf{n} = \mathtt{\$solicit} \\
-    \Omega_F(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when\mathbf{n} = \mathtt{\$forget} \\
+  F(n, \xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\equiv \begin{cases}
+    G(\Omega_R(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
+    G(\Omega_W(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
+    G(\Omega_L(\xi, \omega, \mu, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
+    G(\Omega_G(\xi, \omega, \mu), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
+    G(\Omega_I(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
+    \Omega_E(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{empower}\\
+    \Omega_A(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{assign}\\
+    \Omega_D(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{designate}\\
+    \Omega_C(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{checkpoint} \\
+    \Omega_N(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{new} \\
+    \Omega_U(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s) &\when n = \mathtt{upgrade} \\
+    \Omega_T(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s, \delta^\dagger) &\when n = \mathtt{transfer} \\
+    \Omega_Q(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s) &\when n = \mathtt{quit} \\
+    \Omega_S(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{solicit} \\
+    \Omega_F(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{forget} \\
     (\xi - 10, [\mathtt{WHAT}, \omega_1, \dots], \mu, \mathbf{x}) &\otherwise
   \end{cases} \\
-  %TODO: Argument order should be consistent
   G((\xi', \omega', \mu', \mathbf{s}'), (\mathbf{x}, \mathbf{y})) &\equiv (\xi', \omega', \mu', (\mathbf{x}, \mathbf{y}))\ \where \mathbf{x} = \mathbf{x}' \exc \mathbf{x}_\mathbf{s} = \mathbf{s}' \\
-  C((\mathbf{x}\in\mathbf{X}, \mathbf{y}\in\mathbf{X}), \mathbf{o} \in \mathbb{Y} \cup \{\oog, \panic\}) &\equiv \begin{cases}
+  C(\mathbf{o} \in \mathbb{Y} \cup \{\oog, \panic\}, (\mathbf{x}\in\mathbf{X}, \mathbf{y}\in\mathbf{X})) &\equiv \begin{cases}
     \mathbf{x} \times \tup{\is{r}{\mathbf{o}}} & \when \mathbf{o} \in \mathbb{H} \\
     \mathbf{x} \times \tup{\is{r}{\none}} & \when \mathbf{o} \in \mathbb{Y} \setminus \H \\
     \mathbf{y} \times \tup{\is{r}{\none}} & \when \mathbf{o} \in \{\oog, \panic\} \\
@@ -182,19 +187,19 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
 \begin{align}
   \Psi_T &: \begin{cases}
-    (\dict{\N_S}{\mathbb{A}}, \N_S, [\mathbb{T}]) &\to \mathbb{A} \\
+    (\dict{\N_S}{\mathbb{A}}, \N_S, \seq{\mathbb{T}}) &\to \mathbb{A} \\
     (\delta^\ddagger, s, \mathbf{t}) &\mapsto \begin{cases}
     \mathbf{s} &\when \mathbf{s}_\mathbf{c} = \none \vee \mathbf{t} = [] \\
     \Psi_M(\mathbf{s}_\mathbf{c}, 3, \sum_{r \in \mathbf{t}}{(r_g)}, \mathcal{E}(\mathbf{t}), F, \mathbf{s}) &\otherwise
     \end{cases} \\
   \end{cases} \\
   \where \mathbf{s} &= \delta^\ddagger[s]\exc\mathbf{s}_b = \delta^\ddagger[s]_b + \sum_{r \in \mathbf{t}}{r_a} \\
-  F(\mathbf{n}, \xi, \omega, \mu, \mathbf{s}) &\equiv \begin{cases}
-    \Omega_L(\xi, \omega, \mu, \mathbf{s}, s, \delta^\ddagger) &\when\mathbf{n} = \mathtt{\$lookup} \\
-    \Omega_R(\xi, \omega, \mu, \mathbf{s}, s, \delta^\ddagger) &\when\mathbf{n} = \mathtt{\$read} \\
-    \Omega_W(\xi, \omega, \mu, \mathbf{s}) &\when\mathbf{n} = \mathtt{\$write} \\
-    \Omega_G(\xi, \omega, \mu) &\when\mathbf{n} = \mathtt{\$gas} \\
-    \Omega_I(\xi, \omega, \mu, \mathbf{s}, s, \delta^\ddagger) &\when\mathbf{n} = \mathtt{\$info} \\
+  F(n, \xi, \omega, \mu, \mathbf{s}) &\equiv \begin{cases}
+    \Omega_L(\xi, \omega, \mu, \mathbf{s}, s, \delta^\ddagger) &\when n = \mathtt{lookup} \\
+    \Omega_R(\xi, \omega, \mu, \mathbf{s}, s, \delta^\ddagger) &\when n = \mathtt{read} \\
+    \Omega_W(\xi, \omega, \mu, \mathbf{s}) &\when n = \mathtt{write} \\
+    \Omega_G(\xi, \omega, \mu) &\when n = \mathtt{gas} \\
+    \Omega_I(\xi, \omega, \mu, \mathbf{s}, s, \delta^\ddagger) &\when n = \mathtt{info} \\
     (\xi - 10, [\mathtt{WHAT}, \omega_1, \dots], \mu, \mathbf{s}) &\otherwise
   \end{cases}
 \end{align}
@@ -209,7 +214,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
 
 \subsection{General Functions}\label{sec:generalfunctions}
 
-This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' \in [\N_R]_2, \mu', \mathbf{s}') = \Omega_\square(\xi \in \N_G, \omega \in [\N_R]_6, \mu \in \mathbb{M}, \mathbf{s} \in \mathbf{A}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' \in \seq{\N_R}_2, \mu', \mathbf{s}') = \Omega_\square(\xi \in \N_G, \omega \in \seq{\N_R}_6, \mu \in \mathbb{M}, \mathbf{s} \in \mathbf{A}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
 Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context, but merely a service account $\mathbf{s}$.
 
@@ -232,8 +237,17 @@ The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an el
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
+  $\Omega_G(\xi, \omega, \dots)$ \\
+  \texttt{gas} = 0 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \omega'_0 &\equiv \xi' \bmod 2^{32} \\
+    \omega'_1 &\equiv \left\lfloor \xi' \div 2^{32}\right\rfloor
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
   $\Omega_L(\xi, \omega, \mu, \mathbf{s}, s, \mathbf{d})$ \\
-  \texttt{lookup} \\
+  \texttt{lookup} = 1 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases} \mathbf{s} &\when \omega_0 \in \{ s, 2^{32} - 1 \} \\ \mathbf{d}[\omega_0] &\otherwise \end{cases} \\
@@ -261,7 +275,7 @@ The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an el
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_R(\xi, \omega, \mu, \mathbf{s}, s, \mathbf{d})$ \\
-  \texttt{read} \\
+  \texttt{read} = 2 \\
   $g = 10$} &
   % gas cost for cold reads dependent on trie depth.
   $\begin{aligned}
@@ -294,7 +308,7 @@ The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an el
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_W(\xi, \omega, \mu, \mathbf{s})$ \\
-  \texttt{write} \\
+  \texttt{write} = 3 \\
   $g = 10$
   } &
   $\begin{aligned}
@@ -322,17 +336,8 @@ The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an el
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_G(\xi, \omega, \dots)$ \\
-  \texttt{gas} \\
-  $g = 10$} &
-  $\begin{aligned}
-    \omega'_0 &\equiv \xi' \bmod 2^{32} \\
-    \omega'_1 &\equiv \left\lfloor \xi' \div 2^{32}\right\rfloor
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
   $\Omega_I(\xi, \omega, \mu, \mathbf{s}, s, \mathbf{d})$ \\
-  \texttt{info} \\
+  \texttt{info} = 4 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{t} &= \begin{cases} \mathbf{s} &\when \omega_0 \in \{s, 2^{32} - 1\} \\ (\mathbf{d} \cup \mathbf{x}_\mathbf{n})[\omega_0] &\otherwise \end{cases} \\
@@ -356,7 +361,7 @@ The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an el
 
 \subsection{Accumulate Functions}\label{sec:accumulatefunctions}
 
-This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' \in [\N_R]_2, \mu', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\xi \in \N_G, \omega \in [\N_R]_6, \mu \in \mathbb{M}, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' \in \seq{\N_R}_2, \mu', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\xi \in \N_G, \omega \in \seq{\N_R}_6, \mu \in \mathbb{M}, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 \begin{align}
   \xi' &\equiv \xi - g\\
   (\omega', \mu', \mathbf{x}', \mathbf{y}') &\equiv \begin{cases}
@@ -373,7 +378,7 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \endhead
   \makecell*[l]{
   $\Omega_E(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
-  \texttt{empower} \\
+  \texttt{empower} = 5 \\
   $g = 10$}&
   $\begin{aligned}
     (\mathbf{x}'_p)_m = \omega_0 \\
@@ -400,7 +405,7 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_D(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
-  \texttt{designate} \\
+  \texttt{designate} = 6 \\
   $g = 10$} &
   $\begin{aligned}
     \using o &= \omega_0 \\
@@ -416,7 +421,7 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_C(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
-  \texttt{checkpoint} \\
+  \texttt{checkpoint} = 7 \\
   $g = 10$} &
   $\begin{aligned}
     \mathbf{y'} &\equiv \mathbf{x} \\
@@ -451,7 +456,7 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
     $\Omega_U(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s)$ \\
-    \texttt{upgrade} \\
+    \texttt{upgrade} = 8 \\
     $g = 10$
   } &
   $\begin{aligned}
@@ -470,7 +475,7 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_T(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s, \delta)$ \\
-  \texttt{transfer} \\
+  \texttt{transfer} = 9 \\
   $g = 10 + \omega_1 + 2^{32}\cdot\omega_2 $} &
   $\begin{aligned}
     \using (d, a_l, a_h, g_l, g_h, o) &= \omega_{0..6},  \\
@@ -493,7 +498,7 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_X(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), s)$ \\
-  \texttt{quit} \\
+  \texttt{quit} = 10 \\
   $g = 10 + \omega_1 + 2^{32}\cdot\omega_2 $} &
   $\begin{aligned}
     \using [d, o] &= \omega_{0,1} \\
@@ -515,7 +520,7 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_S(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
-  \texttt{solicit} \\
+  \texttt{solicit} = 11 \\
   $g = 10$} &
   $\begin{aligned}
     \using [o, z] &= \omega_{0, 1} \\
@@ -539,7 +544,7 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_F(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}), t)$ \\
-  \texttt{forget} \\
+  \texttt{forget} = 12 \\
   $g = 10$} &
   $\begin{aligned}
     \using [o, z] &= \omega_{0, 1} \\
@@ -568,7 +573,7 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_V(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y}))$ \\
-  \texttt{invoke} \\
+  \texttt{invoke} = 13 \\
   $g = 10$} &
   $\begin{aligned}
     \using [o, z] &= \omega_{0, 1} \\
@@ -592,9 +597,9 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \bottomrule
 \end{longtable}
 
-\subsection{Refine Function}\label{sec:refinefunctions}
+\subsection{Refine Functions}\label{sec:refinefunctions}
 
-These assume some refine context $\mathbf{M} \in \dict{\N_R}{\tuple{\Y, \mathbb{M}, \seq{\N_R}_{13}, \N_R}}$, initially empty and which tends to be stated as $\mathbf{m}$ (posterior $\mathbf{m}'$).
+These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\pvm}, \seq{\Y_{\mathsf{W}_S}})$, which are both initially empty.
 
 \begin{longtable}{p{3.5cm} p{12.5cm}}
   \toprule
@@ -603,8 +608,8 @@ These assume some refine context $\mathbf{M} \in \dict{\N_R}{\tuple{\Y, \mathbb{
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
-  $\Omega_H(\xi, \omega, \mu, \mathbf{m}, s, \delta, t)$ \\
-  \texttt{historical\_lookup} \\
+  $\Omega_H(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}), s, \delta, t)$ \\
+  \texttt{historical\_lookup} = 14 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -632,11 +637,28 @@ These assume some refine context $\mathbf{M} \in \dict{\N_R}{\tuple{\Y, \mathbb{
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_M(\xi, \omega, \mu, \mathbf{m})$ \\
-  \texttt{machine} \\
+  $\Omega_Z(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}), \ell)$ \\
+  \texttt{export} = 15 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [p_o, p_z, i] &= \omega_{0 \dots 2} \\
+    \using [o, z] &= \omega_{0\dots2} \\
+    \using \mathbf{x} &= \begin{cases}
+      [\mem_{o+i\cdot\mathsf{W}_S\dots+\mathsf{W}_S} \mid i \orderedin \N_z] &\when \N_{o\dots+z\cdot\mathsf{W}_S} \in \mathbb{V}_\mu\\
+      \error &\otherwise
+    \end{cases}\\
+    (\omega'_0, \mathbf{e}') &\equiv \begin{cases}
+      (\mathtt{OOB}, \mathbf{e}) &\when \mathbf{x} = \error \\
+      (\mathtt{FULL}, \mathbf{e}) &\otherwhen |\mathbf{e}| \ge \mathsf{W}_X \\
+      (\ell + |\mathbf{e}|, \mathbf{e} \concat \mathbf{x}) &\otherwise
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_M(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{machine} = 16 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [p_o, p_z, i] &= \omega_{0 \dots 3} \\
     \using \mathbf{p} &= \begin{cases}
       \mu_{p_o\dots+p_z} &\when \mathbb{Z}_{p_o \dots+ p_z} \subset \mathbb{V}_{\mu} \\
       \error &\otherwise
@@ -650,8 +672,8 @@ These assume some refine context $\mathbf{M} \in \dict{\N_R}{\tuple{\Y, \mathbb{
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_P(\xi, \omega, \mu, \mathbf{m})$ \\
-  \texttt{peek} \\
+  $\Omega_P(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{peek} = 17 \\
   $g = 10$} &
   $\begin{aligned}
     \using [n, a, b, l] &= \omega_{0 \dots 4} \\
@@ -668,8 +690,8 @@ These assume some refine context $\mathbf{M} \in \dict{\N_R}{\tuple{\Y, \mathbb{
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_O(\xi, \omega, \mu, \mathbf{m})$ \\
-  \texttt{poke} \\
+  $\Omega_O(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{poke} = 18 \\
   $g = 10$} &
   $\begin{aligned}
     \using [n, a, b, l] &= \omega_{0 \dots 4} \\
@@ -693,8 +715,8 @@ These assume some refine context $\mathbf{M} \in \dict{\N_R}{\tuple{\Y, \mathbb{
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_K(\xi, \omega, \mu, \mathbf{m})$ \\
-  \texttt{invoke} \\
+  $\Omega_K(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{invoke} = 19 \\
   $g = 10$} &
   $\begin{aligned}
     \using [n, o] &= \omega_{0 \dots 2} \\
@@ -722,8 +744,8 @@ These assume some refine context $\mathbf{M} \in \dict{\N_R}{\tuple{\Y, \mathbb{
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_X(\xi, \omega, \mu, \mathbf{m})$ \\
-  \texttt{expunge} \\
+  $\Omega_X(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{expunge} = 20 \\
   $g = 10$} &
   $\begin{aligned}
     \using n &= \omega_{0} \\
