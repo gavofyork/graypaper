@@ -1,0 +1,9 @@
+\section{Beefy Distribution}\label{sec:beefy}
+
+For each finalized block $\mathbf{B}$ which a validator imports, said validator shall make a \textsc{bls} signature on the \textsc{bls}\oldstylenums{12}-\oldstylenums{381} curve, as defined by \cite{bls12-381}, affirming the Keccak hash of the block's most recent \textsc{Beefy} \textsc{mmr}. This should be published and distributed freely, along with the signed material. These signatures may be aggregated in order to provide concise proofs of finality to third-party systems. The signing and aggregation mechanism is defined fully by \cite{cryptoeprint:2022/1611}.
+
+Formally, let $\mathbf{F}_v$ be the signed commitment of validator index $v$ which will be published:
+\begin{align}\label{eq:beefysignedcommitment}
+  \mathbf{F}_v &\equiv \mathcal{S}_{\kappa_v}(\mathsf{X}_B\concat\mathcal{H}_K(\se_M(\text{last}(\beta)_\mathbf{b}]))\\
+  \mathsf{X}_B &= \token{\$jam\_beefy}
+\end{align}

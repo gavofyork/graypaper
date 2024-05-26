@@ -1,0 +1,12 @@
+\section{Availability Assurance}\label{sec:assurance}
+
+Validators should issue a signed statement, called an \emph{assurance}, when they are in possession of all of their corresponding erasure-coded chunks for a given work-report which is currently pending availability. For any work-report to gain an assurance, there are four classes of data a validator must have:
+
+Firstly, their erasure-coded chunk for this report. The validity of this chunk can be trivially proven through the work-report's work-package erasure-root and a Merkle-proof of inclusion in the correct location. The proof should be included from the guarantor. The chunk should be retained for 28 days and provided to any validator on request.
+
+Secondly, the two manifests for the two classes of data items; \emph{required} and \emph{provided}. These have commitments as binary Merkle roots in the work report. They must be provided alongside the following data but are only needed to verify its validity and completeness and need not be retained after the work report is considered audited. Until then, it should be provided on request to validators.
+
+Thirdly, the validator should already have in hand their corresponding erasure-coded chunk for each of the items in the \emph{required} manifest. These chunks may be proven in a similar manner as for the work-package, with a Merkle proof on the root included in the manifest.\footnote{If it appears their own availability system is incomplete for the last 28 days of blocks, then helpful validators will make some effort to reconstruct their chunk by making requests from other validators.} All such items must not be scheduled for expiry for another 4,800 timeslots. (If they are then the work-report should not be considered available.)
+
+Finally, the validator should have in hand the corresponding erasure-coded chunk for each of the items in the \emph{provided} manifest. Much as the work-package chunk these should be retained for 28 days and provided to any validator on request.
+
