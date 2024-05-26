@@ -52,7 +52,7 @@ $\mathbb{Z}$ denotes the set of integers. We denote $\mathbb{Z}_{a \dots b}$ to 
 
 It can sometimes be useful to represent lengths of sequences and yet limit their size, especially when dealing with sequences of octets which must be stored practically. Typically, these lengths can be defined as the set $\N_{2^{32}}$. To improve clarity, we denote $\N_L$ as the set of lengths of octet sequences and is equivalent to $\N_{2^{32}}$.
 
-We denote the $\rem$ operator as the modulo operator, \eg $5 \rem 3 = 2$. Furthermore, we may occasionally express a division result as a quotient and remainder with the separator $\remainder$, \eg $5 \div 3 = 1 \remainder 3$.
+We denote the $\rem$ operator as the modulo operator, \eg $5 \rem 3 = 2$. Furthermore, we may occasionally express a division result as a quotient and remainder with the separator $\remainder$, \eg $5 \div 3 = 1 \remainder 2$.
 
 \subsection{Dictionaries}\label{sec:dictionaries}
 
@@ -103,12 +103,17 @@ We have frequent need to refer to a specific item within a tuple value and as su
 
 A sequence is a series of elements with particular ordering not dependent on their values. The set of sequences of elements all of which are drawn from some set $T$ is denoted $\seq{T}$, and it defines a partial mapping $\N \to T$. The set of sequences containing exactly $n$ elements each a member of the set $T$ may be denoted $\seq{T}_n$ and accordingly defines a complete mapping $\N_n \to T$. Similarly, sets of sequences of at most $n$ elements and at least $n$ elements may be denoted $\seq{T}_{:n}$ and $\seq{T}_{n:}$ respectively.
 
-Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}[i]$, or where unambiguous, $\mathbf{s}_i$. A range may be denoted using an ellipsis for example: $[0, 1, 2, 3]_{\dots2} == [0, 1]$ and $[0, 1, 2, 3]_{1\dots+2} == [1, 2]$. The length of such a sequence may be denoted $|\mathbf{s}|$.
+Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}[i]$, or where unambiguous, $\mathbf{s}_i$. A range may be denoted using an ellipsis for example: $[0, 1, 2, 3]_{\dots2} = [0, 1]$ and $[0, 1, 2, 3]_{1\dots+2} = [1, 2]$. The length of such a sequence may be denoted $|\mathbf{s}|$.
 
 We denote modulo subscription as $\mathbf{s}[i]^\circlearrowleft \equiv \mathbf{s}[\,i \rem |\mathbf{s}|\,]$. We denote the final element $x$ of a sequence $\mathbf{s} = \sq{..., x}$ through the function $\text{last}(\mathbf{s}) \equiv x$.
 
 \subsubsection{Construction}
 We may wish to define a sequence in terms of incremental subscripts of other values: $[\mathbf{x}_0, \mathbf{x}_1, \dots ]_n$ denotes a sequence of $n$ values beginning $\mathbf{x}_0$ continuing up to $\mathbf{x}_{n-1}$. Furthermore, we may also wish to define a sequence as elements each of which are a function of their index $i$; in this case we denote $[f(i) \mid i \orderedin \N_n] \equiv [f(0), f(1), \dots, f(n - 1)]$. Thus, when the ordering of elements matters we use $\orderedin$ rather than the unordered notation $\in$. The latter may also be written in short form $[f(i \orderedin \N_n)]$. This applies to any set which has an unambiguous ordering, particularly sequences, thus $[\,i^2 \mid i \orderedin [1, 2, 3]\,] = [1, 4, 9]$. Multiple sequences may be combined, thus $[\,i\cdot j \mid i \orderedin [1, 2, 3], j \orderedin [2, 3, 4]\,] = [2, 6, 12]$.
+
+We use explicit notation $f^{\#}$ to denote a function mapping over all items of a sequence. Thus given some function $y = f(x)$:
+\begin{equation}
+  [f(\mathbf{x}_0), f(\mathbf{x}_1), \dots] = f^{\#}([\mathbf{x}_0, \mathbf{x}_1, \dots])
+\end{equation}
 
 Sequences may be constructed from sets or other sequences whose order should be ignored through sequence ordering notation $\orderby{i_k}{i \in X}$, which is defined to result in the set or sequence of its argument except that all elements $i$ are placed in ascending order of the corresponding value $i_k$.
 
@@ -119,12 +124,14 @@ Sets may be constructed from sequences with the regular set construction syntax,
 Sequences of values which themselves have a defined ordering have an implied ordering akin to a regular dictionary, thus $[1, 2, 3] < [1, 2, 4]$ and $[1, 2, 3] < [1, 2, 3, 1]$.
 
 \subsubsection{Editing}
-We define the sequence concatenation operator $\frown$ such that $[\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{y}_0, \mathbf{y}_1, \dots] \equiv \mathbf{x} \frown \mathbf{y}$. Futher, we denote element-concatenation as $x \doubleplus i \equiv x \frown [i]$. We denote the sequence made up of the first $n$ elements of sequence $\mathbf{s}$ to be ${\overrightarrow{\mathbf{s}}}^n \equiv [\mathbf{s}_0, \mathbf{s}_1, \dots, \mathbf{s}_{n-1}]$, and only the final elements as ${\overleftarrow{\mathbf{s}}}^n$.
+We define the sequence concatenation operator $\frown$ such that $[\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{y}_0, \mathbf{y}_1, \dots] \equiv \mathbf{x} \frown \mathbf{y}$. For sequences of sequences, we define a unary concatenate-all operator: $\wideparen{\mathbf{x}}\equiv\mathbf{x}_0 \frown \mathbf{x}_1 \frown \dots$. Further, we denote element concatenation as $x \doubleplus i \equiv x \frown [i]$. We denote the sequence made up of the first $n$ elements of sequence $\mathbf{s}$ to be ${\overrightarrow{\mathbf{s}}}^n \equiv [\mathbf{s}_0, \mathbf{s}_1, \dots, \mathbf{s}_{n-1}]$, and only the final elements as ${\overleftarrow{\mathbf{s}}}^n$.
+
+We define ${}^\text{T}\mathbf{x}$ as the transposition of the sequence-of-sequences $\mathbf{x}$, fully defined in equation \ref{eq:transpose}. We may also apply this to sequences-of-tuples to yield a tuple of sequences.
 
 We denote sequence subtraction with a slight modification of the set subtraction operator; specifically, some sequence $\mathbf{s}$ excepting the left-most element equal to $v$ would be denoted $\mathbf{s}\seqminusl\{v\}$.
 
 \subsubsection{Boolean values}
-$\mathbb{B}_s$ denotes the set of Boolean strings of length $s$, thus $\mathbb{B}_s = [\{\bot, \top\}]_s$. When dealing with Boolean values we may assume an implicit equivalence mapping to a bit whereby $\top = 1$ and $\bot = 0$, thus $\mathbb{B}_\Box = [\N_2]_\Box$. We use the function $\text{bits}(\Y) \in \mathbb{B}$ to denote the sequence of bits, ordered with the least significant first, which represent the octet sequence $\Y$, thus $\text{bits}([5, 0]) = [1, 0, 1, 0, 0, \dots]$.
+$\mathbb{B}_s$ denotes the set of Boolean strings of length $s$, thus $\mathbb{B}_s = \seq{\{\bot, \top\}}_s$. When dealing with Boolean values we may assume an implicit equivalence mapping to a bit whereby $\top = 1$ and $\bot = 0$, thus $\mathbb{B}_\Box = \seq{\N_2}_\Box$. We use the function $\text{bits}(\Y) \in \mathbb{B}$ to denote the sequence of bits, ordered with the least significant first, which represent the octet sequence $\Y$, thus $\text{bits}([5, 0]) = [1, 0, 1, 0, 0, \dots]$.
 
 \subsubsection{Octets and Blobs}
 
@@ -150,7 +157,7 @@ We use $\Y_{BLS} \subset \Y_{144}$ to denote the set of public keys for the \tex
 
 We denote the set of valid Bandersnatch public keys as $\H_B$, defined in appendix \ref{sec:bandersnatch}. $\bandersig{k \in \H_B}{x \in \Y}{m \in \Y} \subset \Y_{96}$ is the set of valid singly-contextualized signatures of utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
 
-$\bandersnatch{r \in \Y_R}{x \in \Y}{m \in \Y} \subset \Y_{388}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\Y_R \in \Y_{196608}$. We denote $\mathcal{R}(\mathbf{s} \in [\H_B]) \in \Y_R$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
+$\bandersnatch{r \in \Y_R}{x \in \Y}{m \in \Y} \subset \Y_{388}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\Y_R \in \Y_{196608}$. We denote $\mathcal{R}(\mathbf{s} \in \seq{\H_B}) \in \Y_R$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
 
 Both the Bandersnatch signature and Ring\textsc{vrf} proof strictly imply that a member utilized their secret key in combination with both the context $x$ and the message $m$; the difference is that the member is identified in the former and is anonymous in the latter. Furthermore, both define a \textsc{vrf} \emph{output}, a high entropy hash influenced by $x$ but not by $m$, formally denoted $\banderout{\bandersnatch{r}{x}{m}} \subset \H$ and $\banderout{\bandersig{k}{x}{m}} \subset \H$.
 

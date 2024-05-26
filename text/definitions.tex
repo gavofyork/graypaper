@@ -40,7 +40,7 @@
     \item[$\bar{\mathbb{F}}$] The set of Bandersnatch Ring\textsc{vrf} proofs. See section \ref{sec:cryptography}.
     \item[$\bandersnatch{R}{C}{M}$] The set of Bandersnatch Ring\textsc{vrf} proofs of the root $R$, context $C$ and message $M$. A subset of $\bar{\mathbb{F}}$. See section \ref{sec:cryptography}.
   \end{description}
-  \item[$\mathbb{G}$] Unused.
+  \item[$\mathbb{G}$] The set of data segments, equivalent to octet sequences of length $\mathsf{W}_S$. See equation \ref{eq:segment}.
   \item[$\H$] The set of 32-octet cryptographic values. A subset of $\Y_{32}$. $\H$ without a subscript generally implies a hash function result. See section \ref{sec:cryptography}. \emph{NOTE: Not used as quaternions.}
   \begin{description}
     \item[$\H_B$] The set of Bandersnatch public keys. A subset of $\Y_{32}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
@@ -71,7 +71,7 @@
 \subsection{Functions}
 
 \begin{description}
-%  \item[$\Gamma$] Unused. %	Γ
+  \item[$\Gamma$] Item to result function. %	Γ
 %  \item[$\Delta$] Unused. %	Δ
 %  \item[$\Theta$] Unused. %	Θ
 %  \item[$\Pi$] Unused. %	Π
@@ -132,7 +132,7 @@
   %  \item[$\mathcal{J}$] Unused.
   \item[$\mathcal{K}(\dots)$] The domain, or set of keys, of a dictionary. See section \ref{sec:dictionaries}.
   %  \item[$\mathcal{L}$] Unused.
-  \item[$\mathcal{M}_2(\dots)$] The binary Merklization function. See appendix \ref{sec:merklization}.
+  \item[$\mathcal{M}_S(\dots)$] The binary Merklization function. See appendix \ref{sec:merklization}.
   \item[$\mathcal{M}_S(\dots)$] The state Merklization function. See appendix \ref{sec:statemerklization}.
   \item[$\mathcal{N}(\dots)$] The erasure-coding chunks function. See appendix \ref{sec:erasurecoding}.
   %\item[$\mathcal{O}$] Unused.
@@ -207,7 +207,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\sigma$] The $\sigma$verall state of the system. See equations \ref{eq:statetransition}, \ref{eq:statecomposition}. %	σ
   \item[$\tau$] The most recent block's $\tau$imeslot. %	τ
   \item[$\varphi$] The authorization queue. %	ϕ
-  \item[$\psi$] Votes regarding any ongoing disputes. %	ψ
+  \item[$\psi$] Votes regarding any past judgements. %	ψ
   \item[$\chi$] The privileged service indices. %	χ
   \begin{description}
     \item[$\chi_m$] The index of the empower service.
@@ -257,8 +257,10 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{S} = 4,000,000$] The maximum size of service code in octets.
   \item[$\mathsf{U} = 5$] The period in timeslots after which reported but unavailable work may be replaced.
   \item[$\mathsf{V} = 1023$] The total number of validators.
-  \item[$\mathsf{W}_P = 6\cdot2^{20} + 2^{16}$] The maximum size of an encoded work-package in octets.
+  \item[$\mathsf{W}_M = 2^{11}$] The maximum number of entries in a work-package manifest.
+  \item[$\mathsf{W}_P = 15\cdot2^{20}$] The maximum size of an encoded work-package together with its import implications, in octets.
   \item[$\mathsf{W}_R = 96\cdot2^{10}$] The maximum size of an encoded work-report in octets.
+  \item[$\mathsf{W}_S = 2^{12}$] The size of a distributed-availability segment in octets.
   \item[$\mathsf{X}$] Context strings, see below.
   \item[$\mathsf{Y} = 500$] The number of slots into an epoch at which ticket-submission ends.
   \item[$\mathsf{Z}_A = 4$] The \textsc{pvm} dynamic address alignment factor. See equation \ref{eq:jumptablealignment}.
