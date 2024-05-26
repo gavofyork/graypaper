@@ -73,8 +73,8 @@ Formally, we define the encoding functions $B$ and $L$:
   L&\colon\left\{\begin{aligned}
     (\H, \Y) &\to \mathbb{B}_{512}\\
     (k, v) &\mapsto \begin{cases}
-      [1, 0] \frown \text{bits}(\se_1(|v|))_{:6} \frown \text{bits}(k)_{:8} \frown \text{bits}(v) \frown [0, 0, \dots] &\when 0 < |v| \le 32\\
-      [1, 1, 0, 0, 0, 0, 0, 0] \frown \text{bits}(k)_{:8} \frown \text{bits}(\mathcal{H}(v)) &\otherwise
+      [1, 0] \frown \text{bits}(\se_1(|v|))_{:6} \frown \text{bits}(k)_{:248} \frown \text{bits}(v) \frown [0, 0, \dots] &\when 0 < |v| \le 32\\
+      [1, 1, 0, 0, 0, 0, 0, 0] \frown \text{bits}(k)_{:248} \frown \text{bits}(\mathcal{H}(v)) &\otherwise
     \end{cases}
   \end{aligned}\right.
 \end{align}
