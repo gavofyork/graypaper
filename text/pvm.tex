@@ -21,7 +21,7 @@
 \newcommand*{\unbits}[1]{\unbitsn{4}{#1}}
 \newcommand*{\bitsn}[2]{\bitsfunc{#1}(#2)}
 \newcommand*{\unbitsn}[2]{\unbitsfunc{#1}(#2)}
-\newcommand*{\signfunc}[1]{\mathcal{Z}_{#1}}
+\newcommand*{\signfunc}[1]{\mathcal{W}_{#1}}
 \newcommand*{\unsignfunc}[1]{\signfunc{#1}^{-1} }
 \newcommand*{\signed}[1]{\signedn{4}{#1}}
 \newcommand*{\unsigned}[1]{\unsignedn{4}{#1}}
@@ -49,8 +49,8 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
       (\oog, \imath', \xi', \omega', \mem') &\when \xi' < 0\\
       (\zeta, \imath', \xi', \omega', \mem') &\otherwise
     \end{cases} \\
-    \where (\zeta, \imath', \xi', \omega', \mem') &= \Psi_1(\mathbf{c}, \mathbf{j}, \imath, \xi, \omega, \mem)\\
-    \also \mathbf{p} &= \se(\var{\mathbf{j}}, \mathbf{c})
+    \where (\zeta, \imath', \xi', \omega', \mem') &= \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \xi, \omega, \mem)\\
+    \also \mathbf{p} &= \se(|\mathbf{j}|) \frown \se_1(z) \frown \se(|\mathbf{c}|) \frown \se_z(\mathbf{j}) \frown \se(\mathbf{c}) \frown \se(\mathbf{k})\,,\ |\mathbf{k}| = |\mathbf{c}|
     \end{aligned}\right.
 \end{equation}
 
@@ -60,28 +60,48 @@ The \textsc{pvm} exit reason $r \in \{\halt, \panic, \oog\} \cup \{\fault, \host
 
 \subsection{Instructions, Basic-Blocks and the Jump Table}
 
-The program blob $\mathbf{p}$ is split into a series of octets which make up the instruction data $\mathbf{c}$ and the \emph{dynamic jump table}, $\mathbf{j}$. The former implies an instruction sequence, and by extension a \emph{basic-block sequence}, itself a sequence of indices of the instructions which follow a \emph{block-termination} instruction.
+The program blob $\mathbf{p}$ is split into a series of octets which make up the \emph{instruction data} $\mathbf{c}$ and the \emph{opcode bitmask} $\mathbf{k}$ as well as the \emph{dynamic jump table}, $\mathbf{j}$. The former two imply an instruction sequence, and by extension a \emph{basic-block sequence}, itself a sequence of indices of the instructions which follow a \emph{block-termination} instruction.
 
 The dynamic jump table builds on this and is a sequence containing, in order, every basic-block index to which the instruction counter may be altered if computed dynamically.
 
-Most instructions are composed of multiple octets. Since the \textsc{pvm} counts instructions in unit terms (rather than octet terms) it is convenient to define the sequence of instruction blobs which these octets represent. Given our instructions blob $\mathbf{c}$, we make an equivalence for our instruction-blob sequence $\instructions$. To define this we presume a function $\ell(\N_{2^8})$ which provides the length of the instruction whose opcode is given as parameter according to the $\ell$ value in the tables of section \ref{sec:instructiontables}. Formally:
-\begin{align}
-  \instructions &\equiv [I(0), I(1), \dots I(m - 1)]\\
-  \where I(n) &\equiv \mathbf{c}_{o\dots+\ell(\mathbf{c}_o)}\ ,\quad
-  m = \min(n \in \N : o = |\mathbf{c}|)\ ,\quad
-  o = \sum_{m \in \N_n} |I(m, \mathbf{c})|
-\end{align}
+The \textsc{pvm} counts instructions in octet terms (rather than in terms of instructions) and it is thus convenient to define which octets represent the beginning of an instruction, \ie the opcode octet, and which do not. This is the purpose of $\mathbf{k}$, the instruction-opcode bitmask. We assert that the length of the bitmask is no smaller than the length of the instruction blob (and in fact is simply rounded to the nearest multiple of eight for ease of octet-encoding).
+
+\newcommand{\Fskip}{\text{skip}}
+
+We define the Skip function $\Fskip$ which provides the number of octets, minus one, to the next instruction's opcode, given the index of instruction's opcode index into $\mathbf{c}$ (and by extension  $\mathbf{k}$):
+\begin{equation}
+  \Fskip\colon\left\{\begin{aligned}
+    \N &\to \N\\
+    i &\mapsto \min(24,\ j \in \N : \mathbf{k}_{i + 1 + j} = 1)
+  \end{aligned}\right.
+\end{equation}
+
+Given some instruction-index $i$, its opcode is readily expressed as $\mathbf{c}_i$ and the distance in octets to move forward to the next instruction is $1 + \Fskip(i)$. However, each instruction's ``length'' (defined as the number of contiguous octets starting with the opcode which are needed to fully define the instruction's semantics) is left implicit though limited to being at most 16.
+
+We define $\instructions$ as being equivalent to the instructions $\mathbf{c}$ except with an indefinite sequence of zeroes suffixed to ensure that no out-of-bounds access is possible. This effectively defines any otherwise-undefined arguments to the final instruction and ensures that a trap will occur if the program counter passes beyond the program code. Formally:
+\begin{equation}\label{eq:instructions}
+  \instructions \equiv \mathbf{c} \concat \sq{0, 0, \dots}
+\end{equation}
+
+
+%the same length as the  our instructions blob $\mathbf{c}$, we make an equivalence for our instruction-blob sequence $\instructions$. To define this we presume a function $\ell(\N_{2^8})$ which provides the length of the instruction whose opcode is given as parameter according to the $\ell$ value in the tables of section \ref{sec:instructiontables}. Formally:
+%\begin{align}
+%  \instructions &\equiv [I(0), I(1), \dots I(m - 1)]\\
+%  \where I(n) &\equiv \mathbf{c}_{o\dots+\ell(\mathbf{c}_o)}\ ,\quad
+%  m = \min(n \in \N : o = |\mathbf{c}|)\ ,\quad
+%  o = \sum_{m \in \N_n} |I(m, \mathbf{c})|
+%\end{align}
 
 \subsubsection{Basic Blocks and Termination Instructions}
 
-Instructions of the following opcodes are considered basic-block termination instructions; other than $\token{trap}$ \& $\token{fallthrough}$, they corresond to instructions which may define the instruction-counter to be something other than one more than its prior value:
+Instructions of the following opcodes are considered basic-block termination instructions; other than $\token{trap}$ \& $\token{fallthrough}$, they correspond to instructions which may define the instruction-counter to be something other than its prior value plus the instruction's skip amount:
 \begin{itemize}
   \item Trap and fallthrough: $\token{trap}$
   , $\token{fallthrough}$
   \item Jumps: $\token{jump}$
   , $\token{jump\_ind}$
-  \item Calls: $\token{call}$
-  , $\token{call\_ind}$
+  \item Load-and-Jumps: $\token{load\_imm\_jump}$
+  , $\token{load\_imm\_jump\_ind}$
   \item Branches: $\token{branch\_eq}$
   , $\token{branch\_ne}$
   , $\token{branch\_ge\_u}$
@@ -100,18 +120,10 @@ Instructions of the following opcodes are considered basic-block termination ins
   , $\token{branch\_gt\_s\_imm}$
 \end{itemize}
 
-We denote this set, as opcode indices rather than names, as $T$. We define the instruction indices denoting the beginning of basic-blocks as $\basicblocks$:
+We denote this set, as opcode indices rather than names, as $T$. We define the instruction opcode indices denoting the beginning of basic-blocks as $\basicblocks$:
 \begin{equation}
-  \basicblocks \equiv [0] \concat [n + 1 \mid n \orderedin \N_{|\instructions|} \wedge \instructions_n \in T]
+  \basicblocks \equiv [0] \concat [n + 1 + \Fskip(n) \mid n \orderedin \N_{|\mathbf{c}|} \wedge \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in T]
 \end{equation}
-
-We require that the dynamic jump-table only contain the indices of basic-blocks and that they include the indices for all basic-blocks immediately following a $\token{call}$ (6) or $\token{call\_ind}$ (42) instruction:
-\begin{align}
-  \mathbf{j} &\subset \N_{|\basicblocks|}\\
-  \forall n \in \N_{|\instructions|} : (\instructions_n)_0 \in \{6, 42\} &\implies b \in \mathbf{j} \ \where \basicblocks_b = n + 1
-\end{align}
-
-As with other hard requirements, if the former is not satisfied, then posterior machine state is equivalent to prior and the exit reason of the \textsc{pvm} function is $\panic$.
 
 \subsection{Single-Step State Transition}
 
@@ -133,7 +145,7 @@ We define $\zeta$ together with the posterior values (denoted as prime) of each 
 
 In general, when transitioning machine state for an instruction a number of conditions hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one, the gas remaining is reduced by the amount corresponding to the instruction type and \textsc{ram} \& registers are unchanged. Formally:
 \begin{equation}
-  \zeta = \continue,\quad \imath' = \imath + 1,\quad \xi' = \xi - \gas,\quad \omega' = \omega,\quad\mem' = \mem \text{ except as indicated }
+  \zeta = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \xi' = \xi - \gas,\quad \omega' = \omega,\quad\mem' = \mem \text{ except as indicated }
 \end{equation}
 
 Where \textsc{ram} must be inspected and yet access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest address to be read which is inaccessible. More formally, let $\mathbf{a}$ be the set of indices in to which $\mem$ must be subscripted in order to calculate the result of $\Psi_1$. If $\mathbf{a} \not\subset \mathbb{V}_\mem$ then let $\zeta=\fault \times \text{min}(\mathbf{a} \setminus \mathbb{V}_\mem)$.
@@ -174,7 +186,7 @@ Static jumps, calls and branches must be to valid items in the jump table and if
   \end{cases}
 \end{equation}
 
-Calls and jumps whose next instruction is dynamically computed meanwhile must use an address which may be indexed into the jump-table $\mathbf{j}$. Through a quirk of tooling\footnote{The popular code generation backend \textsc{llvm} requires and assumes in its code generation that dynamically computed jump destinations always have a certain memory alignment. Since at present we depend on this for our tooling, we must acquiesce to its assumptions.}, we define the dynamic address required by the instructions as the jump table index incremented by one and then multiplied by our jump alignment factor $\mathsf{Z}_A = 4$:
+Calls and jumps whose next instruction is dynamically computed must use an address which may be indexed into the jump-table $\mathbf{j}$. Through a quirk of tooling\footnote{The popular code generation backend \textsc{llvm} requires and assumes in its code generation that dynamically computed jump destinations always have a certain memory alignment. Since at present we depend on this for our tooling, we must acquiesce to its assumptions.}, we define the dynamic address required by the instructions as the jump table index incremented by one and then multiplied by our jump alignment factor $\mathsf{Z}_A = 4$:
 \begin{equation}\label{eq:jumptablealignment}
   \token{djump}(a) \implies (\zeta, \imath') = \begin{cases}
     (\halt, \imath) &\when a = 2^{32} - 2^{16}\\
@@ -183,17 +195,40 @@ Calls and jumps whose next instruction is dynamically computed meanwhile must us
   \end{cases}
 \end{equation}
 
+\subsection{Zigzag Encoding}
+
+In order to compactly encode signed integers, we use a zigzag encoding which gives larger quantities as the integer's absolute distance from zero increases. Small negative and small positive values are thus both encoded as slightly larger (but still small) positive integers. Since our encoding scheme allows for eliding any leading zeroes, we implicitly get compact signed encoding without having to do a signed-extension while decoding.
+
+\newcommand{\zigzag}{\mathcal{Z}}
+\newcommand{\unzz}{\mathcal{Z}^{-1}}
+The Zigzag encoding function is defined as $\zigzag$:
+\begin{align}\label{eq:zigzag}
+  \zigzag\colon\left\{\begin{aligned}
+    \N &\to \N\\
+    n &\mapsto 2|n| - (n < 0)
+  \end{aligned}\right.\\
+  \unzz\colon\left\{\begin{aligned}
+    \N &\to \N\\
+    n &\mapsto \ceil{\frac{n}{2}}(1 - 2(n \bmod 2))
+  \end{aligned}\right.
+\end{align}
+
+
 \subsection{Instruction Tables}\label{sec:instructiontables}
 
-\subsubsection{Instructions without Arguments}
+Note that in the case that the opcode is not defined in the following tables then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
+
+We assume the skip length $\ell$ is well-defined:
 \begin{equation}
-  \instrlen = 1
+  \ell \equiv \Fskip(\imath)
 \end{equation}
+
+\subsubsection{Instructions without Arguments}
 
 \newcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{20mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$(\instructions_\imath)_0$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   0&\token{trap}&0&$\zeta = \halt$\\
@@ -202,27 +237,81 @@ Calls and jumps whose next instruction is dynamically computed meanwhile must us
   \bottomrule
 \end{longtable}
 
-\subsubsection{Instructions with Arguments of One Register \& One Immediate}
+\subsubsection{Instructions with Arguments of One Immediate}
 \begin{equation}
-  \instrlen = 2 + x, \quad \reg_A \equiv \reg_{(\instructions_\imath)_{1}}, \quad \reg'_A \equiv \reg'_{(\instructions_\imath)_{1}}, \quad \exists x, \immed_X \in \N_R: (\instructions_\imath)_{2\dots+x} = \se(\immed_X)
+\begin{aligned}
+  \using l_X = \max(\ell, 4) \,,\quad
+  \immed_X \equiv \unzz(\de_{l_X}(\instructions_{\imath+1\dots+l_X}))
+\end{aligned}
 \end{equation}
-
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
-
-We denote the next jump index as $j_N$, as always equivalent to the lowest value in the jump table which is greater than the instruction counter. In the case of an instruction where this value is utilized when undefined then the instruction causes no mutations to machine state but results in an exit reason of panic $\panic$.
-\begin{equation}
-  R(\imath) \equiv \mathsf{Z}_A(1+j)\ \where \basicblocks_{\mathbf{j}_j} = \imath + 1
-\end{equation}
-
-% TODO: handle dynamic jupms properly - jump_ind and call_ind
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{13mm} p{5mm} p{100mm}}
+\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$(\instructions_\imath)_0$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  6&\token{call}&0&$\token{branch}(\immed_X, \top)\ ,\qquad \reg_A' = R(\imath)$\\ \mrule
+  78&\token{ecalli}&0&$\zeta = \host \times \immed_X$\\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Instructions with Arguments of Two Immediates}
+\begin{equation}
+\begin{aligned}
+    \using l_X &= \max(4, \instructions_{\imath+1}) \,,\quad&
+    \immed_X &\equiv \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
+    \using l_Y &= \max(4, (\ell - l_X - 1) \bmod 2^8) \,,\quad&
+    \immed_Y &\equiv \unzz(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
+\end{aligned}
+\end{equation}
+
+\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
+\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+  \toprule
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \midrule
+  \endhead
+  62&\token{store\_imm\_u8}&0&${\mem'}^\circlearrowleft_{\immed_X} = \immed_Y \bmod 2^8 $\\ \mrule
+  79&\token{store\_imm\_u16}&0&${\mem'}^\circlearrowleft_{\immed_X\dots+2} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
+  38&\token{store\_imm\_u32}&0&${\mem'}^\circlearrowleft_{\immed_X\dots+4} = \se_4(\immed_Y)$\\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Instructions with Arguments of One Offset}
+\begin{equation}
+\begin{aligned}
+  \using l_X = \max(\ell, 4) \,,\quad
+  \immed_X \equiv \imath + \unzz(\de_{l_X}(\instructions_{\imath+1\dots+l_X}))
+\end{aligned}
+\end{equation}
+
+\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
+\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+  \toprule
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \midrule
+  \endhead
+  5&\token{jump}&0&$\token{branch}(\immed_X, \top)$\\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Instructions with Arguments of One Register \& One Immediate}
+\begin{equation}
+\begin{aligned}
+    \using r_A &= \min(12, \instructions_{\imath+1}) \,,\quad&
+    \reg_A &\equiv \reg_{r_A} \,,\quad
+    \reg'_A \equiv \reg'_{r_A} \\
+    \using l_X &= \max((\ell - 1) \bmod 2^8, 4) \,,\quad&
+    \immed_X &\equiv \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
+\end{aligned}
+\end{equation}
+
+\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
+\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+  \toprule
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \midrule
+  \endhead
   19&\token{jump\_ind}&0&$\token{djump}((\reg_A + \immed_X) \bmod 2^{32})$\\ \mrule
   4&\token{load\_imm}&0&$\reg'_A = \immed_X$\\ \mrule
   60&\token{load\_u8}&0&$\reg'_A = \mem_{\immed_X}$\\ \mrule
@@ -236,20 +325,58 @@ We denote the next jump index as $j_N$, as always equivalent to the lowest value
 \bottomrule
 \end{longtable}
 
-\subsubsection{Instructions with Arguments of a Register \& Two Immediates}
+\subsubsection{Instructions with Arguments of One Register \& Two Immediates}
 \begin{equation}
-    \instrlen = 2 + x + y, \quad \reg_A \equiv \reg_{(\instructions_\imath)_{1}}, \quad \reg'_A \equiv \reg'_{(\instructions_\imath)_{1}},\quad
-    \exists x, y, \immed_X, \immed_Y \in \N_R: (\instructions_\imath)_{2\dots+x} = \se(\immed_X) \wedge (\instructions_\imath)_{2 +x\dots+y} = \se(\immed_Y)
+\begin{aligned}
+    \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
+    \reg_A &\equiv \reg_{r_A} \,,\quad
+    \reg'_A \equiv \reg'_{r_A} \\
+    \using l_X &= \max(4, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
+    \immed_X &= \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
+    \using l_Y &= \max(4, (\ell - l_X - 1) \bmod 2^8) \,,\quad&
+    \immed_Y &= \unzz(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
+\end{aligned}
 \end{equation}
-
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$(\instructions_\imath)_0$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
+  26&\token{store\_imm\_ind\_u8}&0&$\memwr_{\reg_A + \immed_X} = \immed_Y \bmod 2^8$\\ \mrule
+  54&\token{store\_imm\_ind\_u16}&0&$\memwr_{\reg_A + \immed_X \dots+ 2} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
+  13&\token{store\_imm\_ind\_u32}&0&$\memwr_{\reg_A + \immed_X \dots+ 4} = \se_4(\immed_Y)$\\
+  \bottomrule
+\end{longtable}
+
+\subsubsection{Instructions with Arguments of One Register, One Immediate and One Offset}
+\begin{equation}
+  \begin{aligned}
+      \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
+      \reg_A &\equiv \reg_{r_A} \,,\quad
+      \reg'_A \equiv \reg'_{r_A} \\
+      \using l_X &= \max(4, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
+      \immed_X &= \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
+      \using l_Y &= \max(4, (\ell - l_X - 1) \bmod 2^8) \,,\quad&
+      \immed_Y &= \imath + \unzz(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
+  \end{aligned}
+\end{equation}
+
+We denote the next jump index as $j_N$, as always equivalent to the lowest value in the jump table which is greater than the instruction counter. In the case of an instruction where this value is utilized when undefined then the instruction causes no mutations to machine state but results in an exit reason of panic $\panic$.
+\begin{equation}
+  R(\imath) \equiv \mathsf{Z}_A(1+j)\ \where \basicblocks_{\mathbf{j}_j} = \imath + 1
+\end{equation}
+
+TODO: This needs doing properly\!
+
+\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
+\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+  \toprule
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \midrule
+  \endhead
+  6&\token{load\_imm\_jump}&0&$\token{branch}(\immed_X, \top)\ ,\qquad \reg_A' = R(\imath)$\\ \mrule
   7&\token{branch\_eq\_imm}&0&$\token{branch}(\immed_Y, \reg_A = \immed_X)$\\ \mrule
   15&\token{branch\_ne\_imm}&0&$\token{branch}(\immed_Y, \reg_A \ne \immed_X)$\\ \mrule
   44&\token{branch\_lt\_u\_imm}&0&$\token{branch}(\immed_Y, \reg_A < \immed_X)$\\ \mrule
@@ -259,17 +386,44 @@ In the case that the above condition is not met, then the instruction is conside
   32&\token{branch\_lt\_s\_imm}&0&$\token{branch}(\immed_Y, \signed{\reg_A} < \signed{\immed_X})$\\ \mrule
   46&\token{branch\_le\_s\_imm}&0&$\token{branch}(\immed_Y, \signed{\reg_A} \le \signed{\immed_X})$\\ \mrule
   45&\token{branch\_ge\_s\_imm}&0&$\token{branch}(\immed_Y, \signed{\reg_A} \ge \signed{\immed_X})$\\ \mrule
-  53&\token{branch\_gt\_s\_imm}&0&$\token{branch}(\immed_Y, \signed{\reg_A} > \signed{\immed_X})$\\ \mrule
-  26&\token{store\_imm\_ind\_u8}&0&$\memwr_{\reg_A + \immed_X} = \immed_Y \bmod 2^8$\\ \mrule
-  54&\token{store\_imm\_ind\_u16}&0&$\memwr_{\reg_A + \immed_X \dots+ 2} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
-  13&\token{store\_imm\_ind\_u32}&0&$\memwr_{\reg_A + \immed_X \dots+ 4} = \se_4(\immed_Y)$\\
+  53&\token{branch\_gt\_s\_imm}&0&$\token{branch}(\immed_Y, \signed{\reg_A} > \signed{\immed_X})$\\
   \bottomrule
+\end{longtable}
+
+\subsubsection{Instructions with Arguments of Two Registers}
+\begin{equation}
+\begin{aligned}
+  \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
+  \reg_A &\equiv \reg_{r_A} \,,\quad
+  \reg'_A \equiv \reg'_{r_A} \\
+  \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
+  \reg_B &\equiv \reg_{r_B} \,,\quad
+  \reg'_B \equiv \reg'_{r_B} \\
+\end{aligned}
+\end{equation}
+
+\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
+\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+  \toprule
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \midrule
+  \endhead
+  82&\token{move\_reg}&0&$\reg'_D = \reg_A$\\ \mrule
+  87&\token{sbrk}&0&\makecell[tl]{$\N_{\reg'_D\dots+\reg_A} \in \mathbb{V}^*_{\mu}$\\All ranges are guaranteed unique for all invocations of this instruction}\\
+\bottomrule
 \end{longtable}
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Immediate}
 \begin{equation}
 \begin{aligned}
-  \instrlen = 2 + x, \quad \reg_A \equiv \reg_a, \quad \reg'_A \equiv \reg'_a, \quad \reg_B \equiv \reg_b, \quad \reg'_B \equiv \reg'_b,\quad a \remainder b = \nicefrac{(\instructions_\imath)_{1}}{16}, \quad \exists x, \immed_X \in \N_R: (\instructions_\imath)_{2\dots+x} = \se(\immed_X)
+  \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
+  \reg_A &\equiv \reg_{r_A} \,,\quad
+  \reg'_A \equiv \reg'_{r_A} \\
+  \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
+  \reg_B &\equiv \reg_{r_B} \,,\quad
+  \reg'_B \equiv \reg'_{r_B} \\
+  \using l_X &= \max((\ell - 1) \bmod 2^8, 4) \,,\quad&
+  \immed_X &\equiv \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
 \end{aligned}
 \end{equation}
 
@@ -278,7 +432,7 @@ In the case that the above condition is not met, then the instruction is conside
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$(\instructions_\imath)_0$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   16&\token{store\_ind\_u8}&0&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
@@ -289,10 +443,6 @@ In the case that the above condition is not met, then the instruction is conside
   37&\token{load\_ind\_u16}&0&$\reg'_A = \de_2(\memr_{\reg_B + \immed_X\dots+2})$\\ \mrule
   33&\token{load\_ind\_i16}&0&$\reg'_A = \unsigned{\signedn{2}{\de_2(\memr_{\reg_B + \immed_X\dots+2})}}$\\ \mrule
   1&\token{load\_ind\_u32}&0&$\reg'_A = \de_4(\memr_{\reg_B + \immed_X\dots+4})$\\ \mrule
-  42&\token{call\_ind}&0&$
-    \token{djump}((\reg_B + \immed_X) \bmod 2^{32}) \ ,\qquad
-    \reg_A' = R(\imath)
-  $\\ \mrule
   2&\token{add\_imm}&0&$\reg'_B = (\reg_A + \immed_X) \bmod 2^{32}$\\ \mrule
   18&\token{and\_imm}&0&$\forall i \in \N_{32} : \bits{\reg'_B}_i = \bits{\reg_A}_i \wedge \bits{\immed_X}_i$\\ \mrule
   31&\token{xor\_imm}&0&$\forall i \in \N_{32} : \bits{\reg'_B}_i = \bits{\reg_A}_i \oplus \bits{\immed_X}_i$\\ \mrule
@@ -320,10 +470,81 @@ In the case that the above condition is not met, then the instruction is conside
 \bottomrule
 \end{longtable}
 
+\subsubsection{Instructions with Arguments of Two Registers \& One Offset}
+\begin{equation}
+  \begin{aligned}
+    \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
+    \reg_A &\equiv \reg_{r_A} \,,\quad
+    \reg'_A \equiv \reg'_{r_A} \\
+    \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
+    \reg_B &\equiv \reg_{r_B} \,,\quad
+    \reg'_B \equiv \reg'_{r_B} \\
+    \using l_X &= \max((\ell - 1) \bmod 2^8, 4) \,,\quad&
+    \immed_X &\equiv \imath + \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
+  \end{aligned}
+\end{equation}
+
+In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
+
+\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
+\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+  \toprule
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \midrule
+  \endhead
+24&\token{branch\_eq}&0&$\token{branch}(\immed_X, \reg_A = \reg_B)$\\ \mrule
+30&\token{branch\_ne}&0&$\token{branch}(\immed_X, \reg_A \ne \reg_B)$\\ \mrule
+47&\token{branch\_lt\_u}&0&$\token{branch}(\immed_X, \reg_A < \reg_B)$\\ \mrule
+48&\token{branch\_lt\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} < \signed{\reg_B})$\\ \mrule
+41&\token{branch\_ge\_u}&0&$\token{branch}(\immed_X, \reg_A \ge \reg_B)$\\ \mrule
+43&\token{branch\_ge\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} \ge \signed{\reg_B})$\\
+\bottomrule
+\end{longtable}
+
+\subsubsection{Instruction with Arguments of Two Registers and Two Immediates}
+
+\begin{equation}
+  \begin{aligned}
+    \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
+    \reg_A &\equiv \reg_{r_A} \,,\quad
+    \reg'_A \equiv \reg'_{r_A} \\
+    \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
+    \reg_B &\equiv \reg_{r_B} \,,\quad
+    \reg'_B \equiv \reg'_{r_B} \\
+    \using l_X &= \max(4, \instructions_{\imath+2}) \,,\quad&
+    \immed_X &= \unzz(\de_{l_X}(\instructions_{\imath+3\dots+l_X})) \\
+    \using l_Y &= \max(4, (\ell - l_X - 2) \bmod 2^8) \,,\quad&
+    \immed_Y &= \unzz(\de_{l_Y}(\instructions_{\imath+3+l_X\dots+l_Y}))
+  \end{aligned}
+\end{equation}
+
+In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
+
+\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
+\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+  \toprule
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \midrule
+  \endhead
+42&\token{load\_imm\_jump\_ind}&0&$
+    \token{djump}((\reg_B + \immed_X) \bmod 2^{32}) \ ,\qquad
+    \reg_A' = R(\imath)
+  $\\
+  \bottomrule
+\end{longtable}
+
 \subsubsection{Instructions with Arguments of Three Registers}
 \begin{equation}
 \begin{aligned}
-  \instrlen = 3, \quad \reg_D \equiv \reg_d, \quad \reg'_D \equiv \reg'_d, \quad \reg_A \equiv \reg_a, \quad \reg'_A \equiv \reg'_a,\quad a \remainder d = \nicefrac{(\instructions_\imath)_{1}}{16}, \quad \reg_B \equiv \reg_{(\instructions_\imath)_{2}}, \quad \reg'_B \equiv \reg'_{(\instructions_\imath)_{2}}
+  \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
+  \reg_A &\equiv \reg_{r_A} \,,\quad
+  \reg'_A \equiv \reg'_{r_A} \\
+  \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
+  \reg_B &\equiv \reg_{r_B} \,,\quad
+  \reg'_B \equiv \reg'_{r_B} \\
+  \using r_D &= \min(12, \instructions_{\imath+2}) \,,\quad&
+  \reg_D &\equiv \reg_{r_D} \,,\quad
+  \reg'_D \equiv \reg'_{r_D} \\
 \end{aligned}
 \end{equation}
 
@@ -332,7 +553,7 @@ In the case that the above condition is not met, then the instruction is conside
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}[t]{p{8mm} p{20mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$(\instructions_\imath)_0$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   8&\token{add}&0&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{32}$\\ \mrule
@@ -375,67 +596,6 @@ In the case that the above condition is not met, then the instruction is conside
     \reg_A &\when \reg_B = 0\\
     0 &\otherwise
   \end{cases}$\\
-\bottomrule
-\end{longtable}
-
-\subsubsection{Instructions with Arguments of One Immediate}
-\begin{equation}
-\begin{aligned}
-  \instrlen = 1 + x, \quad \exists x, \immed_X \in \N_R: (\instructions_\imath)_{1\dots+x} = \se(\immed_X)
-\end{aligned}
-\end{equation}
-
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
-
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
-  \toprule
-  \thead{$(\instructions_\imath)_0$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
-  \midrule
-  \endhead
-  5&\token{jump}&0&$\token{branch}(\immed_X, \top)$\\ \mrule
-  78&\token{ecalli}&0&$\zeta = \host \times \immed_X$\\
-\bottomrule
-\end{longtable}
-
-\subsubsection{Instructions with Arguments of Two Immediates}
-\begin{equation}
-\begin{aligned}
-  \instrlen = 3 + x + y, \quad \exists x, y, \immed_X, \immed_Y \in \N_R: (\instructions_\imath)_{1\dots+x} = \se(\immed_X) \wedge (\instructions_\imath)_{2 +x\dots+y} = \se(\immed_Y)
-\end{aligned}
-\end{equation}
-
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
-
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
-  \toprule
-  \thead{$(\instructions_\imath)_0$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
-  \midrule
-  \endhead
-  62&\token{store\_imm\_u8}&0&${\mem'}^\circlearrowleft_{\immed_Y} = \immed_X \bmod 2^8 $\\ \mrule
-  79&\token{store\_imm\_u16}&0&${\mem'}^\circlearrowleft_{\immed_Y\dots+2} = \se_2(\immed_X \bmod 2^{16})$\\ \mrule
-  38&\token{store\_imm\_u32}&0&${\mem'}^\circlearrowleft_{\immed_Y\dots+4} = \se_4(\immed_X)$\\
-\bottomrule
-\end{longtable}
-
-\subsubsection{Instructions with Arguments of Two Registers}
-\begin{equation}
-\begin{aligned}
-  \instrlen = 2, \quad \reg_D \equiv \reg_d, \quad \reg'_D \equiv \reg'_d, \quad \reg_A \equiv \reg_a, \quad \reg'_A \equiv \reg'_a,\quad a \remainder d = \nicefrac{(\instructions_\imath)_{1}}{16}
-\end{aligned}
-\end{equation}
-
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
-
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
-  \toprule
-  \thead{$(\instructions_\imath)_0$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
-  \midrule
-  \endhead
-  82&\token{move\_reg}&0&$\reg'_D = \reg_A$\\ \mrule
-  87&\token{sbrk}&0&\makecell[tl]{$\N_{\reg'_D\dots+\reg_A} \in \mathbb{V}^*_{\mu}$\\All ranges are guaranteed unique for all invocations of this instruction}\\
 \bottomrule
 \end{longtable}
 
