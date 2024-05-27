@@ -58,11 +58,11 @@ If the latter condition cannot be satisfied, then $(\panic, \imath, \xi, \omega,
 
 The \textsc{pvm} exit reason $r \in \{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R$ may be one of regular halt $\halt$, panic $\panic$ or out-of-gas $\oog$, or alternatively a host-call $\host$, in which the host-call identifier is associated, or page-fault $\fault$ in which case the address into \textsc{ram} is associated.
 
-\subsection{Instructions, Basic-Blocks and the Jump Table}
+\subsection{Instructions, Opcodes and Skip-distance}
 
 The program blob $\mathbf{p}$ is split into a series of octets which make up the \emph{instruction data} $\mathbf{c}$ and the \emph{opcode bitmask} $\mathbf{k}$ as well as the \emph{dynamic jump table}, $\mathbf{j}$. The former two imply an instruction sequence, and by extension a \emph{basic-block sequence}, itself a sequence of indices of the instructions which follow a \emph{block-termination} instruction.
 
-The dynamic jump table builds on this and is a sequence containing, in order, every basic-block index to which the instruction counter may be altered if computed dynamically.
+The latter, dynamic jump table, is a sequence of indices into the instruction data blob and is indexed into when dynamically-computed jumps are taken. It is encoded as a sequence of unsigned integers each encoded with the same length in octets. This length, term $z$ above, is itself encoded prior.
 
 The \textsc{pvm} counts instructions in octet terms (rather than in terms of instructions) and it is thus convenient to define which octets represent the beginning of an instruction, \ie the opcode octet, and which do not. This is the purpose of $\mathbf{k}$, the instruction-opcode bitmask. We assert that the length of the bitmask is no smaller than the length of the instruction blob (and in fact is simply rounded to the nearest multiple of eight for ease of octet-encoding).
 
@@ -83,16 +83,7 @@ We define $\instructions$ as being equivalent to the instructions $\mathbf{c}$ e
   \instructions \equiv \mathbf{c} \concat \sq{0, 0, \dots}
 \end{equation}
 
-
-%the same length as the  our instructions blob $\mathbf{c}$, we make an equivalence for our instruction-blob sequence $\instructions$. To define this we presume a function $\ell(\N_{2^8})$ which provides the length of the instruction whose opcode is given as parameter according to the $\ell$ value in the tables of section \ref{sec:instructiontables}. Formally:
-%\begin{align}
-%  \instructions &\equiv [I(0), I(1), \dots I(m - 1)]\\
-%  \where I(n) &\equiv \mathbf{c}_{o\dots+\ell(\mathbf{c}_o)}\ ,\quad
-%  m = \min(n \in \N : o = |\mathbf{c}|)\ ,\quad
-%  o = \sum_{m \in \N_n} |I(m, \mathbf{c})|
-%\end{align}
-
-\subsubsection{Basic Blocks and Termination Instructions}
+\subsection{Basic Blocks and Termination Instructions}
 
 Instructions of the following opcodes are considered basic-block termination instructions; other than $\token{trap}$ \& $\token{fallthrough}$, they correspond to instructions which may define the instruction-counter to be something other than its prior value plus the instruction's skip amount:
 \begin{itemize}
@@ -177,21 +168,23 @@ We define signed/unsigned transitions for various octet widths:
   \end{aligned}\right.
 \end{align}
 
-Static jumps, calls and branches must be to valid items in the jump table and if they are not, then a panic occurs:
+Any alterations of the program counter stemming from a static jump, call or branch must be to the start of a basic block or else a panic occurs. Hypotheticals are not considered. Formally:
 \begin{equation}
   \token{branch}(b, C) \implies (\zeta, \imath') = \begin{cases}
-    (\panic, \imath) &\when b \ge |\basicblocks| \\
-    (\continue, \imath) &\otherwhen \lnot C \\
-    (\continue, \basicblocks_{b}) &\otherwise
+    (\continue, \imath) &\when \lnot C \\
+    (\panic, \imath) &\otherwhen b \not\in \basicblocks \\
+    (\continue, b) &\otherwise
   \end{cases}
 \end{equation}
 
-Calls and jumps whose next instruction is dynamically computed must use an address which may be indexed into the jump-table $\mathbf{j}$. Through a quirk of tooling\footnote{The popular code generation backend \textsc{llvm} requires and assumes in its code generation that dynamically computed jump destinations always have a certain memory alignment. Since at present we depend on this for our tooling, we must acquiesce to its assumptions.}, we define the dynamic address required by the instructions as the jump table index incremented by one and then multiplied by our jump alignment factor $\mathsf{Z}_A = 4$:
+Jumps whose next instruction is dynamically computed must use an address which may be indexed into the jump-table $\mathbf{j}$. Through a quirk of tooling\footnote{The popular code generation backend \textsc{llvm} requires and assumes in its code generation that dynamically computed jump destinations always have a certain memory alignment. Since at present we depend on this for our tooling, we must acquiesce to its assumptions.}, we define the dynamic address required by the instructions as the jump table index incremented by one and then multiplied by our jump alignment factor $\mathsf{Z}_A = 4$.
+
+As with other irregular alterations to the program counter, target code index must be the start of a basic block or else a panic occurs. Formally:
 \begin{equation}\label{eq:jumptablealignment}
   \token{djump}(a) \implies (\zeta, \imath') = \begin{cases}
     (\halt, \imath) &\when a = 2^{32} - 2^{16}\\
-    (\panic, \imath) &\otherwhen a = 0 \vee a > |\mathbf{j}|\cdot\mathsf{Z}_A \vee a \bmod \mathsf{Z}_A \ne 0\\
-    (\continue, \basicblocks_{\mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1}}) &\otherwise
+    (\panic, \imath) &\otherwhen a = 0 \vee a > |\mathbf{j}|\cdot\mathsf{Z}_A \vee a \bmod \mathsf{Z}_A \ne 0 \vee \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1} \not\in \basicblocks \\
+    (\continue, \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1}) &\otherwise
   \end{cases}
 \end{equation}
 
@@ -212,7 +205,6 @@ The Zigzag encoding function is defined as $\zigzag$:
     n &\mapsto \ceil{\frac{n}{2}}(1 - 2(n \bmod 2))
   \end{aligned}\right.
 \end{align}
-
 
 \subsection{Instruction Tables}\label{sec:instructiontables}
 
@@ -363,20 +355,13 @@ We assume the skip length $\ell$ is well-defined:
   \end{aligned}
 \end{equation}
 
-We denote the next jump index as $j_N$, as always equivalent to the lowest value in the jump table which is greater than the instruction counter. In the case of an instruction where this value is utilized when undefined then the instruction causes no mutations to machine state but results in an exit reason of panic $\panic$.
-\begin{equation}
-  R(\imath) \equiv \mathsf{Z}_A(1+j)\ \where \basicblocks_{\mathbf{j}_j} = \imath + 1
-\end{equation}
-
-TODO: This needs doing properly\!
-
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  6&\token{load\_imm\_jump}&0&$\token{branch}(\immed_X, \top)\ ,\qquad \reg_A' = R(\imath)$\\ \mrule
+  6&\token{load\_imm\_jump}&0&$\token{branch}(\immed_Y, \top)\ ,\qquad \reg_A' = \immed_X$\\ \mrule
   7&\token{branch\_eq\_imm}&0&$\token{branch}(\immed_Y, \reg_A = \immed_X)$\\ \mrule
   15&\token{branch\_ne\_imm}&0&$\token{branch}(\immed_Y, \reg_A \ne \immed_X)$\\ \mrule
   44&\token{branch\_lt\_u\_imm}&0&$\token{branch}(\immed_Y, \reg_A < \immed_X)$\\ \mrule
@@ -527,8 +512,8 @@ In the case that the above condition is not met, then the instruction is conside
   \midrule
   \endhead
 42&\token{load\_imm\_jump\_ind}&0&$
-    \token{djump}((\reg_B + \immed_X) \bmod 2^{32}) \ ,\qquad
-    \reg_A' = R(\imath)
+    \token{djump}((\reg_B + \immed_Y) \bmod 2^{32}) \ ,\qquad
+    \reg_A' = \immed_X
   $\\
   \bottomrule
 \end{longtable}
