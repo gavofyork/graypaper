@@ -118,7 +118,7 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
     \label{eq:ticketconditiontrue}
     \gamma'_\mathbf{s} \in \seq{\mathbb{C}} &\implies \left\{\,\begin{aligned}
         &i_\mathbf{y} = \banderout{\mathbf{H}_s}\,,\\
-        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_S \concat \eta'_3 \doubleplus i_r}{\mathcal{E}_U(\mathbf{H})}\,,\\
+        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_T \concat \eta'_3 \doubleplus i_r}{\mathcal{E}_U(\mathbf{H})}\,,\\
         &\mathbf{T} = 1
     \end{aligned}\right.\\
     \label{eq:ticketconditionfalse}
@@ -130,7 +130,7 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
   \mathbf{H}_v &\in \bandersig{\mathbf{H}_a}{\mathsf{X}_E\frown \banderout{\mathbf{H}_s}}{[]} \\
   \mathsf{X}_E &= \token{\$jam\_entropy}\\
   \mathsf{X}_F &= \token{\$jam\_fallback\_seal}\\
-  \mathsf{X}_S &= \token{\$jam\_seal}
+  \mathsf{X}_T &= \token{\$jam\_ticket\_seal}
   \end{align}
 
 Sealing using the ticket is of greater security, and we utilize this knowledge when determining a candidate block on which to extend the chain, detailed in section \ref{sec:bestchain}. We thus note that the block was sealed under the regular security with the boolean marker $\mathbf{T}$. We define this only for the purpose of ease of later specification.
@@ -253,7 +253,7 @@ We define the extrinsic as a sequence of proofs of valid tickets, each of which 
       \mathsf{K} &\when m' < \mathsf{Y} \\
       0 &\otherwise
   \end{cases}\\
-  \mathsf{X}_T &= \token{\$jam\_ticket}
+  \mathsf{X}_T &= \token{\$jam\_ticket\_seal}
 \end{align}
 
 We define $\mathbf{n}$ as the set of new tickets, with the ticket identity, a hash, defined as the output component of the Bandersnatch Ring\textsc{vrf} proof:
