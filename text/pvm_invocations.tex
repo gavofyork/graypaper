@@ -1,7 +1,7 @@
-
 \section{Virtual Machine Invocations}\label{sec:virtualmachineinvocations}
 
 \newcommand*{\pvm}{\mathbf{M}}
+\newcommand*{\segoff}{\pi}
 
 \subsection{Host-Call Result Constants}
 
@@ -66,7 +66,7 @@ The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated
 
 The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\mathsf{W}_S$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
 
-The Refine invocation function also implicitly draws upon some recent head state $\delta$ and explicitly accepts the work payload, $\mathbf{y}$, together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{c}$, the authorizer hash $a$ and its output $\mathbf{o}$, and an export segment offset $\ell$, the import and extrinsic data blobs (both just concatenated segments) as dictated by the work-item, $\mathbf{i}$ and $\mathbf{x}$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
+The Refine invocation function also implicitly draws upon some recent head state $\delta$ and explicitly accepts the work payload, $\mathbf{y}$, together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{c}$, the authorizer hash $a$ and its output $\mathbf{o}$, and an export segment offset $\segoff$, the import and extrinsic data blobs (both just concatenated segments) as dictated by the work-item, $\mathbf{i}$ and $\mathbf{x}$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   \Psi_R &\colon \left\{\begin{aligned}
     \left(\begin{aligned}
@@ -74,7 +74,7 @@ The Refine invocation function also implicitly draws upon some recent head state
       &\H, \Y, \seq{\G}, \seq{\Y}, \N
     \end{aligned}
     \right) &\to (\Y \cup \mathbb{J}, \seq{\Y}) \\
-    (c, g, s, p, \mathbf{y}, \mathbf{c}, a, \mathbf{o}, \mathbf{i}, \mathbf{x}, \ell) &\mapsto \begin{cases}
+    (c, g, s, p, \mathbf{y}, \mathbf{c}, a, \mathbf{o}, \mathbf{i}, \mathbf{x}, \segoff) &\mapsto \begin{cases}
       (\token{BAD}, []) &\when s \not\in \keys{\delta} \vee \Lambda(\delta[s], \mathbf{c}_t, c) = \none \\
       (\token{BIG}, []) &\otherwhen |\Lambda(\delta[s], \mathbf{c}_t, c)| > \mathsf{S} \\
       &\otherwise: \\
@@ -90,7 +90,7 @@ The Refine invocation function also implicitly draws upon some recent head state
     (n, \xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\mapsto \begin{cases}
       \Omega_H(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}), s, \delta, \mathbf{c}_t) &\when n = \mathtt{lookup}\\
       \Omega_Y(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}), \mathbf{i}) &\when n = \mathtt{import}\\
-      \Omega_Z(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}), \ell) &\when n = \mathtt{export}\\
+      \Omega_Z(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
       \Omega_G(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas}\\
       \Omega_M(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
       \Omega_P(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{peek}\\
@@ -659,19 +659,19 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_Z(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}), \ell)$ \\
+  $\Omega_Z(\xi, \omega, \mu, (\mathbf{m}, \mathbf{e}), \segoff)$ \\
   \texttt{export} = 16 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [o, z] &= \omega_{0\dots2} \\
+    \using [p, z] &= \omega_{0\dots2} \\
     \using \mathbf{x} &= \begin{cases}
-      [\mem_{o+i\cdot\mathsf{W}_S\dots+\mathsf{W}_S} \mid i \orderedin \N_z] &\when \N_{o\dots+z\cdot\mathsf{W}_S} \in \mathbb{V}_\mu\\
+      [\mem_{p+i\cdot\mathsf{W}_S\dots+\mathsf{W}_S} \mid i \orderedin \N_z] &\when \N_{p\dots+z\cdot\mathsf{W}_S} \in \mathbb{V}_\mu\\
       \error &\otherwise
     \end{cases}\\
     (\omega'_0, \mathbf{e}') &\equiv \begin{cases}
       (\mathtt{OOB}, \mathbf{e}) &\when \mathbf{x} = \error \\
-      (\mathtt{FULL}, \mathbf{e}) &\otherwhen |\mathbf{e}| \ge \mathsf{W}_X \\
-      (\ell + |\mathbf{e}|, \mathbf{e} \concat \mathbf{x}) &\otherwise
+      (\mathtt{FULL}, \mathbf{e}) &\otherwhen \segoff+|\mathbf{e}| \ge \mathsf{W}_X \\
+      (\segoff + |\mathbf{e}|, \mathbf{e} \concat \mathbf{x}) &\otherwise
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
