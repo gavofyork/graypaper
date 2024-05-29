@@ -188,13 +188,16 @@ We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as 
 \subsection{Work Report Guarantees}\label{sec:workreportguarantees}
 
 We begin by defining the guarantees extrinsic, $\mathbf{E}_G$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a core index, \emph{work-report}, a credential $a$ and its corresponding timeslot $t$. Formally:
-\begin{equation}
-  \mathbf{E}_G \in \seq{\tuple{
+\begin{align}
+  \mathbf{E}_G &\in \seq{\tuple{
     c \in \N_\mathsf{C},\, w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\mathbb{E}?}_3
   }}_{:\mathsf{C}} \\
-\end{equation}
+  \forall g &\in \mathbf{E}_G : (g_a)_{\dots2} \in \seq{\mathbb{E}}_2
+\end{align}
 
-The credential is itself a sequence of either two or three tuples of a signature and a validator index. The core index of each guarantee must be in ascending order:
+The credential is itself a sequence of three tuples of a signature and a validator index $\mathbb{E}$. Only the final item may legitimately be $\none$.
+
+The core index of each guarantee must be in ascending order:
 \begin{align}
   \mathbf{E}_G = \orderby{i_c}{i \in \mathbf{E}_G}
 \end{align}
