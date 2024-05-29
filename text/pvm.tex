@@ -21,7 +21,7 @@
 \newcommand*{\unbits}[1]{\unbitsn{4}{#1}}
 \newcommand*{\bitsn}[2]{\bitsfunc{#1}(#2)}
 \newcommand*{\unbitsn}[2]{\unbitsfunc{#1}(#2)}
-\newcommand*{\signfunc}[1]{\mathcal{W}_{#1}}
+\newcommand*{\signfunc}[1]{\mathcal{Z}_{#1}}
 \newcommand*{\unsignfunc}[1]{\signfunc{#1}^{-1} }
 \newcommand*{\signed}[1]{\signedn{4}{#1}}
 \newcommand*{\unsigned}[1]{\unsignedn{4}{#1}}
@@ -168,6 +168,16 @@ We define signed/unsigned transitions for various octet widths:
   \end{aligned}\right.
 \end{align}
 
+\newcommand{\sext}{\mathcal{X}}
+
+Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values, important as . We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
+\begin{align}\label{eq:signedextension}
+  \sext_{n\in\{0, 1, 2, 3, 4\}}\colon\left\{\begin{aligned}
+    \N_{2^{8n}} &\to \N_{2^{32}}\\
+    x &\mapsto x + \ffrac{x}{2^{8n-1}}(2^{32}-2^{8n})
+  \end{aligned}\right.
+\end{align}
+
 Any alterations of the program counter stemming from a static jump, call or branch must be to the start of a basic block or else a panic occurs. Hypotheticals are not considered. Formally:
 \begin{equation}
   \token{branch}(b, C) \implies (\zeta, \imath') = \begin{cases}
@@ -187,24 +197,6 @@ As with other irregular alterations to the program counter, target code index mu
     (\continue, \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1}) &\otherwise
   \end{cases}
 \end{equation}
-
-\subsection{Zigzag Encoding}
-
-In order to compactly encode signed integers, we use a zigzag encoding which gives larger quantities as the integer's absolute distance from zero increases. Small negative and small positive values are thus both encoded as slightly larger (but still small) positive integers. Since our encoding scheme allows for eliding any leading zeroes, we implicitly get compact signed encoding without having to do a signed-extension while decoding.
-
-\newcommand{\zigzag}{\mathcal{Z}}
-\newcommand{\unzz}{\mathcal{Z}^{-1}}
-The Zigzag encoding function is defined as $\zigzag$:
-\begin{align}\label{eq:zigzag}
-  \zigzag\colon\left\{\begin{aligned}
-    \N &\to \N\\
-    n &\mapsto 2|n| - (n < 0)
-  \end{aligned}\right.\\
-  \unzz\colon\left\{\begin{aligned}
-    \N &\to \N\\
-    n &\mapsto \ceil{\frac{n}{2}}(1 - 2(n \bmod 2))
-  \end{aligned}\right.
-\end{align}
 
 \subsection{Instruction Tables}\label{sec:instructiontables}
 
@@ -233,7 +225,7 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
   \using l_X = \max(\ell, 4) \,,\quad
-  \immed_X \equiv \unzz(\de_{l_X}(\instructions_{\imath+1\dots+l_X}))
+  \immed_X \equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+1\dots+l_X}))
 \end{aligned}
 \end{equation}
 
@@ -251,9 +243,9 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
     \using l_X &= \max(4, \instructions_{\imath+1}) \,,\quad&
-    \immed_X &\equiv \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
+    \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
     \using l_Y &= \max(4, (\ell - l_X - 1) \bmod 2^8) \,,\quad&
-    \immed_Y &\equiv \unzz(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
+    \immed_Y &\equiv \sext_{l_Y}(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
 \end{aligned}
 \end{equation}
 
@@ -273,7 +265,7 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
   \using l_X = \max(\ell, 4) \,,\quad
-  \immed_X \equiv \imath + \unzz(\de_{l_X}(\instructions_{\imath+1\dots+l_X}))
+  \immed_X \equiv \imath + \signfunc{l_X}(\de_{l_X}(\instructions_{\imath+1\dots+l_X}))
 \end{aligned}
 \end{equation}
 
@@ -294,7 +286,7 @@ We assume the skip length $\ell$ is well-defined:
     \reg_A &\equiv \reg_{r_A} \,,\quad
     \reg'_A \equiv \reg'_{r_A} \\
     \using l_X &= \max((\ell - 1) \bmod 2^8, 4) \,,\quad&
-    \immed_X &\equiv \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
+    \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
 \end{aligned}
 \end{equation}
 
@@ -324,9 +316,9 @@ We assume the skip length $\ell$ is well-defined:
     \reg_A &\equiv \reg_{r_A} \,,\quad
     \reg'_A \equiv \reg'_{r_A} \\
     \using l_X &= \max(4, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
-    \immed_X &= \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
+    \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
     \using l_Y &= \max(4, (\ell - l_X - 1) \bmod 2^8) \,,\quad&
-    \immed_Y &= \unzz(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
+    \immed_Y &= \sext_{l_Y}(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
 \end{aligned}
 \end{equation}
 
@@ -349,9 +341,9 @@ We assume the skip length $\ell$ is well-defined:
       \reg_A &\equiv \reg_{r_A} \,,\quad
       \reg'_A \equiv \reg'_{r_A} \\
       \using l_X &= \max(4, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
-      \immed_X &= \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
+      \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
       \using l_Y &= \max(4, (\ell - l_X - 1) \bmod 2^8) \,,\quad&
-      \immed_Y &= \imath + \unzz(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
+      \immed_Y &= \imath + \signfunc{l_Y}(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
   \end{aligned}
 \end{equation}
 
@@ -408,7 +400,7 @@ We assume the skip length $\ell$ is well-defined:
   \reg_B &\equiv \reg_{r_B} \,,\quad
   \reg'_B \equiv \reg'_{r_B} \\
   \using l_X &= \max((\ell - 1) \bmod 2^8, 4) \,,\quad&
-  \immed_X &\equiv \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
+  \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
 \end{aligned}
 \end{equation}
 
@@ -465,7 +457,7 @@ In the case that the above condition is not met, then the instruction is conside
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
     \using l_X &= \max((\ell - 1) \bmod 2^8, 4) \,,\quad&
-    \immed_X &\equiv \imath + \unzz(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
+    \immed_X &\equiv \imath + \signfunc{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
   \end{aligned}
 \end{equation}
 
@@ -497,9 +489,9 @@ In the case that the above condition is not met, then the instruction is conside
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
     \using l_X &= \max(4, \instructions_{\imath+2}) \,,\quad&
-    \immed_X &= \unzz(\de_{l_X}(\instructions_{\imath+3\dots+l_X})) \\
+    \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions_{\imath+3\dots+l_X})) \\
     \using l_Y &= \max(4, (\ell - l_X - 2) \bmod 2^8) \,,\quad&
-    \immed_Y &= \unzz(\de_{l_Y}(\instructions_{\imath+3+l_X\dots+l_Y}))
+    \immed_Y &= \sext_{l_Y}(\de_{l_Y}(\instructions_{\imath+3+l_X\dots+l_Y}))
   \end{aligned}
 \end{equation}
 
