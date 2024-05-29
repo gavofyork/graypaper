@@ -34,14 +34,14 @@ We define $\delta^\dagger$ as the state after the integration of the preimages:
 
 We define $\mathbf{S}$, the set of all services which will be accumulated in this block; this is all services which have at least one work output within $\mathbf{R}$, together with all privileged services, $\chi$. Formally:
 \begin{align}\label{eq:servicestoaccumulate}
-  \mathbf{S} \equiv \{ r_s \mid w \in \mathbf{R}, r \in w_r \} \cup \{ \chi_m, \chi_a, \chi_v \}
+  \mathbf{S} \equiv \{ \mathbf{r}_s \mid w \in \mathbf{R}, \mathbf{r} \in w_\mathbf{r} \} \cup \{ \chi_m, \chi_a, \chi_v \}
 \end{align}
 
 We calculate the gas attributable for each service as the sum of each of the service's work outputs' share of their report's elective accumulation gas together with the subtotal of minimum gas requirements:
 \begin{equation}
   G\colon\left\{\;\begin{aligned}
     \N_S &\to \Z_G \\
-    \displaystyle s &\mapsto \!\!\sum_{w \in \mathbf{R}}\sum_{r \in w_r , r_s = s}{\!\!\!\!\!\!\!\delta^\dagger[s]_g + \left \lfloor r_g\cdot\frac{\displaystyle \mathsf{G}_A - \sum_{r \in w_r}{\delta^\dagger[r_s]_g}}{\sum_{r \in w_r}{r_g}} \right \rfloor }
+    \displaystyle s &\mapsto \!\!\sum_{w \in \mathbf{R}}\sum_{\mathbf{r} \in w_\mathbf{r} , \mathbf{r}_s = s}{\!\!\!\!\!\!\!\delta^\dagger[s]_g + \left \lfloor \mathbf{r}_g\cdot\frac{\displaystyle \mathsf{G}_A - \sum_{\mathbf{r} \in w_\mathbf{r}}{\delta^\dagger[\mathbf{r}_s]_g}}{\sum_{\mathbf{r} \in w_\mathbf{r}}{\mathbf{r}_g}} \right \rfloor }
   \end{aligned}\right.\!\!\!\!\!\!
 \end{equation}
 
@@ -55,14 +55,14 @@ We finally define the results which will be given as an operand into the accumul
   M\colon\left\{\ \begin{aligned}
     \N_S &\to \lseq\mathbb{O}\rseq \\
     \displaystyle s &\mapsto \left[ \ltup\begin{alignedat}{3}
-        \is{o&}{r_o}\ts\is{&l&}{r_p}\ts\\
+        \is{o&}{\mathbf{r}_o}\ts\is{&l&}{\mathbf{r}_p}\ts\\
         \is{a&}{w_o}\ts\is{&k&}{(w_s)_h}
     \end{alignedat}\rtup
       \,\middle\vert\ 
     \begin{aligned}
       w &\in \mathbf{R},\\
-      r &\in w_r,\\
-      r_s &= s
+      \mathbf{r} &\in w_\mathbf{r},\\
+      \mathbf{r}_s &= s
     \end{aligned}\ \right]
   \end{aligned}\right.
 \end{align}
