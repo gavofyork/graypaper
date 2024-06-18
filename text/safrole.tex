@@ -136,7 +136,7 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
 
 Sealing using the ticket is of greater security, and we utilize this knowledge when determining a candidate block on which to extend the chain, detailed in section \ref{sec:bestchain}. We thus note that the block was sealed under the regular security with the boolean marker $\mathbf{T}$. We define this only for the purpose of ease of later specification.
 
-In addition to the entropy accumulator $\eta_0$, we retain three additional historical values of the accumulator at the point of each of the three most recently ended epochs, $\eta_1$, $\eta_2$ and $\eta_3$. The second-oldest of these $\eta_2$ is utilized to help ensure future entropy is unbiased (see equation \ref{eq:entropycomposition}) and seed the fallback seal-key generation function with randomness (see equation \ref{eq:slotkeysequence}). The oldest is used to regenerate this randomness when verifying the seal above.
+In addition to the entropy accumulator $\eta_0$, we retain three additional historical values of the accumulator at the point of each of the three most recently ended epochs, $\eta_1$, $\eta_2$ and $\eta_3$. The second-oldest of these $\eta_2$ is utilized to help ensure future entropy is unbiased (see equation \ref{eq:ticketsextrinsic}) and seed the fallback seal-key generation function with randomness (see equation \ref{eq:slotkeysequence}). The oldest is used to regenerate this randomness when verifying the seal above (see equations \ref{eq:ticketconditionfalse} and \ref{eq:ticketconditiontrue}).
 \begin{align}\label{eq:entropycomposition}
   \eta &\in \lseq\H\rseq_4
 \end{align}
