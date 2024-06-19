@@ -106,14 +106,14 @@ In these cases, we define the best block as the head of the best chain, itself d
 
 The present work describes a crypto-economic system, \ie one combining elements of both cryptography and economics and game theory to deliver a self-sovereign digital service. In order to codify and manipulate economic incentives we define a token which is native to the system, which we will simply call \emph{tokens} in the present work.
 
-A value of tokens is generally referred to as a \emph{balance}, and such a value is said to be a member of the set of balances, $\N_B$, which is exactly equivalent to the set of 64-bit unsigned integers:
+A value of tokens is generally referred to as a \emph{balance}, and such a value is said to be a member of the set of balances, $\N_B$, which is exactly equivalent to the set of naturals less than $2^{64}$ (\ie 64-bit unsigned integers in coding parlance). Formally:
 \begin{align}\label{eq:balance}
   \N_B \equiv \N_{2^{64}}
 \end{align}
 
 Though unimportant for the present work, we presume that there be a standard named denomination for $10^{9}$ tokens. This is different to both Ethereum (which uses a denomination of $10^{18}$), Polkadot (which uses a denomination of $10^{10}$) and Polkadot's experimental cousin Kusama (which uses $10^{12}$).
 
-The fact that balances are represented as a 64-bit integer implies that there may never be more than around $18\times10^{9}$ tokens (each divisible into portions of $10^{-9}$) within \Jam. We would expect that the total number of tokens ever issued will be a substantially smaller amount than this.
+The fact that balances are constained to being less than $2^{64}$ implies that there may never be more than around $18\times10^{9}$ tokens (each divisible into portions of $10^{-9}$) within \Jam. We would expect that the total number of tokens ever issued will be a substantially smaller amount than this.
 
 We further presume that a number of constant \emph{prices} stated in terms of tokens are known. However we leave the specific values to be determined in following work:
 
@@ -175,7 +175,7 @@ We refer to the time-proportional computational steps as \emph{gas} (much like i
 
 It is left as a rather important implementation detail to ensure that the amount of time taken while computing the function $\Psi(\dots, \xi, \dots)$ has a maximum computation time approximately proportional to the value of $\xi$ regardless of other operands.
 
-The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 32-bit integer, denoted $\N_R$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\omega \in \seq{\N_R}_{13}$ is typically used to denote the registers.
+The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 32-bit quantity, denoted as $\N_R$, a natural less than $2^{32}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\omega \in \seq{\N_R}_{13}$ is typically used to denote the registers.
 \begin{align}
   \mathbb{M} &\equiv \ltuple\isa{\mathbf{V}}{\Y_{2^{32}}}\ts\isa{\mathbf{A}}{\lseq\{\text{W}, \text{R}, \none\}\rseq_{2^{32}}}\rtuple
 \end{align}
@@ -223,7 +223,7 @@ The Safrole mechanism subdivides time following genesis into fixed length \emph{
 
 This six-second slot period represents the minimum time between \Jam blocks, and through Safrole we aim to strictly minimize forks arising both due to contention within a slot (where two valid blocks may be produced within the same six-second period) and due to contention over multiple slots (where two valid blocks are produced in different time slots but with the same parent).
 
-Formally when identifying a timeslot index, we use a 32-bit integer indicating the number of six-second timeslots from the \Jam Common Era. For use in this context we introduce the set $\N_T$:
+Formally when identifying a timeslot index, we use a natural less than $2^{32}$ (in compute parlance, a 32-bit unsigned integer) indicating the number of six-second timeslots from the \Jam Common Era. For use in this context we introduce the set $\N_T$:
 \begin{align}\label{eq:time}
   \N_T \equiv \N_{2^{32}}
 \end{align}

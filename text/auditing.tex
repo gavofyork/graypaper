@@ -1,6 +1,6 @@
 \section{Auditing and Judging}\label{sec:auditing}
 
-The auditing and judging system is theoretically equivalent to that in \textsc{Elves}, introduced by \cite{stewart2018efficient}. For a full security analysis of the mechanism, see this work. There is a difference in terminology, where the terms \emph{backing} and \emph{approval} there refer to our guaranteeing and auditing, respectively.
+The auditing and judging system is theoretically equivalent to that in \textsc{Elves}, introduced by \cite{cryptoeprint:2024/961}. For a full security analysis of the mechanism, see this work. There is a difference in terminology, where the terms \emph{backing} and \emph{approval} there refer to our guaranteeing and auditing, respectively.
 
 %The main point of divergence is in \Jam extending the utility of the availability system so that it does not simply serve auditing, but also allows data intentionally created as a side effect within a core to be utilized at some later stage without the requirement to re-insert it into the availability system. This creates additional bandwidth \emph{in to} the availability system for the importing of more such data. To maximize the value of this alteration, the expiry time of data entering the availability system is extended well beyond that which is needed for auditing, to 28 days.
 
@@ -69,13 +69,13 @@ Formally, for each tranche $n$ we ensure the announcement statement is published
 
 We define $A_n$ as our perception of which validator is required to audit each of the work-reports (identified by their associated core) at tranche $n$. This comes from each other validators' announcements (defined above). It cannot be correctly evaluated until $n$ is current. We have absolute knowledge about our own audit requirements.
 \begin{align}
-  A_n: \mathbb{W} &\to \wp(\N_\mathsf{V}) \\
+  A_n: \mathbb{W} &\to \powset{\N_\mathsf{V}} \\
   \forall (c, w) &\in \mathbf{a}_0 : v \in q_0(w)
 \end{align}
 
 We further define $J_\top$ and $J_\bot$ to be the validator indices who we know to have made respectively, positive and negative, judgements mapped from each work-report's core. We don't care from which tranche a judgement is made.
 \begin{align}
-  J_{\{\bot, \top\}}: \mathbb{W} \to \wp(\N_\mathsf{V})
+  J_{\{\bot, \top\}}: \mathbb{W} \to \powset{\N_\mathsf{V}}
 \end{align}
 
 We are able to define $\mathbf{a}_n$ for tranches beyond the first on the basis of the number of validators who we know are required to conduct an audit yet from whom we have not yet seen a judgement. It is possible that the late arrival of information alters $\mathbf{a}_n$ and nodes should reevaluate and act accordingly should this happen.
@@ -87,7 +87,7 @@ We can thus define $\mathbf{a}_n$ beyond the initial tranche through a new \text
   &\ \mathbf{a}_n \equiv \{ w \in \mathbf{Q} \mid \textstyle\frac{\mathsf{F}}{256\mathsf{V}}\banderout{s_n(w)}_0 < |A_{n - 1}(w) \setminus J_\top(w)| \}\!\!\!\!
 \end{align}
 
-We define our bias factor $\mathsf{F} = 2$, which is the expected number of validators which will be required to issue a judgement for a work-report given a single no-show in the tranche before. Modeling by \cite{stewart2018efficient} shows that this is optimal.
+We define our bias factor $\mathsf{F} = 2$, which is the expected number of validators which will be required to issue a judgement for a work-report given a single no-show in the tranche before. Modeling by \cite{cryptoeprint:2024/961} shows that this is optimal.
 
 Later audits must be announced in a similar fashion to the first. If audit requirements lesson on the receipt of new information (\ie a positive judgement being returned for a previous \emph{no-show}), then any audits already announced are completed and judgements published. If audit requirements raise on the receipt of new information (\ie an additional announcement being found without an accompanying judgement), then we announce the additional audit(s) we will undertake.
 

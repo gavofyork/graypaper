@@ -6,68 +6,23 @@ Build with xelatex.
 
 https://graypaper.com/
 
-## DA2
+## Remaining near-term
 
-### Underlying EC doesn't change
-- Every 4 KB segment is inflated to 12 KB and then split into 1024 * 12 byte chunks of which 342 are needed.
+### PVM
+- [ ] 64-bit PVM
 
-### AuditDA vs ImportDA
-- AuditDA is short-term DA of ~8h.
-- AuditDA contents is only explicit and is only used by audits, never guarantors.
-- ImportDA is long-term DA of ~28d.
-- ImportDA contents is only programmatic and it is never used by auditors, only guarantors/public.
-- WP + extrinsic-segments + proven-imported-segments go into short-term DA in a single blob.
-- WP is provided separately to extrinsics in order to provide structure allowing guarantors to limit bandwidth exposure before is_authorized passes.
-- ImportDA load (exported segments) and AuditDA load (WP, extrinsic, imported segments) are non-competing resources of WP.
-- Extrinsic data is a bit cheaper than imported segments owing to less proof needed.
-
-- Guarantor is expected to fetch/reconstruct imported data, referenced within ImportDA, and place it in AuditDA along with correctness-proofs. (Auditors only ever touch AuditDA.)
-
-### ImportDA contents
-In order to provide a cryptographically secure commitment to what it exported (and reference scheme for later imports), all exported segments are hashed and Merklized and a commitment stored in the WR called the Segment Root.
-
-Exported data is stored in the ImportDA alongside additional segments containing data allowing proof of its correctness based on said Segment Root.
-
-Specifically, the segments are hashed and this sequence paginated in 64-entry pages, each of which forms a discrete sub-tree in the Segment Root's Merkle tree. The 64-hash page is coupled with a justification to the sub-tree from the Segment Root. Together they are placed in a "metadata" segment and erasure-coded, distributed, and reconstructed exactly as with the exported-data segments ImportDA.
-
-In order to ensure sub-trees are generally 64-entries, the binary Merkle tree is biased in a manner reminiscent of depth-first; all leaves are thus of depth $\lceil \log_2(s) \rceil$ where $s$ is the number of regular segments. Non-existent segments are represented by the null-hash.
-
-## Remaining for v0.2.0
-
-### Content
-- [ ] Updated PVM
-- [ ] Remove extrinsic segment root. Rename "* segment-root" to just "segment-root".
-- [ ] Combine chunk-root for WP, concatenated extrinsics and concatenated imports.
-- [ ] Imports are host-call
-- [ ] Consider removal of the arrow-above notation in favour of subscript and ellipsis (this only works for the right-arrow).
-- [ ] Think about time and relationship between lookup-anchor block and import/export period.
-- [ ] Make work report field r bold.
-- [ ] Segmented DA v2
-  - [ ] Underlying EC doesn't change, need to make clear segments are just a double-EC
+### Finesse
+- [ ] Make all subscript names capitalized.
+- [ ] Ensure all definitions are referenced.
+- [ ] Link and integrate to Bandersnatch RingVRF references (Davide/Syed) IN-PROGRESS
+- [ ] Remove any "TODOs" in text
+- [ ] DA
   - [ ] Include full calculations for bandwidth requirements.
   - [ ] Formalize as much as possible.
   - [ ] Migrate formalization & explanation:
     - [ ] guaranteeing-specific stuff into relevant section
     - [ ] assurance-specific stuff into relevant section
     - [ ] auditing-specific stuff into relevant section
-- [ ] Think about time and relationship between lookup-anchor block and import/export period.
-- [ ] Make work report field r bold.
-- [x] Need to translate the basic work result into an "L"; do it in the appendix to ease layout
-  - [x] service - easy
-  - [x] service code hash - easy
-  - [x] payload hash - easy
-  - [x] gas prioritization - just from WP?
-- [ ] Refine arguments
-  -  Currently passing in the WP hash, some WP fields and all manifest preimages.
-  - [ ] Consider passing in the whole work-package and a work-item index.
-  - [ ] Consider introducing a host-call for reading manifest data rather than always passing it in.
-
-### Finesse
-- [ ] Make all subscript names capitalized.
-- [ ] Ensure all definitions are referenced.
-- [ ] Link and integrate to Bandersnatch RingVRF references (Davide/Syed) IN-PROGRESS
-- [ ] All "where" and "let" lines are unnumbered/integrated
-- [ ] Remove any "TODOs" in text
 
 ## Remaining for v0.3
 - [ ] Rewards.
@@ -98,19 +53,14 @@ In order to ensure sub-trees are generally 64-entries, the binary Merkle tree is
 
 ## Ideas to consider
 
-- optional `on_report` entry point
+- [ ] Think about time and relationship between lookup-anchor block and import/export period.
+  - [ ] Lookup anchor: maybe it should be 48 hours since lookup anchor can already be up to 24 hours after reporting and we want something available up to 24 hours after that?
+- [ ] Refine arguments:
+  - [ ] Currently passing in the WP hash, some WP fields and all manifest preimages: Consider passing in the whole work-package and a work-item index.
+- [ ] Consider removal of the arrow-above notation in favour of subscript and ellipsis (this only works for the right-arrow).
+- Optional `on_report` entry point
 - Remove assignments from state - no need for it to be there as it's derivable from $\eta_2$ alone.
-- Work Package should be Merklized on pre-stated boundary points.
-  - Add BoundedVec<(ServiceId, u32, u32), MAX_POINTS> to WorkPackage
-  - Construct Merkle trie for Work Package and put root in IsAuthorized
-- Think harder about if the recent blocks, availability timeouts & anchor stuff is affected by using timeslot rather than height.
 - Make memo bounded, rather than fixed.
-- Lookup anchor: maybe it should be 48 hours since lookup anchor can already be up to 24 hours after reporting and we want something available up to 24 hours after that?
-- Consider VRF proof when requesting chunk so validators are equally responsible.
-- Refine arguments: currently passing in the WP hash, some WP fields and all manifest preimages.
-  - Consider passing in the whole work-package and a work-item index.
-  - Consider passing in the work-item.
-  - Consider introducing a host-call for reading manifest data rather than always passing it in.
 
 ## Additional work
 - [ ] Proper gas schedule.
@@ -125,14 +75,14 @@ In order to ensure sub-trees are generally 64-entries, the binary Merkle tree is
 - [ ] Full definition of Bandersnatch RingVRF.
 - [ ] PVM:
   - [ ] Aux registers?
-  - [ ] Move to 64-bit?
-  - [ ] No pages mappable in first 64 KB 
+  - [ ] No pages mappable in first 64 KB
 
 % A set of independent, sequential, asynchronously interacting 32-octet state machines each of whose transitions lasts around 2 seconds of webassembly computation if a predetermined and fixed program and whose transition arguments are 5 MB. While well-suited to the verification of substrate blockchains, it is otherwise quite limiting.
 
 ## Done
 
 ### Texty
+- [x] All "where" and "let" lines are unnumbered/integrated
 - DA2
   - [x] Update chunks/segments to new size of 12 bytes / 4KB in the availability sections, especially the work packages and work reports section and appendix H.
   - [x] `export` is in multiples of 4096 bytes.
@@ -210,3 +160,17 @@ In order to ensure sub-trees are generally 64-entries, the binary Merkle tree is
 - [x] Disputes state transitioning and extrinsic (work with Al)
 - [x] Finish Merklization description
 - [x] Bibliography
+- [x] Updated PVM
+- [x] Remove extrinsic segment root. Rename "* segment-root" to just "segment-root".
+- [x] Combine chunk-root for WP, concatenated extrinsics and concatenated imports.
+- [x] Imports are host-call
+- [x] Make work report field r bold.
+- [x] Segmented DA v2
+  - [x] Underlying EC doesn't change, need to make clear segments are just a double-EC
+- [x] Make work report field r bold.
+- [x] Need to translate the basic work result into an "L"; do it in the appendix to ease layout
+  - [x] service - easy
+  - [x] service code hash - easy
+  - [x] payload hash - easy
+  - [x] gas prioritization - just from WP?
+  - [x] Consider introducing a host-call for reading manifest data rather than always passing it in.
