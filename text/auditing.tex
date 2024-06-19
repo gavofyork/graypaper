@@ -69,13 +69,13 @@ Formally, for each tranche $n$ we ensure the announcement statement is published
 
 We define $A_n$ as our perception of which validator is required to audit each of the work-reports (identified by their associated core) at tranche $n$. This comes from each other validators' announcements (defined above). It cannot be correctly evaluated until $n$ is current. We have absolute knowledge about our own audit requirements.
 \begin{align}
-  A_n: \mathbb{W} &\to \wp(\N_\mathsf{V}) \\
+  A_n: \mathbb{W} &\to \powset{\N_\mathsf{V}} \\
   \forall (c, w) &\in \mathbf{a}_0 : v \in q_0(w)
 \end{align}
 
 We further define $J_\top$ and $J_\bot$ to be the validator indices who we know to have made respectively, positive and negative, judgements mapped from each work-report's core. We don't care from which tranche a judgement is made.
 \begin{align}
-  J_{\{\bot, \top\}}: \mathbb{W} \to \wp(\N_\mathsf{V})
+  J_{\{\bot, \top\}}: \mathbb{W} \to \powset{\N_\mathsf{V}}
 \end{align}
 
 We are able to define $\mathbf{a}_n$ for tranches beyond the first on the basis of the number of validators who we know are required to conduct an audit yet from whom we have not yet seen a judgement. It is possible that the late arrival of information alters $\mathbf{a}_n$ and nodes should reevaluate and act accordingly should this happen.

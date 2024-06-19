@@ -34,7 +34,9 @@ Thus, \eg $\mathcal{U}(\none, 1, \none, 2) = 1$ and $\mathcal{U}(\none, \none) =
 
 \subsection{Sets}\label{sec:sets}
 
-We denote the cardinality of some set $\mathbf{s}$, the number of its elements, as the usual $|\mathbf{s}|$. We denote set-disjointness with the relation $\disjoint$. Formally:
+Given some set $\mathbf{s}$, its power set and cardinality are denoted as the usual $\powset{\mathbf{s}}$ and $|\mathbf{s}|$. When forming a power set, we may use a numeric subscript in order to restrict the resultant expansion to a particular cardinality. E.g. $\powset[2]{\{1, 2, 3\}} = \{ \{1, 2\}, \{1, 3\}, \{2, 3\} \}$.
+
+We denote set-disjointness with the relation $\disjoint$. Formally:
 \begin{equation*}
   A \cap B = \none \Longleftrightarrow A \disjoint B
 \end{equation*}
@@ -45,7 +47,7 @@ The term $\error$ is utilized to indicate the unexpected failure of an operation
 
 \subsection{Numbers}\label{sec:numbers}
 
-$\N$ denotes the set of naturals including zero whereas $\N_n$ denotes the set of naturals less than $n$. Formally, $\N = \{0, 1, \dots \}$ and $\N_n = \{ x \mid x \in \N, x < n \}$.
+$\N$ denotes the set of naturals including zero whereas $\N_n$ implies a restriction on that set to values less than $n$. Formally, $\N = \{0, 1, \dots \}$ and $\N_n = \{ x \mid x \in \N, x < n \}$.
 
 $\mathbb{Z}$ denotes the set of integers. We denote $\mathbb{Z}_{a \dots b}$ to be the set of integers within the interval $[a, b)$. Formally, $\mathbb{Z}_{a \dots b} = \{ x \mid x \in \mathbb{Z}, a \le x < b \}$. \Eg $\mathbb{Z}_{2 \dots 5} = \{ 2, 3, 4 \}$. We denote the offset/length form of this set as $\mathbb{Z}_{a \dots +b}$, a short form of $\mathbb{Z}_{a \dots a+b}$.
 
@@ -94,9 +96,9 @@ Note that since the co-domain of $\mathcal{V}$ is a set, should different keys w
 
 \subsection{Tuples}\label{sec:tuples}
 
-Tuples are groups of values where each item may belong to a different set. They are denoted with parentheses, \eg the tuple $t$ of the integers $3$ and $5$ is denoted $t = (3, 5)$, and it exists in the set of integer pairs sometimes denoted $\N \times \N$, but denoted in the present work as $(\N, \N)$.
+Tuples are groups of values where each item may belong to a different set. They are denoted with parentheses, \eg the tuple $t$ of the naturals $3$ and $5$ is denoted $t = (3, 5)$, and it exists in the set of natural pairs sometimes denoted $\N \times \N$, but denoted in the present work as $(\N, \N)$.
 
-We have frequent need to refer to a specific item within a tuple value and as such find it convenient to declare a name for each item. \Eg we may denote a tuple with two named integer components $a$ and $b$ as $T = \ltuple\isa{a}{\N}\ts\isa{b}{\N}\rtuple$. We would denote an item $t \in T$ through subscripting its name, thus for some $t = \ltup\is{a}{3}\ts\is{b}{5}\rtup$, $t_a = 3$ and $t_b = 5$.
+We have frequent need to refer to a specific item within a tuple value and as such find it convenient to declare a name for each item. \Eg we may denote a tuple with two named natural components $a$ and $b$ as $T = \ltuple\isa{a}{\N}\ts\isa{b}{\N}\rtuple$. We would denote an item $t \in T$ through subscripting its name, thus for some $t = \ltup\is{a}{3}\ts\is{b}{5}\rtup$, $t_a = 3$ and $t_b = 5$.
 
 \subsection{Sequences}\label{sec:sequences}
 
@@ -134,11 +136,11 @@ $\mathbb{B}_s$ denotes the set of Boolean strings of length $s$, thus $\mathbb{B
 
 \subsubsection{Octets and Blobs}
 
-$\Y$ denotes the set of octet strings (``blobs'') of arbitrary length. As might be expected, $\Y_x$ denotes the set of such sequences of length $x$. $\Y_\$$ denotes the subset of $\Y$ which are ASCII-encoded strings. Note that while an octet has an implicit and obvious bijective relationship with natural numbers less than 256, and we may implicitly coerce between octet form and integer form, we do not treat them as exactly equivalent entities. In particular for the purpose of serialization an octet is always serialized in the sequence containing only itself, whereas an integer may be serialized as a sequence of potentially several octets, depending on its magnitude.
+$\Y$ denotes the set of octet strings (``blobs'') of arbitrary length. As might be expected, $\Y_x$ denotes the set of such sequences of length $x$. $\Y_\$$ denotes the subset of $\Y$ which are ASCII-encoded strings. Note that while an octet has an implicit and obvious bijective relationship with natural numbers less than 256, and we may implicitly coerce between octet form and natural number form, we do not treat them as exactly equivalent entities. In particular for the purpose of serialization, an octet is always serialized to itself, whereas a natural number may be serialized as a sequence of potentially several octets, depending on its magnitude and the encoding variant.
 
 \subsubsection{Shuffling}
 
-We define the sequence-shuffle function $\mathcal{F}$, originally introduced by \cite{fisheryates1938statistical}, with an efficient in-place algorithm described by \cite{wikipedia2024fisheryates}. This accepts a sequence and some entropy and returns a sequence of the same length with the same elements but in an order determined by the entropy. The entropy may be provided as either an indefinite sequence of integers or a hash. For a full definition see appendix \ref{sec:shuffle}.
+We define the sequence-shuffle function $\mathcal{F}$, originally introduced by \cite{fisheryates1938statistical}, with an efficient in-place algorithm described by \cite{wikipedia2024fisheryates}. This accepts a sequence and some entropy and returns a sequence of the same length with the same elements but in an order determined by the entropy. The entropy may be provided as either an indefinite sequence of naturals or a hash. For a full definition see appendix \ref{sec:shuffle}.
 
 \subsection{Cryptography}\label{sec:cryptography}
 

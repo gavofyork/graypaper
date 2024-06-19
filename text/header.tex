@@ -11,7 +11,7 @@ The blockchain is a sequence of blocks, each cryptographically referencing some 
 
 Excepting the Genesis header, all block headers $\mathbf{H}$ have an associated parent header, whose hash is $\mathbf{H}_p$. We denote the parent header $\mathbf{H}^- = P(\mathbf{H})$:
 \begin{equation}
-  \mathbf{H}_p \in \H \,,\quad \mathbf{H}_p \equiv \mathcal{H}(P(\mathbf{H}))
+  \mathbf{H}_p \in \H \,,\quad \mathbf{H}_p \equiv \mathcal{H}(\se(P(\mathbf{H})))
 \end{equation}
 
 $P$ is thus defined as being the mapping from one block header to its parent block header. With $P$, we are able to define the set of ancestor headers $\mathbf{A}$:
@@ -34,10 +34,10 @@ A block may only be regarded as valid once the time-slot index $\mathbf{H}_t$ is
 
 The parent state root $\mathbf{H}_r$ is the root of a Merkle trie composed by the mapping of the \emph{prior} state's Merkle root, which by definition is also the parent block's posterior state. This is a departure from both Polkadot and the Yellow Paper's Ethereum, in both of which a block's header contains the \emph{posterior} state's Merkle root. We do this to facilitate the pipelining of block computation and in particular of Merklization.
 \begin{equation}
-  \mathbf{H}_r \in \H \,,\quad \mathbf{H}_r \equiv \mathcal{M}_S(\sigma)
+  \mathbf{H}_r \in \H \,,\quad \mathbf{H}_r \equiv \mathcal{M}_\sigma(\sigma)
 \end{equation}
 
-We assume the state-Merklization function $\mathcal{M}_S$ is capable of transforming our state $\sigma$ into a 32-octet commitment. See appendix \ref{sec:statemerklization} for a full definition of these two functions.
+We assume the state-Merklization function $\mathcal{M}_\sigma$ is capable of transforming our state $\sigma$ into a 32-octet commitment. See appendix \ref{sec:statemerklization} for a full definition of these two functions.
 
 All blocks have an associated public key to identify the author of the block. We identify this as an index into the current validator set $\kappa$. We denote the Bandersnatch key of the author as $\mathbf{H}_a$ though note that this is merely an equivalence, and is not serialized as part of the header.
 \begin{equation}

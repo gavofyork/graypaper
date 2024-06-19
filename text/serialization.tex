@@ -26,7 +26,7 @@ Passing multiple arguments to the serialization functions is equivalent to passi
 \end{align}
 
 \subsubsection{Integer Encoding}
-We first define the trivial integer serialization functions which are subscripted by the number of octets of the final sequence. Values are encoded in a regular little-endian fashion. Formally:
+We first define the trivial natural number serialization functions which are subscripted by the number of octets of the final sequence. Values are encoded in a regular little-endian fashion. Formally:
 \begin{equation}
   \se_{l \in \N}\colon\left\{\begin{aligned}
     \N_{2^{8l}} &\to \Y_l \\
@@ -37,7 +37,7 @@ We first define the trivial integer serialization functions which are subscripte
   \end{aligned}\right.
 \end{equation}
 
-We also define the variable-size prefix 29-bit integer serialization function $\se_{4*}$:
+We also define the variable-size prefix 29-bit natural serialization function $\se_{4*}$:
 \begin{equation}
   \se_{4*}\colon\left\{\begin{aligned}
     \N_{2^{29}} &\to \Y_{1:4} \\
@@ -48,7 +48,7 @@ We also define the variable-size prefix 29-bit integer serialization function $\
   \end{aligned}\right.
 \end{equation}
 
-We define general integer serialization, able to encode integers of up to $2^{64}$, as:
+We define general natural number serialization, able to encode naturals of up to $2^{64}$, as:
 \begin{equation}
   \se\colon\left\{\begin{aligned}
     \N_{2^{64}} &\to \Y_{1:9} \\
@@ -68,7 +68,7 @@ We define the sequence serialization function $\se(\seq{T})$ for any $T$ which i
 Thus, conveniently, fixed length octet sequences (\eg hashes $\H$ and its variants) have an identity serialization.
 
 \subsubsection{Discriminator Encoding}
-When we have sets of heterogeneous items such as a union of different kinds of tuples or sequences of different length, we require a discriminator to determine the nature of the encoded item for successful deserialization. Discriminators are encoded as a general integer and are encoded immediately prior to the item.
+When we have sets of heterogeneous items such as a union of different kinds of tuples or sequences of different length, we require a discriminator to determine the nature of the encoded item for successful deserialization. Discriminators are encoded as a natural and are encoded immediately prior to the item.
 
 We generally use a \emph{length discriminator} which serializing sequence terms which have variable length (\eg general blobs $\Y$ or unbound numeric sequences $\seq{\N}$) (though this is omitted in the case of fixed-length terms such as hashes $\H$).\footnote{Note that since specific values may belong to both sets which would need a discriminator and those that would not then we are sadly unable to introduce a function capable of serializing corresponding to the \emph{term}'s limitation. A more sophisticated formalism than basic set-theory would be needed, capable of taking into account not simply the value but the term from which or to which it belongs in order to do this succinctly.} In this case, we simply prefix the term its length prior to encoding. Thus, for some term $y \in \tup{x \in \Y, \dots}$, we would generally define its serialized form to be $\se(|x|)\concat\se(x)\concat\dots$. To avoid repetition of the term in such cases, we define the notation $\var{x}$ to mean that the term of value $x$ is variable in size and requires a length discriminator. Formally:
 \begin{equation}
@@ -117,7 +117,7 @@ We provide a function $\mathcal{S}$ to deliver this from a regular dictionary:
 
 \subsection{Block Serialization}
 
-A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\se_U$ (the latter has no inverse). Formally:
+A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\se_U$. Formally:
 \begin{align}
   \se(\mathbf{B}) &= \se\,\left\lparen\;\begin{aligned}
     &\mathbf{H},\ 
