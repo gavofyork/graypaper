@@ -27,7 +27,7 @@ https://graypaper.com/
 ## Remaining for v0.3
 - [ ] Rewards.
 - [ ] Define Erasure Coding proof means
-  - [ ] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
+  - [x] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
   - [ ] Define binary Merkle proof-verification function exists sequence of values which contains our value and Merklised to some root.
 - [ ] Improve audit spec
   - [ ] Announcement signatures
