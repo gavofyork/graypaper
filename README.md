@@ -8,9 +8,6 @@ https://graypaper.com/
 
 ## Remaining near-term
 
-### Check
-- (56)
-
 ### PVM
 - [ ] 64-bit PVM
 
@@ -27,8 +24,10 @@ https://graypaper.com/
     - [ ] assurance-specific stuff into relevant section
     - [ ] auditing-specific stuff into relevant section
 
-## Remaining for v0.3
-- [ ] Rewards.
+## Remaining for future versions
+- [ ] Book-keeping.
+- [ ] Gas pricing
+  - [ ] Merkle reads in terms of nodes traversed.
 - [ ] Define Erasure Coding proof means
   - [x] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
   - [ ] Define binary Merkle proof-verification function exists sequence of values which contains our value and Merklised to some root.

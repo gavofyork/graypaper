@@ -12,14 +12,14 @@ As mentioned, recording reports found to have a high confidence of invalidity is
 
 \subsection{State}
 
-The judgements state includes three items, an allow-set ($\psi_\mathbf{a}$), a ban-set ($\psi_\mathbf{b}$) and a punish-set ($\psi_\mathbf{p}$). The allow-set contains the hashes of all work-reports which were disputed and judged to be accurate. The ban-set contains the hashes of all work-reports which were disputed and whose accuracy could not be confidently confirmed. The punish-set is a set of keys of Bandersnatch keys which were found to have guaranteed a report which was confidently found to be invalid.
+The judgements state includes three items, an allow-set ($\psi_\mathbf{a}$), a ban-set ($\psi_\mathbf{b}$) and a punish-set ($\psi_\mathbf{p}$). The allow-set contains the hashes of all work-reports which were disputed and judged to be accurate. The ban-set contains the hashes of all work-reports which were disputed and whose accuracy could not be confidently confirmed. The punish-set is a set of Bandersnatch keys representing validators which were found to have guaranteed a report which was confidently found to be invalid.
 \begin{equation}
-  \psi \equiv \tup{\psi_\mathbf{a}, \psi_\mathbf{b}, \psi_\mathbf{p}, \psi_\mathbf{k}}
+  \psi \equiv \tup{\psi_\mathbf{a}, \psi_\mathbf{b}, \psi_\mathbf{p}}
 \end{equation}
 
 \subsection{Extrinsic}
 
-The judgements extrinsic, $\mathbf{E}_J$ may contain one or more judgements as a compilation of signatures coming from exactly two-thirds plus one of either the active validator set (\ie the Ed25519 keys of $\kappa$) or the previous epoch's validator set (\ie the keys of $\psi_\mathbf{k}$):
+The judgements extrinsic, $\mathbf{E}_J$ may contain one or more judgements as a compilation of signatures coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\kappa$ or $\lambda$:
 \begin{equation}
   \mathbf{E}_J \in \seq{\tup{\H, \seq{\tup{\{\top, \bot\}, \N_{\mathsf{V}}, \mathbb{F}}}_{\floor{\nicefrac{2}{3}\mathsf{V}} + 1}}}\!\!\!
 \end{equation}
@@ -30,7 +30,7 @@ All signatures must be valid in terms of one of the two allowed validator key-se
     \forall (r, \mathbf{v}) \in \mathbf{E}_J ,\, &\forall (v, i, s) \in \mathbf{v} : s \in \sig{\mathbf{k}[i]_e}{\mathsf{X}_v \concat r}\\
     \where \mathsf{X}_\top &= \text{{\small \texttt{\$jam\_valid}}} \\
     \text{and } \mathsf{X}_\bot &= \text{{\small \texttt{\$jam\_invalid}}} \\
-    \mathbf{k} &\in \{ \kappa , \psi_\mathbf{k} \}
+    \mathbf{k} &\in \{ \kappa , \lambda \}
   \end{aligned}
 \end{equation}
 
