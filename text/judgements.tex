@@ -17,7 +17,7 @@ The judgements state includes three items, an allow-set ($\psi_\mathbf{a}$), a b
   \psi \equiv \tup{\psi_\mathbf{a}, \psi_\mathbf{b}, \psi_\mathbf{p}, \psi_\mathbf{k}}
 \end{equation}
 
-`\subsection{Extrinsic}
+\subsection{Extrinsic}
 
 The judgements extrinsic, $\mathbf{E}_J$ may contain one or more judgements as a compilation of signatures coming from exactly two-thirds plus one of either the active validator set (\ie the Ed25519 keys of $\kappa$) or the previous epoch's validator set (\ie the keys of $\psi_\mathbf{k}$):
 \begin{equation}
@@ -49,7 +49,7 @@ We define $\mathbf{J}$ as the sequence of judgements introduced in the block's e
 
 Formally:
 \begin{align}
-  \mathbf{J} &\in \seq{\tup{\H, \seq{\H_B}_{2:3}, \N}} \\
+  \mathbf{J} &\in \seq{\tup{\H, \N}} \\
   \mathbf{J} &= \sq{\tup{r, \sum_{\tup{v, i, s} \in \mathbf{v}}\!\!\!\! v}\ \middle\mid\ \tup{r, \mathbf{v}} \orderedin \mathbf{E}_J} \\
   &\forall \tup{r, t} \in \mathbf{J} : t \in \{0, \floor{\nicefrac{1}{3}\mathsf{V}}, \floor{\nicefrac{2}{3}\mathsf{V}} + 1 \}
 \end{align}

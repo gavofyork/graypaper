@@ -5,7 +5,7 @@ We retain in state information on the most recent $\mathsf{H}$ blocks. This is u
   \beta \in \lseq\ltuple \isa{h}{\H}\ts\isa{\mathbf{b}}{\seq{\H?}}\ts\isa{s}{\H}\ts\isa{\mathbf{p}}{\lseq\H\rseq_{:\mathsf{C}}} \rtuple\rseq_{:\mathsf{H}}
 \end{equation}
 
-For each recent block, we retain its header hash, its state root, its accumulation-result \textsc{mmr} and the hash of each work-report made into it which is no more than the total number of cores, $\mathcal{C} = 341$.
+For each recent block, we retain its header hash, its state root, its accumulation-result \textsc{mmr} and the hash of each work-report made into it which is no more than the total number of cores, $\mathsf{C} = 341$.
 
 During the accumulation stage, a value with the partial transition of this state is provided which contains the update for the newly-known roots of the parent block:
 \begin{equation}
@@ -29,4 +29,3 @@ The final state transition is then:
 Thus, we extend the recent history with the new block's header hash, its accumulation-result Merkle tree root and the set of work-reports made into it. Note that the accumulation-result tree root $r$ is derived from $\mathbf{C}$ (defined in section \ref{sec:accumulation}) using the basic binary Merklization function $\mathcal{M}_B$ (defined in appendix \ref{sec:merklization}) and appending it using the \textsc{mmr} append function $\mathcal{A}$ (defined in appendix \ref{sec:mmr}) to form a Merkle mountain range.
 
 The state-trie root is as being the zero hash, $\H^0$ which while inaccurate at the end state of the block $\beta'$, it is nevertheless safe since $\bm{\beta'}$ is not utilized except to define the next block's $\bm{\beta^\dagger}$, which contains a corrected value for this.
-
