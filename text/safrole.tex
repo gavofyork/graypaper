@@ -97,7 +97,7 @@ With a new epoch under regular conditions, validator keys get rotated and the ep
   \begin{aligned}
     \!\!\!\!\!\!\!\!\!\!\!\!(\gamma'_\mathbf{k}, \kappa', \lambda', \gamma'_z) &\equiv \begin{cases} (\iota, N(\gamma_\mathbf{k}), N(\kappa), z) \!\!\!\!&\when e' > e \wedge \mathbf{H}_j = [] \\ (\gamma_\mathbf{k}, N(\kappa), N(\lambda), \gamma_z) \!\!\!\!&\otherwise \end{cases}\!\!\!\!\!\!\!\! \\
     \where z &= \mathcal{O}([k_b \mid k \orderedin \gamma'_\mathbf{k}]) \\
-    \also N(\mathbf{k}) &\equiv \sq{\begin{rcases} [0, 0, \dots] &\when k_e \in \psi'_\mathbf{p} \\ k &\otherwise \end{rcases} \,\middle\mid\, k \orderedin \mathbf{k}}
+    \also N(\mathbf{k}) &\equiv \sq{\begin{rcases} [0, 0, \dots] &\when k_b \in \psi'_\mathbf{p} \\ k &\otherwise \end{rcases} \,\middle\mid\, k \orderedin \mathbf{k}}
   \end{aligned}
 \end{equation}
 
@@ -211,7 +211,7 @@ The epoch and winning-tickets markers are information placed in the header in or
 As mentioned earlier, the header's epoch marker $\mathbf{H}_e$ is either empty or, if the block is the first in a new epoch, then a tuple of the epoch randomness and a sequence of Bandersnatch keys defining the Bandersnatch validator keys ($k_b$) beginning in the next epoch. Formally:
 \begin{align}\label{eq:epochmarker}
   \mathbf{H}_e &\equiv \begin{cases}
-    ( \eta'_1, [ k_e \mid k \orderedin \gamma'_\mathbf{k} ] )\qquad\qquad &\when e' > e \\
+    ( \eta'_1, [ k_b \mid k \orderedin \gamma'_\mathbf{k} ] )\qquad\qquad &\when e' > e \\
     \none & \otherwise
   \end{cases}
 \end{align}
