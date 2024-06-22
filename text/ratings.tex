@@ -11,6 +11,7 @@ The validator statistics are made on a per-epoch basis and we retain one record 
 \begin{equation}
   \pi \in \seq{\seq{\tuple{
     \isa{b}{\N}\,,
+    \isa{t}{\N}\,,
     \isa{p}{\N}\,,
     \isa{d}{\N}\,,
     \isa{g}{\N}\,,
@@ -22,6 +23,7 @@ The validator statistics are made on a per-epoch basis and we retain one record 
 The six statistics we track are:
 \begin{description}
   \item[$b$] The number of blocks produced by the validator.
+  \item[$t$] The number of tickets introduced by the validator.
   \item[$p$] The number of preimages introduced by the validator.
   \item[$d$] The total number of octets across all preimages introduced by the validator.
   \item[$g$] The number of reports guaranteed by the validator.
@@ -40,6 +42,10 @@ The objective statistics are updated in line with their description, formally:
     \end{cases}\!\!\!\!\\
     \forall v \in \N_\mathsf{V} :&\; \left\{\begin{aligned}
         \pi'_0[v]_b &\equiv \mathbf{a}[v]_b + (v = \mathbf{H}_a)\\
+        \pi'_0[v]_t &\equiv \mathbf{a}[v]_t + \begin{cases}
+            |\mathbf{E}_T| &\when v = \mathbf{H}_a \\
+            0 &\otherwise
+        \end{cases}\\
         \pi'_0[v]_p &\equiv \mathbf{a}[v]_p + \begin{cases}
             |\mathbf{E}_P| &\when v = \mathbf{H}_a \\
             0 &\otherwise
