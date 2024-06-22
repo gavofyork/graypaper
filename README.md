@@ -8,6 +8,12 @@ https://graypaper.com/
 
 ## Remaining near-term
 
+### Statistics
+- [x] Integrate into intro and definitions.
+- [ ] Consider integrating the subjective extrinsic and state:
+  - [ ] If so, have three items to allow for a whole epoch of opinion submission
+  - [ ] In which case allow for guaranteeing val keys from last epoch to gain points
+
 ### PVM
 - [ ] 64-bit PVM
 
@@ -25,7 +31,7 @@ https://graypaper.com/
     - [ ] auditing-specific stuff into relevant section
 
 ## Remaining for future versions
-- [ ] Book-keeping.
+- [ ] Book-keeping
 - [ ] Gas pricing
   - [ ] Merkle reads in terms of nodes traversed.
 - [ ] Define Erasure Coding proof means

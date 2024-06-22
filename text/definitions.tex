@@ -187,10 +187,10 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\beta$] Information on the most recent $\beta$locks. %	β
   \item[$\gamma$] State concerning Safrole. See equation \ref{eq:consensusstatecomposition}. %	γ
   \begin{description}
-    \item[$\gamma_\mathbf{a}$] The sealing-key contest ticket accumulator.
-    \item[$\gamma_\mathbf{k}$] The validator keys for the following epoch.
-    \item[$\gamma_\mathbf{s}$] The sealing-key series of the current epoch.
-    \item[$\gamma_z$] The current epoch's Bandersnatch root.
+    \item[$\gamma_\mathbf{a}$] The sealing lottery ticket accumulator.
+    \item[$\gamma_\mathbf{k}$] The keys for the validators of the next epoch, equivalent to those keys which constitute $\gamma_z$.
+    \item[$\gamma_\mathbf{s}$] The sealing-key sequence of the current epoch.
+    \item[$\gamma_z$] The Bandersnatch root for the current epoch's ticket submissions.
   \end{description}
   \item[$\delta$] The (prior) state of the service accounts. %	δ
   \begin{description}
@@ -216,18 +216,18 @@ Here, the prime annotation indicates posterior state. Individual components may 
     \item[$\chi_v$] The index of the designate service.
     \item[$\chi_a$] The index of the assign service.
   \end{description}
-%  \item[$\pi$] Unused.
+  \item[$\pi$] The activity statistics for the validators. % π
 \end{description}
 
 \subsubsection{Virtual Machine components}
 
 \begin{description}
-  \item[$\varepsilon$] The instruction sequence. %	ε
+  \item[$\varepsilon$] The exit-reason resulting from all machine state transitions. %	ε
   \item[$\nu$] The immediate values of an instruction. %	ν
   \item[$\mu$] The memory sequence; a member of the set $\mathbb{M}$. %	μ
   \item[$\xi$] The gas counter. %	ξ
   \item[$\omega$] The registers. %	ω
-  \item[$\zeta$] The exit-reason resulting from all machine state transitions. %	ζ
+  \item[$\zeta$] The instruction sequence. %	ζ
   \item[$\varpi$] The sequence of basic blocks of the program.
   \item[$\imath$] The instruction counter.
 \end{description}
