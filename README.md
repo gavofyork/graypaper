@@ -8,6 +8,9 @@ https://graypaper.com/
 
 ## Remaining near-term
 
+### Check
+- (56)
+
 ### PVM
 - [ ] 64-bit PVM
 
