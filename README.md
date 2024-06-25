@@ -8,59 +8,70 @@ https://graypaper.com/
 
 ## Remaining near-term
 
-### Statistics
-- [x] Integrate into intro and definitions.
+### Finesse
+- [ ] Make all subscript names capitalized
+- [ ] Ensure all definitions are referenced
+- [ ] Link and integrate to Bandersnatch RingVRF references (Davide/Syed) IN-PROGRESS
+- [ ] Remove any "TODOs" in text
+- [ ] Macrofy everything
+
+### Final PVM
+- [ ] 64-bit PVM
+- [ ] Gas pricing
+  - [ ] Merkle reads in terms of nodes traversed.
+  - [ ] Non-linear gas for export/import host calls
+- [ ] No pages mappable in first 64 KB
+
+### Final DA
+- [ ] Formalize as much as possible.
+- [ ] Migrate formalization & explanation:
+  - [ ] guaranteeing-specific stuff into relevant section
+  - [ ] assurance-specific stuff into relevant section
+  - [ ] auditing-specific stuff into relevant section
+- [ ] Include an epochal on-chain lookup from Work Package hash to segments root.
+- [ ] Define Erasure Coding proof means
+  - [x] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
+  - [ ] Define binary Merkle proof-verification function exists sequence of values which contains our value and Merklised to some root.
+
+### Auditing
+- [ ] Specify announcement signatures
+- [ ] Specify how to build perspective on other validators with announcements
+
+### Discussion and Conclusions/Further Work
+- [x] Security assumptions: redirect to ELVES paper
+- [ ] Creating a parachains service: further work (RFC for upgrade perhaps)
+  - [ ] Key differences
+    - [ ] limited size of Work Output vs unlimited candidate receipt
+    - [ ] Laissez-faire on Work Items vs requirement for valid transition
+    - [ ] Hermit relay (staking &c is on system chains)
+  - [ ] Supporting liveness
+  - [ ] Supporting *MP
+  - [ ] No need for UMP/DMP
+- [ ] Compare with danksharding v1
+- [ ] Deeper talk Cost & latency comparison with RISC0-VM and latest ZK stuff.
+- [ ] Include full calculations for bandwidth requirements.
+
+## Stuff before 1.0
+
+### Final networking protocol
+- [ ] Consider a simple network protocol needed for M1/M2 and a production protocol for M3+
+- [ ] Block distribution via EC and proactive-chunk-redistribution
+- [ ] Guarantor-guarantor handover
+- [ ] Star-shaped Point-to-point extrinsic distribution
+
+## Bring together sub-protocols
+- [ ] Better integration to Grandpa paper
+- [ ] Better description of Beefy
+- [ ] Better integration to Bandersnatch RingVRF.
+
+## Ideas to consider
+
+### Statistics/Bookkeeping
 - [ ] Consider integrating the subjective extrinsic and state:
   - [ ] If so, have three items to allow for a whole epoch of opinion submission
   - [ ] In which case allow for guaranteeing val keys from last epoch to gain points
 
-### PVM
-- [ ] 64-bit PVM
-
-### Finesse
-- [ ] Make all subscript names capitalized.
-- [ ] Ensure all definitions are referenced.
-- [ ] Link and integrate to Bandersnatch RingVRF references (Davide/Syed) IN-PROGRESS
-- [ ] Remove any "TODOs" in text
-- [ ] DA
-  - [ ] Include full calculations for bandwidth requirements.
-  - [ ] Formalize as much as possible.
-  - [ ] Migrate formalization & explanation:
-    - [ ] guaranteeing-specific stuff into relevant section
-    - [ ] assurance-specific stuff into relevant section
-    - [ ] auditing-specific stuff into relevant section
-
-## Remaining for future versions
-- [ ] Book-keeping
-- [ ] Gas pricing
-  - [ ] Merkle reads in terms of nodes traversed.
-- [ ] Define Erasure Coding proof means
-  - [x] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
-  - [ ] Define binary Merkle proof-verification function exists sequence of values which contains our value and Merklised to some root.
-- [ ] Improve audit spec
-  - [ ] Announcement signatures
-  - [ ] How to build perspective on other validators with announcements
-- [ ] Discussion and Conclusions/Further Work
-  - [x] Security assumptions: redirect to ELVES paper
-  - [ ] Creating a parachains service: further work (RFC for upgrade perhaps)
-    - [ ] Key differences
-      - [ ] limited size of Work Output vs unlimited candidate receipt
-      - [ ] Laissez-faire on Work Items vs requirement for valid transition
-      - [ ] Hermit relay (staking &c is on system chains)
-    - [ ] Supporting liveness
-    - [ ] Supporting *MP
-    - [ ] No need for UMP/DMP
-  - [ ] Compare with danksharding v1
-  - [ ] Deeper talk Cost & latency comparison with RISC0-VM and latest ZK stuff.
-
-## Stuff to replicate to PolkaJam
-
-- Beefy root and accumulate-result hash.
-- Judgements
-- Using posterior assignments.
-
-## Ideas to consider
-
+### General
 - [ ] Think about time and relationship between lookup-anchor block and import/export period.
   - [ ] Lookup anchor: maybe it should be 48 hours since lookup anchor can already be up to 24 hours after reporting and we want something available up to 24 hours after that?
 - [ ] Refine arguments:
@@ -70,26 +81,15 @@ https://graypaper.com/
 - Remove assignments from state - no need for it to be there as it's derivable from $\eta_2$ alone.
 - Make memo bounded, rather than fixed.
 
-## Additional work
-- [ ] Proper gas schedule.
-  - [ ] Clever gas for export/import host calls
-- [ ] Networking protocol.
-  - [ ] Block distribution via EC and proactive-chunk-redistribution
-  - [ ] Guarantor-guarantor handover
-  - [ ] Star-shaped Point-to-point extrinsic distribution
-- [ ] Off-chain sub-protocols:
-  - [ ] Better integration to Grandpa
-  - [ ] Better description of Beefy
-- [ ] Full definition of Bandersnatch RingVRF.
-- [ ] PVM:
-  - [ ] Aux registers?
-  - [ ] No pages mappable in first 64 KB
+## Stuff to replicate to PolkaJam
 
-% A set of independent, sequential, asynchronously interacting 32-octet state machines each of whose transitions lasts around 2 seconds of webassembly computation if a predetermined and fixed program and whose transition arguments are 5 MB. While well-suited to the verification of substrate blockchains, it is otherwise quite limiting.
+- Beefy root and accumulate-result hash.
+- Judgements
+- Using posterior assignments.
 
 ## Done
-
-### Texty
+- Statistics/Bookkeeping
+  - [x] Integrate into intro and definitions.
 - [x] All "where" and "let" lines are unnumbered/integrated
 - DA2
   - [x] Update chunks/segments to new size of 12 bytes / 4KB in the availability sections, especially the work packages and work reports section and appendix H.
@@ -182,3 +182,5 @@ https://graypaper.com/
   - [x] payload hash - easy
   - [x] gas prioritization - just from WP?
   - [x] Consider introducing a host-call for reading manifest data rather than always passing it in.
+
+% A set of independent, sequential, asynchronously interacting 32-octet state machines each of whose transitions lasts around 2 seconds of webassembly computation if a predetermined and fixed program and whose transition arguments are 5 MB. While well-suited to the verification of substrate blockchains, it is otherwise quite limiting.
