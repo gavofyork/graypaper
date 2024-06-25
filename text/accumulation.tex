@@ -1,6 +1,6 @@
 \section{Accumulation}\label{sec:accumulation}
 
-Accumulation may be defined as some function whose arguments are $\mathbf{R}$ and $\delta$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\delta'$ together with additional state elements $\iota'$, $\varphi'$ and $\chi'$.
+Accumulation may be defined as some function whose arguments are $\mathbf{W}$ and $\delta$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\delta'$ together with additional state elements $\iota'$, $\varphi'$ and $\chi'$.
 
 The proposition of accumulation is in fact quite simple: we merely wish to execute the \emph{Accumulate} logic of the service code of each of the services which has at least one work output, passing to it the work outputs and useful contextual information. However, there are three main complications. Firstly, we must define the execution environment of this logic and in particular the host functions available to it. Secondly, we must define the amount of gas to be allowed for each service's execution. Finally, we must determine the nature of transfers within Accumulate which, as we will see, leads to the need for a second entry-point, \emph{on-transfer}.
 
@@ -32,22 +32,22 @@ We define $\delta^\dagger$ as the state after the integration of the preimages:
 
 \subsection{Gas Accounting}
 
-We define $\mathbf{S}$, the set of all services which will be accumulated in this block; this is all services which have at least one work output within $\mathbf{R}$, together with all privileged services, $\chi$. Formally:
+We define $\mathbf{S}$, the set of all services which will be accumulated in this block; this is all services which have at least one work output within $\mathbf{W}$, together with all privileged services, $\chi$. Formally:
 \begin{align}\label{eq:servicestoaccumulate}
-  \mathbf{S} \equiv \{ \mathbf{r}_s \mid w \in \mathbf{R}, \mathbf{r} \in w_\mathbf{r} \} \cup \{ \chi_m, \chi_a, \chi_v \}
+  \mathbf{S} \equiv \{ \mathbf{r}_s \mid w \in \mathbf{W}, \mathbf{r} \in w_\mathbf{r} \} \cup \{ \chi_m, \chi_a, \chi_v \}
 \end{align}
 
 We calculate the gas attributable for each service as the sum of each of the service's work outputs' share of their report's elective accumulation gas together with the subtotal of minimum gas requirements:
 \begin{equation}
   G\colon\left\{\;\begin{aligned}
     \N_S &\to \Z_G \\
-    \displaystyle s &\mapsto \!\!\sum_{w \in \mathbf{R}}\sum_{\mathbf{r} \in w_\mathbf{r} , \mathbf{r}_s = s}{\!\!\!\!\!\!\!\delta^\dagger[s]_g + \left \lfloor \mathbf{r}_g\cdot\frac{\displaystyle \mathsf{G}_A - \sum_{\mathbf{r} \in w_\mathbf{r}}{\delta^\dagger[\mathbf{r}_s]_g}}{\sum_{\mathbf{r} \in w_\mathbf{r}}{\mathbf{r}_g}} \right \rfloor }
+    \displaystyle s &\mapsto \!\!\sum_{w \in \mathbf{W}}\sum_{\mathbf{r} \in w_\mathbf{r} , \mathbf{r}_s = s}{\!\!\!\!\!\!\!\delta^\dagger[s]_g + \left \lfloor \mathbf{r}_g\cdot\frac{\displaystyle \mathsf{G}_A - \sum_{\mathbf{r} \in w_\mathbf{r}}{\delta^\dagger[\mathbf{r}_s]_g}}{\sum_{\mathbf{r} \in w_\mathbf{r}}{\mathbf{r}_g}} \right \rfloor }
   \end{aligned}\right.\!\!\!\!\!\!
 \end{equation}
 
 \subsection{Wrangling}
 
-We finally define the results which will be given as an operand into the accumulate function for each service in $\mathbf{S}$. This is a sequence of operand tuples $\mathbb{O}$, one sequence for each service in $\mathbf{S}$. Each sequence contains one element per work output (or error) to be accumulated for that service, together with said work output's payload hash, package hash and authorization output. The tuples are sequenced in the same order as they appear in $\mathbf{R}$. Formally:
+We finally define the results which will be given as an operand into the accumulate function for each service in $\mathbf{S}$. This is a sequence of operand tuples $\mathbb{O}$, one sequence for each service in $\mathbf{S}$. Each sequence contains one element per work output (or error) to be accumulated for that service, together with said work output's payload hash, package hash and authorization output. The tuples are sequenced in the same order as they appear in $\mathbf{W}$. Formally:
 \begin{align}
   \mathbb{O} \equiv \ltuple\isa{o}{\Y \cup \mathbb{J}}\ts\isa{l}{\H}\ts\isa{k}{\H}\ts\isa{a}{\Y}\rtuple
 \end{align}
@@ -60,7 +60,7 @@ We finally define the results which will be given as an operand into the accumul
     \end{alignedat}\rtup
       \,\middle\vert\ 
     \begin{aligned}
-      w &\in \mathbf{R},\\
+      w &\in \mathbf{W},\\
       \mathbf{r} &\in w_\mathbf{r},\\
       \mathbf{r}_s &= s
     \end{aligned}\ \right]
@@ -69,7 +69,7 @@ We finally define the results which will be given as an operand into the accumul
 
 \subsection{Invocation}
 
-Within this section, we define $A$, the function which conducts the accumulation of a single service. Formally speaking, $A$ assumes omnipresence of timeslot $\mathbf{H}_t$ and some prior state components $\delta^\dagger$, $\nu$, $\mathbf{R}_\mathbf{d}$, and takes as specific arguments the service index $s \in \mathbf{S}$ (from which it may derive the wrangled results $M(s)$ and gas limit $G(s)$) and yields values for $\bm{\delta^\dagger}[s]$ and staging assignments into $\varphi$, $\iota$ together with a series of lookup solicitations/forgets, a series of deferred transfers and $\mathbf{C}$ mapping from service index to \textsc{Beefy} commitment hashes.
+Within this section, we define $A$, the function which conducts the accumulation of a single service. Formally speaking, $A$ assumes omnipresence of timeslot $\mathbf{H}_t$ and some prior state components $\delta^\dagger$, $\nu$, $\mathbf{W}_\mathbf{d}$, and takes as specific arguments the service index $s \in \mathbf{S}$ (from which it may derive the wrangled results $M(s)$ and gas limit $G(s)$) and yields values for $\bm{\delta^\dagger}[s]$ and staging assignments into $\varphi$, $\iota$ together with a series of lookup solicitations/forgets, a series of deferred transfers and $\mathbf{C}$ mapping from service index to \textsc{Beefy} commitment hashes.
 
 We first denote the set of deferred transfers as $\mathbb{T}$, noting that a transfer includes a memo component $m$ of 64 octets, together with the service index of the sender $s$, the service index of the receiver $d$, the amount of tokens to be transferred $a$ and the gas limit $g$ for the transfer. Formally:
 \begin{align}
