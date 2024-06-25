@@ -37,7 +37,7 @@
 \renewcommand*{\S}{\token{S}}
 \newcommand*{\A}{\token{A}}
 \newcommand*{\basicblocks}{\varpi}
-\newcommand*{\instructions}{\varepsilon}
+\newcommand*{\instructions}{\zeta}
 \newcommand*{\immed}{\nu}
 
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition.
@@ -45,11 +45,11 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
   \Psi\colon \left\{\begin{aligned}
     (\Y, \N_R, \N_G, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault\} \times \N_R \cup \{\host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
     (\mathbf{p}, \imath, \xi, \omega, \mem) &\mapsto \begin{cases}
-      \Psi(\mathbf{p}, \imath', \xi', \omega', \mem') &\when \zeta = \continue\\
+      \Psi(\mathbf{p}, \imath', \xi', \omega', \mem') &\when \varepsilon = \continue\\
       (\oog, \imath', \xi', \omega', \mem') &\when \xi' < 0\\
-      (\zeta, \imath', \xi', \omega', \mem') &\otherwise
+      (\varepsilon, \imath', \xi', \omega', \mem') &\otherwise
     \end{cases} \\
-    \where (\zeta, \imath', \xi', \omega', \mem') &= \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \xi, \omega, \mem)\\
+    \where (\varepsilon, \imath', \xi', \omega', \mem') &= \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \xi, \omega, \mem)\\
     \also \mathbf{p} &= \se(|\mathbf{j}|) \frown \se_1(z) \frown \se(|\mathbf{c}|) \frown \se_z(\mathbf{j}) \frown \se(\mathbf{c}) \frown \se(\mathbf{k})\,,\ |\mathbf{k}| = |\mathbf{c}|
     \end{aligned}\right.
 \end{equation}
@@ -122,11 +122,11 @@ We must now define the single-step \textsc{pvm} state-transition function $\Psi_
 \begin{equation}
   \Psi_1\colon \left\{\begin{aligned}
     (\Y, \seq{\N_R}, \N_R, \N_G, \regs, \ram) &\to (\{\panic, \halt, \continue \} \cup \{\fault, \host\} \times \N_R, \Z_G, \regs, \ram)\\
-    (\mathbf{c}, \mathbf{j}, \imath, \xi, \omega, \mem) &\mapsto (\zeta, \imath', \xi', \omega', \mem')
+    (\mathbf{c}, \mathbf{j}, \imath, \xi, \omega, \mem) &\mapsto (\varepsilon, \imath', \xi', \omega', \mem')
   \end{aligned}\right.
 \end{equation}
 
-We define $\zeta$ together with the posterior values (denoted as prime) of each of the items of the machine state as being in accordance with the table below.
+We define $\varepsilon$ together with the posterior values (denoted as prime) of each of the items of the machine state as being in accordance with the table below.
 
 %We alias the registers $\omega$ to their \textsc{risc-v} specification name:
 %\begin{equation}
@@ -136,12 +136,12 @@ We define $\zeta$ together with the posterior values (denoted as prime) of each 
 
 In general, when transitioning machine state for an instruction a number of conditions hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one, the gas remaining is reduced by the amount corresponding to the instruction type and \textsc{ram} \& registers are unchanged. Formally:
 \begin{equation}
-  \zeta = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \xi' = \xi - \gas,\quad \omega' = \omega,\quad\mem' = \mem \text{ except as indicated }
+  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \xi' = \xi - \gas,\quad \omega' = \omega,\quad\mem' = \mem \text{ except as indicated }
 \end{equation}
 
-Where \textsc{ram} must be inspected and yet access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest address to be read which is inaccessible. More formally, let $\mathbf{a}$ be the set of indices in to which $\mem$ must be subscripted in order to calculate the result of $\Psi_1$. If $\mathbf{a} \not\subset \mathbb{V}_\mem$ then let $\zeta=\fault \times \text{min}(\mathbf{a} \setminus \mathbb{V}_\mem)$.
+Where \textsc{ram} must be inspected and yet access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest address to be read which is inaccessible. More formally, let $\mathbf{a}$ be the set of indices in to which $\mem$ must be subscripted in order to calculate the result of $\Psi_1$. If $\mathbf{a} \not\subset \mathbb{V}_\mem$ then let $\varepsilon=\fault \times \text{min}(\mathbf{a} \setminus \mathbb{V}_\mem)$.
 
-Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest address to be read which is inaccessible. More formally, let $\mathbf{a}$ be the set of indices in to which $\mem'$ must be subscripted in order to calculate the result of $\Psi_1$. If $\mathbf{a} \not\subset \mathbb{V}^*_\mem$ then let $\zeta=\fault \times \text{min}(\mathbf{a} \setminus \mathbb{V}^*_\mem)$.
+Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest address to be read which is inaccessible. More formally, let $\mathbf{a}$ be the set of indices in to which $\mem'$ must be subscripted in order to calculate the result of $\Psi_1$. If $\mathbf{a} \not\subset \mathbb{V}^*_\mem$ then let $\varepsilon=\fault \times \text{min}(\mathbf{a} \setminus \mathbb{V}^*_\mem)$.
 
 We define signed/unsigned transitions for various octet widths:
 \begin{align}
@@ -180,7 +180,7 @@ Immediate arguments are encoded in little-endian format with the most-significan
 
 Any alterations of the program counter stemming from a static jump, call or branch must be to the start of a basic block or else a panic occurs. Hypotheticals are not considered. Formally:
 \begin{equation}
-  \token{branch}(b, C) \implies (\zeta, \imath') = \begin{cases}
+  \token{branch}(b, C) \implies (\varepsilon, \imath') = \begin{cases}
     (\continue, \imath) &\when \lnot C \\
     (\panic, \imath) &\otherwhen b \not\in \basicblocks \\
     (\continue, b) &\otherwise
@@ -191,7 +191,7 @@ Jumps whose next instruction is dynamically computed must use an address which m
 
 As with other irregular alterations to the program counter, target code index must be the start of a basic block or else a panic occurs. Formally:
 \begin{equation}\label{eq:jumptablealignment}
-  \token{djump}(a) \implies (\zeta, \imath') = \begin{cases}
+  \token{djump}(a) \implies (\varepsilon, \imath') = \begin{cases}
     (\halt, \imath) &\when a = 2^{32} - 2^{16}\\
     (\panic, \imath) &\otherwhen a = 0 \vee a > |\mathbf{j}|\cdot\mathsf{Z}_A \vee a \bmod \mathsf{Z}_A \ne 0 \vee \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1} \not\in \basicblocks \\
     (\continue, \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1}) &\otherwise
@@ -200,7 +200,7 @@ As with other irregular alterations to the program counter, target code index mu
 
 \subsection{Instruction Tables}\label{sec:instructiontables}
 
-Note that in the case that the opcode is not defined in the following tables then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
+Note that in the case that the opcode is not defined in the following tables then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
 
 We assume the skip length $\ell$ is well-defined:
 \begin{equation}
@@ -215,7 +215,7 @@ We assume the skip length $\ell$ is well-defined:
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  0&\token{trap}&0&$\zeta = \halt$\\
+  0&\token{trap}&0&$\varepsilon = \halt$\\
   \mrule
   17&\token{fallthrough}&0&\\
   \bottomrule
@@ -235,7 +235,7 @@ We assume the skip length $\ell$ is well-defined:
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  78&\token{ecalli}&0&$\zeta = \host \times \immed_X$\\
+  78&\token{ecalli}&0&$\varepsilon = \host \times \immed_X$\\
 \bottomrule
 \end{longtable}
 
@@ -404,7 +404,7 @@ We assume the skip length $\ell$ is well-defined:
 \end{aligned}
 \end{equation}
 
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
+In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
@@ -461,7 +461,7 @@ In the case that the above condition is not met, then the instruction is conside
   \end{aligned}
 \end{equation}
 
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
+In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
@@ -495,7 +495,7 @@ In the case that the above condition is not met, then the instruction is conside
   \end{aligned}
 \end{equation}
 
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
+In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
@@ -525,7 +525,7 @@ In the case that the above condition is not met, then the instruction is conside
 \end{aligned}
 \end{equation}
 
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\zeta=\panic$.
+In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}[t]{p{8mm} p{20mm} p{5mm} p{100mm}}
@@ -584,16 +584,16 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     (\Y, \N_R, \N_G, \regs, \ram, \Omega_X, X) &\to (\{\panic, \oog, \halt\} \cup \{\fault\} \times \N_R, \Z_G, \regs, \ram, X)\\
     (\mathbf{c}, \imath, \xi, \omega, \mem, f, \mathbf{x}) &\mapsto \begin{cases}
       (\fault \times a, \imath', \xi', \omega', \mem', \mathbf{x}') &\when \bigwedge\left\{\;\begin{aligned}
-        &\zeta = \host \times h\\[2pt]
+        &\varepsilon = \host \times h\\[2pt]
         &\fault \times a = f(h, \xi', \omega', \mem', \mathbf{x})\\[2pt]
       \end{aligned}\right.\\[8 pt]
       \Psi_H(\mathbf{c}, \imath' + 1, \xi'', \omega'', \mem'', f, \mathbf{x}'') &\when \bigwedge\left\{\;\begin{aligned}
-        &\zeta = \host \times h\\[2pt]
+        &\varepsilon = \host \times h\\[2pt]
         &(\xi'', \omega'', \mem'', \mathbf{x}'') = f(h, \xi', \omega', \mem', \mathbf{x})
       \end{aligned}\right.\\[8pt]
-      (\zeta, \imath', \xi', \omega', \mem', \mathbf{x}) &\otherwise
+      (\varepsilon, \imath', \xi', \omega', \mem', \mathbf{x}) &\otherwise
     \end{cases} \\
-    \where (\zeta, \imath', \xi', \omega', \mem') &= \Psi(\mathbf{c}, \imath, \xi, \omega, \mem)\\
+    \where (\varepsilon, \imath', \xi', \omega', \mem') &= \Psi(\mathbf{c}, \imath, \xi, \omega, \mem)\\
     \end{aligned}\right.
 \end{equation}
 
@@ -675,9 +675,9 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
       R(\Psi_H(\mathbf{c}, \imath, \xi, \omega, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}) = (\mathbf{c}, \omega, \mem)
     \end{cases}
   \end{aligned}\right.\\
-  \where R&\colon (\zeta, \imath', \xi', \omega', \mem', \mathbf{x}) \mapsto \begin{cases}
-    (\zeta, \mathbf{x}) &\when \zeta = \oog \\
-    (\xi', \bm{\mu'}_{\omega'_{10}\dots+\omega'_{11}}) &\when \zeta = \halt \wedge \mathbb{Z}_{\omega'_{10}\dots+\omega'_{11}} \subset \mathbb{V}_{\mem'} \\
+  \where R&\colon (\varepsilon, \imath', \xi', \omega', \mem', \mathbf{x}) \mapsto \begin{cases}
+    (\varepsilon, \mathbf{x}) &\when \varepsilon = \oog \\
+    (\xi', \bm{\mu'}_{\omega'_{10}\dots+\omega'_{11}}) &\when \varepsilon = \halt \wedge \mathbb{Z}_{\omega'_{10}\dots+\omega'_{11}} \subset \mathbb{V}_{\mem'} \\
     (\panic, \mathbf{x}) &\otherwise \\
   \end{cases}
 \end{align}

@@ -145,7 +145,7 @@ This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ w
 
 \subsection{Guarantor Assignments}\label{sec:coresandvalidators}
 
-Every block, each core has some particular number of validators uniquely assigned to it assigned to guarantee work reports for it. With $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, this results in exactly $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$ validators per core. The Ed25519 keys of these validators are denoted by $\mathbf{G}$:
+Every block, each core has three validators uniquely assigned to guarantee work reports for it. This is borne out with $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, since $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$. The Ed25519 keys of these validators are denoted by $\mathbf{G}$:
 \begin{equation}
   \mathbf{G} \in \seq{\seq{\H_E}_{\nicefrac{\mathsf{V}}{\mathsf{C}}}}_{\mathsf{C}}
 \end{equation}
@@ -188,35 +188,30 @@ We begin by defining the guarantees extrinsic, $\mathbf{E}_G$, a series of \emph
   \mathbf{E}_G &\in \seq{\tuple{
     c \in \N_\mathsf{C},\, w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\mathbb{E}?}_3
   }}_{:\mathsf{C}} \\
-  \forall g &\in \mathbf{E}_G : (g_a)_{\dots2} \in \seq{\mathbb{E}}_2
+  \forall g &\in \mathbf{E}_G : |\{x \in g_a : x \ne \none\}| \ge 2
 \end{align}
 
-The credential is itself a sequence of three tuples of a signature and a validator index $\mathbb{E}$. Only the final item may legitimately be $\none$.
+The credential is itself a sequence of three tuples of a signature and a validator index $\mathbb{E}$. Credentials may only have one missing signature.
 
-The core index of each guarantee must be in ascending order:
+The core index of each guarantee must be unique and in ascending order:
 \begin{align}
   \mathbf{E}_G = \orderby{i_c}{i \in \mathbf{E}_G}
 \end{align}
 
-Credentials may only have one missing signature:
-\begin{equation}
-  \forall g \in \mathbf{E}_G : |\{x \in g_a : x \ne \none\}| \ge 2
-\end{equation}
-
 The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the core index and the work-report. The signing validators must be assigned to the core in question in either this block $\mathbf{G}$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\mathbf{G}^*$:
 \begin{align}\label{eq:guarantorsig}
-    \nonumber&\forall g \in \mathbf{E}_G:\\[-9pt]
-    &\quad\forall i \in \N_3, g_a[i] \ne \none: \left\{\,\begin{aligned}
-      &a_s \in \sig{\mathbf{k}[g_c]_i}{\mathsf{X}_G\frown\mathcal{H}(g_c, g_r)}\\
+    \forall g \in \mathbf{E}_G, \forall i &\in \N_3: \left\{\,\begin{aligned}
+      &g_a[i] \in \sig{\mathbf{k}[g_c]_i}{\mathsf{X}_G\frown\mathcal{H}(g_c, g_r)}\mathbf{?}\\
+      &\mathbf{R} \ni \mathbf{k}[g_c]_i \Leftrightarrow g_a[i] \ne \none\\
       &\where \mathbf{k} = \begin{cases}
         \mathbf{G} \!\!\!\!&\when \ffrac{\tau'}{\mathsf{R}} = \ffrac{g_t}{\mathsf{R}} \\
         \mathbf{G}^* \!\!\!\!&\otherwise
       \end{cases}
-    \end{aligned}\right.\!\!\!\!\!\!
+    \end{aligned}\right.\\
+    \mathsf{X}_G &= \token{\$jam\_guarantee}
 \end{align}
-\begin{equation}
-  \mathsf{X}_G = \token{\$jam\_guarantee}
-\end{equation}
+
+We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\mathbf{R}$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
 
 No reports may be placed on cores with a report pending availability on it unless it has timed out. In the latter case, $\mathsf{U} = 5$ slots must have elapsed after the report was made. A report is invalid if the authorizer hash is not present in the authorizer pool of the core on which the work is reported. Formally:
 \begin{equation}\label{eq:reportcoresareunusedortimedout}

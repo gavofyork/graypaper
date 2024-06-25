@@ -31,7 +31,7 @@ The header is a collection of metadata primarily concerned with cryptographic re
 
 Our state may be logically partitioned into several largely independent segments which can both help avoid visual clutter within our protocol description and provide formality over elements of computation which may be simultaneously calculated (i.e. parallelized). We therefore pronounce an equivalence between $\sigma$ (some complete state) and a tuple of partitioned segments of that state:
 \begin{align}\label{eq:statecomposition}
-  \sigma &\equiv (\alpha, \beta, \gamma, \delta, \eta, \iota, \kappa, \lambda, \rho, \tau, \varphi, \chi, \psi)
+  \sigma &\equiv (\alpha, \beta, \gamma, \delta, \eta, \iota, \kappa, \lambda, \rho, \tau, \varphi, \chi, \psi, \pi)
 \end{align}
 
 In summary, $\delta$ is the portion of state dealing with \emph{services}, analogous in \Jam to the Yellow Paper's (smart contract) \emph{accounts}, the only state of the \emph{YP}'s Ethereum. The identities of services which hold some privileged status are tracked in $\chi$.
@@ -40,7 +40,7 @@ Validators, who are the set of economic actors uniquely privileged to help build
 
 Our state also tracks two aspects of each core: $\alpha$, the authorization requirement which work done on that core must satisfy at the time of being reported on-chain, together with the queue which fills this, $\varphi$; and $\rho$, each of the cores' currently assigned \emph{report}, the availability of whose \emph{work-package} must yet be assured by a super-majority of validators.
 
-Finally, details of the most recent blocks and time are tracked in $\beta$ and $\tau$ respectively and past judgements are tracked in $\bm{\psi}$.
+Finally, details of the most recent blocks and time are tracked in $\beta$ and $\tau$ respectively and, judgements are tracked in $\psi$ and validator statistics are tracked in $\pi$.
 
 \subsubsection{State Transition Dependency Graph}
 
@@ -65,7 +65,8 @@ Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulatin
     \varphi' \\
     \mathbf{C}
   \end{rcases*} &\prec (\mathbf{E}_A, \rho', \delta^\dagger, \chi, \iota, \varphi) \\
-  \alpha' &\prec (\mathbf{E}_G, \varphi', \alpha)
+  \alpha' &\prec (\mathbf{E}_G, \varphi', \alpha) \\
+  \pi' &\prec (\mathbf{E}_G, \mathbf{E}_P, \mathbf{E}_A, \mathbf{E}_T, \tau, \tau', \pi)
 \end{align}
 
 The only synchronous entanglements are visible through the intermediate components superscripted with a dagger and defined in equations \ref{eq:betadagger}, \ref{eq:deltadagger} and \ref{eq:rhoddagger}. The latter two mark a merge and join in the dependency graph and, concretely, imply that the preimage lookup extrinsic must be folded into state before the availability extrinsic may be fully processed and accumulation of work happen.
