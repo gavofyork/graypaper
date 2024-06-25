@@ -4,10 +4,7 @@ The \Jam chain does not explicitly issue rewards---we leave this as a job to be 
 
 Such performance information cannot directly cover all aspects of validator activity; whereas block production, guarantor reports and availability assurance can easily be tracked on-chain, \textsc{Grandpa}, \textsc{Beefy} and auditing activity cannot. In the latter case, this is instead tracked with validator voting activity: validators vote on their impression of each other's efforts and a median may be accepted as the truth for any given validator. With an assumption of 50\% honest validators, this gives an adequate means of oraclizing this information.
 
-%TODO: Al do we need to count this stuff explicitly per epoch? Any feedback required for Coretime?
-%TODO: Decide whether it's important to do this on-chain or just leave it to Staking chain.
-
-The validator statistics are made on a per-epoch basis and we retain one record of completed statistics and one record which serves as an accumulator for the present epoch. Both are tracked in $\pi$, which is thus a sequence of two elements, with the first being the accumulator and the second the previous epoch's statistics. For each epoch we track a performance record for each validator:
+The validator statistics are made on a per-epoch basis and we retain one record of completed statistics together with one record which serves as an accumulator for the present epoch. Both are tracked in $\pi$, which is thus a sequence of two elements, with the first being the accumulator and the second the previous epoch's statistics. For each epoch we track a performance record for each validator:
 \begin{equation}
   \pi \in \seq{\seq{\tuple{
     \isa{b}{\N}\,,
