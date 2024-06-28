@@ -170,7 +170,7 @@ We define signed/unsigned transitions for various octet widths:
 
 \newcommand{\sext}{\mathcal{X}}
 
-Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values, important as . We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
+Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values. We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
 \begin{align}\label{eq:signedextension}
   \sext_{n\in\{0, 1, 2, 3, 4\}}\colon\left\{\begin{aligned}
     \N_{2^{8n}} &\to \N_{2^{32}}\\
@@ -373,9 +373,9 @@ We assume the skip length $\ell$ is well-defined:
   \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
   \reg_A &\equiv \reg_{r_A} \,,\quad
   \reg'_A \equiv \reg'_{r_A} \\
-  \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
-  \reg_B &\equiv \reg_{r_B} \,,\quad
-  \reg'_B \equiv \reg'_{r_B} \\
+  \using r_D &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
+  \reg_D &\equiv \reg_{r_D} \,,\quad
+  \reg'_D \equiv \reg'_{r_D} \\
 \end{aligned}
 \end{equation}
 
@@ -386,9 +386,16 @@ We assume the skip length $\ell$ is well-defined:
   \midrule
   \endhead
   82&\token{move\_reg}&0&$\reg'_D = \reg_A$\\ \mrule
-  87&\token{sbrk}&0&\makecell[tl]{$\N_{\reg'_D\dots+\reg_A} \in \mathbb{V}^*_{\mu}$\\All ranges are guaranteed unique for all invocations of this instruction}\\
+  87&\token{sbrk}&0&$\begin{aligned}
+    \reg'_D \equiv &\min(x \in \N_R): \\
+    &x \ge h\\
+    &\N_{x\dots+\reg_A} \not\in \mathbb{V}_{\mu}\\
+    &\N_{x\dots+\reg_A} \in \mathbb{V}^*_{\mu'}
+  \end{aligned}$\\
 \bottomrule
 \end{longtable}
+
+Note, the term $h$ above refers to the beginning of the heap, the second major segment of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_Q + Q(|\mathbf{o}|)$. If `sbrk` instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Immediate}
 \begin{equation}
@@ -438,13 +445,14 @@ In the case that the above condition is not met, then the instruction is conside
   75&\token{shlo\_l\_imm\_alt}&0&$\reg'_B = (\immed_X \cdot 2^{\reg_A \bmod 32}) \bmod 2^{32}$\\ \mrule
   72&\token{shlo\_r\_imm\_alt}&0&$\reg'_B = \floor{\immed_X \div 2^{\reg_A \bmod 32}}$\\ \mrule
   80&\token{shar\_r\_imm\_alt}&0&$\reg'_B = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_A \bmod 32}}}$\\ \mrule
-  24&\token{branch\_eq}&0&$\token{branch}(\immed_X, \reg_A = \reg_B)$\\ \mrule
-  30&\token{branch\_ne}&0&$\token{branch}(\immed_X, \reg_A \ne \reg_B)$\\ \mrule
-  47&\token{branch\_lt\_u}&0&$\token{branch}(\immed_X, \reg_A < \reg_B)$\\ \mrule
-  48&\token{branch\_lt\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} < \signed{\reg_B})$\\ \mrule
-  41&\token{branch\_ge\_u}&0&$\token{branch}(\immed_X, \reg_A \ge \reg_B)$\\ \mrule
-  43&\token{branch\_ge\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} \ge \signed{\reg_B})$\\
-\bottomrule
+  85&\token{cmov\_iz\_imm}&0&$\reg'_A = \begin{cases}
+    \immed_X &\when \reg_B = 0\\
+    \reg_A &\otherwise
+  \end{cases}$\\ \mrule
+  86&\token{cmov\_nz\_imm}&0&$\reg'_A = \begin{cases}
+    \immed_X &\when \reg_B \ne 0\\
+    \reg_A &\otherwise
+  \end{cases}$\\ \bottomrule
 \end{longtable}
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Offset}
@@ -566,12 +574,12 @@ In the case that the above condition is not met, then the instruction is conside
   51&\token{shlo\_r}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 32}}$\\ \mrule
   77&\token{shar\_r}&0&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
   83&\token{cmov\_iz}&0&$\reg'_D = \begin{cases}
-    0 &\when \reg_B = 0\\
-    \reg_A &\otherwise
+    \reg_A &\when \reg_B = 0\\
+    \reg_D &\otherwise
   \end{cases}$\\ \mrule
   84&\token{cmov\_nz}&0&$\reg'_D = \begin{cases}
-    \reg_A &\when \reg_B = 0\\
-    0 &\otherwise
+    \reg_A &\when \reg_B \ne 0\\
+    \reg_D &\otherwise
   \end{cases}$\\
 \bottomrule
 \end{longtable}
@@ -621,7 +629,7 @@ Where:
   &5\mathsf{Z}_Q + Q(|o|) + Q(|w| + z\mathsf{Z}_P) + Q(s) + \mathsf{Z}_I \leq 2^{32}
 \end{align}
 If the above cannot be satisfied, then $x = \none$, otherwise $x = (\mathbf{c}, \omega, \mem)$ with $\mathbf{c}$ as above and $\omega$, $\mem$ where:
-\begin{equation}
+\begin{equation}\label{eq:memlayout}
   \forall i \in \N_R : \mem_i = \left\{\begin{alignedat}{5}
     &\tup{\is{\mathbf{V}}{\mathbf{o}_{i - \mathsf{Z}_Q}}\ts\is{\mathbf{A}}{R}} &&\ \when
         \mathsf{Z}_Q
