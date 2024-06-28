@@ -170,7 +170,7 @@ We define signed/unsigned transitions for various octet widths:
 
 \newcommand{\sext}{\mathcal{X}}
 
-Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values, important as . We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
+Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values. We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
 \begin{align}\label{eq:signedextension}
   \sext_{n\in\{0, 1, 2, 3, 4\}}\colon\left\{\begin{aligned}
     \N_{2^{8n}} &\to \N_{2^{32}}\\
@@ -443,8 +443,15 @@ In the case that the above condition is not met, then the instruction is conside
   47&\token{branch\_lt\_u}&0&$\token{branch}(\immed_X, \reg_A < \reg_B)$\\ \mrule
   48&\token{branch\_lt\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} < \signed{\reg_B})$\\ \mrule
   41&\token{branch\_ge\_u}&0&$\token{branch}(\immed_X, \reg_A \ge \reg_B)$\\ \mrule
-  43&\token{branch\_ge\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} \ge \signed{\reg_B})$\\
-\bottomrule
+  43&\token{branch\_ge\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} \ge \signed{\reg_B})$\\  \mrule
+  85&\token{cmov\_iz\_imm}&0&$\reg'_A = \begin{cases}
+    l_X &\when \reg_B = 0\\
+    \reg_A &\otherwise
+  \end{cases}$\\ \mrule
+  86&\token{cmov\_nz\_imm}&0&$\reg'_A = \begin{cases}
+    l_X &\when \reg_B \ne 0\\
+    \reg_A &\otherwise
+  \end{cases}$\\ \bottomrule
 \end{longtable}
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Offset}
@@ -566,12 +573,12 @@ In the case that the above condition is not met, then the instruction is conside
   51&\token{shlo\_r}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 32}}$\\ \mrule
   77&\token{shar\_r}&0&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
   83&\token{cmov\_iz}&0&$\reg'_D = \begin{cases}
-    0 &\when \reg_B = 0\\
-    \reg_A &\otherwise
+    \reg_A &\when \reg_B = 0\\
+    \reg_D &\otherwise
   \end{cases}$\\ \mrule
   84&\token{cmov\_nz}&0&$\reg'_D = \begin{cases}
-    \reg_A &\when \reg_B = 0\\
-    0 &\otherwise
+    \reg_A &\when \reg_B \ne 0\\
+    \reg_D &\otherwise
   \end{cases}$\\
 \bottomrule
 \end{longtable}

@@ -15,6 +15,22 @@ https://graypaper.com/
 - [ ] Remove any "TODOs" in text
 - [ ] Macrofy everything
 
+### Simple Networking
+- [ ] Specify required connectivity (QUIC, endpoints, ports, encryption keys, for vals and nodes)
+- [ ] Specify protocol-specific handshake
+- [ ] Specify basic message format, reply format and all variants
+  - [ ] How are long messages handled?
+- [ ] Messages for all nodes:
+  - [ ] Block propagation (all nodes)
+  - [ ] ImportDA query & response
+- [ ] Messages for validator nodes only:
+  - [ ] Assurance publication
+  - [ ] Guarantee publication
+  - [ ] Audit-announcement
+  - [ ] Judgement publication
+  - [ ] Ticket submission
+  - [ ] AuditDA query & response
+
 ### Final PVM
 - [ ] 64-bit PVM
 - [ ] Gas pricing
@@ -58,6 +74,7 @@ https://graypaper.com/
 - [ ] Block distribution via EC and proactive-chunk-redistribution
 - [ ] Guarantor-guarantor handover
 - [ ] Star-shaped Point-to-point extrinsic distribution
+- [ ] Mixnet for ticket submission
 
 ## Bring together sub-protocols
 - [ ] Better integration to Grandpa paper
