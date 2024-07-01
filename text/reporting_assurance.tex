@@ -53,7 +53,7 @@ A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the cont
 \end{equation}
 
 \subsubsection{Availability}
-We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tuple of the auditable work-package's hash $h$ and length $l$ together with an erasure-root $u$ and a segment-root $e$. Work-results include the availability specification for the encoding of the corresponding work-package. Formally:
+We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tuple of the work-package's hash $h$, an auditable work bundle length $l$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $u$ and a segment-root $e$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
 \begin{align}
   \mathbb{S} &\equiv \tuple{
     \isa{h}{\H}\ts
@@ -63,7 +63,7 @@ We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tu
   }
 \end{align}
 
-The \emph{erasure-root} ($u$) is the root of a binary Merkle tree which functions as a commitment to all data chunks stored in the Audit DA and the Imports DA concerning this work report (and the ramifications of its corresponding work-package). It is used by assurers to verify the correctness of data they have been distributed and ensured correct by auditors. It is discussed properly in section \ref{sec:workpackagesandworkreports}.
+The \emph{erasure-root} ($u$) is the root of a binary Merkle tree which functions as a commitment to all data required for the auditing of the report and for use by later work packages should they need to retrieve any data yielded. It is thus used by assurers to verify the correctness of data they have been sent by guarantors, and it is later verified as correct by auditors. It is discussed fully in section \ref{sec:workpackagesandworkreports}.
 
 The \emph{segment-root} ($e$) is the root of a constant-depth, left-biased and zero-hash-padded binary Merkle tree committing to the hashes of each of the exported segments of each work-item. These are used by guarantors to verify the correctness of any reconstructed segments they are called upon to import for evaluation of some later work package. It is also discussed in section \ref{sec:workpackagesandworkreports}.
 
@@ -94,7 +94,7 @@ The first two are special values concerning execution of the virtual machine, $\
 
 \subsection{Package Availability Assurances}
 
-We first define $\rho^\ddagger$, the intermediate state to be utilized next in section \ref{sec:workreportguarantees} as well as $\mathbf{R}$, the set of available work-reports, which will we utilize later in section \ref{sec:accumulation}. Both require the integration of information from the assurances extrinsic $\mathbf{E}_A$.
+We first define $\rho^\ddagger$, the intermediate state to be utilized next in section \ref{sec:workreportguarantees} as well as $\mathbf{W}$, the set of available work-reports, which will we utilize later in section \ref{sec:accumulation}. Both require the integration of information from the assurances extrinsic $\mathbf{E}_A$.
 
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
@@ -120,15 +120,15 @@ A bit may only be set if the corresponding core has a report pending availabilit
 \end{align}
 
 \subsubsection{Available Reports}
-A work-report is said to become \emph{available} if and only if there are a clear \nicefrac{2}{3} super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the series of available work-reports $\mathbf{R}$ as:
+A work-report is said to become \emph{available} if and only if there are a clear \nicefrac{2}{3} super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the series of available work-reports $\mathbf{W}$ as:
 \begin{align}\label{eq:availableworkreports}
-  \mathbf{R} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \N_\mathsf{C},\;\sum_{a \in \mathbf{E}_A}\!a_v[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
+  \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \N_\mathsf{C},\;\sum_{a \in \mathbf{E}_A}\!a_v[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
 \end{align}
 
 This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are now available:
 \begin{align}
   \forall c \in \N_C: \rho^\ddagger[c] \equiv \begin{cases}
-    \none &\when\rho[c]_w \in \mathbf{R}\\
+    \none &\when\rho[c]_w \in \mathbf{W}\\
     \rho^\dagger[c] &\otherwise
   \end{cases}
 \end{align}
@@ -145,7 +145,7 @@ This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ w
 
 \subsection{Guarantor Assignments}\label{sec:coresandvalidators}
 
-Every block, each core has some particular number of validators uniquely assigned to it assigned to guarantee work reports for it. With $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, this results in exactly $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$ validators per core. The Ed25519 keys of these validators are denoted by $\mathbf{G}$:
+Every block, each core has three validators uniquely assigned to guarantee work reports for it. This is borne out with $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, since $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$. The Ed25519 keys of these validators are denoted by $\mathbf{G}$:
 \begin{equation}
   \mathbf{G} \in \seq{\seq{\H_E}_{\nicefrac{\mathsf{V}}{\mathsf{C}}}}_{\mathsf{C}}
 \end{equation}
@@ -188,35 +188,30 @@ We begin by defining the guarantees extrinsic, $\mathbf{E}_G$, a series of \emph
   \mathbf{E}_G &\in \seq{\tuple{
     c \in \N_\mathsf{C},\, w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\mathbb{E}?}_3
   }}_{:\mathsf{C}} \\
-  \forall g &\in \mathbf{E}_G : (g_a)_{\dots2} \in \seq{\mathbb{E}}_2
+  \forall g &\in \mathbf{E}_G : |\{x \in g_a : x \ne \none\}| \ge 2
 \end{align}
 
-The credential is itself a sequence of three tuples of a signature and a validator index $\mathbb{E}$. Only the final item may legitimately be $\none$.
+The credential is itself a sequence of three tuples of a signature and a validator index $\mathbb{E}$. Credentials may only have one missing signature.
 
-The core index of each guarantee must be in ascending order:
+The core index of each guarantee must be unique and in ascending order:
 \begin{align}
   \mathbf{E}_G = \orderby{i_c}{i \in \mathbf{E}_G}
 \end{align}
 
-Credentials may only have one missing signature:
-\begin{equation}
-  \forall g \in \mathbf{E}_G : |\{x \in g_a : x \ne \none\}| \ge 2
-\end{equation}
-
 The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the core index and the work-report. The signing validators must be assigned to the core in question in either this block $\mathbf{G}$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\mathbf{G}^*$:
 \begin{align}\label{eq:guarantorsig}
-    \nonumber&\forall g \in \mathbf{E}_G:\\[-9pt]
-    &\quad\forall i \in \N_3, g_a[i] \ne \none: \left\{\,\begin{aligned}
-      &a_s \in \sig{\mathbf{k}[g_c]_i}{\mathsf{X}_G\frown\mathcal{H}(g_c, g_r)}\\
+    \forall g \in \mathbf{E}_G, \forall i &\in \N_3: \left\{\,\begin{aligned}
+      &g_a[i] \in \sig{\mathbf{k}[g_c]_i}{\mathsf{X}_G\frown\mathcal{H}(g_c, g_r)}\mathbf{?}\\
+      &\mathbf{R} \ni \mathbf{k}[g_c]_i \Leftrightarrow g_a[i] \ne \none\\
       &\where \mathbf{k} = \begin{cases}
         \mathbf{G} \!\!\!\!&\when \ffrac{\tau'}{\mathsf{R}} = \ffrac{g_t}{\mathsf{R}} \\
         \mathbf{G}^* \!\!\!\!&\otherwise
       \end{cases}
-    \end{aligned}\right.\!\!\!\!\!\!
+    \end{aligned}\right.\\
+    \mathsf{X}_G &= \token{\$jam\_guarantee}
 \end{align}
-\begin{equation}
-  \mathsf{X}_G = \token{\$jam\_guarantee}
-\end{equation}
+
+We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\mathbf{R}$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
 
 No reports may be placed on cores with a report pending availability on it unless it has timed out. In the latter case, $\mathsf{U} = 5$ slots must have elapsed after the report was made. A report is invalid if the authorizer hash is not present in the authorizer pool of the core on which the work is reported. Formally:
 \begin{equation}\label{eq:reportcoresareunusedortimedout}
@@ -312,4 +307,4 @@ We define $\rho'$ as being equivalent to $\rho^\ddagger$, except where the extri
 \end{aligned}
 \end{equation}
 
-This concludes the section on reporting and assurance. We now have a complete definition of $\rho'$ together with $\mathbf{R}$ to be utilized in section \ref{sec:accumulation}, describing the portion of the state transition happening once a work-report is guaranteed and made available.
+This concludes the section on reporting and assurance. We now have a complete definition of $\rho'$ together with $\mathbf{W}$ to be utilized in section \ref{sec:accumulation}, describing the portion of the state transition happening once a work-report is guaranteed and made available.

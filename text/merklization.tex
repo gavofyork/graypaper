@@ -36,6 +36,7 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(10) &\mapsto \se([\maybe{(w, \var{\mathbf{g}}, \se_4(t))} \mid (w, t, \mathbf{g}) \orderedin \rho]) \;, \\
     &&C(11) &\mapsto \se_4(\tau) \;, \\
     &&C(12) &\mapsto \se_4(\chi) \;, \\
+    &&C(13) &\mapsto \se_4(\pi) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_l) \concat \se_4(\mathbf{a}_i) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, h) &\mapsto \mathbf{v} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, h) &\mapsto \mathbf{p} \;, \\
@@ -73,7 +74,7 @@ Formally, we define the encoding functions $B$ and $L$:
   L&\colon\left\{\begin{aligned}
     (\H, \Y) &\to \mathbb{B}_{512}\\
     (k, v) &\mapsto \begin{cases}
-      [1, 0] \frown \text{bits}(\se_1(|v|))_{\dots6} \frown \text{bits}(k)_{\dots248} \frown \text{bits}(v) \frown [0, 0, \dots] &\when 0 < |v| \le 32\\
+      [1, 0] \frown \text{bits}(\se_1(|v|))_{\dots6} \frown \text{bits}(k)_{\dots248} \frown \text{bits}(v) \frown [0, 0, \dots] &\when |v| \le 32\\
       [1, 1, 0, 0, 0, 0, 0, 0] \frown \text{bits}(k)_{\dots248} \frown \text{bits}(\mathcal{H}(v)) &\otherwise
     \end{cases}
   \end{aligned}\right.

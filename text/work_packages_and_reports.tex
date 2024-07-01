@@ -11,7 +11,7 @@ Beyond the production of blocks, incentivized honest behavior includes:
     \item the guaranteeing and reporting of work-packages, along with chunking and distribution of both the chunks and the work-package itself, discussed in section \ref{sec:guaranteeing};
     \item assuring the availability of work-packages after being in receipt of their data;
     \item determining which work-reports to audit, fetching and auditing them, and creating and distributing judgements appropriately based on the outcome of the audit;
-    \item submitting the correct amount of work seen being done by other validators, discussed in section \ref{sec:ratings}.
+    \item submitting the correct amount of auditing work seen being done by other validators, discussed in section \ref{sec:bookkeeping}.
 \end{itemize}
 
 \subsection{Segments and the Manifest}
@@ -162,7 +162,7 @@ The above relies on two functions, $M$ and $X$ which, respectively, define the i
 We may then define $s$ as the data availability specification of the package using these two functions together with the yet to be defined \emph{Availability Specifier} function $A$ (see section \ref{sec:availabiltyspecifier}):
 \begin{equation}
   \begin{aligned}
-    s &= A(\se(\var{\mathbf{p}}, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
+    s &= A(\mathcal{H}(\mathbf{p}), \se(\var{\mathbf{p}}, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
     \nonumber \where \mathbf{x} &= [[\var{\se(\mathbf{x})} \mid \mathbf{x} \in X(i)] \mid i \orderedin \mathbf{p}_\mathbf{i}]\\
     \nonumber \also \mathbf{i} &= [M(i) \mid i \orderedin \mathbf{p}_\mathbf{i}]\\
     \nonumber \also \mathbf{j} &= [\mathcal{J}(\mathbf{s}, n) \mid (\mathcal{M}(\mathbf{s}), n) \orderedin i_\mathbf{i}, i \orderedin \mathbf{p}_\mathbf{i}]
@@ -180,12 +180,12 @@ Validators, in their role as availability assurers, should index such chunks acc
 %TODO: Make result an error if the number of exported segments > stated number of exports. (If less, then additional ones are assumed to be zeroed.)
 
 \subsubsection{Availability Specifier}\label{sec:availabiltyspecifier}
-We define the availability specifier function $A$, which creates an availability specifier from an octet sequence of the audit-friendly work-package bundle (comprising the work-package itself, the extrinsic data and the concatenated import segments along with their proofs of correctness), and the sequence of exported segments:
+We define the availability specifier function $A$, which creates an availability specifier from the package hash, an octet sequence of the audit-friendly work-package bundle (comprising the work-package itself, the extrinsic data and the concatenated import segments along with their proofs of correctness), and the sequence of exported segments:
 \begin{equation}
   \!\!\!A\colon\left\{\,\begin{aligned}
-    &\tuple{\Y, \seq{\G}} \to \mathbb{S}\\
-    &\tup{\mathbf{b},\,\mathbf{s}} \mapsto \tup{
-      \is{h}{\mathcal{H}(\mathbf{b})},\,
+    &\tuple{\H, \Y, \seq{\G}} \to \mathbb{S}\\
+    &\tup{h, \mathbf{b},\,\mathbf{s}} \mapsto \tup{
+      h,\,
       \is{l}{|\mathbf{b}|},\,
       u,\,
       \is{e}{\mathcal{M}(\mathbf{s})}

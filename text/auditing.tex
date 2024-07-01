@@ -6,7 +6,7 @@ The auditing and judging system is theoretically equivalent to that in \textsc{E
 
 \subsection{Overview}
 
-The auditing process involves each node requiring themselves to fetch, evaluate and issue judgement on a random but deterministic set of work-reports from each \Jam chain block in which the work-report becomes available (\ie from $\mathbf{R}$). Prior to any evaluation, a node declares and proves its requirement. At specific common junctures in time thereafter, the set of work-reports which a node requires itself to evaluate from each block's $\mathbf{R}$ may be enlarged if any declared intentions are not matched by a positive judgement in a reasonable time or in the event of a negative judgement being seen. These enlargement events are called tranches.
+The auditing process involves each node requiring themselves to fetch, evaluate and issue judgement on a random but deterministic set of work-reports from each \Jam chain block in which the work-report becomes available (\ie from $\mathbf{W}$). Prior to any evaluation, a node declares and proves its requirement. At specific common junctures in time thereafter, the set of work-reports which a node requires itself to evaluate from each block's $\mathbf{W}$ may be enlarged if any declared intentions are not matched by a positive judgement in a reasonable time or in the event of a negative judgement being seen. These enlargement events are called tranches.
 
 If all declared intentions for a work-report are matched by a positive judgement at any given juncture, then the work-report is considered \emph{audited}. Once all of any given block's newly available work-reports are audited, then we consider the block to be \emph{audited}. One prerequisite of a node finalizing a block is for it to view the block as audited. Note that while there will be eventual consensus on whether a block is audited, there may not be consensus at the time that the block gets finalized. This does not affect the crypto-economic guarantees of this system.
 
@@ -34,7 +34,7 @@ We define the sequence of work-reports which we may be required to audit as $\ma
 \begin{align}\label{eq:auditselection}
   \mathbf{Q} &\in \seq{\mathbb{W}?}_\mathsf{C} \\
   \mathbf{Q} &\equiv \left[\begin{rcases}
-    \rho[c]_w &\when \rho[c]_w \in \mathbf{R} \\
+    \rho[c]_w &\when \rho[c]_w \in \mathbf{W} \\
     \none &\otherwise
   \end{rcases} \,\middle\vert\,c \orderedin \N_\mathsf{C}\right]
 \end{align}
@@ -141,7 +141,7 @@ We consider a work-report as audited under two circumstances. Either, when it ha
 
 Our block $\mathbf{B}$ may be considered audited, a condition denoted $\mathbf{U}$, when all the work-reports which were made available are considered audited. Formally:
 \begin{align}
-  \mathbf{U} &\Leftrightarrow \forall w \in \mathbf{R} : U(w)
+  \mathbf{U} &\Leftrightarrow \forall w \in \mathbf{W} : U(w)
 \end{align}
 
 For any block we must judge it to be audited (\ie $\mathbf{U} = \top$) before we vote for the block to be finalized in \textsc{Grandpa}. See section \ref{sec:grandpa} for more information here.
