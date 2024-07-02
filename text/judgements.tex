@@ -21,16 +21,19 @@ The judgements state includes three items, an allow-set ($\psi_\mathbf{a}$), a b
 
 The judgements extrinsic, $\mathbf{E}_J$ may contain one or more judgements as a compilation of signatures coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\kappa$ or $\lambda$:
 \begin{equation}
-  \mathbf{E}_J \in \seq{\tup{\H, \seq{\tup{\{\top, \bot\}, \N_{\mathsf{V}}, \mathbb{E}}}_{\floor{\nicefrac{2}{3}\mathsf{V}} + 1}}}\!\!\!
+  \mathbf{E}_J \in \seq{\tup{\H, \ffrac{\tau}{\mathsf{E}} - \N_2, \seq{\tup{\{\top, \bot\}, \N_{\mathsf{V}}, \mathbb{E}}}_{\floor{\nicefrac{2}{3}\mathsf{V}} + 1}}}\!\!\!
 \end{equation}
 
-All signatures must be valid in terms of one of the two allowed validator key-sets. Note that the two epoch's key-sets may not be mixed! Formally:
+All signatures must be valid in terms of one of the two allowed validator key-sets, identified by the second term which must be either the epoch index of the prior state or one less. Formally:
 \begin{equation}
   \begin{aligned}
-    \forall (r, \mathbf{v}) \in \mathbf{E}_J ,\, &\forall (v, i, s) \in \mathbf{v} : s \in \sig{\mathbf{k}[i]_e}{\mathsf{X}_v \concat r}\\
+    \forall (r, a, \mathbf{v}) \in \mathbf{E}_J ,\, &\forall (v, i, s) \in \mathbf{v} : s \in \sig{\mathbf{k}[i]_e}{\mathsf{X}_v \concat r}\\
     \where \mathsf{X}_\top &= \text{{\small \texttt{\$jam\_valid}}} \\
     \text{and } \mathsf{X}_\bot &= \text{{\small \texttt{\$jam\_invalid}}} \\
-    \mathbf{k} &\in \{ \kappa , \lambda \}
+    \mathbf{k} &= \begin{cases}
+      \kappa &\when a = \displaystyle \ffrac{\tau}{\mathsf{E}}\\
+      \lambda &\otherwise\\
+    \end{cases}
   \end{aligned}
 \end{equation}
 
