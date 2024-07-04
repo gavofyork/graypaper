@@ -22,8 +22,8 @@ Note: The portion of state $\varphi$ may be altered only through an exogenous ca
 
 The state transition of a block involves placing a new authorization into the pool from the queue:
 \begin{align}
-  \forall c \in \N_\mathsf{C} : \alpha'[c] &\equiv {\overleftarrow{F(c) \doubleplus \varphi'[c] [ \mathbf{H}_t ]^{\circlearrowleft}}}^{\mathsf{O}} \\
-  F(c) &\equiv \begin{cases} \alpha[c] \seqminusl \{g_a\} & \when \exists g \in E_G : g_c = c \\ \alpha[c] & \otherwise \end{cases}\!\!\!\!\!
+  &\forall c \in \N_\mathsf{C} : \alpha'[c] \equiv {\overleftarrow{F(c) \doubleplus \varphi'[c] [ \mathbf{H}_t ]^{\circlearrowleft}}}^{\mathsf{O}} \\
+  &F(c) \equiv \begin{cases} \alpha[c] \seqminusl \{(g_w)_a\} &\when \exists g \in \mathbf{E}_G : (g_w)_c = c \\ \alpha[c] & \otherwise \end{cases}
 \end{align}
 
-Since $\alpha'$ is dependent on $\varphi'$, practically speaking, this step must be computed after accumulation, the stage in which $\varphi'$ is defined.
+Since $\alpha'$ is dependent on $\varphi'$, practically speaking, this step must be computed after accumulation, the stage in which $\varphi'$ is defined. Note that we utilize the guarantees extrinsic $\mathbf{E}_G$ to remove the oldest authorizer which has been used to justify a guaranteed work-package in the current block. This is further defined in equation \ref{eq:guaranteesextrinsic}.

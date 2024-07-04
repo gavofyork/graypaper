@@ -24,15 +24,13 @@ As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\
 A work-report, of the set $\mathbb{W}$, is defined as a tuple of authorizer hash $a$ and output $\mathbf{o}$, the refinement context $x$, the package specification $s$ and the results of the evaluation of each of the items in the package $\mathbf{r}$, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
 \begin{equation}\label{eq:workreport}
   \mathbb{W} \equiv \tuple{
-%    \begin{aligned}
-      \isa{a}{\H}\ts
-      \isa{\mathbf{o}}{\Y}\ts
-      \isa{x}{\mathbb{X}}\ts
-      % TODO: ^^^ Rename to c
-      \isa{s}{\mathbb{S}}\ts
-      \isa{\mathbf{r}}{\seq{\mathbb{L}}_{1:\mathsf{I}}}
-%    \end{aligned}
-  }\!\!\!\!\!
+    \isa{a}{\H}\ts
+    \isa{c}{\N_C}\ts
+    \isa{\mathbf{o}}{\Y}\ts
+    \isa{x}{\mathbb{X}}\ts
+    \isa{s}{\mathbb{S}}\ts
+    \isa{\mathbf{r}}{\seq{\mathbb{L}}_{1:\mathsf{I}}}
+  }
 \end{equation}
 
 % TODO: places where w \in \mathbb{W} : w_o should be replaced with w_\mathbb{o} and w_r with w_\mathbb{r}
@@ -110,8 +108,8 @@ The assurances must all be anchored on the parent and ordered by validator index
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\mathbf{H}_p$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \mathbf{E}_A : a_s \in \sig{\kappa[a_v]_e}{\mathsf{X}_A\frown \mathcal{H}(\mathbf{H}_p, a_f)} \\
-  &\mathsf{X}_A = \token{\$jam\_available}
+  &\forall a \in \mathbf{E}_A : a_s \in \sig{\kappa'[a_v]_e}{\mathsf{X}_A\frown \mathcal{H}(\mathbf{H}_p, a_f)} \\
+  &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
 A bit may only be set if the corresponding core has a report pending availability on it:
@@ -156,14 +154,14 @@ We define the permute function $P$, the rotation function $R$ and finally the gu
 \begin{align}
   P(e, t) &\equiv R\left(\mathcal{F}\left(\left[\ffrac{\mathsf{V}\cdot i}{\mathsf{C}} \,\middle\mid\, i \orderedin \N_\mathsf{V}\right], e\right), \ffrac{t \bmod \mathsf{E}}{\mathsf{R}}\right)\!\!\!\!\!\! \\[3pt]
   R(\mathbf{c}, n) &\equiv [(x + n) \bmod \mathsf{C} \mid x \orderedin \mathbf{c}]\\
-  \forall c \in \N_C : \mathbf{G} &\equiv [ \Phi(\kappa')_i \mid i \orderedin \N_\mathsf{V}, P(\eta_2', \tau')_i = c ]
+  \!\!\forall c \in \N_C : \mathbf{G}_c &\equiv [ \Phi(\kappa')_i \mid i \orderedin \N_\mathsf{V}, P(\eta_2', \tau')_i = c ]
 \end{align}
 
 We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as it would have been under the previous rotation:
 \begin{equation}
   \label{eq:priorassignments}
   \begin{aligned}
-    \forall c \in \N_C : \mathbf{G}^* &\equiv [ \Phi(\mathbf{k})_i \mid i \orderedin \N_\mathsf{V}, P(e, \tau' - \mathsf{R})_i = c ]\\
+    \forall c \in \N_C : \mathbf{G}_c^* &\equiv [ \Phi(\mathbf{k})_i \mid i \orderedin \N_\mathsf{V}, P(e, \tau' - \mathsf{R})_i = c ]\\
     \where (e, \mathbf{k}) &= \begin{cases}
       (\eta'_2, \kappa') &\when \displaystyle\ffrac{\tau' - \mathsf{R}}{\mathsf{E}} = \ffrac{\tau'}{\mathsf{E}}\\
       (\eta'_3, \lambda') &\otherwise
@@ -187,9 +185,9 @@ We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as 
 \subsection{Work Report Guarantees}\label{sec:workreportguarantees}
 
 We begin by defining the guarantees extrinsic, $\mathbf{E}_G$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a core index, \emph{work-report}, a credential $a$ and its corresponding timeslot $t$. Formally:
-\begin{align}
+\begin{align}\label{eq:guaranteesextrinsic}
   \mathbf{E}_G &\in \seq{\tuple{
-    c \in \N_\mathsf{C},\, w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\mathbb{E}?}_3
+    w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\mathbb{E}?}_3
   }}_{:\mathsf{C}} \\
   \forall g &\in \mathbf{E}_G : |\{x \in g_a : x \ne \none\}| \ge 2
 \end{align}
@@ -198,36 +196,40 @@ The credential is a sequence of three tuples of a signature. Credentials may onl
 
 The core index of each guarantee must be unique and in ascending order:
 \begin{align}
-  \mathbf{E}_G = \orderby{i_c}{i \in \mathbf{E}_G}
+  \mathbf{E}_G = \orderby{(g_w)_c}{g \in \mathbf{E}_G}
 \end{align}
 
 The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the core index and the work-report. The signing validators must be assigned to the core in question in either this block $\mathbf{G}$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\mathbf{G}^*$:
 \begin{align}\label{eq:guarantorsig}
-    \forall g \in \mathbf{E}_G, \forall i &\in \N_3: \left\{\,\begin{aligned}
-      &g_a[i] \in \sig{\mathbf{k}[g_c]_i}{\mathsf{X}_G\frown\mathcal{H}(g_c, g_r)}\mathbf{?}\\
-      &\mathbf{R} \ni \mathbf{k}[g_c]_i \Leftrightarrow g_a[i] \ne \none\\
+  \begin{aligned}
+    \forall g &\in \mathbf{E}_G,\\
+    \forall i &\in \N_3
+  \end{aligned}
+    : &\left\{\,\begin{aligned}
+      &g_a[i] \in \sig{\mathbf{k}[(g_w)_c]_i}{\mathsf{X}_G\frown\mathcal{H}(\se(g_w))}\mathbf{?}\\
+      &\mathbf{R} \ni \mathbf{k}[(g_w)_c]_i \Leftrightarrow g_a[i] \ne \none\\
       &\where \mathbf{k} = \begin{cases}
         \mathbf{G} \!\!\!\!&\when \displaystyle \ffrac{\tau'}{\mathsf{R}} = \ffrac{g_t}{\mathsf{R}} \\
         \mathbf{G}^* \!\!\!\!&\otherwise
       \end{cases}
     \end{aligned}\right.\!\!\\
-    \mathsf{X}_G &= \token{\$jam\_guarantee}
+    \mathsf{X}_G \equiv &\token{\$jam\_guarantee}
 \end{align}
 
 We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\mathbf{R}$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
-
-No reports may be placed on cores with a report pending availability on it unless it has timed out. In the latter case, $\mathsf{U} = 5$ slots must have elapsed after the report was made. A report is invalid if the authorizer hash is not present in the authorizer pool of the core on which the work is reported. Formally:
-\begin{equation}\label{eq:reportcoresareunusedortimedout}
-  \forall g \in \mathbf{E}_G :\left\{\;\begin{aligned}
-    &\rho^\ddagger[g_c] = \none \vee \mathbf{H}_t \ge \rho^\ddagger[g_c]_t + \mathsf{U}\ , \\
-    &g_a \in \alpha[g_c]
-  \end{aligned}\right.
-\end{equation}
 
 We denote $\mathbf{w}$ to be the set of work-reports in the present extrinsic $\mathbf{E}$:
 \begin{align}
   \text{let}\ \mathbf{w} = \{ g_w \mid g \in \mathbf{E}_G \}
 \end{align}
+
+No reports may be placed on cores with a report pending availability on it unless it has timed out. In the latter case, $\mathsf{U} = 5$ slots must have elapsed after the report was made. A report is valid only if the authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
+\begin{equation}\label{eq:reportcoresareunusedortimedout}
+  \forall w \in \mathbf{w} :\left\{\;\begin{aligned}
+    &\rho^\ddagger[w_c] = \none \vee \mathbf{H}_t \ge \rho^\ddagger[w_c]_t + \mathsf{U}\ , \\
+    &w_a \in \alpha[w_c]
+  \end{aligned}\right.
+\end{equation}
 
 We specify the maximum total accumulation gas requirement a work-report may imply as $\mathsf{G}_A$, and we require the sum of all services' minimum gas requirements to be no greater than this:
 \begin{align}
