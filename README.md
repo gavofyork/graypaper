@@ -12,8 +12,11 @@ https://graypaper.com/
 - [x] Don't immediately alter kappa mid-epoch as it affects off-chain judgements.
 - [x] Instead, apply the blacklist to guarantor sig verification directly.
 - [x] Include the core in the WR.
-- [ ] Deposit the WR's signatures in with the judgement.
-- [ ] Require at >= 1 negative judgements to be included with a positive verdict, and place signer in punish keys.
+- [x] Deposit the WR's signatures in with the judgement.
+- [x] Require at >= 1 negative judgements to be included with a positive verdict, and place signer in punish keys.
+- [x] Serialization of judgement stuff
+- [x] Should always be possible to submit more guarantee signatures of a known-bad report to place them in the punish set.
+  - [x] Only from lambda and kappa?
 - [x] Use posterior kappa for everything except judgements.
 
 ### Finesse
