@@ -8,6 +8,14 @@ https://graypaper.com/
 
 ## Remaining near-term
 
+### ELVES
+- [x] Don't immediately alter kappa mid-epoch as it affects off-chain judgements.
+- [x] Instead, apply the blacklist to guarantor sig verification directly.
+- [ ] Deposit the WR's signatures in with the judgement.
+- [ ] Include the core in the WR.
+- [ ] Require at >= 1 negative judgements to be included with a positive verdict, and place signer in punish keys.
+- [ ] Use posterior kappa for everything except judgements.
+
 ### Finesse
 - [ ] Make all subscript names capitalized
 - [ ] Ensure all definitions are referenced

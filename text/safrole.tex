@@ -93,15 +93,18 @@ The set of validator keys itself is equivalent to the set of 336-octet sequences
 \end{align}
 
 With a new epoch under regular conditions, validator keys get rotated and the epoch's Bandersnatch key root is updated into $\gamma'_z$:
-\begin{equation}
-  \begin{aligned}
-    \!\!\!\!\!\!\!\!\!\!\!\!(\gamma'_\mathbf{k}, \kappa', \lambda', \gamma'_z) &\equiv \begin{cases} (\iota, N(\gamma_\mathbf{k}), N(\kappa), z) \!\!\!\!&\when e' > e \wedge \mathbf{H}_j = [] \\ (\gamma_\mathbf{k}, N(\kappa), N(\lambda), \gamma_z) \!\!\!\!&\otherwise \end{cases}\!\!\!\!\!\!\!\! \\
-    \where z &= \mathcal{O}([k_b \mid k \orderedin \gamma'_\mathbf{k}]) \\
-    \also N(\mathbf{k}) &\equiv \sq{\begin{rcases} [0, 0, \dots] &\when k_b \in \psi'_\mathbf{p} \\ k &\otherwise \end{rcases} \,\middle\mid\, k \orderedin \mathbf{k}}
-  \end{aligned}
-\end{equation}
+\begin{align}
+  (\gamma'_\mathbf{k}, \kappa', \lambda', \gamma'_z) &\equiv \begin{cases}
+    (\iota, \Phi(\gamma_\mathbf{k}), \kappa, z) &\when e' > e \wedge \mathbf{H}_j = [] \\ (\gamma_\mathbf{k}, \kappa, \lambda, \gamma_z) &\otherwise
+  \end{cases} \\
+  \nonumber \where z &= \mathcal{O}([k_b \mid k \orderedin \gamma'_\mathbf{k}]) \\
+  \label{eq:blacklistfilter} \Phi(\mathbf{k}) &\equiv \sq{
+    \begin{rcases}[0, 0, \dots] &\when k_b \in \psi'_\mathbf{p} \\ k &\otherwise \end{rcases}
+    \,\middle\mid\, k \orderedin \mathbf{k}
+  }
+\end{align}
 
-Note that the posterior active validator key set $\kappa'$ is defined such that keys belonging to the historical judgement punish set $\psi'_\mathbf{p}$ are replaced with a null key containing only zeroes. The origin of this punish set is explained in section \ref{sec:judgements}.
+Note that on epoch changes the posterior active validator key set $\kappa'$ is defined such that incoming keys belonging to the historical judgement punish set $\psi'_\mathbf{p}$ are replaced with a null key containing only zeroes. The origin of this punish set is explained in section \ref{sec:judgements}.
 
 
 
