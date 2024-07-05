@@ -199,5 +199,15 @@ https://graypaper.com/
   - [x] payload hash - easy
   - [x] gas prioritization - just from WP?
   - [x] Consider introducing a host-call for reading manifest data rather than always passing it in.
+### ELVES
+- [x] Don't immediately alter kappa mid-epoch as it affects off-chain judgements.
+- [x] Instead, apply the blacklist to guarantor sig verification directly.
+- [x] Include the core in the WR.
+- [x] Deposit the WR's signatures in with the judgement.
+- [x] Require at >= 1 negative judgements to be included with a positive verdict, and place signer in punish keys.
+- [x] Serialization of judgement stuff
+- [x] Should always be possible to submit more guarantee signatures of a known-bad report to place them in the punish set.
+  - [x] Only from lambda and kappa?
+- [x] Use posterior kappa for everything except judgements.
 
 % A set of independent, sequential, asynchronously interacting 32-octet state machines each of whose transitions lasts around 2 seconds of webassembly computation if a predetermined and fixed program and whose transition arguments are 5 MB. While well-suited to the verification of substrate blockchains, it is otherwise quite limiting.
