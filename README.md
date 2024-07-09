@@ -15,22 +15,6 @@ https://graypaper.com/
 - [ ] Remove any "TODOs" in text
 - [ ] Macrofy everything
 
-### Simple Networking
-- [ ] Specify required connectivity (QUIC, endpoints, ports, encryption keys, for vals and nodes)
-- [ ] Specify protocol-specific handshake
-- [ ] Specify basic message format, reply format and all variants
-  - [ ] How are long messages handled?
-- [ ] Messages for all nodes:
-  - [ ] Block propagation (all nodes)
-  - [ ] ImportDA query & response
-- [ ] Messages for validator nodes only:
-  - [ ] Assurance publication
-  - [ ] Guarantee publication
-  - [ ] Audit-announcement
-  - [ ] Judgement publication
-  - [ ] Ticket submission
-  - [ ] AuditDA query & response
-
 ### Final PVM
 - [ ] 64-bit PVM
 - [ ] Gas pricing
@@ -49,7 +33,8 @@ https://graypaper.com/
   - [x] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
   - [ ] Define binary Merkle proof-verification function exists sequence of values which contains our value and Merklised to some root.
 
-### Auditing
+### Guaranteeing & Auditing
+- [ ] Guarantees by validator indices
 - [ ] Specify announcement signatures
 - [ ] Specify how to build perspective on other validators with announcements
 

@@ -25,7 +25,7 @@ A work-report, of the set $\mathbb{W}$, is defined as a tuple of authorizer hash
 \begin{equation}\label{eq:workreport}
   \mathbb{W} \equiv \tuple{
     \isa{a}{\H}\ts
-    \isa{c}{\N_C}\ts
+    \isa{c}{\N_\mathsf{C}}\ts
     \isa{\mathbf{o}}{\Y}\ts
     \isa{x}{\mathbb{X}}\ts
     \isa{s}{\mathbb{S}}\ts
@@ -125,7 +125,7 @@ A work-report is said to become \emph{available} if and only if there are a clea
 
 This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are now available:
 \begin{align}
-  \forall c \in \N_C: \rho^\ddagger[c] \equiv \begin{cases}
+  \forall c \in \N_\mathsf{C}: \rho^\ddagger[c] \equiv \begin{cases}
     \none &\when\rho[c]_w \in \mathbf{W}\\
     \rho^\dagger[c] &\otherwise
   \end{cases}
@@ -143,29 +143,29 @@ This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ w
 
 \subsection{Guarantor Assignments}\label{sec:coresandvalidators}
 
-Every block, each core has three validators uniquely assigned to guarantee work reports for it. This is borne out with $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, since $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$. The Ed25519 keys of these validators are denoted by $\mathbf{G}$:
+Every block, each core has three validators uniquely assigned to guarantee work reports for it. This is borne out with $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, since $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\mathbf{G}_C$:
 \begin{equation}
-  \mathbf{G} \in \seq{\seq{\H_E}_{\nicefrac{\mathsf{V}}{\mathsf{C}}}}_{\mathsf{C}}
+  \mathbf{G} \in \seq{(\N_\mathsf{C}, \mathbb{H}_K)}_{\N_V}
 \end{equation}
 
 We determine the core to which any given validator is assigned through a shuffle using epochal entropy and a periodic rotation to help guard the security and liveness of the network. We use $\eta_2$ for the epochal entropy rather than $\eta_1$ to avoid the possibility of fork-magnification where uncertainty about chain state at the end of an epoch could give rise to two established forks before it naturally resolves.
 
 We define the permute function $P$, the rotation function $R$ and finally the guarantor assignments  $\mathbf{G}$ as follows:
 \begin{align}
-  P(e, t) &\equiv R\left(\mathcal{F}\left(\left[\ffrac{\mathsf{V}\cdot i}{\mathsf{C}} \,\middle\mid\, i \orderedin \N_\mathsf{V}\right], e\right), \ffrac{t \bmod \mathsf{E}}{\mathsf{R}}\right)\!\!\!\!\!\! \\[3pt]
   R(\mathbf{c}, n) &\equiv [(x + n) \bmod \mathsf{C} \mid x \orderedin \mathbf{c}]\\
-  \!\!\forall c \in \N_C : \mathbf{G}_c &\equiv [ \Phi(\kappa')_i \mid i \orderedin \N_\mathsf{V}, P(\eta_2', \tau')_i = c ]
+  P(e, t) &\equiv R\left(\mathcal{F}\left(\left[\ffrac{\mathsf{V}\cdot i}{\mathsf{C}} \,\middle\mid\, i \orderedin \N_\mathsf{V}\right], e\right), \ffrac{t \bmod \mathsf{E}}{\mathsf{R}}\right)\\
+  \mathbf{G} &\equiv (P(\eta_2', \tau'), \Phi(\kappa'))
 \end{align}
 
 We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as it would have been under the previous rotation:
 \begin{equation}
   \label{eq:priorassignments}
   \begin{aligned}
-    \forall c \in \N_C : \mathbf{G}_c^* &\equiv [ \Phi(\mathbf{k})_i \mid i \orderedin \N_\mathsf{V}, P(e, \tau' - \mathsf{R})_i = c ]\\
-    \where (e, \mathbf{k}) &= \begin{cases}
+    \using (e, \mathbf{k}) &= \begin{cases}
       (\eta'_2, \kappa') &\when \displaystyle\ffrac{\tau' - \mathsf{R}}{\mathsf{E}} = \ffrac{\tau'}{\mathsf{E}}\\
       (\eta'_3, \lambda') &\otherwise
-    \end{cases}
+    \end{cases} \\
+    \mathbf{G}^* &\equiv (P(e, \tau' - \mathsf{R}), \Phi(\mathbf{k}))
   \end{aligned}
 \end{equation}
 
@@ -184,36 +184,37 @@ We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as 
 
 \subsection{Work Report Guarantees}\label{sec:workreportguarantees}
 
-We begin by defining the guarantees extrinsic, $\mathbf{E}_G$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a core index, \emph{work-report}, a credential $a$ and its corresponding timeslot $t$. Formally:
+We begin by defining the guarantees extrinsic, $\mathbf{E}_G$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a core index, \emph{work-report}, a credential $a$ and its corresponding timeslot $t$. The core index of each guarantee must be unique and guarantees must be in ascending order of this. Formally:
 \begin{align}\label{eq:guaranteesextrinsic}
   \mathbf{E}_G &\in \seq{\tuple{
-    w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\mathbb{E}?}_3
+    w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\tuple{\N_V, \mathbb{E}}}_{2:3}
   }}_{:\mathsf{C}} \\
-  \forall g &\in \mathbf{E}_G : |\{x \in g_a : x \ne \none\}| \ge 2
+  \mathbf{E}_G &= \orderby{(g_w)_c}{g \in \mathbf{E}_G}
 \end{align}
 
-The credential is a sequence of three tuples of a signature. Credentials may only have one missing signature.
-
-The core index of each guarantee must be unique and in ascending order:
+The credential is a sequence of two or three tuples of a unique validator index and a signature. Credentials must be ordered by their validator index:
 \begin{align}
-  \mathbf{E}_G = \orderby{(g_w)_c}{g \in \mathbf{E}_G}
+  \forall g &\in \mathbf{E}_G : g_a = \orderuniqby{v}{\tup{v, s} \in g_a}
 \end{align}
 
-The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the core index and the work-report. The signing validators must be assigned to the core in question in either this block $\mathbf{G}$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\mathbf{G}^*$:
+The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the hash of the work-report. The signing validators must be assigned to the core in question in either this block $\mathbf{G}$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\mathbf{G}^*$:
 \begin{align}\label{eq:guarantorsig}
-  \begin{aligned}
-    \forall g &\in \mathbf{E}_G,\\
-    \forall i &\in \N_3
-  \end{aligned}
-    : &\left\{\,\begin{aligned}
-      &g_a[i] \in \sig{\mathbf{k}[(g_w)_c]_i}{\mathsf{X}_G\frown\mathcal{H}(\se(g_w))}\mathbf{?}\\
-      &\mathbf{R} \ni \mathbf{k}[(g_w)_c]_i \Leftrightarrow g_a[i] \ne \none\\
-      &\where \mathbf{k} = \begin{cases}
-        \mathbf{G} \!\!\!\!&\when \displaystyle \ffrac{\tau'}{\mathsf{R}} = \ffrac{g_t}{\mathsf{R}} \\
-        \mathbf{G}^* \!\!\!\!&\otherwise
+  &\begin{aligned}
+    &\begin{aligned}
+      \forall (w, t, a) &\in \mathbf{E}_G,\\
+      \forall (v, s) &\in a
+    \end{aligned}
+      : \left\{\,\begin{aligned}
+        &s \in \sig{(\mathbf{k}_v)_E}{\mathsf{X}_G\frown\mathcal{H}(\se(w))}\\
+        &\mathbf{c}_v = w_c\\
+      \end{aligned}\right.\\
+      &k \in \mathbf{R} \Leftrightarrow \exists (w, t, a) \in \mathbf{E}_G, \exists (v, s) \in a: k = (\mathbf{k}_v)_E\\
+      &\quad\where (\mathbf{c}, \mathbf{k}) = \begin{cases}
+        \mathbf{G} &\when \displaystyle \ffrac{\tau'}{\mathsf{R}} = \ffrac{t}{\mathsf{R}} \\
+        \mathbf{G}^* &\otherwise
       \end{cases}
-    \end{aligned}\right.\!\!\\
-    \mathsf{X}_G \equiv &\token{\$jam\_guarantee}
+  \end{aligned}\\
+  &\mathsf{X}_G \equiv \token{\$jam\_guarantee}
 \end{align}
 
 We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\mathbf{R}$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
