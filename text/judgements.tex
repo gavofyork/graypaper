@@ -1,43 +1,45 @@
-\section{Judgements}\label{sec:judgements}
+\section{Verdicts}\label{sec:verdicts}
 
-\Jam provides a means of recording a vote amongst all validators over the validity of a \emph{work-report}, a unit of work done within \Jam (for greater detail on the nature of a work-report, see section \ref{sec:reporting}). Such a vote is not expected to happen very often in practice (if at all), however it is an important security backstop, allowing a convenient manner of removing troublesome keys from the validator set at short notice where there is consensus over their malfunction. It also helps coordinate the ability of unfinalized chain-extensions to be reverted and replaced with an extension which does not contain some invalid work-report.
+\Jam provides a means of recording a vote amongst all validators over the validity of a \emph{work-report}, a unit of work done within \Jam (for greater detail on the nature of a work-report, see section \ref{sec:reporting}) as well as recording dissent with an established verdict on the validity of work-report. Such a vote is not expected to happen very often in practice (if at all), however it is an important security backstop, allowing a convenient manner of removing troublesome keys from the validator set at short notice where there is consensus over their malfunction. It also helps coordinate the ability of unfinalized chain-extensions to be reverted and replaced with an extension which does not contain some invalid work-report.
 
-Generally speaking, judgement data will come about as a result of a dispute between validators, an off-chain process described in section \ref{sec:judgements}. A judgement against a report will imply that the chain will have been reverted to immediately prior to the accumulation of that report. Placing the judgement on-chain has the effect of cancelling its accumulation. The specific strategy for chain selection is described fully in section \ref{sec:bestchain}.
+Judgement statements come about as a result of an auditor finding that a guaranteed work-report is invalid. Auditing and guaranteeing are off-chain processes described in sections \ref{sec:workpackagesandworkreports} and \ref{sec:auditing}. A judgement against a report will imply that the chain will have been reverted to some point prior to the accumulation of said report. Placing the judgement on-chain has the effect of cancelling its imminent accumulation. The specific strategy for chain selection is described fully in section \ref{sec:bestchain}.
 
-In the case that a sufficient number of validator nodes \emph{do} make some judgement in $\mathbf{E}_J$, then an indexed record of that judgement is placed on-chain (in $\psi$, the portion of state handling dispute judgements).
+Once a sufficient number of validator nodes each issue a judgement on some work-report then a \emph{verdict}, an item in $\mathbf{E}_V$, may be created. This has the effect of placing a permanent record of the event on-chain and allow any offending validators Ed25519 keys to be placed on-chain immediately or in forthcoming blocks, again for permanent record.
 
-Having a persistent on-chain record is helpful in a number of ways. Firstly it provides a very simple means of recognizing the circumstances under which action against a validator must be taken by any higher-level validator-selection logic. Should \Jam be used for a public network such as \emph{Polkadot}, this would imply the slashing of the offending validator's stake on the staking parachain.
+Having a persistent on-chain record of misbehavior is helpful in a number of ways. Firstly it provides a very simple means of recognizing the circumstances under which action against a validator must be taken by any higher-level validator-selection logic. Should \Jam be used for a public network such as \emph{Polkadot}, this would imply the slashing of the offending validator's stake on the staking parachain.
 
 As mentioned, recording reports found to have a high confidence of invalidity is important to ensure that said reports are not allowed to be resubmitted. Conversely, recording reports found to be valid ensures that additional disputes cannot be raised in the future of the chain.
 
-\subsection{State}
+\subsection{The Good, the Bad and the Wonky}
 
-The judgements state includes three items, an allow-set ($\psi_\mathbf{a}$), a ban-set ($\psi_\mathbf{b}$), a corrupt-set ($\psi_\mathbf{c}$) and a punish-set ($\psi_\mathbf{p}$). The allow-set, ban-set and corrupt-set contains the hashes of all work-reports which were respectively judged to be correct, uncertain or incorrect. The punish-set is a set of Ed25519 keys representing validators which were found to have misjudged a work-report.
+\newcommand*{\goodset}{\psi_\mathbf{a}}
+\newcommand*{\badset}{\psi_\mathbf{d}}
+\newcommand*{\wonkyset}{\psi_\mathbf{w}}
+\newcommand*{\punishset}{\psi_\mathbf{p}}
+
+The verdicts state includes four items, a good-set ($\goodset$), a bad-set ($\badset$) and a wonky-set ($\psi_\mathbf{w}$), as well as a punish-set ($\punishset$). The good-set, bad-set and wonky-set contains the hashes of all work-reports which were respectively judged to be correct, incorrect or that it appears impossible to judge. The punish-set is a set of Ed25519 keys representing validators which were found to have misjudged a work-report.
 \begin{equation}
-  \psi \equiv \tup{\psi_\mathbf{a}, \psi_\mathbf{b}, \psi_\mathbf{c}, \psi_\mathbf{p}}
+  \psi \equiv \tup{\goodset, \badset, \wonkyset, \punishset}
 \end{equation}
 
 \subsection{Extrinsic}
 
-The judgements extrinsic, $\mathbf{E}_J$ may contain one or more judgements $\mathbf{j}$ as a compilation of signatures coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\kappa$ or $\lambda$. Additionally, it may contain signatures proving the misbehavior of one or more validators, either by guaranteeing a work-report found to be invalid in the sequence of culprits $\mathbf{c}$, or by signing a judgement vote (\ie audit result) found to be contradiction to a work-report's validity in the sequence of faults $\mathbf{f}$. Formally:
+\newcommand*{\verdicts}{\mathbf{v}}
+
+The verdict extrinsic, $\mathbf{E}_V$ may contain one or more verdicts $\mathbf{v}$ as a compilation of signed judgements coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\kappa$ or $\lambda$. Additionally, it may contain proofs of the misbehavior of one or more validators, either by guaranteeing a work-report found to be invalid in the sequence of culprits $\mathbf{c}$, or by signing a judgement (\ie audit result) found to be contradiction to a work-report's validity in the sequence of faults $\mathbf{f}$. Formally:
 \begin{equation}
   \begin{aligned}
-    \mathbf{E}_J &\equiv (\mathbf{j}, \mathbf{c}, \mathbf{f}) \\
-    \where \mathbf{j} &\in \seq{\tup{\H, \ffrac{\tau}{\mathsf{E}} - \N_2, \seq{\tup{\{\top, \bot\}, \N_{\mathsf{V}}, \mathbb{E}}}_{\floor{\nicefrac{2}{3}\mathsf{V}} + 1}}}\\
-    \also \mathbf{c} &\in \seq{\H, \H_E, \mathbf{E}} \,,\quad
-    \mathbf{f} \in \seq{\H, \H_E, \mathbf{E}}
+    \mathbf{E}_V &\equiv (\mathbf{v}, \mathbf{c}, \mathbf{f}) \\
+    \where \mathbf{v} &\in \seq{\tup{\H, \ffrac{\tau}{\mathsf{E}} - \N_2, \seq{\tup{\{\top, \bot\}, \N_{\mathsf{V}}, \mathbb{E}}}_{\floor{\nicefrac{2}{3}\mathsf{V}} + 1}}}\\
+    \also \mathbf{c} &\in \seq{\H, \H_E, \mathbb{E}} \,,\quad
+    \mathbf{f} \in \seq{\H, \H_E, \mathbb{E}}
   \end{aligned}
-\end{equation}
-
-Each judgement in $\mathbf{j}$ implies at least two items with the same report hash in the sequence of culprits $\mathbf{c}$ and at least one item with the same report hash in the sequence of faults $\mathbf{f}$. Formally:
-\begin{equation}
-  \forall (r, \dots) \in \mathbf{j} : |\{(r, \dots) \in \mathbf{c}\}| \ge 2 \wedge \exists (r, \dots) \in \mathbf{f}
 \end{equation}
 
 All judgement signatures must be valid in terms of one of the two allowed validator key-sets, identified by the second term which must be either the epoch index of the prior state or one less. Formally:
 \begin{align}
   &\begin{aligned}
-    &\forall (r, a, \mathbf{v}) \in \mathbf{j}, \forall (v, i, s) \in \mathbf{v} : s \in \sig{\mathbf{k}[i]_e}{\mathsf{X}_v \concat r}\\
+    &\forall (r, a, \mathbf{v}) \in \mathbf{v}, \forall (v, i, s) \in \mathbf{v} : s \in \sig{\mathbf{k}[i]_e}{\mathsf{X}_v \concat r}\\
     &\quad\where \mathbf{k} = \begin{cases}
       \kappa &\when a = \displaystyle \ffrac{\tau}{\mathsf{E}}\\
       \lambda &\otherwise\\
@@ -62,25 +64,33 @@ Culprit and fault signatures must be similarly valid and reference work-reports 
   \end{aligned}
 \end{align}
 
-Judgements $\mathbf{j}$ must be ordered by report hash, culprit signatures $\mathbf{c}$ and $\mathbf{f}$ ordered by culprit identity. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
+Verdicts $\mathbf{v}$ must be ordered by report hash. Offender signatures $\mathbf{c}$ and $\mathbf{f}$ must be ordered by the validator's Ed25519 key. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
 \begin{align}
-  &\mathbf{j} = \orderuniqby{r}{\tup{r, a, \mathbf{v}} \in \mathbf{j}}\\
-  &\{r \mid \tup{r, a, \mathbf{v}} \in \mathbf{j}\} \disjoint \psi_\mathbf{a} \cup \psi_\mathbf{b}
+  &\mathbf{v} = \orderuniqby{r}{\tup{r, a, \mathbf{v}} \in \mathbf{v}}\\
+  &\mathbf{c} = \orderuniqby{k}{\tup{r, k, s} \in \mathbf{v}} \,,\quad
+  \mathbf{f} = \orderuniqby{k}{\tup{r, s, s} \in \mathbf{v}}\\
+  &\{r \mid \tup{r, a, \mathbf{v}} \in \mathbf{v}\} \disjoint \goodset \cup \badset \cup \wonkyset
 \end{align}
 
-The votes of all judgements must be ordered by validator index and there may be no duplicate such indices. Formally:
+The judgement statements of all verdicts must be ordered by validator index and there may be no duplicate such indices. Formally:
 \begin{equation}
-  \forall (r, a, \mathbf{v}) \in \mathbf{j} : \mathbf{v} = \orderuniqby{i}{\tup{v, i, s} \in \mathbf{v}}
+  \forall (r, a, \mathbf{v}) \in \mathbf{v} : \mathbf{v} = \orderuniqby{i}{\tup{v, i, s} \in \mathbf{v}}
 \end{equation}
 
-We define $\mathbf{J}$ as the sequence of judgements introduced in the block's extrinsic (and ordered respectively), with the sequence of signatures substituted with the sum of votes over the signatures. We require this total to be exactly zero, two-thirds-plus-one or one-third-plus-one of the validator set indicating, respectively, that we are confident of the report's validity, confident of its invalidity, or lacking confidence in either. This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{cryptoeprint:2024/961} discusses the security implications in depth). Formally:
+We define $\mathbf{J}$ as the sequence of verdicts introduced in the block's extrinsic (and ordered respectively), with the sequence of signatures substituted with the sum of votes over the signatures. We require this total to be exactly two-thirds-plus-one, zero or one-third of the validator set indicating, respectively, that we are confident of the report's validity (it's good), confident of its invalidity (it's bad), or lacking confidence in either (it's wonky). This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{cryptoeprint:2024/961} discusses the security implications in depth). Formally:
 \begin{align}
   \mathbf{J} &\in \seq{\tup{\H, \N}} \\
-  \mathbf{J} &= \sq{\tup{r, \sum_{\tup{v, i, s} \in \mathbf{v}}\!\!\!\! v}\ \middle\mid\ \tup{r, a, \mathbf{v}} \orderedin \mathbf{j}} \\
+  \mathbf{J} &= \sq{\tup{r, \sum_{\tup{v, i, s} \in \mathbf{v}}\!\!\!\! v}\ \middle\mid\ \tup{r, a, \mathbf{v}} \orderedin \mathbf{v}} \\
   &\forall \tup{r, t} \in \mathbf{J} : t \in \{0, \floor{\nicefrac{1}{3}\mathsf{V}}, \floor{\nicefrac{2}{3}\mathsf{V}} + 1 \}
 \end{align}
 
 Note that $t$ is the threshold of judgements that the report is \emph{valid}, calculated by summing Boolean values in their implicit equivalence to binary digits of the set $\N_2$.
+
+There are some constraints placed on the composition of this extrinsic: any verdict containing solely valid judgements implies the same report having at least one valid entry in the faults sequence $\mathbf{f}$. Any verdict containing solely invalid judgements implies the same report having at least two valid entries in the culprits sequence $\mathbf{c}$. Formally:
+\begin{align}
+  \forall (r, \floor{\nicefrac{2}{3}\mathsf{V}} + 1) \in \mathbf{J} &: \exists (r, \dots) \in \mathbf{f} \\
+  \forall (r, 0) \in \mathbf{J} &: |\{(r, \dots) \in \mathbf{c}\}| \ge 2
+\end{align}
 
 We clear any work-reports which we judged as uncertain or invalid from their core:
 \begin{equation}
@@ -90,12 +100,12 @@ We clear any work-reports which we judged as uncertain or invalid from their cor
   \end{cases}
 \end{equation}
 
-The allow-set, ban-set and corrupt-set assimilates the hashes of any reports we judge to be valid, uncertain or invalid. Finally, the punish-set accumulates the keys of any validators who have found to have misjudged a report. Formally:
+The good-set, wonky-set and bad-set assimilates the hashes of any reports we judge to be valid, uncertain or invalid. Finally, the punish-set accumulates the keys of any validators who have found to have misjudged a report. Formally:
 \begin{align}
-  \psi'_\mathbf{a} &\equiv \psi_\mathbf{a} \cup \{r \mid \tup{r, \floor{\nicefrac{2}{3}\mathsf{V}} + 1} \in \mathbf{J} \} \\
-  \psi'_\mathbf{b} &\equiv \psi_\mathbf{b} \cup \{r \mid \tup{r, \floor{\nicefrac{1}{3}\mathsf{V}}} \in \mathbf{J} \} \\
-  \psi'_\mathbf{c} &\equiv \psi_\mathbf{c} \cup \{r \mid \tup{r, 0} \in \mathbf{J} \} \\
-  \psi'_\mathbf{p} &\equiv \psi_\mathbf{p} \cup \{ k \mid (r, k, s) \in \mathbf{c} \cup \mathbf{f} \}
+  \psi'_\mathbf{a} &\equiv \goodset \cup \{r \mid \tup{r, \floor{\nicefrac{2}{3}\mathsf{V}} + 1} \in \mathbf{J} \} \\
+  \psi'_\mathbf{b} &\equiv \wonkyset \cup \{r \mid \tup{r, \floor{\nicefrac{1}{3}\mathsf{V}}} \in \mathbf{J} \} \\
+  \psi'_\mathbf{c} &\equiv \badset \cup \{r \mid \tup{r, 0} \in \mathbf{J} \} \\
+  \psi'_\mathbf{p} &\equiv \punishset \cup \{ k \mid (r, k, s) \in \mathbf{c} \cup \mathbf{f} \}
 \end{align}
 
 \subsection{Header}\label{sec:judgementmarker}
