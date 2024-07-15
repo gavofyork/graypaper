@@ -94,7 +94,7 @@ https://graypaper.com/
   - [x] Integrate into intro and definitions.
 - [x] All "where" and "let" lines are unnumbered/integrated
 - DA2
-  - [x] Update chunks/segments to new size of 12 bytes / 4KB in the availability sections, especially the work packages and work reports section and appendix H.
+  - [x] Update chunks/segments to new size of 12 bytes / 4KB in the availability sections, especially the work-packages and work-reports section and appendix H.
   - [x] `export` is in multiples of 4096 bytes.
   - [x] Manifest specifies WI (maximum) export count.
   - [x] `import` is provided as concatenated segments of 4096 bytes, as per manifest.
@@ -174,10 +174,10 @@ https://graypaper.com/
 - [x] Remove extrinsic segment root. Rename "* segment-root" to just "segment-root".
 - [x] Combine chunk-root for WP, concatenated extrinsics and concatenated imports.
 - [x] Imports are host-call
-- [x] Make work report field r bold.
+- [x] Make work-report field r bold.
 - [x] Segmented DA v2
   - [x] Underlying EC doesn't change, need to make clear segments are just a double-EC
-- [x] Make work report field r bold.
+- [x] Make work-report field r bold.
 - [x] Need to translate the basic work result into an "L"; do it in the appendix to ease layout
   - [x] service - easy
   - [x] service code hash - easy

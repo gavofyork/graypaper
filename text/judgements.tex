@@ -12,11 +12,6 @@ As mentioned, recording reports found to have a high confidence of invalidity is
 
 \subsection{The Good, the Bad and the Wonky}
 
-\newcommand*{\goodset}{\psi_\mathbf{a}}
-\newcommand*{\badset}{\psi_\mathbf{d}}
-\newcommand*{\wonkyset}{\psi_\mathbf{w}}
-\newcommand*{\punishset}{\psi_\mathbf{p}}
-
 The verdicts state includes four items, a good-set ($\goodset$), a bad-set ($\badset$) and a wonky-set ($\psi_\mathbf{w}$), as well as a punish-set ($\punishset$). The good-set, bad-set and wonky-set contains the hashes of all work-reports which were respectively judged to be correct, incorrect or that it appears impossible to judge. The punish-set is a set of Ed25519 keys representing validators which were found to have misjudged a work-report.
 \begin{equation}
   \psi \equiv \tup{\goodset, \badset, \wonkyset, \punishset}
@@ -68,7 +63,7 @@ Verdicts $\mathbf{v}$ must be ordered by report hash. Offender signatures $\math
 \begin{align}
   &\mathbf{v} = \orderuniqby{r}{\tup{r, a, \mathbf{v}} \in \mathbf{v}}\\
   &\mathbf{c} = \orderuniqby{k}{\tup{r, k, s} \in \mathbf{v}} \,,\quad
-  \mathbf{f} = \orderuniqby{k}{\tup{r, s, s} \in \mathbf{v}}\\
+  \mathbf{f} = \orderuniqby{k}{\tup{r, k, s} \in \mathbf{v}}\\
   &\{r \mid \tup{r, a, \mathbf{v}} \in \mathbf{v}\} \disjoint \goodset \cup \badset \cup \wonkyset
 \end{align}
 
@@ -100,12 +95,12 @@ We clear any work-reports which we judged as uncertain or invalid from their cor
   \end{cases}
 \end{equation}
 
-The good-set, wonky-set and bad-set assimilates the hashes of any reports we judge to be valid, uncertain or invalid. Finally, the punish-set accumulates the keys of any validators who have found to have misjudged a report. Formally:
+The good-set, bad-set and wonky-set assimilate the hashes of any reports we judge to be valid, invalid or uncertain. Finally, the punish-set accumulates the keys of any validators who have found to have misjudged a report. Formally:
 \begin{align}
-  \psi'_\mathbf{a} &\equiv \goodset \cup \{r \mid \tup{r, \floor{\nicefrac{2}{3}\mathsf{V}} + 1} \in \mathbf{J} \} \\
-  \psi'_\mathbf{b} &\equiv \wonkyset \cup \{r \mid \tup{r, \floor{\nicefrac{1}{3}\mathsf{V}}} \in \mathbf{J} \} \\
-  \psi'_\mathbf{c} &\equiv \badset \cup \{r \mid \tup{r, 0} \in \mathbf{J} \} \\
-  \psi'_\mathbf{p} &\equiv \punishset \cup \{ k \mid (r, k, s) \in \mathbf{c} \cup \mathbf{f} \}
+  \goodset' &\equiv \goodset \cup \{r \mid \tup{r, \floor{\nicefrac{2}{3}\mathsf{V}} + 1} \in \mathbf{J} \} \\
+  \badset' &\equiv \badset \cup \{r \mid \tup{r, 0} \in \mathbf{J} \} \\
+  \wonkyset' &\equiv \wonkyset \cup \{r \mid \tup{r, \floor{\nicefrac{1}{3}\mathsf{V}}} \in \mathbf{J} \} \\
+  \punishset' &\equiv \punishset \cup \{ k \mid (r, k, s) \in \mathbf{c} \cup \mathbf{f} \}
 \end{align}
 
 \subsection{Header}\label{sec:judgementmarker}
