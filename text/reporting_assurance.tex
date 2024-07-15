@@ -1,6 +1,6 @@
 \section{Reporting and Assurance}\label{sec:reporting}
 
-Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make its way into the service state singleton, $\delta$. A \emph{work-package}, which comprises several \emph{work items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work outputs} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After either enough assurances or a time-out (whichever happens first), the work-report is considered \emph{available}, and the work outputs transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}.
+Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make its way into the service state singleton, $\delta$. A \emph{work-package}, which comprises several \emph{work items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work outputs} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After enough assurances the work-report is considered \emph{available}, and the work outputs transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}. The report may also be \emph{timed-out}, implying it may be replaced by another report without accumulation.
 
 From the perspective of the work-report, therefore, the guarantee happens first and the assurance afterwards. However, from the perspective of a block's state-transition, the assurances are best processed first since each core may only have a single work-report pending its package becoming available at a time. Thus, we will first cover the transition arising from processing the availability assurances followed by the work-report guarantees. This synchroneity can be seen formally through the requirement of an intermediate state $\rho^\ddagger$, utilized later in equation \ref{eq:reportcoresareunusedortimedout}.
 
@@ -15,20 +15,20 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 \subsection{State}
 The state of the reporting and availability portion of the protocol is largely contained within $\rho$, which tracks the work-reports which have been reported but not yet accumulated and the identities of the guarantors who reported them and the time at which it was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
 \begin{equation}\label{eq:reportingstate}
-  \rho \in \seq{\tuple{\isa{w}{\mathbb{W}},\isa{g}{\seq{\H_E}_{2:3}},\isa{t}{\N_T}}\bm{?}}_\mathsf{C}
+  \rho \in \seq{\tuple{\isa{w}{\mathbb{W}},\isa{t}{\N_T}}\bm{?}}_\mathsf{C}
 \end{equation}
 
 As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\rho'$) are held under the same constraints as the prior value.
 
 \subsubsection{Work Report}\label{sec:workreport}
-A work-report, of the set $\mathbb{W}$, is defined as a tuple of authorizer hash $a$ and output $\mathbf{o}$, the refinement context $x$, the package specification $s$ and the results of the evaluation of each of the items in the package $\mathbf{r}$, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
+A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification $s$, the refinement context $x$, and the core-index (\ie on which the work is done) as well as the authorizer hash $a$ and output $\mathbf{o}$ and finally the results of the evaluation of each of the items in the package $\mathbf{r}$, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
 \begin{equation}\label{eq:workreport}
   \mathbb{W} \equiv \tuple{
-    \isa{a}{\H}\ts
-    \isa{c}{\N_C}\ts
-    \isa{\mathbf{o}}{\Y}\ts
-    \isa{x}{\mathbb{X}}\ts
     \isa{s}{\mathbb{S}}\ts
+    \isa{x}{\mathbb{X}}\ts
+    \isa{c}{\N_\mathsf{C}}\ts
+    \isa{a}{\H}\ts
+    \isa{\mathbf{o}}{\Y}\ts
     \isa{\mathbf{r}}{\seq{\mathbb{L}}_{1:\mathsf{I}}}
   }
 \end{equation}
@@ -68,7 +68,7 @@ The \emph{segment-root} ($e$) is the root of a constant-depth, left-biased and z
 \subsubsection{Work Result}
 We finally come to define a \emph{work result}, $\mathbb{L}$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
 \begin{align}\label{eq:workresult}
-  \mathbb{L} &\equiv (s \in \N_S, c \in \H, l \in \H, g \in \Z_G, o \in \Y \cup \mathbb{J})
+  \mathbb{L} &\equiv (s \in \N_S, c \in \H, l \in \H, g \in \N_G, o \in \Y \cup \mathbb{J})
 \end{align}
 
 Work results are a tuple comprising several items. Firstly $s$, the index of the service whose state is to be altered and thus whose refine code was already executed. We include the hash of the code of the service at the time of being reported $c$, which must be accurately predicted within the work-report according to equation \ref{eq:reportcodesarecorrect};
@@ -125,7 +125,7 @@ A work-report is said to become \emph{available} if and only if there are a clea
 
 This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are now available:
 \begin{align}
-  \forall c \in \N_C: \rho^\ddagger[c] \equiv \begin{cases}
+  \forall c \in \N_\mathsf{C}: \rho^\ddagger[c] \equiv \begin{cases}
     \none &\when\rho[c]_w \in \mathbf{W}\\
     \rho^\dagger[c] &\otherwise
   \end{cases}
@@ -143,29 +143,29 @@ This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ w
 
 \subsection{Guarantor Assignments}\label{sec:coresandvalidators}
 
-Every block, each core has three validators uniquely assigned to guarantee work reports for it. This is borne out with $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, since $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$. The Ed25519 keys of these validators are denoted by $\mathbf{G}$:
+Every block, each core has three validators uniquely assigned to guarantee work reports for it. This is borne out with $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, since $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\mathbf{G}$:
 \begin{equation}
-  \mathbf{G} \in \seq{\seq{\H_E}_{\nicefrac{\mathsf{V}}{\mathsf{C}}}}_{\mathsf{C}}
+  \mathbf{G} \in (\seq{\N_\mathsf{C}}_{\N_V}, \seq{\mathbb{H}_K}_{\N_V})
 \end{equation}
 
 We determine the core to which any given validator is assigned through a shuffle using epochal entropy and a periodic rotation to help guard the security and liveness of the network. We use $\eta_2$ for the epochal entropy rather than $\eta_1$ to avoid the possibility of fork-magnification where uncertainty about chain state at the end of an epoch could give rise to two established forks before it naturally resolves.
 
 We define the permute function $P$, the rotation function $R$ and finally the guarantor assignments  $\mathbf{G}$ as follows:
 \begin{align}
-  P(e, t) &\equiv R\left(\mathcal{F}\left(\left[\ffrac{\mathsf{V}\cdot i}{\mathsf{C}} \,\middle\mid\, i \orderedin \N_\mathsf{V}\right], e\right), \ffrac{t \bmod \mathsf{E}}{\mathsf{R}}\right)\!\!\!\!\!\! \\[3pt]
   R(\mathbf{c}, n) &\equiv [(x + n) \bmod \mathsf{C} \mid x \orderedin \mathbf{c}]\\
-  \!\!\forall c \in \N_C : \mathbf{G}_c &\equiv [ \Phi(\kappa')_i \mid i \orderedin \N_\mathsf{V}, P(\eta_2', \tau')_i = c ]
+  P(e, t) &\equiv R\left(\mathcal{F}\left(\left[\ffrac{\mathsf{V}\cdot i}{\mathsf{C}} \,\middle\mid\, i \orderedin \N_\mathsf{V}\right], e\right), \ffrac{t \bmod \mathsf{E}}{\mathsf{R}}\right)\\
+  \mathbf{G} &\equiv (P(\eta_2', \tau'), \Phi(\kappa'))
 \end{align}
 
 We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as it would have been under the previous rotation:
 \begin{equation}
   \label{eq:priorassignments}
   \begin{aligned}
-    \forall c \in \N_C : \mathbf{G}_c^* &\equiv [ \Phi(\mathbf{k})_i \mid i \orderedin \N_\mathsf{V}, P(e, \tau' - \mathsf{R})_i = c ]\\
-    \where (e, \mathbf{k}) &= \begin{cases}
+    \using (e, \mathbf{k}) &= \begin{cases}
       (\eta'_2, \kappa') &\when \displaystyle\ffrac{\tau' - \mathsf{R}}{\mathsf{E}} = \ffrac{\tau'}{\mathsf{E}}\\
       (\eta'_3, \lambda') &\otherwise
-    \end{cases}
+    \end{cases} \\
+    \mathbf{G}^* &\equiv (P(e, \tau' - \mathsf{R}), \Phi(\mathbf{k}))
   \end{aligned}
 \end{equation}
 
@@ -184,36 +184,37 @@ We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as 
 
 \subsection{Work Report Guarantees}\label{sec:workreportguarantees}
 
-We begin by defining the guarantees extrinsic, $\mathbf{E}_G$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a core index, \emph{work-report}, a credential $a$ and its corresponding timeslot $t$. Formally:
+We begin by defining the guarantees extrinsic, $\mathbf{E}_G$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a core index, \emph{work-report}, a credential $a$ and its corresponding timeslot $t$. The core index of each guarantee must be unique and guarantees must be in ascending order of this. Formally:
 \begin{align}\label{eq:guaranteesextrinsic}
   \mathbf{E}_G &\in \seq{\tuple{
-    w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\mathbb{E}?}_3
+    w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\tuple{\N_V, \mathbb{E}}}_{2:3}
   }}_{:\mathsf{C}} \\
-  \forall g &\in \mathbf{E}_G : |\{x \in g_a : x \ne \none\}| \ge 2
+  \mathbf{E}_G &= \orderby{(g_w)_c}{g \in \mathbf{E}_G}
 \end{align}
 
-The credential is a sequence of three tuples of a signature. Credentials may only have one missing signature.
-
-The core index of each guarantee must be unique and in ascending order:
+The credential is a sequence of two or three tuples of a unique validator index and a signature. Credentials must be ordered by their validator index:
 \begin{align}
-  \mathbf{E}_G = \orderby{(g_w)_c}{g \in \mathbf{E}_G}
+  \forall g &\in \mathbf{E}_G : g_a = \orderuniqby{v}{\tup{v, s} \in g_a}
 \end{align}
 
-The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the core index and the work-report. The signing validators must be assigned to the core in question in either this block $\mathbf{G}$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\mathbf{G}^*$:
+The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the hash of the work-report. The signing validators must be assigned to the core in question in either this block $\mathbf{G}$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\mathbf{G}^*$:
 \begin{align}\label{eq:guarantorsig}
-  \begin{aligned}
-    \forall g &\in \mathbf{E}_G,\\
-    \forall i &\in \N_3
-  \end{aligned}
-    : &\left\{\,\begin{aligned}
-      &g_a[i] \in \sig{\mathbf{k}[(g_w)_c]_i}{\mathsf{X}_G\frown\mathcal{H}(\se(g_w))}\mathbf{?}\\
-      &\mathbf{R} \ni \mathbf{k}[(g_w)_c]_i \Leftrightarrow g_a[i] \ne \none\\
-      &\where \mathbf{k} = \begin{cases}
-        \mathbf{G} \!\!\!\!&\when \displaystyle \ffrac{\tau'}{\mathsf{R}} = \ffrac{g_t}{\mathsf{R}} \\
-        \mathbf{G}^* \!\!\!\!&\otherwise
+  &\begin{aligned}
+    &\begin{aligned}
+      \forall (w, t, a) &\in \mathbf{E}_G,\\
+      \forall (v, s) &\in a
+    \end{aligned}
+      : \left\{\,\begin{aligned}
+        &s \in \sig{(\mathbf{k}_v)_E}{\mathsf{X}_G\frown\mathcal{H}(\se(w))}\\
+        &\mathbf{c}_v = w_c\\
+      \end{aligned}\right.\\
+      &k \in \mathbf{R} \Leftrightarrow \exists (w, t, a) \in \mathbf{E}_G, \exists (v, s) \in a: k = (\mathbf{k}_v)_E\\
+      &\quad\where (\mathbf{c}, \mathbf{k}) = \begin{cases}
+        \mathbf{G} &\when \displaystyle \ffrac{\tau'}{\mathsf{R}} = \ffrac{t}{\mathsf{R}} \\
+        \mathbf{G}^* &\otherwise
       \end{cases}
-    \end{aligned}\right.\!\!\\
-    \mathsf{X}_G \equiv &\token{\$jam\_guarantee}
+  \end{aligned}\\
+  &\mathsf{X}_G \equiv \token{\$jam\_guarantee}
 \end{align}
 
 We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\mathbf{R}$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
@@ -233,7 +234,7 @@ No reports may be placed on cores with a report pending availability on it unles
 
 We specify the maximum total accumulation gas requirement a work-report may imply as $\mathsf{G}_A$, and we require the sum of all services' minimum gas requirements to be no greater than this:
 \begin{align}
-  \forall w \in \mathbf{w}: \sum_{s \in (w_r)_s}{\delta[s]_m}\ \le\ \mathsf{G}_A
+  \forall w \in \mathbf{w}: \sum_{s \in (w_r)_s}{\delta[s]_g}\ \le\ \mathsf{G}_A
 \end{align}
 
 
@@ -303,13 +304,10 @@ We require that all work results within the extrinsic predicted the correct code
 
 We define $\rho'$ as being equivalent to $\rho^\ddagger$, except where the extrinsic replaced an entry. In the case an entry is replaced, the new value includes the present time $\tau'$ allowing for the value may be replaced without respect to its availability once sufficient time has elapsed (see equation \ref{eq:reportcoresareunusedortimedout}).
 \begin{equation}
-\begin{aligned}
-    \forall c \in \N_\mathsf{C} : \rho'[c] &\equiv \begin{cases}
-      \tup{w\ts\is{g}{G(a)}\ts\is{t}{\tau'}}\!\!\!\!\! &\when \exists \tup{c, w, a} \in \mathbf{E}_G \\
+    \forall c \in \N_\mathsf{C} : \rho'[c] \equiv \begin{cases}
+      \tup{w\ts\is{t}{\tau'}} &\when \exists \tup{c, w, a} \in \mathbf{E}_G \\
       \rho^\ddagger[c] &\otherwise
-    \end{cases}\!\!\!\!\!\!\!\!\! \\
-    \where G(a) &\equiv \{\kappa[v]_e \mid (s, v) \in a \}
-\end{aligned}
+    \end{cases}
 \end{equation}
 
 This concludes the section on reporting and assurance. We now have a complete definition of $\rho'$ together with $\mathbf{W}$ to be utilized in section \ref{sec:accumulation}, describing the portion of the state transition happening once a work-report is guaranteed and made available.
