@@ -42,6 +42,7 @@ We also define the variable-size prefix 29-bit natural serialization function $\
   \se_{4*}\colon\left\{\begin{aligned}
     \N_{2^{29}} &\to \Y_{1:4} \\
     x &\mapsto \begin{cases}
+      [0] &\when x = 0 \\
       \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \se_l(x \bmod 2^{8l}) &\when \exists l \in \N_3 : 2^{7l} \le x < 2^{7(l+1)} \\
       \left[2^8-2^5 + \ffrac{x}{2^{24}}\right] \concat \se_3(x \bmod 2^{24}) &\when 2^{21} \le x < 2^{29} \\
     \end{cases}
@@ -53,8 +54,9 @@ We define general natural number serialization, able to encode naturals of up to
   \se\colon\left\{\begin{aligned}
     \N_{2^{64}} &\to \Y_{1:9} \\
     x &\mapsto \begin{cases}
+      [0] &\when x = 0 \\
       \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \se_l(x \bmod 2^{8l}) &\when \exists l \in \N_8 : 2^{7l} \le x < 2^{7(l+1)} \\
-      [2^8-1] \concat \se_8(x) &\when x < 2^{64} \\
+      [2^8-1] \concat \se_8(x) &\otherwhen x < 2^{64} \\
     \end{cases}
   \end{aligned}\right.
 \end{equation}
