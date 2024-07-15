@@ -167,7 +167,7 @@ These terms are all contextualized to a single block. They may be superscripted 
   \item[$\mathbf{G^*}$] The mapping from cores to guarantor keys for the previous rotation. See section \ref{sec:coresandvalidators}.
   \item[$\mathbf{H}$] The block header. See equation \ref{eq:header}.
   \item[$\mathbf{Q}$] The selection of ready work-reports which a validator determined they must audit. See equation \ref{eq:auditselection}.
-  \item[$\mathbf{R}$] The set of Ed25519 guarantor keys who made a work report. See equation \ref{eq:guarantorsig}.
+  \item[$\mathbf{R}$] The set of Ed25519 guarantor keys who made a work-report. See equation \ref{eq:guarantorsig}.
   \item[$\mathbf{S}$] The set of indices of services which have been accumulated (``progressed'') in the block. See equation \ref{eq:servicestoaccumulate}.
   \item[$\mathbf{T}$] The ticketed condition, true if the block was sealed with a ticket signature rather than a fallback. See equations \ref{eq:ticketconditiontrue} and \ref{eq:ticketconditionfalse}.
   \item[$\mathbf{U}$] The audit condition, equal to $\top$ once the block is audited. See section \ref{sec:auditing}.
@@ -210,11 +210,12 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\sigma$] The $\sigma$verall state of the system. See equations \ref{eq:statetransition}, \ref{eq:statecomposition}. %	σ
   \item[$\tau$] The most recent block's $\tau$imeslot. %	τ
   \item[$\varphi$] The authorization queue. %	ϕ
-  \item[$\psi$] Past judgements on work reports and validators. %	ψ
+  \item[$\psi$] Past judgements on work-reports and validators. %	ψ
   \begin{description}
-    \item[$\psi_a$] Work reports judged to be correct.
-    \item[$\psi_b$] Work reports judged to be incorrect.
-    \item[$\psi_p$] Guarantors of invalid work reports.
+    \item[$\badset$] Work-reports judged to be incorrect.
+    \item[$\goodset$] Work-reports judged to be correct.
+    \item[$\wonkyset$] Work-reports whose validity is judged to be unknowable.
+    \item[$\punishset$] Validators who made a judgement found to be incorrect.
   \end{description}
   \item[$\chi$] The privileged service indices. %	χ
   \begin{description}
