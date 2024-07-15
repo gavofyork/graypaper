@@ -61,9 +61,9 @@ We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tu
   }
 \end{align}
 
-The \emph{erasure-root} ($u$) is the root of a binary Merkle tree which functions as a commitment to all data required for the auditing of the report and for use by later work packages should they need to retrieve any data yielded. It is thus used by assurers to verify the correctness of data they have been sent by guarantors, and it is later verified as correct by auditors. It is discussed fully in section \ref{sec:workpackagesandworkreports}.
+The \emph{erasure-root} ($u$) is the root of a binary Merkle tree which functions as a commitment to all data required for the auditing of the report and for use by later work-packages should they need to retrieve any data yielded. It is thus used by assurers to verify the correctness of data they have been sent by guarantors, and it is later verified as correct by auditors. It is discussed fully in section \ref{sec:workpackagesandworkreports}.
 
-The \emph{segment-root} ($e$) is the root of a constant-depth, left-biased and zero-hash-padded binary Merkle tree committing to the hashes of each of the exported segments of each work-item. These are used by guarantors to verify the correctness of any reconstructed segments they are called upon to import for evaluation of some later work package. It is also discussed in section \ref{sec:workpackagesandworkreports}.
+The \emph{segment-root} ($e$) is the root of a constant-depth, left-biased and zero-hash-padded binary Merkle tree committing to the hashes of each of the exported segments of each work-item. These are used by guarantors to verify the correctness of any reconstructed segments they are called upon to import for evaluation of some later work-package. It is also discussed in section \ref{sec:workpackagesandworkreports}.
 
 \subsubsection{Work Result}
 We finally come to define a \emph{work result}, $\mathbb{L}$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
@@ -143,7 +143,7 @@ This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ w
 
 \subsection{Guarantor Assignments}\label{sec:coresandvalidators}
 
-Every block, each core has three validators uniquely assigned to guarantee work reports for it. This is borne out with $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, since $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\mathbf{G}$:
+Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, since $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\mathbf{G}$:
 \begin{equation}
   \mathbf{G} \in (\seq{\N_\mathsf{C}}_{\N_V}, \seq{\mathbb{H}_K}_{\N_V})
 \end{equation}

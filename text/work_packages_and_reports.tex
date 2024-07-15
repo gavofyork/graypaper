@@ -30,13 +30,13 @@ Our basic erasure-coding segment size is $\mathsf{W}_C = 684$ octets, derived fr
 
 Work-packages are generally small to ensure guarantors need not invest a lot of bandwidth in order to discover whether they can get paid for their evaluation into a work-report. Rather than having much data inline, they instead \emph{reference} data through commitments. The simplest commitments are extrinsic data.
 
-Extrinsic data are blobs which are being introduced into the system alongside the work-package itself generally by the work package builder. They are exposed to the Refine logic as an argument. We commit to them through including each of their hashes in the work-package.
+Extrinsic data are blobs which are being introduced into the system alongside the work-package itself generally by the work-package builder. They are exposed to the Refine logic as an argument. We commit to them through including each of their hashes in the work-package.
 
 Work-packages have two other types of external data associated with them: A cryptographic commitment to each \emph{imported} segment and finally the number of segments which are \emph{exported}.
 
 \subsubsection{Segments, Imports and Exports}
 
-The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_S\mathsf{W}_C = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term \emph{Imports DA} during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work package can be efficiently placed in the DA system.
+The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_S\mathsf{W}_C = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term \emph{Imports DA} during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the DA system.
 \begin{equation}\label{eq:segment}
   \G \equiv \Y_{\mathsf{W}_S\mathsf{W}_C}
 \end{equation}
@@ -53,7 +53,7 @@ It is the task of a guarantor to reconstitute all imported segments through fetc
 
 Justification data must be available to any node over the course of its segment's potential requirement. At around 350 bytes to justify a single segment, justification data is too voluminous to have all validators store all data. We therefore use the same overall availability framework for hosting justification metadata as the data itself.
 
-The guarantor is able to use this proof to justify to themselves that they are not wasting their time on incorrect behavior. We do not force auditors to go through the same process. Instead, guarantors build an \emph{Auditable Work Package}, and place this in the Audit DA system. This is the original work package, its extrinsic data, its imported data and a concise proof of correctness of that imported data. This tactic routinely duplicates data between the Imports DA and the Audits DA, however it is acceptable in order to reduce the bandwidth cost for auditors who must justify the correctness as cheaply as possible as auditing happens on average 30 times for each work-package whereas guaranteeing happens only twice or thrice.
+The guarantor is able to use this proof to justify to themselves that they are not wasting their time on incorrect behavior. We do not force auditors to go through the same process. Instead, guarantors build an \emph{Auditable Work Package}, and place this in the Audit DA system. This is the original work-package, its extrinsic data, its imported data and a concise proof of correctness of that imported data. This tactic routinely duplicates data between the Imports DA and the Audits DA, however it is acceptable in order to reduce the bandwidth cost for auditors who must justify the correctness as cheaply as possible as auditing happens on average 30 times for each work-package whereas guaranteeing happens only twice or thrice.
 
 \subsection{Packages and Items}\label{sec:packagesanditems}
 
@@ -156,7 +156,7 @@ where:
 
 The definition here is staged over several functions for ease of reading. The first term to be introduced, $\mathbf{o}$ is the authorization output, the result of the Is-Authorized function. The second term, $(\mathbf{r}, \overline{\mathbf{e}})$ is the sequence of results for each of the work-items in the work-package together with all segments exported by each work-item.
 
-The third and forth definition are helper terms for this, with the third $\countupexports$ performing an ordered accumulation (\ie counter) in order to ensure that the Refine function has access to the total number of exports made from the work package up to the current work-item. The fourth term, $\marshallrefine$, is essentially just a call to the Refine function, marshalling the relevant data from the work-package and work-item.
+The third and forth definition are helper terms for this, with the third $\countupexports$ performing an ordered accumulation (\ie counter) in order to ensure that the Refine function has access to the total number of exports made from the work-package up to the current work-item. The fourth term, $\marshallrefine$, is essentially just a call to the Refine function, marshalling the relevant data from the work-package and work-item.
 
 
 The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $i$:
@@ -177,7 +177,7 @@ We may then define $s$ as the data availability specification of the package usi
   \end{aligned}
 \end{equation}
 
-Note that while $\importsegmentdata$ and $\mathbf{j}$ are both formulated using the term $\mathbf{s}$ (all segments exported by all work packages exporting a segment to be imported) such a vast amount of data is not generally needed as the justification can be derived through a single paged-proof. This reduces the worst case data fetching for a guarantor to two segments for every one to be imported. In the case that contiguously exported segments are imported (which we might assume is a fairly common situation), then a single proof-page should be sufficient to justify many imported segments.
+Note that while $\importsegmentdata$ and $\mathbf{j}$ are both formulated using the term $\mathbf{s}$ (all segments exported by all work-packages exporting a segment to be imported) such a vast amount of data is not generally needed as the justification can be derived through a single paged-proof. This reduces the worst case data fetching for a guarantor to two segments for every one to be imported. In the case that contiguously exported segments are imported (which we might assume is a fairly common situation), then a single proof-page should be sufficient to justify many imported segments.
 
 The Is-Authorized logic it references is first executed to ensure that the work-package warrants the needed core-time. Next, the guarantor should ensure that all segment-tree roots which form imported segment commitments are known and have not expired. Finally, the guarantor should ensure that they can fetch all preimage data referenced as the commitments of extrinsic segments.
 
