@@ -123,13 +123,13 @@ A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, 
 \begin{align}
   \se(\mathbf{B}) &= \se\,\left\lparen\;\begin{aligned}
     &\mathbf{H},\ 
-    \var{\mathbf{E}_T},\ 
+    \var{\xttickets},\ 
     \var{[(r, a, [(v, \se_2(i), s) \mid (v, i, s) \orderedin \mathbf{v}]) \mid (r, a, \mathbf{v}) \orderedin \mathbf{j}]}, \var{\mathbf{c}}, \var{\mathbf{f}},\ \\
-    &\var{[\tup{s, \var{p}} \mid \tup{s, p} \orderedin \mathbf{E}_P]},\ 
-    \var{\mathbf{E}_A},\ 
-    \var{[\tup{c, w, \var{a}} \mid \tup{c, w, a} \orderedin \mathbf{E}_G]}
+    &\var{[\tup{s, \var{p}} \mid \tup{s, p} \orderedin \xtpreimages]},\ 
+    \var{\xtassurances},\ 
+    \var{[\tup{c, w, \var{a}} \mid \tup{c, w, a} \orderedin \xtguarantees]}
   \end{aligned}\;\right\rparen \\
-  \nonumber &\quad \where \mathbf{E}_V \equiv (\mathbf{j}, \mathbf{c}, \mathbf{f}) \\
+  \nonumber &\quad \where \xtdisputes \equiv (\mathbf{j}, \mathbf{c}, \mathbf{f}) \\
   \se(\mathbf{H}) &= \se_U(\mathbf{H})\concat\se(\mathbf{H}_s) \\
   \se_U(\mathbf{H}) &= \se(\mathbf{H}_p,\mathbf{H}_r,\mathbf{H}_x)\concat\se_4(\mathbf{H}_t)\concat\se(\maybe{\mathbf{H}_e},\maybe{\mathbf{H}_w},\var{\mathbf{H}_j},\se_2(\mathbf{H}_k),\mathbf{H}_v)\\
   \se(x \in \mathbb{X}) &\equiv \se(x_a, x_s, x_b, x_l)\concat\se_4(x_t)\concat\se(\maybe{x_p})\\
@@ -147,4 +147,4 @@ A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, 
   \end{cases}
 \end{align}
 
-Note the use of $O$ above to succinctly encode the result of a work item and the slight transformations of $\mathbf{E}_G$ and $\mathbf{E}_P$ to take account of the fact their inner tuples contain variable-length sequence terms $a$ and $p$ which need length discriminators.
+Note the use of $O$ above to succinctly encode the result of a work item and the slight transformations of $\xtguarantees$ and $\xtpreimages$ to take account of the fact their inner tuples contain variable-length sequence terms $a$ and $p$ which need length discriminators.

@@ -10,9 +10,9 @@ The proposition of accumulation is in fact quite simple: we merely wish to execu
 
 Prior to accumulation, we must first integrate all preimages provided in the lookup extrinsic. The lookup extrinsic is a sequence of pairs of service indices and data. These pairs must be ordered and without duplicates (equation \ref{eq:preimagesareordered} requires this). The data must have been solicited by a service but not yet be provided. Formally:
 \begin{align}
-  \mathbf{E}_P &\in \lseq \ltuple\N_S\ts\Y\rtuple \rseq \\
-  \label{eq:preimagesareordered}\mathbf{E}_P &= \orderuniqby{i}{i \in \mathbf{E}_P} \\
-  \forall \tup{s\ts\mathbf{p}} \in \mathbf{E}_P &: \left\{\ 
+  \xtpreimages &\in \lseq \ltuple\N_S\ts\Y\rtuple \rseq \\
+  \label{eq:preimagesareordered}\xtpreimages &= \orderuniqby{i}{i \in \xtpreimages} \\
+  \forall \tup{s\ts\mathbf{p}} \in \xtpreimages &: \left\{\ 
     \begin{aligned}
       &\keys{\delta[s]_\mathbf{p}}\ \not\ni\ \mathcal{H}(\mathbf{p})\ ,\\
       &\delta[s]_\mathbf{l}[\tup{\mathcal{H}(\mathbf{p}), |\mathbf{p}|}]\ =\ []
@@ -22,7 +22,7 @@ Prior to accumulation, we must first integrate all preimages provided in the loo
 
 We define $\delta^\dagger$ as the state after the integration of the preimages:
 \begin{align}
-    \delta^\dagger = \delta \text{ ex. } \forall \tup{s\ts\mathbf{p}} \in \mathbf{E}_P : \left\{\,\begin{aligned}
+    \delta^\dagger = \delta \text{ ex. } \forall \tup{s\ts\mathbf{p}} \in \xtpreimages : \left\{\,\begin{aligned}
       \quad\delta^\dagger[s]_\mathbf{p}[\mathcal{H}(\mathbf{p})] &= \mathbf{p} \\
       \delta^\dagger[s]_\mathbf{l}[\mathcal{H}(\mathbf{p}), |\mathbf{p}|] &= [\tau']
     \end{aligned}\right.\!\!

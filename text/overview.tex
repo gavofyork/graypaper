@@ -14,17 +14,17 @@ Broadly speaking, \Jam (and indeed blockchains in general) may be defined simply
 To aid comprehension and definition of our protocol, we partition as many of our terms as possible into their functional components. We begin with the block $B$ which may be restated as the header $H$ and some input data external to the system and thus said to be \emph{extrinsic}, $\mathbf{E}$:
 \begin{align}
   \label{eq:block}\mathbf{B} &\equiv (\mathbf{H}, \mathbf{E}) \\
-  \label{eq:extrinsic}\mathbf{E} &\equiv (\mathbf{E}_T, \mathbf{E}_V, \mathbf{E}_P, \mathbf{E}_A, \mathbf{E}_G)
+  \label{eq:extrinsic}\mathbf{E} &\equiv (\xttickets, \xtdisputes, \xtpreimages, \xtassurances, \xtguarantees)
 \end{align}
 
 The header is a collection of metadata primarily concerned with cryptographic references to the blockchain ancestors and the operands and result of the present transition. As an immutable known \emph{a priori}, it is assumed to be available throughout the functional components of block transition. The extrinsic data is split into its several portions:
 
 \begin{description}
-  \item[tickets] Tickets, used for the mechanism which manages the selection of validators for the permissioning of block authoring. This component is denoted $\mathbf{E}_T$.
-  \item[judgements] Votes, by validators, on dispute(s) arising between them presently taking place. This is denoted $\mathbf{E}_V$.
-  \item[preimages] Static data which is presently being requested to be available for workloads to be able to fetch on demand. This is denoted $\mathbf{E}_P$.
-  \item[availability] Assurances by each validator concerning which of the input data of workloads they have correctly received and are storing locally. This is denoted $\mathbf{E}_A$.
-  \item[reports] Reports of newly completed workloads whose accuracy is guaranteed by specific validators. This is denoted $\mathbf{E}_G$.
+  \item[tickets] Tickets, used for the mechanism which manages the selection of validators for the permissioning of block authoring. This component is denoted $\xttickets$.
+  \item[judgements] Votes, by validators, on dispute(s) arising between them presently taking place. This is denoted $\xtdisputes$.
+  \item[preimages] Static data which is presently being requested to be available for workloads to be able to fetch on demand. This is denoted $\xtpreimages$.
+  \item[availability] Assurances by each validator concerning which of the input data of workloads they have correctly received and are storing locally. This is denoted $\xtassurances$.
+  \item[reports] Reports of newly completed workloads whose accuracy is guaranteed by specific validators. This is denoted $\xtguarantees$.
 \end{description}
 
 \subsection{The State}
@@ -48,25 +48,25 @@ Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulatin
 \begin{align}\label{eq:transitionfunctioncomposition}
   \tau' &\prec \mathbf{H} \\
   \beta^\dagger &\prec (\mathbf{H}, \beta) \label{eq:betadagger} \\
-  \beta' &\prec (\mathbf{H}, \mathbf{E}_G, \beta^\dagger, \mathbf{C}) \\
-  \gamma' &\prec (\mathbf{H}, \tau, \mathbf{E}_T, \gamma, \iota, \eta', \kappa') \\
+  \beta' &\prec (\mathbf{H}, \xtguarantees, \beta^\dagger, \mathbf{C}) \\
+  \gamma' &\prec (\mathbf{H}, \tau, \xttickets, \gamma, \iota, \eta', \kappa') \\
   \eta' &\prec (\mathbf{H}, \tau, \eta) \\
   \kappa' &\prec (\mathbf{H}, \tau, \kappa, \gamma, \psi') \\
   \lambda' &\prec (\mathbf{H}, \tau, \lambda, \kappa) \\
-  \psi' &\prec (\mathbf{E}_V, \psi) \\
-  \delta^\dagger &\prec (\mathbf{E}_P, \delta, \tau') \label{eq:deltadagger} \\
-  \rho^\dagger &\prec (\mathbf{E}_V, \rho) \label{eq:rhodagger} \\
-  \rho^\ddagger &\prec (\mathbf{E}_A, \rho^\dagger) \label{eq:rhoddagger} \\
-  \rho' &\prec (\mathbf{E}_G, \rho^\ddagger, \kappa, \tau') \\
+  \psi' &\prec (\xtdisputes, \psi) \\
+  \delta^\dagger &\prec (\xtpreimages, \delta, \tau') \label{eq:deltadagger} \\
+  \rho^\dagger &\prec (\xtdisputes, \rho) \label{eq:rhodagger} \\
+  \rho^\ddagger &\prec (\xtassurances, \rho^\dagger) \label{eq:rhoddagger} \\
+  \rho' &\prec (\xtguarantees, \rho^\ddagger, \kappa, \tau') \\
   \begin{rcases*}
     \delta' \\
     \chi' \\
     \iota' \\
     \varphi' \\
     \mathbf{C}
-  \end{rcases*} &\prec (\mathbf{E}_A, \rho', \delta^\dagger, \chi, \iota, \varphi) \\
-  \alpha' &\prec (\mathbf{E}_G, \varphi', \alpha) \\
-  \pi' &\prec (\mathbf{E}_G, \mathbf{E}_P, \mathbf{E}_A, \mathbf{E}_T, \tau, \tau', \pi)
+  \end{rcases*} &\prec (\xtassurances, \rho', \delta^\dagger, \chi, \iota, \varphi) \\
+  \alpha' &\prec (\xtguarantees, \varphi', \alpha) \\
+  \pi' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \tau, \tau', \pi)
 \end{align}
 
 The only synchronous entanglements are visible through the intermediate components superscripted with a dagger and defined in equations \ref{eq:betadagger}, \ref{eq:deltadagger} and \ref{eq:rhoddagger}. The latter two mark a merge and join in the dependency graph and, concretely, imply that the preimage lookup extrinsic must be folded into state before the availability extrinsic may be fully processed and accumulation of work happen.
@@ -87,7 +87,7 @@ It is generally possible for two blocks to be valid and yet reference the same p
 
 These goals are achieved through a combination of two consensus mechanisms: \emph{Safrole}, which governs the (not-necessarily forkless) extension of the blockchain; and \emph{Grandpa}, which governs the finalization of some extension into canonical history. Thus, the former delivers point \ref{enum:wh:minimize}, the latter delivers point \ref{enum:wh:finalize} and both are important for delivering point \ref{enum:wh:resolve}. We describe these portions of the protocol in detail in sections \ref{sec:blockproduction} and \ref{sec:grandpa} respectively.
 
-While Safrole limits forks to a large extent (through cryptography, economics and common-time, below), there may be times when we wish to intentionally fork since we have come to know that a particular chain extension must be reverted. In regular operation this should never happen, however we cannot discount the possibility of malicious or malfunctioning nodes. We therefore define such an extension as any which contains a block in which data is reported which \emph{any other} block's state has tagged as invalid (see section \ref{sec:verdicts} on how this is done). We further require that Grandpa not finalize any extension which contains such a block. See section \ref{sec:bestchain} for more information here.
+While Safrole limits forks to a large extent (through cryptography, economics and common-time, below), there may be times when we wish to intentionally fork since we have come to know that a particular chain extension must be reverted. In regular operation this should never happen, however we cannot discount the possibility of malicious or malfunctioning nodes. We therefore define such an extension as any which contains a block in which data is reported which \emph{any other} block's state has tagged as invalid (see section \ref{sec:disputes} on how this is done). We further require that Grandpa not finalize any extension which contains such a block. See section \ref{sec:bestchain} for more information here.
 
 \subsection{Time}\label{sec:commonera}
 

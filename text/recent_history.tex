@@ -17,7 +17,7 @@ The final state transition is then:
   \begin{aligned}
     \beta' &\equiv {\overleftarrow{\beta^\dagger \doubleplus \ltup\;
     \begin{aligned}
-      &\is{\mathbf{p}}{[((g_w)_s)_p \mid g \orderedin \mathbf{E}_G]}\;\ts\\
+      &\is{\mathbf{p}}{[((g_w)_s)_p \mid g \orderedin \xtguarantees]}\;\ts\\
       &\is{h}{\mathcal{H}(\mathbf{H})}\;\ts\ \ \mathbf{b}\;\ts\ \ \is{s}{\H^0}
     \end{aligned}
     \;\rtup}}^\mathsf{H} \\
@@ -26,6 +26,6 @@ The final state transition is then:
   \end{aligned}
 \end{equation}
 
-Thus, we extend the recent history with the new block's header hash, its accumulation-result Merkle tree root and the set of work-reports made into it (for which we use the guarantees extrinsic, $\mathbf{E}_G$). Note that the accumulation-result tree root $r$ is derived from $\mathbf{C}$ (defined in section \ref{sec:accumulation}) using the basic binary Merklization function $\mathcal{M}_B$ (defined in appendix \ref{sec:merklization}) and appending it using the \textsc{mmr} append function $\mathcal{A}$ (defined in appendix \ref{sec:mmr}) to form a Merkle mountain range.
+Thus, we extend the recent history with the new block's header hash, its accumulation-result Merkle tree root and the set of work-reports made into it (for which we use the guarantees extrinsic, $\xtguarantees$). Note that the accumulation-result tree root $r$ is derived from $\mathbf{C}$ (defined in section \ref{sec:accumulation}) using the basic binary Merklization function $\mathcal{M}_B$ (defined in appendix \ref{sec:merklization}) and appending it using the \textsc{mmr} append function $\mathcal{A}$ (defined in appendix \ref{sec:mmr}) to form a Merkle mountain range.
 
 The state-trie root is as being the zero hash, $\H^0$ which while inaccurate at the end state of the block $\beta'$, it is nevertheless safe since $\beta'$ is not utilized except to define the next block's $\beta^\dagger$, which contains a corrected value for this.

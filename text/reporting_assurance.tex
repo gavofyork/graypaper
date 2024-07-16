@@ -92,35 +92,35 @@ The first two are special values concerning execution of the virtual machine, $\
 
 \subsection{Package Availability Assurances}
 
-We first define $\rho^\ddagger$, the intermediate state to be utilized next in section \ref{sec:workreportguarantees} as well as $\mathbf{W}$, the set of available work-reports, which will we utilize later in section \ref{sec:accumulation}. Both require the integration of information from the assurances extrinsic $\mathbf{E}_A$.
+We first define $\rho^\ddagger$, the intermediate state to be utilized next in section \ref{sec:workreportguarantees} as well as $\mathbf{W}$, the set of available work-reports, which will we utilize later in section \ref{sec:accumulation}. Both require the integration of information from the assurances extrinsic $\xtassurances$.
 
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
 \begin{align}
-  \mathbf{E}_A \in \lseq\ltuple\isa{a}{\H}\ts\isa{f}{\mathbb{B}_\mathsf{C}}\ts\isa{v}{\N_\mathsf{V}}\ts\isa{s}{\mathbb{E}}\rtuple\rseq_\mathsf{:V}
+  \xtassurances \in \lseq\ltuple\isa{a}{\H}\ts\isa{f}{\mathbb{B}_\mathsf{C}}\ts\isa{v}{\N_\mathsf{V}}\ts\isa{s}{\mathbb{E}}\rtuple\rseq_\mathsf{:V}
 \end{align}
 
 The assurances must all be anchored on the parent and ordered by validator index:
 \begin{align}
-  \forall a &\in \mathbf{E}_A : a_a = \mathbf{H}_p \\
-  \forall i &\in \{ 1\dots|\mathbf{E}_A| \} : \mathbf{E}_A[i - 1]_v < \mathbf{E}_A[i]_v
+  \forall a &\in \xtassurances : a_a = \mathbf{H}_p \\
+  \forall i &\in \{ 1\dots|\xtassurances| \} : \xtassurances[i - 1]_v < \xtassurances[i]_v
 \end{align}
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\mathbf{H}_p$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \mathbf{E}_A : a_s \in \sig{\kappa'[a_v]_e}{\mathsf{X}_A\frown \mathcal{H}(\mathbf{H}_p, a_f)} \\
+  &\forall a \in \xtassurances : a_s \in \sig{\kappa'[a_v]_e}{\mathsf{X}_A\frown \mathcal{H}(\mathbf{H}_p, a_f)} \\
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
 A bit may only be set if the corresponding core has a report pending availability on it:
 \begin{align}
-  \forall a \in \mathbf{E}_A : \forall c \in \N_\mathsf{C} : a_f[c] \implies \rho^\dagger[c] \ne \none
+  \forall a \in \xtassurances : \forall c \in \N_\mathsf{C} : a_f[c] \implies \rho^\dagger[c] \ne \none
 \end{align}
 
 \subsubsection{Available Reports}
 A work-report is said to become \emph{available} if and only if there are a clear \nicefrac{2}{3} super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the series of available work-reports $\mathbf{W}$ as:
 \begin{align}\label{eq:availableworkreports}
-  \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \N_\mathsf{C},\;\sum_{a \in \mathbf{E}_A}\!a_v[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
+  \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \N_\mathsf{C},\;\sum_{a \in \xtassurances}\!a_v[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
 \end{align}
 
 This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are now available:
@@ -184,31 +184,31 @@ We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as 
 
 \subsection{Work Report Guarantees}\label{sec:workreportguarantees}
 
-We begin by defining the guarantees extrinsic, $\mathbf{E}_G$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a core index, \emph{work-report}, a credential $a$ and its corresponding timeslot $t$. The core index of each guarantee must be unique and guarantees must be in ascending order of this. Formally:
+We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a core index, \emph{work-report}, a credential $a$ and its corresponding timeslot $t$. The core index of each guarantee must be unique and guarantees must be in ascending order of this. Formally:
 \begin{align}\label{eq:guaranteesextrinsic}
-  \mathbf{E}_G &\in \seq{\tuple{
+  \xtguarantees &\in \seq{\tuple{
     w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\tuple{\N_V, \mathbb{E}}}_{2:3}
   }}_{:\mathsf{C}} \\
-  \mathbf{E}_G &= \orderby{(g_w)_c}{g \in \mathbf{E}_G}
+  \xtguarantees &= \orderby{(g_w)_c}{g \in \xtguarantees}
 \end{align}
 
 The credential is a sequence of two or three tuples of a unique validator index and a signature. Credentials must be ordered by their validator index:
 \begin{align}
-  \forall g &\in \mathbf{E}_G : g_a = \orderuniqby{v}{\tup{v, s} \in g_a}
+  \forall g &\in \xtguarantees : g_a = \orderuniqby{v}{\tup{v, s} \in g_a}
 \end{align}
 
 The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the hash of the work-report. The signing validators must be assigned to the core in question in either this block $\mathbf{G}$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\mathbf{G}^*$:
 \begin{align}\label{eq:guarantorsig}
   &\begin{aligned}
     &\begin{aligned}
-      \forall (w, t, a) &\in \mathbf{E}_G,\\
+      \forall (w, t, a) &\in \xtguarantees,\\
       \forall (v, s) &\in a
     \end{aligned}
       : \left\{\,\begin{aligned}
         &s \in \sig{(\mathbf{k}_v)_E}{\mathsf{X}_G\frown\mathcal{H}(\se(w))}\\
         &\mathbf{c}_v = w_c\\
       \end{aligned}\right.\\
-      &k \in \mathbf{R} \Leftrightarrow \exists (w, t, a) \in \mathbf{E}_G, \exists (v, s) \in a: k = (\mathbf{k}_v)_E\\
+      &k \in \mathbf{R} \Leftrightarrow \exists (w, t, a) \in \xtguarantees, \exists (v, s) \in a: k = (\mathbf{k}_v)_E\\
       &\quad\where (\mathbf{c}, \mathbf{k}) = \begin{cases}
         \mathbf{G} &\when \displaystyle \ffrac{\tau'}{\mathsf{R}} = \ffrac{t}{\mathsf{R}} \\
         \mathbf{G}^* &\otherwise
@@ -221,7 +221,7 @@ We note that the Ed25519 key of each validator whose signature is in a credentia
 
 We denote $\mathbf{w}$ to be the set of work-reports in the present extrinsic $\mathbf{E}$:
 \begin{align}
-  \text{let}\ \mathbf{w} = \{ g_w \mid g \in \mathbf{E}_G \}
+  \text{let}\ \mathbf{w} = \{ g_w \mid g \in \xtguarantees \}
 \end{align}
 
 No reports may be placed on cores with a report pending availability on it unless it has timed out. In the latter case, $\mathsf{U} = 5$ slots must have elapsed after the report was made. A report is valid only if the authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
@@ -305,7 +305,7 @@ We require that all work results within the extrinsic predicted the correct code
 We define $\rho'$ as being equivalent to $\rho^\ddagger$, except where the extrinsic replaced an entry. In the case an entry is replaced, the new value includes the present time $\tau'$ allowing for the value may be replaced without respect to its availability once sufficient time has elapsed (see equation \ref{eq:reportcoresareunusedortimedout}).
 \begin{equation}
     \forall c \in \N_\mathsf{C} : \rho'[c] \equiv \begin{cases}
-      \tup{w\ts\is{t}{\tau'}} &\when \exists \tup{c, w, a} \in \mathbf{E}_G \\
+      \tup{w\ts\is{t}{\tau'}} &\when \exists \tup{c, w, a} \in \xtguarantees \\
       \rho^\ddagger[c] &\otherwise
     \end{cases}
 \end{equation}
