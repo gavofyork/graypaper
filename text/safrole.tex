@@ -104,7 +104,7 @@ With a new epoch under regular conditions, validator keys get rotated and the ep
   }
 \end{align}
 
-Note that on epoch changes the posterior queued validator key set $\gamma'_k$ is defined such that incoming keys belonging to the judgement punish set $\punishset'$ are replaced with a null key containing only zeroes. The origin of this punish set is explained in section \ref{sec:verdicts}.
+Note that on epoch changes the posterior queued validator key set $\gamma'_k$ is defined such that incoming keys belonging to the judgement punish set $\punishset'$ are replaced with a null key containing only zeroes. The origin of this punish set is explained in section \ref{sec:disputes}.
 
 
 
@@ -244,14 +244,14 @@ The winning-tickets marker $\mathbf{H}_w$ is either empty or, if the block is th
 
 \subsection{The Extrinsic and Tickets}
 
-The extrinsic $\mathbf{E}_T$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an ephemeral key and an entry index, both of which are elective, together with a proof of the ticket's validity. The proof implies a ticket identity, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
+The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an ephemeral key and an entry index, both of which are elective, together with a proof of the ticket's validity. The proof implies a ticket identity, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
 
 Towards the end of the epoch (\ie $\mathsf{Y}$ slots from the start) this contest is closed implying successive blocks within the same epoch must have an empty tickets extrinsic. At this point, the following epoch's seal key sequence becomes fixed.
 
 We define the extrinsic as a sequence of proofs of valid tickets, each of which is a tuple of an entry index (a natural number less than $\mathsf{N}$) and a proof of ticket validity. Formally:
 \begin{align}\label{eq:ticketsextrinsic}
-  \mathbf{E}_T &\in \lseq\ltuple\isa{r}{\N_{\mathsf{N}}}\ts\isa{p}{\bandersnatch{\gamma_z}{\mathsf{X}_T \frown \eta'_2 \doubleplus r}{[]}}\rtuple\rseq \\
-  |\mathbf{E}_T| &\le \begin{cases}
+  \xttickets &\in \lseq\ltuple\isa{r}{\N_{\mathsf{N}}}\ts\isa{p}{\bandersnatch{\gamma_z}{\mathsf{X}_T \frown \eta'_2 \doubleplus r}{[]}}\rtuple\rseq \\
+  |\xttickets| &\le \begin{cases}
       \mathsf{K} &\when m' < \mathsf{Y} \\
       0 &\otherwise
   \end{cases}\\
@@ -260,7 +260,7 @@ We define the extrinsic as a sequence of proofs of valid tickets, each of which 
 
 We define $\mathbf{n}$ as the set of new tickets, with the ticket identity, a hash, defined as the output component of the Bandersnatch Ring\textsc{vrf} proof:
 \begin{align}
-  \mathbf{n} &\equiv [\ltup\is{\mathbf{y}}{\banderout{i_p}}\ts\is{r}{i_r}\rtup \mid i \orderedin \mathbf{E}_T ]
+  \mathbf{n} &\equiv [\ltup\is{\mathbf{y}}{\banderout{i_p}}\ts\is{r}{i_r}\rtup \mid i \orderedin \xttickets ]
 \end{align}
 
 The tickets submitted via the extrinsic must already have been placed in order of their implied identity. Duplicate identities are never allowed lest a validator submit the same ticket multiple times:
@@ -281,4 +281,4 @@ The maximum size of the ticket accumulator is $\mathsf{E}$. On each block, the a
   \mathbf{n} \subset \gamma'_\mathbf{a}
 \end{align}
 
-Note that it can be shown that in the case of an empty extrinsic $\mathbf{E}_T = []$, as implied by $m' \ge \mathsf{Y}$, then $\gamma'_\mathbf{a} = \gamma_\mathbf{a}$.
+Note that it can be shown that in the case of an empty extrinsic $\xttickets = []$, as implied by $m' \ge \mathsf{Y}$, then $\gamma'_\mathbf{a} = \gamma_\mathbf{a}$.
