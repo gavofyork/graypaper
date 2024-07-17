@@ -83,7 +83,7 @@ In addition to the active set of validator keys $\kappa$ and staging set $\iota$
 
 We must introduce $\mathbb{K}$, the set of validator key tuples. This is a combination of cryptographic public keys for Bandersnatch and Ed25519 cryptography, and a third metadata key which is an opaque octet sequence, but utilized to specify practical identifiers for the validator, not least a hardware address.
 
-The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_b$, and is equivalent to the first 32-octets; the Ed25519 key, $k_e$, is the second 32 octets; the BLS key denoted $k_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $k_m$ is the last 128 octets. Formally:
+The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_b$, and is equivalent to the first 32-octets; the Ed25519 key, $k_e$, is the second 32 octets; the \textsc{bls} key denoted $k_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $k_m$ is the last 128 octets. Formally:
 \begin{align}
   \mathbb{K} &\equiv \mathbb{Y}_{336} \\
   \forall k \in \mathbb{K} : k_b \in \H_B &\equiv k_{0\dots+32} \\
@@ -116,17 +116,17 @@ Note that on epoch changes the posterior queued validator key set $\gamma'_k$ is
 
 The header must contain a valid seal and valid \textsc{vrf} output. These are two signatures both using the current slot's seal key; the message data of the former is the header's serialization omitting the seal component $\mathbf{H}_s$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
 \begin{align}
-    \nonumber \using i = \gamma'_\mathbf{s}[\mathbf{H}_t]^\circlearrowleft\colon \\
+    \nonumber \using i = \gamma_\mathbf{s}[\mathbf{H}_t]^\circlearrowleft\colon \\
     \label{eq:ticketconditiontrue}
-    \gamma'_\mathbf{s} \in \seq{\mathbb{C}} &\implies \left\{\,\begin{aligned}
+    \gamma_\mathbf{s} \in \seq{\mathbb{C}} &\implies \left\{\,\begin{aligned}
         &i_\mathbf{y} = \banderout{\mathbf{H}_s}\,,\\
-        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_T \concat \eta'_3 \doubleplus i_r}{\mathcal{E}_U(\mathbf{H})}\,,\\
+        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_T \concat \eta_3 \doubleplus i_r}{\mathcal{E}_U(\mathbf{H})}\,,\\
         &\mathbf{T} = 1
     \end{aligned}\right.\\
     \label{eq:ticketconditionfalse}
-    \gamma'_\mathbf{s} \in \seq{\H_B} &\implies \left\{\,\begin{aligned}
+    \gamma_\mathbf{s} \in \seq{\H_B} &\implies \left\{\,\begin{aligned}
         &i = \mathbf{H}_a\,,\\
-        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_F \concat \eta'_3}{\mathcal{E}_U(\mathbf{H})}\,,\\
+        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_F \concat \eta_3}{\mathcal{E}_U(\mathbf{H})}\,,\\
         &\mathbf{T} = 0
     \end{aligned}\right.\\
   \mathbf{H}_v &\in \bandersig{\mathbf{H}_a}{\mathsf{X}_E\frown \banderout{\mathbf{H}_s}}{[]} \\
@@ -168,7 +168,7 @@ On an epoch transition (identified as the condition $e' > e$), we therefore rota
 
 \subsection{The Slot Key Sequence}
 
-The posterior slot key sequence $\gamma'_\mathbf{s}$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\gamma_\mathbf{s}$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it takes the value of the prior ticket accumulator $\gamma'_\mathbf{a}$. Otherwise, it takes the value of the fallback key sequence. Formally:
+The posterior slot key sequence $\gamma'_\mathbf{s}$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\gamma_\mathbf{s}$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it takes the value of the prior ticket accumulator $\gamma_\mathbf{a}$. Otherwise, it takes the value of the fallback key sequence. Formally:
 \begin{align}\label{eq:slotkeysequence}
   \gamma'_\mathbf{s} &\equiv \begin{cases}
     Z(\gamma_\mathbf{a}) &\when e' = e + 1 \wedge m' \geq \mathsf{Y} \wedge |\gamma_\mathbf{a}| = \mathsf{E}\!\!\\
