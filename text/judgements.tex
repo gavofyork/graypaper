@@ -109,7 +109,10 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
 
 \subsection{Header}\label{sec:judgementmarker}
 
-The judgement marker must contain exactly the sequence of report hashes of all bad and wonky verdicts:
+The verdicts and offenders markers must contain exactly the sequence of report hashes of all new bad \& wonky verdicts and keys of all new offenders, respectively. Formally:
 \begin{equation}
-  \mathbf{H}_j \equiv \sq{r \mid \tup{r, t} \orderedin \verdicts, t \ne \floor{\nicefrac{2}{3}\mathsf{V}} + 1}
+  \mathbf{H}_j \equiv \order{(\badset' \cup \wonkyset') \setminus (\badset \cup \wonkyset)}
+\end{equation}
+\begin{equation}
+  \mathbf{H}_o \equiv \order{\offenders' \setminus \offenders}
 \end{equation}
