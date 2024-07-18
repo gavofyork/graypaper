@@ -94,23 +94,23 @@ A sequence of bits $b \in \mathbb{B}$ is a special case since encoding each indi
   \end{cases}
 \end{align}
 
-\subsubsection{Dictionary Encoding}
-Dictionaries whose key and value domains are encodable and whose key domains are ordered are themselves encodable in one of two manners. The first is as a sequence of encoded key/value pairs ordered by the key. This is generally used when the expected number of entries is somewhat less than the number of possible keys (i.e. the size of the active domain is somewhat less than the domain).
-
-\begin{equation}
-  \forall K, V: \se(d \in \dict{K}{V}) \equiv \se(\var{\orderby{k}{\tup{\se(k), \se(d[k])} \mid k \in \keys{d}}})
-\end{equation}
-
-The second is as a sequence of encoded values only, with each entry having an implicit key according to an enumeration over its domain. This is typically used when the domain is small in magnitude and typically similar in magnitude to the active domain. In order to account for the possibility of a key not existing in the dictionary (\ie the domain and the active domain not being equal) we prefix each value with an octet of one to indicate that the key is indeed present in the dictionary and place an octet of zero if the implied key is not.
-
-We provide a function $\mathcal{S}$ to deliver this from a regular dictionary:
-\begin{equation}
-  \forall K, V: \mathcal{S}(d \in \dict{K}{V}) \equiv \var{\orderby{k}{\begin{aligned}
-    &[1] \frown \se(d[k]) &&\ \when k \in \keys{d} \\
-    &[0] &&\ \otherwise
-  \end{aligned}
-  \,\middle\mid\, k \in K}}
-\end{equation}
+%\subsubsection{Dictionary Encoding}
+%Dictionaries whose key and value domains are encodable and whose key domains are ordered are themselves encodable in one of two manners. The first is as a sequence of encoded key/value pairs ordered by the key. This is generally used when the expected number of entries is somewhat less than the number of possible keys (i.e. the size of the active domain is somewhat less than the domain).
+%
+%\begin{equation}
+%  \forall K, V: \se(d \in \dict{K}{V}) \equiv \se(\var{\orderby{k}{\tup{\se(k), \se(d[k])} \mid k \in \keys{d}}})
+%\end{equation}
+%
+%The second is as a sequence of encoded values only, with each entry having an implicit key according to an enumeration over its domain. This is typically used when the domain is small in magnitude and typically similar in magnitude to the active domain. In order to account for the possibility of a key not existing in the dictionary (\ie the domain and the active domain not being equal) we prefix each value with an octet of one to indicate that the key is indeed present in the dictionary and place an octet of zero if the implied key is not.
+%
+%We provide a function $\mathcal{S}$ to deliver this from a regular dictionary:
+%\begin{equation}
+%  \forall K, V: \mathcal{S}(d \in \dict{K}{V}) \equiv \var{\orderby{k}{\begin{aligned}
+%    &[1] \frown \se(d[k]) &&\ \when k \in \keys{d} \\
+%    &[0] &&\ \otherwise
+%  \end{aligned}
+%  \,\middle\mid\, k \in K}}
+%\end{equation}
 
 %Finally, we may also encode a dictionary only insofar as we encode the keys and encode the values; in this case the result is not a sequence of octets but rather a mapping of octet-sequences to octet-sequences. This is useful in defining the process of Merklization. We define the function $\se_D$ to deliver this from a regular dictionary:
 %\begin{equation}

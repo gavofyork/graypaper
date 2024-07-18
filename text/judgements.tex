@@ -21,9 +21,9 @@ As mentioned, recording reports found to have a high confidence of invalidity is
 
 \subsection{The State}
 
-The \emph{disputes} state includes four items, three of which concern verdicts: a good-set ($\goodset$), a bad-set ($\badset$) and a wonky-set ($\wonkyset$) containing the hashes of all work-reports which were respectively judged to be correct, incorrect or that it appears impossible to judge. The fourth item, the punish-set ($\punishset$), is a set of Ed25519 keys representing validators which were found to have misjudged a work-report.
+The \emph{disputes} state includes four items, three of which concern verdicts: a good-set ($\goodset$), a bad-set ($\badset$) and a wonky-set ($\wonkyset$) containing the hashes of all work-reports which were respectively judged to be correct, incorrect or that it appears impossible to judge. The fourth item, the punish-set ($\offenders$), is a set of Ed25519 keys representing validators which were found to have misjudged a work-report.
 \begin{equation}
-  \psi \equiv \tup{\goodset, \badset, \wonkyset, \punishset}
+  \psi \equiv \tup{\goodset, \badset, \wonkyset, \offenders}
 \end{equation}
 
 \subsection{Extrinsic}
@@ -55,12 +55,12 @@ Offender signatures must be similarly valid and reference work-reports with judg
   \forall (r, k, s) &\in \xtculprits : \bigwedge \left\{
   \begin{aligned}
     &r \in \badset' \,,\\
-    &k \in (\lambda \cup \kappa) \setminus \punishset \,,\\
+    &k \in (\lambda \cup \kappa) \setminus \offenders \,,\\
     &s \in \sig{k}{\mathsf{X}_G \frown r}
   \end{aligned}\right.\\
   \forall (r, v, k, s) &\in \xtfaults : \bigwedge \left\{ \begin{aligned}
     &r \in \badset' \Leftrightarrow r \not\in \goodset' \Leftrightarrow v \,,\\
-    &k \in (\lambda \cup \kappa) \setminus \punishset \,,\\
+    &k \in (\lambda \cup \kappa) \setminus \offenders \,,\\
     &s \in \sig{k}{\mathsf{X}_v \concat r}\\
   \end{aligned}\right.
 \end{align}
@@ -104,7 +104,7 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
   \goodset' &\equiv \goodset \cup \{r \mid \tup{r, \floor{\nicefrac{2}{3}\mathsf{V}} + 1} \in \verdicts \} \\
   \badset' &\equiv \badset \cup \{r \mid \tup{r, 0} \in \verdicts \} \\
   \wonkyset' &\equiv \wonkyset \cup \{r \mid \tup{r, \floor{\nicefrac{1}{3}\mathsf{V}}} \in \verdicts \} \\
-  \punishset' &\equiv \punishset \cup \{ k \mid (r, k, s) \in \xtculprits \}\cup \{ k \mid (r, v, k, s) \in \xtfaults \}
+  \offenders' &\equiv \offenders \cup \{ k \mid (r, k, s) \in \xtculprits \}\cup \{ k \mid (r, v, k, s) \in \xtfaults \}
 \end{align}
 
 \subsection{Header}\label{sec:judgementmarker}

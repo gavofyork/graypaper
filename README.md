@@ -189,9 +189,9 @@ https://graypaper.com/
 - [x] Instead, apply the blacklist to guarantor sig verification directly.
 - [x] Include the core in the WR.
 - [x] Deposit the WR's signatures in with the judgement.
-- [x] Require at >= 1 negative judgements to be included with a positive verdict, and place signer in punish keys.
+- [x] Require at >= 1 negative judgements to be included with a positive verdict, and place signer in offender keys.
 - [x] Serialization of judgement stuff
-- [x] Should always be possible to submit more guarantee signatures of a known-bad report to place them in the punish set.
+- [x] Should always be possible to submit more guarantee signatures of a known-bad report to place them in the offender set.
   - [x] Only from lambda and kappa?
 - [x] Use posterior kappa for everything except judgements.
 
