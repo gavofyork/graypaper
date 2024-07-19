@@ -56,7 +56,7 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
 
 If the latter condition cannot be satisfied, then $(\panic, \imath, \xi, \omega, \mem)$ is the result.
 
-The \textsc{pvm} exit reason $r \in \{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R$ may be one of regular halt $\halt$, panic $\panic$ or out-of-gas $\oog$, or alternatively a host-call $\host$, in which the host-call identifier is associated, or page-fault $\fault$ in which case the address into \textsc{ram} is associated.
+The \textsc{pvm} exit reason $\varepsilon \in \{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R$ may be one of regular halt $\halt$, panic $\panic$ or out-of-gas $\oog$, or alternatively a host-call $\host$, in which the host-call identifier is associated, or page-fault $\fault$ in which case the address into \textsc{ram} is associated.
 
 \subsection{Instructions, Opcodes and Skip-distance}
 
@@ -686,6 +686,7 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
   \where R&\colon (\varepsilon, \imath', \xi', \omega', \mem', \mathbf{x}) \mapsto \begin{cases}
     (\varepsilon, \mathbf{x}) &\when \varepsilon = \oog \\
     (\xi', \mu'_{\omega'_{10}\dots+\omega'_{11}}) &\when \varepsilon = \halt \wedge \mathbb{Z}_{\omega'_{10}\dots+\omega'_{11}} \subset \mathbb{V}_{\mem'} \\
+    (\xi', []) &\when \varepsilon = \halt \wedge \mathbb{Z}_{\omega'_{10}\dots+\omega'_{11}} \not\subset \mathbb{V}_{\mem'} \\
     (\panic, \mathbf{x}) &\otherwise \\
   \end{cases}
 \end{align}

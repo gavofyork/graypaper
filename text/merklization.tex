@@ -28,7 +28,7 @@ The state serialization is then defined as the dictionary built from the amalgam
       1\ &\when \gamma_\mathbf{s} \in \seq{\H_B}_\mathsf{E}\\
     \end{aligned}\right\}, \gamma_\mathbf{s},
     \var{\gamma_\mathbf{a}}}\right) \;, \\
-    &&C(5) &\mapsto \se(\var{\orderby{x}{x \in \goodset}}, \var{\orderby{x}{x \in \badset}}, \var{\orderby{x}{x \in \wonkyset}}, \var{\orderby{x}{x \in \punishset}}) \;, \\
+    &&C(5) &\mapsto \se(\var{\orderby{x}{x \in \goodset}}, \var{\orderby{x}{x \in \badset}}, \var{\orderby{x}{x \in \wonkyset}}, \var{\orderby{x}{x \in \offenders}}) \;, \\
     &&C(6) &\mapsto \se(\eta) \;, \\
     &&C(7) &\mapsto \se(\iota) \;, \\
     &&C(8) &\mapsto \se(\kappa) \;, \\
@@ -142,7 +142,7 @@ From this we define our other Merklization functions.
 We define the well-balanced binary Merkle function as $\mathcal{M}_B$:
 \begin{equation}
     \mathcal{M}_B\colon \left\{\begin{aligned}\label{eq:simplemerkleroot}
-      (\seq{\Y_{n < 32}}, \Y \to \H) &\to \H \\
+      (\seq{\Y}, \Y \to \H) &\to \H \\
       (\mathbf{v}, H) &\mapsto \begin{cases}
         H(\mathbf{v}_0) &\when |\mathbf{v}| = 1 \\
         N(\mathbf{v}, H) &\otherwise
@@ -150,7 +150,7 @@ We define the well-balanced binary Merkle function as $\mathcal{M}_B$:
     \end{aligned}\right.
 \end{equation}
 
-This is suitable for creating proofs on data which is less than 32 bytes in length since it avoids hashing each item in the sequence. For sequences with larger data items, it is better to hash them beforehand to ensure proof-size is minimal since each proof will generally contain a data item.
+This is suitable for creating proofs on data which is not much greater than 32 octets in length since it avoids hashing each item in the sequence. For sequences with larger data items, it is better to hash them beforehand to ensure proof-size is minimal since each proof will generally contain a data item.
 
 Note: In the case that no hash function argument $H$ is supplied, we may assume the Blake 2b hash function, $\mathcal{H}$.
 
