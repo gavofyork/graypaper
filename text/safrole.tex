@@ -95,7 +95,7 @@ The set of validator keys itself is equivalent to the set of 336-octet sequences
 With a new epoch under regular conditions, validator keys get rotated and the epoch's Bandersnatch key root is updated into $\gamma'_z$:
 \begin{align}
   (\gamma'_\mathbf{k}, \kappa', \lambda', \gamma'_z) &\equiv \begin{cases}
-    (\Phi(\iota), \gamma_\mathbf{k}, \kappa, z) &\when e' > e \wedge \mathbf{H}_j = [] \\ (\gamma_\mathbf{k}, \kappa, \lambda, \gamma_z) &\otherwise
+    (\Phi(\iota), \gamma_\mathbf{k}, \kappa, z) &\when e' > e \\ (\gamma_\mathbf{k}, \kappa, \lambda, \gamma_z) &\otherwise
   \end{cases} \\
   \nonumber \where z &= \mathcal{O}([k_b \mid k \orderedin \gamma'_\mathbf{k}]) \\
   \label{eq:blacklistfilter} \Phi(\mathbf{k}) &\equiv \sq{
@@ -226,9 +226,6 @@ The winning-tickets marker $\mathbf{H}_w$ is either empty or, if the block is th
     \none & \otherwise
   \end{cases}
 \end{align}
-
- Note that this will not be honored if the next epoch begins with a verdict in its extrinsic.
-
 
 
 

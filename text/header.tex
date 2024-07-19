@@ -44,13 +44,14 @@ All blocks have an associated public key to identify the author of the block. We
   \mathbf{H}_i \in \N_\mathsf{V} \,,\quad \mathbf{H}_a \equiv \kappa'[\mathbf{H}_i]
 \end{equation}
 
-\subsection{The Epoch and Winning Tickets Markers}\label{sec:header_epochmarker}
+\subsection{The Markers}\label{sec:markers}
 
-If not $\none$, then the epoch marker specifies key and entropy relevant to the following epoch in case the ticket contest does not complete adequately (a very much unexpected eventuality). Similarly, the winning-tickets marker, if not $\none$, provides the series of 600 slot sealing ``tickets'' for the next epoch (see the next section). Finally, the judgements marker is a sequence of report hashes judged not as confidently valid, to be fully explained in section \ref{sec:disputes}. Formally:
-\begin{equation}
-  \mathbf{H}_e \in \tuple{\H\ts\lseq\H_B\rseq_{\mathsf{V}}}\bm{?}\ , \quad
-  \mathbf{H}_w \in \seq{\mathbb{C}} _{\mathsf{E}}\bm{?}\ , \quad
-  \mathbf{H}_j \in \seq{\H}
-\end{equation}
+If not $\none$, then the epoch marker specifies key and entropy relevant to the following epoch in case the ticket contest does not complete adequately (a very much unexpected eventuality). Similarly, the winning-tickets marker, if not $\none$, provides the series of 600 slot sealing ``tickets'' for the next epoch (see the next section). Finally, the verdicts and offenders markers are the sequence of report hashes newly judged as not good and the sequence of Ed25519 keys of newly misbehaving validators, to be fully explained in section \ref{sec:disputes}. Formally:
+\begin{align}
+  \mathbf{H}_e &\in \tuple{\H\ts\lseq\H_B\rseq_{\mathsf{V}}}\bm{?}
+  &\mathbf{H}_w &\in \seq{\mathbb{C}} _{\mathsf{E}}\bm{?} \\
+  \mathbf{H}_j &\in \seq{\H}
+  &\mathbf{H}_o &\in \seq{\H_E}
+\end{align}
 
-The terms are fully defined in section \ref{sec:epochmarker}.
+The terms are fully defined in sections \ref{sec:epochmarker} and \ref{sec:disputes}.
