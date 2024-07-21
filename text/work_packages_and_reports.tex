@@ -73,7 +73,7 @@ A work item includes: $s$ the identifier of the service to which it relates, the
       \isa{\mathbf{y}}{\Y} \ts
       \isa{g}{\N_G} \ts \\
       &\isa{\mathbf{i}}{\seq{\tuple{\H,\N}}} \ts
-      \isa{\mathbf{x}}{\seq{\H}} \ts
+      \isa{\mathbf{x}}{\seq{(\H, \N)}} \ts
       \isa{e}{\N}
     \end{aligned}}
 \end{equation}
@@ -91,7 +91,7 @@ We limit the encoded size of a work-package plus the total size of the implied i
 \begin{align}
   \label{eq:checkextractsize}
   \forall p &\in \mathbb{P}: \left(
-  \sum_{i \in p_\mathbf{i}} |i_\mathbf{i}|\cdot\mathsf{W}_S\mathsf{W}_C + \sum_{i \in p_\mathbf{i}} \sum_{\mathcal{H}(\mathbf{x}) \in i_x} |\mathbf{x}|\right) \le \mathsf{W}_P \\
+  \sum_{i \in p_\mathbf{i}} |i_\mathbf{i}|\cdot\mathsf{W}_S\mathsf{W}_C + \sum_{i \in p_\mathbf{i}} \sum_{(h, l) \in i_\mathbf{x}} \!\!\!l\right) \le \mathsf{W}_P \\
   \mathsf{W}_P &= 12\cdot2^{20}
 \end{align}
 
@@ -163,7 +163,7 @@ The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ whi
 \begin{equation}
   \begin{aligned}
     \importsegmentdata(i \in \mathbb{I}) &\equiv [\mathbf{s}[n] \mid (\mathcal{M}(\mathbf{s}), n) \orderedin i_\mathbf{i}] \\
-    \extrinsicdata(i \in \mathbb{I}) &\equiv [x \mid \mathcal{H}(x) \orderedin i_\mathbf{x}]
+    \extrinsicdata(i \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\mathcal{H}(\mathbf{d}), |\mathbf{d}|) \orderedin i_\mathbf{x}]
   \end{aligned}
 \end{equation}
 
@@ -171,7 +171,7 @@ We may then define $s$ as the data availability specification of the package usi
 \begin{equation}
   \begin{aligned}
     s &= \newavailabilityspecifier(\mathcal{H}(\mathbf{p}), \se(\var{\mathbf{p}}, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
-    \nonumber \where \mathbf{x} &= [[\var{\se(\mathbf{x})} \mid \mathbf{x} \in \extrinsicdata(i)] \mid i \orderedin \mathbf{p}_\mathbf{i}]\\
+    \nonumber \where \mathbf{x} &= [[\var{\se(\mathbf{d})} \mid \mathbf{d} \in \extrinsicdata(i)] \mid i \orderedin \mathbf{p}_\mathbf{i}]\\
     \nonumber \also \mathbf{i} &= [\importsegmentdata(i) \mid i \orderedin \mathbf{p}_\mathbf{i}]\\
     \nonumber \also \mathbf{j} &= [\mathcal{J}(\mathbf{s}, n) \mid (\mathcal{M}(\mathbf{s}), n) \orderedin i_\mathbf{i}, i \orderedin \mathbf{p}_\mathbf{i}]
   \end{aligned}
