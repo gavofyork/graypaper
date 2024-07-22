@@ -241,7 +241,7 @@ The winning-tickets marker $\mathbf{H}_w$ is either empty or, if the block is th
 
 \subsection{The Extrinsic and Tickets}
 
-The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal "contest" to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index together with a proof of ticket's validity. The proof implies a ticket identity, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
+The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal "contest" to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index together with a proof of ticket's validity. The proof implies a ticket identifier, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
 
 Towards the end of the epoch (\ie $\mathsf{Y}$ slots from the start) this contest is closed implying successive blocks within the same epoch must have an empty tickets extrinsic. At this point, the following epoch's seal key sequence becomes fixed.
 
@@ -259,7 +259,7 @@ We define $\mathbf{n}$ as the set of new tickets, with the ticket identifier, a 
   \mathbf{n} &\equiv [\ltup\is{\mathbf{y}}{\banderout{i_p}}\ts\is{r}{i_r}\rtup \mid i \orderedin \xttickets ]
 \end{align}
 
-The tickets submitted via the extrinsic must already have been placed in order of their implied identity. Duplicate identities are never allowed lest a validator submit the same ticket multiple times:
+The tickets submitted via the extrinsic must already have been placed in order of their implied identifier. Duplicate identifiers are never allowed lest a validator submit the same ticket multiple times:
 \begin{align}
   \mathbf{n} &= \orderuniqby{x_\mathbf{y}}{x \in \mathbf{n}} \\
   \{x_\mathbf{y} \mid x \in \mathbf{n}\} &\disjoint \{x_\mathbf{y} \mid x \in \gamma_\mathbf{a}\}
