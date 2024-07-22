@@ -81,7 +81,7 @@ In addition to the active set of validator keys $\kappa$ and staging set $\iota$
   \lambda \in \seq{\mathbb{K}}_{\mathsf{V}}
 \end{align}
 
-We must introduce $\mathbb{K}$, the set of validator key tuples. This is a combination of cryptographic public keys and metadata key which is an opaque octet sequence, but utilized to specify practical identifiers for the validator, not least a hardware address.
+We must introduce $\mathbb{K}$, the set of validator key tuples. This is a combination of a set of cryptographic public keys and metadata which is an opaque octet sequence, but utilized to specify practical identifiers for the validator, not least a hardware address.
 
 The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_b$, and is equivalent to the first 32-octets; the Ed25519 key, $k_e$, is the second 32 octets; the \textsc{bls} key denoted $k_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $k_m$ is the last 128 octets. Formally:
 \begin{align}
@@ -114,7 +114,7 @@ Note that on epoch changes the posterior queued validator key set $\gamma'_k$ is
 
 \subsection{Sealing and Entropy Accumulation}\label{sec:sealandentropy}
 
-The header must contain a valid seal and valid entropy source. These are two signatures both using the current slot's seal key; the message data of the former is the header's serialization omitting the seal component $\mathbf{H}_s$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} output of the seal signature. Formally:
+The header must contain a valid seal and valid \textsc{vrf} output. These are two signatures both using the current slot's seal key; the message data of the former is the header's serialization omitting the seal component $\mathbf{H}_s$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
 \begin{align}
     \nonumber \using i = \gamma'_\mathbf{s}[\mathbf{H}_t]^\circlearrowleft\colon \\
     \label{eq:ticketconditiontrue}
