@@ -15,22 +15,6 @@ https://graypaper.com/
 - [ ] Remove any "TODOs" in text
 - [ ] Macrofy everything
 
-### Simple Networking
-- [ ] Specify required connectivity (QUIC, endpoints, ports, encryption keys, for vals and nodes)
-- [ ] Specify protocol-specific handshake
-- [ ] Specify basic message format, reply format and all variants
-  - [ ] How are long messages handled?
-- [ ] Messages for all nodes:
-  - [ ] Block propagation (all nodes)
-  - [ ] ImportDA query & response
-- [ ] Messages for validator nodes only:
-  - [ ] Assurance publication
-  - [ ] Guarantee publication
-  - [ ] Audit-announcement
-  - [ ] Judgement publication
-  - [ ] Ticket submission
-  - [ ] AuditDA query & response
-
 ### Final PVM
 - [ ] 64-bit PVM
 - [ ] Gas pricing
@@ -49,7 +33,8 @@ https://graypaper.com/
   - [x] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
   - [ ] Define binary Merkle proof-verification function exists sequence of values which contains our value and Merklised to some root.
 
-### Auditing
+### Guaranteeing & Auditing
+- [ ] Guarantees by validator indices
 - [ ] Specify announcement signatures
 - [ ] Specify how to build perspective on other validators with announcements
 
@@ -109,7 +94,7 @@ https://graypaper.com/
   - [x] Integrate into intro and definitions.
 - [x] All "where" and "let" lines are unnumbered/integrated
 - DA2
-  - [x] Update chunks/segments to new size of 12 bytes / 4KB in the availability sections, especially the work packages and work reports section and appendix H.
+  - [x] Update chunks/segments to new size of 12 bytes / 4KB in the availability sections, especially the work-packages and work-reports section and appendix H.
   - [x] `export` is in multiples of 4096 bytes.
   - [x] Manifest specifies WI (maximum) export count.
   - [x] `import` is provided as concatenated segments of 4096 bytes, as per manifest.
@@ -189,15 +174,25 @@ https://graypaper.com/
 - [x] Remove extrinsic segment root. Rename "* segment-root" to just "segment-root".
 - [x] Combine chunk-root for WP, concatenated extrinsics and concatenated imports.
 - [x] Imports are host-call
-- [x] Make work report field r bold.
+- [x] Make work-report field r bold.
 - [x] Segmented DA v2
   - [x] Underlying EC doesn't change, need to make clear segments are just a double-EC
-- [x] Make work report field r bold.
+- [x] Make work-report field r bold.
 - [x] Need to translate the basic work result into an "L"; do it in the appendix to ease layout
   - [x] service - easy
   - [x] service code hash - easy
   - [x] payload hash - easy
   - [x] gas prioritization - just from WP?
   - [x] Consider introducing a host-call for reading manifest data rather than always passing it in.
+### ELVES
+- [x] Don't immediately alter kappa mid-epoch as it affects off-chain judgements.
+- [x] Instead, apply the blacklist to guarantor sig verification directly.
+- [x] Include the core in the WR.
+- [x] Deposit the WR's signatures in with the judgement.
+- [x] Require at >= 1 negative judgements to be included with a positive verdict, and place signer in offender keys.
+- [x] Serialization of judgement stuff
+- [x] Should always be possible to submit more guarantee signatures of a known-bad report to place them in the offender set.
+  - [x] Only from lambda and kappa?
+- [x] Use posterior kappa for everything except judgements.
 
 % A set of independent, sequential, asynchronously interacting 32-octet state machines each of whose transitions lasts around 2 seconds of webassembly computation if a predetermined and fixed program and whose transition arguments are 5 MB. While well-suited to the verification of substrate blockchains, it is otherwise quite limiting.

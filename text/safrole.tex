@@ -83,25 +83,28 @@ In addition to the active set of validator keys $\kappa$ and staging set $\iota$
 
 We must introduce $\mathbb{K}$, the set of validator key tuples. This is a combination of cryptographic public keys and metadata key which is an opaque octet sequence, but utilized to specify practical identifiers for the validator, not least a hardware address.
 
-The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $v$, the Bandersnatch key is denoted $v_b$, and is equivalent to the first 32-octets; the Ed25519 key, $v_e$, is the second 32 octets; the BLS key denoted $v_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $v_m$ is the last 128 octets. Formally:
+The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_b$, and is equivalent to the first 32-octets; the Ed25519 key, $k_e$, is the second 32 octets; the \textsc{bls} key denoted $k_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $k_m$ is the last 128 octets. Formally:
 \begin{align}
   \mathbb{K} &\equiv \mathbb{Y}_{336} \\
-  \forall v \in \mathbb{K} : v_b \in \H_B &\equiv v_{0\dots+32} \\
-  \forall v \in \mathbb{K} : v_e \in \H_E &\equiv v_{32\dots+32} \\
-  \forall v \in \mathbb{K} : v_{BLS} \in \Y_{BLS} &\equiv v_{64\dots+144} \\
-  \forall v \in \mathbb{K} : v_m \in \Y_{208} &\equiv v_{208\dots+128}
+  \forall k \in \mathbb{K} : k_b \in \H_B &\equiv k_{0\dots+32} \\
+  \forall k \in \mathbb{K} : k_e \in \H_E &\equiv k_{32\dots+32} \\
+  \forall k \in \mathbb{K} : k_{BLS} \in \Y_{BLS} &\equiv k_{64\dots+144} \\
+  \forall k \in \mathbb{K} : k_m \in \Y_{208} &\equiv k_{208\dots+128}
 \end{align}
 
 With a new epoch under regular conditions, validator keys get rotated and the epoch's Bandersnatch key root is updated into $\gamma'_z$:
-\begin{equation}
-  \begin{aligned}
-    \!\!\!\!\!\!\!\!\!\!\!\!(\gamma'_\mathbf{k}, \kappa', \lambda', \gamma'_z) &\equiv \begin{cases} (\iota, N(\gamma_\mathbf{k}), N(\kappa), z) \!\!\!\!&\when e' > e \wedge \mathbf{H}_j = [] \\ (\gamma_\mathbf{k}, N(\kappa), N(\lambda), \gamma_z) \!\!\!\!&\otherwise \end{cases}\!\!\!\!\!\!\!\! \\
-    \where z &= \mathcal{O}([k_b \mid k \orderedin \gamma'_\mathbf{k}]) \\
-    \also N(\mathbf{k}) &\equiv \sq{\begin{rcases} [0, 0, \dots] &\when k_b \in \psi'_\mathbf{p} \\ k &\otherwise \end{rcases} \,\middle\mid\, k \orderedin \mathbf{k}}
-  \end{aligned}
-\end{equation}
+\begin{align}
+  (\gamma'_\mathbf{k}, \kappa', \lambda', \gamma'_z) &\equiv \begin{cases}
+    (\Phi(\iota), \gamma_\mathbf{k}, \kappa, z) &\when e' > e \\ (\gamma_\mathbf{k}, \kappa, \lambda, \gamma_z) &\otherwise
+  \end{cases} \\
+  \nonumber \where z &= \mathcal{O}([k_b \mid k \orderedin \gamma'_\mathbf{k}]) \\
+  \label{eq:blacklistfilter} \Phi(\mathbf{k}) &\equiv \sq{
+    \begin{rcases}[0, 0, \dots] &\when k_b \in \offenders' \\ k &\otherwise \end{rcases}
+    \,\middle\mid\, k \orderedin \mathbf{k}
+  }
+\end{align}
 
-Note that the posterior active validator key set $\kappa'$ is defined such that keys belonging to the historical judgement punish set $\psi'_\mathbf{p}$ are replaced with a null key containing only zeroes. The origin of this punish set is explained in section \ref{sec:judgements}.
+Note that on epoch changes the posterior queued validator key set $\gamma'_k$ is defined such that incoming keys belonging to the offenders $\offenders'$ are replaced with a null key containing only zeroes. The origin of the offenders is explained in section \ref{sec:disputes}.
 
 
 
@@ -117,13 +120,13 @@ The header must contain a valid seal and valid entropy source. These are two sig
     \label{eq:ticketconditiontrue}
     \gamma'_\mathbf{s} \in \seq{\mathbb{C}} &\implies \left\{\,\begin{aligned}
         &i_\mathbf{y} = \banderout{\mathbf{H}_s}\,,\\
-        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_T \concat \eta'_3 \doubleplus i_r}{\mathcal{E}_U(\mathbf{H})}\,,\\
+        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_T \concat \eta_3 \doubleplus i_r}{\mathcal{E}_U(\mathbf{H})}\,,\\
         &\mathbf{T} = 1
     \end{aligned}\right.\\
     \label{eq:ticketconditionfalse}
     \gamma'_\mathbf{s} \in \seq{\H_B} &\implies \left\{\,\begin{aligned}
         &i = \mathbf{H}_a\,,\\
-        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_F \concat \eta'_3}{\mathcal{E}_U(\mathbf{H})}\,,\\
+        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_F \concat \eta_3}{\mathcal{E}_U(\mathbf{H})}\,,\\
         &\mathbf{T} = 0
     \end{aligned}\right.\\
   \mathbf{H}_v &\in \bandersig{\mathbf{H}_a}{\mathsf{X}_E\frown \banderout{\mathbf{H}_s}}{[]} \\
@@ -165,7 +168,7 @@ On an epoch transition (identified as the condition $e' > e$), we therefore rota
 
 \subsection{The Slot Key Sequence}
 
-The posterior slot key sequence $\gamma'_\mathbf{s}$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\gamma_\mathbf{s}$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it takes the value of the prior ticket accumulator $\gamma'_\mathbf{a}$. Otherwise, it takes the value of the fallback key sequence. Formally:
+The posterior slot key sequence $\gamma'_\mathbf{s}$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\gamma_\mathbf{s}$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it takes the value of the prior ticket accumulator $\gamma_\mathbf{a}$. Otherwise, it takes the value of the fallback key sequence. Formally:
 \begin{align}\label{eq:slotkeysequence}
   \gamma'_\mathbf{s} &\equiv \begin{cases}
     Z(\gamma_\mathbf{a}) &\when e' = e + 1 \wedge m' \geq \mathsf{Y} \wedge |\gamma_\mathbf{a}| = \mathsf{E}\!\!\\
@@ -224,9 +227,6 @@ The winning-tickets marker $\mathbf{H}_w$ is either empty or, if the block is th
   \end{cases}
 \end{align}
 
- Note that this will not be honored if the next epoch begins with a judgement in its extrinsic.
-
-
 
 
 
@@ -241,23 +241,22 @@ The winning-tickets marker $\mathbf{H}_w$ is either empty or, if the block is th
 
 \subsection{The Extrinsic and Tickets}
 
-The extrinsic $\mathbf{E}_T$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index together with a proof of the ticket's validity. The proof implies a ticket identity, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
+The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index together with a proof of ticket's validity. The proof implies a ticket identity, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
 
 Towards the end of the epoch (\ie $\mathsf{Y}$ slots from the start) this contest is closed implying successive blocks within the same epoch must have an empty tickets extrinsic. At this point, the following epoch's seal key sequence becomes fixed.
 
 We define the extrinsic as a sequence of proofs of valid tickets, each of which is a tuple of an entry index (a natural number less than $\mathsf{N}$) and a proof of ticket validity. Formally:
 \begin{align}\label{eq:ticketsextrinsic}
-  \mathbf{E}_T &\in \lseq\ltuple\isa{r}{\N_{\mathsf{N}}}\ts\isa{p}{\bandersnatch{\gamma_z}{\mathsf{X}_T \frown \eta'_2 \doubleplus r}{[]}}\rtuple\rseq \\
-  |\mathbf{E}_T| &\le \begin{cases}
+  \xttickets &\in \lseq\ltuple\isa{r}{\N_{\mathsf{N}}}\ts\isa{p}{\bandersnatch{\gamma_z}{\mathsf{X}_T \frown \eta'_2 \doubleplus r}{[]}}\rtuple\rseq \\
+  |\xttickets| &\le \begin{cases}
       \mathsf{K} &\when m' < \mathsf{Y} \\
       0 &\otherwise
-  \end{cases}\\
-  \mathsf{X}_T &= \token{\$jam\_ticket\_seal}
+  \end{cases}
 \end{align}
 
 We define $\mathbf{n}$ as the set of new tickets, with the ticket identifier, a hash, defined as the output component of the Bandersnatch Ring\textsc{vrf} proof:
 \begin{align}
-  \mathbf{n} &\equiv [\ltup\is{\mathbf{y}}{\banderout{i_p}}\ts\is{r}{i_r}\rtup \mid i \orderedin \mathbf{E}_T ]
+  \mathbf{n} &\equiv [\ltup\is{\mathbf{y}}{\banderout{i_p}}\ts\is{r}{i_r}\rtup \mid i \orderedin \xttickets ]
 \end{align}
 
 The tickets submitted via the extrinsic must already have been placed in order of their implied identity. Duplicate identities are never allowed lest a validator submit the same ticket multiple times:
@@ -278,4 +277,4 @@ The maximum size of the ticket accumulator is $\mathsf{E}$. On each block, the a
   \mathbf{n} \subset \gamma'_\mathbf{a}
 \end{align}
 
-Note that it can be shown that in the case of an empty extrinsic $\mathbf{E}_T = []$, as implied by $m' \ge \mathsf{Y}$, then $\gamma'_\mathbf{a} = \gamma_\mathbf{a}$.
+Note that it can be shown that in the case of an empty extrinsic $\xttickets = []$, as implied by $m' \ge \mathsf{Y}$, then $\gamma'_\mathbf{a} = \gamma_\mathbf{a}$.

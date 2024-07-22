@@ -1,8 +1,8 @@
 \section{The Header}\label{sec:header}
 
-We must first define the header in terms of its components. The header comprises a parent hash and prior state root ($\mathbf{H}_p$ and $\mathbf{H}_r$), an extrinsic hash $\mathbf{H}_x$, a time-slot index $\mathbf{H}_t$, the epoch, winning-tickets and judgements markers $\mathbf{H}_e$, $\mathbf{H}_w$ and $\mathbf{H}_j$, a Bandersnatch block author key $\mathbf{H}_k$ and two Bandersnatch signatures; the entropy-yielding \textsc{vrf} signature $\mathbf{H}_v$ and a block seal $\mathbf{H}_s$. Headers may be serialized to an octet sequence with and without the latter seal component using $\mathcal{E}$ and $\mathcal{E}_U$ respectively. Formally:
+We must first define the header in terms of its components. The header comprises a parent hash and prior state root ($\mathbf{H}_p$ and $\mathbf{H}_r$), an extrinsic hash $\mathbf{H}_x$, a time-slot index $\mathbf{H}_t$, the epoch, winning-tickets, verdicts and offenders markers $\mathbf{H}_e$, $\mathbf{H}_w$, $\mathbf{H}_j$ and $\mathbf{H}_o$, a Bandersnatch block author index $\mathbf{H}_i$ and two Bandersnatch signatures; the entropy-yielding \textsc{vrf} signature $\mathbf{H}_v$ and a block seal $\mathbf{H}_s$. Headers may be serialized to an octet sequence with and without the latter seal component using $\mathcal{E}$ and $\mathcal{E}_U$ respectively. Formally:
 \begin{equation}\label{eq:header}
-  \qquad\mathbf{H} \equiv (\mathbf{H}_p, \mathbf{H}_r, \mathbf{H}_x, \mathbf{H}_t, \mathbf{H}_e, \mathbf{H}_w, \mathbf{H}_j, \mathbf{H}_k, \mathbf{H}_v, \mathbf{H}_s)
+  \mathbf{H} \equiv (\mathbf{H}_p, \mathbf{H}_r, \mathbf{H}_x, \mathbf{H}_t, \mathbf{H}_e, \mathbf{H}_w, \mathbf{H}_j, \mathbf{H}_o, \mathbf{H}_i, \mathbf{H}_v, \mathbf{H}_s)
 \end{equation}
 
 Blocks considered invalid by this rule may become valid as $\mathcal{T}$ advances.
@@ -39,18 +39,19 @@ The parent state root $\mathbf{H}_r$ is the root of a Merkle trie composed by th
 
 We assume the state-Merklization function $\mathcal{M}_\sigma$ is capable of transforming our state $\sigma$ into a 32-octet commitment. See appendix \ref{sec:statemerklization} for a full definition of these two functions.
 
-All blocks have an associated public key to identify the author of the block. We identify this as an index into the current validator set $\kappa$. We denote the Bandersnatch key of the author as $\mathbf{H}_a$ though note that this is merely an equivalence, and is not serialized as part of the header.
+All blocks have an associated public key to identify the author of the block. We identify this as an index into the prior current validator set $\kappa$. We denote the Bandersnatch key of the author as $\mathbf{H}_a$ though note that this is merely an equivalence, and is not serialized as part of the header.
 \begin{equation}
-  \mathbf{H}_k \in \N_\mathsf{V} \,,\quad \mathbf{H}_a \equiv \kappa[\mathbf{H}_k]
+  \mathbf{H}_i \in \N_\mathsf{V} \,,\quad \mathbf{H}_a \equiv \kappa'[\mathbf{H}_i]
 \end{equation}
 
-\subsection{The Epoch and Winning Tickets Markers}\label{sec:header_epochmarker}
+\subsection{The Markers}\label{sec:markers}
 
-If not $\none$, then the epoch marker specifies key and entropy relevant to the following epoch in case the ticket contest does not complete adequately (a very much unexpected eventuality). Similarly, the winning-tickets marker, if not $\none$, provides the series of 600 slot sealing ``tickets'' for the next epoch (see the next section). Finally, the judgements marker is a sequence of report hashes judged not as confidently valid, to be fully explained in section \ref{sec:judgements}. Formally:
-\begin{equation}
-  \mathbf{H}_e \in \tuple{\H\ts\lseq\H_B\rseq_{\mathsf{V}}}\bm{?}\ , \quad
-  \mathbf{H}_w \in \seq{\mathbb{C}} _{\mathsf{E}}\bm{?}\ , \quad
-  \mathbf{H}_j \in \seq{\H}
-\end{equation}
+If not $\none$, then the epoch marker specifies key and entropy relevant to the following epoch in case the ticket contest does not complete adequately (a very much unexpected eventuality). Similarly, the winning-tickets marker, if not $\none$, provides the series of 600 slot sealing ``tickets'' for the next epoch (see the next section). Finally, the verdicts and offenders markers are the sequence of report hashes newly judged as not good and the sequence of Ed25519 keys of newly misbehaving validators, to be fully explained in section \ref{sec:disputes}. Formally:
+\begin{align}
+  \mathbf{H}_e &\in \tuple{\H\ts\lseq\H_B\rseq_{\mathsf{V}}}\bm{?}
+  &\mathbf{H}_w &\in \seq{\mathbb{C}} _{\mathsf{E}}\bm{?} \\
+  \mathbf{H}_j &\in \seq{\H}
+  &\mathbf{H}_o &\in \seq{\H_E}
+\end{align}
 
-The terms are fully defined in section \ref{sec:epochmarker}.
+The terms are fully defined in sections \ref{sec:epochmarker} and \ref{sec:disputes}.

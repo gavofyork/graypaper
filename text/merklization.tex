@@ -28,12 +28,12 @@ The state serialization is then defined as the dictionary built from the amalgam
       1\ &\when \gamma_\mathbf{s} \in \seq{\H_B}_\mathsf{E}\\
     \end{aligned}\right\}, \gamma_\mathbf{s},
     \var{\gamma_\mathbf{a}}}\right) \;, \\
-    &&C(5) &\mapsto \se(\var{\orderby{x}{x \in \psi_\mathbf{a}}}, \var{\orderby{x}{x \in \psi_\mathbf{b}}}, \var{\orderby{x}{x \in \psi_\mathbf{p}}}) \;, \\
+    &&C(5) &\mapsto \se(\var{\orderby{x}{x \in \goodset}}, \var{\orderby{x}{x \in \badset}}, \var{\orderby{x}{x \in \wonkyset}}, \var{\orderby{x}{x \in \offenders}}) \;, \\
     &&C(6) &\mapsto \se(\eta) \;, \\
     &&C(7) &\mapsto \se(\iota) \;, \\
     &&C(8) &\mapsto \se(\kappa) \;, \\
     &&C(9) &\mapsto \se(\lambda) \;, \\
-    &&C(10) &\mapsto \se([\maybe{(w, \var{\mathbf{g}}, \se_4(t))} \mid (w, t, \mathbf{g}) \orderedin \rho]) \;, \\
+    &&C(10) &\mapsto \se([\maybe{(w, \se_4(t))} \mid (w, t) \orderedin \rho]) \;, \\
     &&C(11) &\mapsto \se_4(\tau) \;, \\
     &&C(12) &\mapsto \se_4(\chi) \;, \\
     &&C(13) &\mapsto \se_4(\pi) \;, \\
@@ -106,19 +106,22 @@ The underlying function for our Merkle trees is the \emph{node} function $N$, wh
     (\mathbf{v}, H) &\mapsto \begin{cases}
       \H_0 &\when |\mathbf{v}| = 0 \\
       \mathbf{v}_0 &\when |\mathbf{v}| = 1 \\
-      H(\token{\$node} \concat N(\mathbf{v}_{\dots\ceil{\nicefrac{|\mathbf{v}|}{2}}}) \concat N(\mathbf{v}_{\ceil{\nicefrac{|\mathbf{v}|}{2}}\dots})) &\otherwise
+      H(\token{\$node} \concat N(\mathbf{v}_{\dots\ceil{\nicefrac{|\mathbf{v}|}{2}}}, H) \concat N(\mathbf{v}_{\ceil{\nicefrac{|\mathbf{v}|}{2}}\dots}, H)) &\otherwise
     \end{cases}
   \end{aligned}\right.\label{eq:merklenode}
 \end{equation}
 
-The astute reader will realize that if our $\Y_n$ happens to be equivalent $\H$ then this function will always evaluate into $\H$. That said, for it to be secure care must be taken to ensure there is no possibility preimage collision. For this purpose we include the hash prefix $\token{\$node}$ to minimize the chance of this; simply ensure any items are hashed with a different prefix and the system can be considered secure.
+The astute reader will realize that if our $\Y_n$ happens to be equivalent $\H$ then this function will always evaluate into $\H$. That said, for it to be secure care must be taken to ensure there is no possibility of preimage collision. For this purpose we include the hash prefix $\token{\$node}$ to minimize the chance of this; simply ensure any items are hashed with a different prefix and the system can be considered secure.
 
 We also define the \emph{trace} function $T$, which returns each opposite node from top to bottom as the tree is navigated to arrive at some leaf corresponding to the item of a given index into the sequence. It is useful in creating justifications of data inclusion.
 \begin{equation}
   \begin{aligned}
     T\colon\left\{\begin{aligned}
       (\seq{\Y_n}, \N_{|\mathbf{v}|}, \Y \to \H)\ &\to \seq{\Y_n \cup \H}\\
-      (\mathbf{v}, i, H) &\mapsto [N(P^\bot(\mathbf{v}, i))] \concat T(P^\top(\mathbf{v}, i), i - P_I(\mathbf{v}, i), H)
+      (\mathbf{v}, i, H) &\mapsto \begin{cases}
+        [N(P^\bot(\mathbf{v}, i), H)] \concat T(P^\top(\mathbf{v}, i), i - P_I(\mathbf{v}, i), H) &\when |\mathbf{v}| > 1\\
+        [] &\otherwise
+      \end{cases}
     \end{aligned}\right.\\
     \where\ \left\{\begin{aligned}
       P^s(\mathbf{v}, i) &\equiv \begin{cases}
@@ -139,7 +142,7 @@ From this we define our other Merklization functions.
 We define the well-balanced binary Merkle function as $\mathcal{M}_B$:
 \begin{equation}
     \mathcal{M}_B\colon \left\{\begin{aligned}\label{eq:simplemerkleroot}
-      (\seq{\Y_{n < 32}}, \Y \to \H) &\to \H \\
+      (\seq{\Y}, \Y \to \H) &\to \H \\
       (\mathbf{v}, H) &\mapsto \begin{cases}
         H(\mathbf{v}_0) &\when |\mathbf{v}| = 1 \\
         N(\mathbf{v}, H) &\otherwise
@@ -147,7 +150,7 @@ We define the well-balanced binary Merkle function as $\mathcal{M}_B$:
     \end{aligned}\right.
 \end{equation}
 
-This is suitable for creating proofs on data which is less than 32 bytes in length since it avoids hashing each item in the sequence. For sequences with larger data items, it is better to hash them beforehand to ensure proof-size is minimal since each proof will generally contain a data item.
+This is suitable for creating proofs on data which is not much greater than 32 octets in length since it avoids hashing each item in the sequence. For sequences with larger data items, it is better to hash them beforehand to ensure proof-size is minimal since each proof will generally contain a data item.
 
 Note: In the case that no hash function argument $H$ is supplied, we may assume the Blake 2b hash function, $\mathcal{H}$.
 

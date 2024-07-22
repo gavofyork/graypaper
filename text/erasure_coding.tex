@@ -3,7 +3,7 @@
 \newcommand{\join}{\text{join}}
 \newcommand{\spl}{\text{split}}
 
-The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}(16) of rate 342:1026, as defined by \cite{lin2014novel}. We use a little-endian $\Y_2$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\se_2$. From this we may assume the encoding function $\mathcal{C}: \seq{\Y_2}_{342} \to \seq{\Y_2}_{1026}$ and the recovery function $\mathcal{R}: \powset[342]{\tuple{\Y_2, \N_{1026}}} \to \seq{\Y_2}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\mathbf{C}$ here as 342 octet pairs) into 2,052 octets (1,026 octet pairs). Recovery is done by collecting together any distinct 342 octet pairs, together with their indices and transforming this into the original sequence of 342 octet pairs.
+The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}(16) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\Y_2$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\se_2$. From this we may assume the encoding function $\mathcal{C}: \seq{\Y_2}_{342} \to \seq{\Y_2}_{1023}$ and the recovery function $\mathcal{R}: \powset[342]{\tuple{\Y_2, \N_{1023}}} \to \seq{\Y_2}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\mathbf{C}$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices and transforming this into the original sequence of 342 octet pairs.
 
 Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of 684 octets. Data whose length is not divisible by 684 must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit DA and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import DA system.
 
@@ -11,9 +11,9 @@ For the Import DA system, we deal with an input size of 4,104 octets resulting i
 
 \subsection{Blob Encoding and Recovery}
 
-We assume some data blob $\mathbf{d} \in \Y_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\Y_{684}} = \spl_{684}(\mathbf{p})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $C$ as above to give 1,026 octet pairs per piece.
+We assume some data blob $\mathbf{d} \in \Y_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\Y_{684}} = \spl_{684}(\mathbf{p})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $C$ as above to give 1,023 octet pairs per piece.
 
-The resulting matrix is grouped by its pair-index and concatenated to form 1,026 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
+The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
 Formally we begin by defining two utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for joining subsequences back into a single large sequence:
 \begin{align}
@@ -26,18 +26,18 @@ We define the transposition operator hence:
   {}^\text{T}[[\mathbf{x}_{0, 0}, \mathbf{x}_{0, 1}, \mathbf{x}_{0, 2}, \dots], [\mathbf{x}_{1, 0}, \mathbf{x}_{1, 1}, \dots], \dots] \equiv [[\mathbf{x}_{0, 0}, \mathbf{x}_{1, 0}, \mathbf{x}_{2, 0}, \dots], [\mathbf{x}_{0, 1}, \mathbf{x}_{1, 1}, \dots], \dots]
 \end{equation}
 
-We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 684 octets and results in 1,026 sequences of sequences each of smaller blobs:
+We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 684 octets and results in 1,023 sequences of sequences each of smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
   \mathcal{C}_{k \in \N}\colon\left\{\begin{aligned}
-    \Y_{684k} &\to \seq{\Y_{2k}}_{1026} \\
+    \Y_{684k} &\to \seq{\Y_{2k}}_{1023} \\
     \mathbf{d} &\mapsto [ \join(\mathbf{c}) \mid \mathbf{c} \orderedin {}^{\text{T}}[\mathcal{C}(\mathbf{p}) \mid \mathbf{p} \orderedin \text{split}_{684}(\mathbf{d})] ]
   \end{aligned}\right.
 \end{equation}
 
-The original data may be reconstructed with only 342 of the 1,026 items of said function's result, together with the items' respective indices:
+The original data may be reconstructed with only 342 of the 1,023 items of said function's result, together with the items' respective indices:
 \begin{equation}\label{eq:erasurecodinginv}
   \mathcal{R}_{k \in \N}\colon\left\{\begin{aligned}
-    \{(\Y_{2k}, \N_{1026})\}_{342} &\to \Y_{684k} \\
+    \{(\Y_{2k}, \N_{1023})\}_{342} &\to \Y_{684k} \\
     \mathbf{c} &\mapsto \join([
       \mathcal{R}([(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \orderedin \mathbf{c}])
       \mid p \in \N_k
@@ -59,6 +59,6 @@ Segment encoding is just this with $k = 6$.
 
 %We divide the WP $\mathbf{p}$ into $c$ chunks of $n*2$ bytes where $c = \ceil{|p| / n*2}$ bytes (appending with zeroes as needed for the last chunk), and $c$ chunks each encoded of size $2*3n$ bytes, with each chunk requiring $n*2$ bytes to reconstruct and thus a total of $2cn$ to reconstruct $p$, assuming $2n$ bytes for each decoded chunk (\ie there is correspondance).
 
-%We would send $3 * 2$ bytes to every validator (with $3 * 2$ bytes unsent). Then $1023/3+1$ validators could give us $(1023/3+1)*3*2$ bytes = 1026* 2 bytes, which is enough to reconstruct. In practice of course we'll batch this a lot to divide the $3*(unencoded size)$ data into 1024 chunks, 1 of which we send to each validator.
+%We would send $3 * 2$ bytes to every validator (with $3 * 2$ bytes unsent). Then $1023/3+1$ validators could give us $(1023/3+1)*3*2$ bytes = 1023* 2 bytes, which is enough to reconstruct. In practice of course we'll batch this a lot to divide the $3*(unencoded size)$ data into 1024 chunks, 1 of which we send to each validator.
 
 %The work-report should contain the root of a Merkle tree of these chunks. The guarantors (or validators sending chunks to auditors for recosnstruction) should send the Merkle proofs along with the chunks to each validator, which identifies that this chunk comes from this WP for availability voting/reconstruction. An auditor should encode the WP after obtaining it and recontruct this Merkle root to verify it. (Otherwise, it is possible that another auditor would not be able to reconstruct the same WP from $(1023/3+1)$ chunks with valid Merkle proofs, even if the first auditor reconstructed a WP with a matching WP hash from the report).
