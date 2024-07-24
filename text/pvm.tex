@@ -224,7 +224,7 @@ We assume the skip length $\ell$ is well-defined:
 \subsubsection{Instructions with Arguments of One Immediate}
 \begin{equation}
 \begin{aligned}
-  \using l_X = \max(\ell, 4) \,,\quad
+  \using l_X = \min(4, \ell) \,,\quad
   \immed_X \equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+1\dots+l_X}))
 \end{aligned}
 \end{equation}
@@ -242,10 +242,12 @@ We assume the skip length $\ell$ is well-defined:
 \subsubsection{Instructions with Arguments of Two Immediates}
 \begin{equation}
 \begin{aligned}
-    \using l_X &= \max(4, \instructions_{\imath+1}) \,,\quad&
-    \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
-    \using l_Y &= \max(4, (\ell - l_X - 1) \bmod 2^8) \,,\quad&
-    \immed_Y &\equiv \sext_{l_Y}(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
+    \using &l_A = \instructions_{\imath+1} \bmod 2^3 \,,\quad&
+    \using &l_X = \min(4, l_A) \\
+    \using &l_{Y_1} = \min(4, \max(0, \ell - l_A - 1)) \,,\quad&
+    \using &l_{Y_2} = \min(l_{Y_1}, 8 - l_A) \\
+    &\immed_X \equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \,,\quad&
+    &\immed_Y \equiv \sext_{l_{Y_1}}(\de_{l_{Y_2}}(\instructions_{\imath+2+l_A\dots+l_{Y_2}}))
 \end{aligned}
 \end{equation}
 
@@ -264,7 +266,7 @@ We assume the skip length $\ell$ is well-defined:
 \subsubsection{Instructions with Arguments of One Offset}
 \begin{equation}
 \begin{aligned}
-  \using l_X = \max(\ell, 4) \,,\quad
+  \using l_X = \min(4, \ell) \,,\quad
   \immed_X \equiv \imath + \signfunc{l_X}(\de_{l_X}(\instructions_{\imath+1\dots+l_X}))
 \end{aligned}
 \end{equation}
@@ -282,10 +284,10 @@ We assume the skip length $\ell$ is well-defined:
 \subsubsection{Instructions with Arguments of One Register \& One Immediate}
 \begin{equation}
 \begin{aligned}
-    \using r_A &= \min(12, \instructions_{\imath+1}) \,,\quad&
+    \using r_A &= \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad&
     \reg_A &\equiv \reg_{r_A} \,,\quad
     \reg'_A \equiv \reg'_{r_A} \\
-    \using l_X &= \max((\ell - 1) \bmod 2^8, 4) \,,\quad&
+    \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
     \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
 \end{aligned}
 \end{equation}
@@ -312,13 +314,15 @@ We assume the skip length $\ell$ is well-defined:
 \subsubsection{Instructions with Arguments of One Register \& Two Immediates}
 \begin{equation}
 \begin{aligned}
-    \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
+    \using r_A &= \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad&
     \reg_A &\equiv \reg_{r_A} \,,\quad
     \reg'_A \equiv \reg'_{r_A} \\
-    \using l_X &= \max(4, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
-    \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
-    \using l_Y &= \max(4, (\ell - l_X - 1) \bmod 2^8) \,,\quad&
-    \immed_Y &= \sext_{l_Y}(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
+    \using l_A &= (\ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
+    \using l_X &= \min(4, \max(0, l_A)) \\
+    \using l_{Y_1} &= \min(4, \max(0, \ell - l_A - 1)) \,,\quad&
+    \using l_{Y_2} &= \min(l_{Y_1}, 8 - l_A) \\
+    \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \,,\quad&
+    \immed_Y &\equiv \sext_{l_{Y_1}}(\de_{l_{Y_2}}(\instructions_{\imath+2+l_A\dots+l_{Y_2}}))
 \end{aligned}
 \end{equation}
 
@@ -340,10 +344,12 @@ We assume the skip length $\ell$ is well-defined:
       \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
       \reg_A &\equiv \reg_{r_A} \,,\quad
       \reg'_A \equiv \reg'_{r_A} \\
-      \using l_X &= \max(4, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
-      \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
-      \using l_Y &= \max(4, (\ell - l_X - 1) \bmod 2^8) \,,\quad&
-      \immed_Y &= \imath + \signfunc{l_Y}(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
+      \using l_A &= (\ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
+      \using l_X &= \min(4, \max(0, l_A)) \\
+      \using l_{Y_1} &= \min(4, \max(0, \ell - l_A - 1)) \,,\quad&
+      \using l_{Y_2} &= \min(l_{Y_1}, 8 - l_A) \\
+      \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \,,\quad&
+      \immed_Y &\equiv \imath + \signfunc{l_{Y_1}}(\de_{l_{Y_2}}(\instructions_{\imath+2+l_A\dots+l_{Y_2}}))
   \end{aligned}
 \end{equation}
 
@@ -406,7 +412,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
   \reg_B &\equiv \reg_{r_B} \,,\quad
   \reg'_B \equiv \reg'_{r_B} \\
-  \using l_X &= \max((\ell - 1) \bmod 2^8, 4) \,,\quad&
+  \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
   \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
 \end{aligned}
 \end{equation}
@@ -464,7 +470,7 @@ In the case that the above condition is not met, then the instruction is conside
     \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
-    \using l_X &= \max((\ell - 1) \bmod 2^8, 4) \,,\quad&
+    \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
     \immed_X &\equiv \imath + \signfunc{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
   \end{aligned}
 \end{equation}
@@ -496,10 +502,12 @@ In the case that the above condition is not met, then the instruction is conside
     \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
-    \using l_X &= \max(4, \instructions_{\imath+2}) \,,\quad&
-    \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions_{\imath+3\dots+l_X})) \\
-    \using l_Y &= \max(4, (\ell - l_X - 2) \bmod 2^8) \,,\quad&
-    \immed_Y &= \sext_{l_Y}(\de_{l_Y}(\instructions_{\imath+3+l_X\dots+l_Y}))
+    \using l_A &= \instructions_{\imath+2} \bmod 8 \,,\quad&
+    \using l_X &= \min(4, l_A) \\
+    \using l_{Y_1} &= \min(4, \max(0, \ell - l_A - 2)) \,,\quad&
+    \using l_{Y_2} &= \min(l_{Y_1}, 8 - l_A) \\
+    \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+3\dots+l_X})) \,,\quad&
+    \immed_Y &\equiv \sext_{l_{Y_1}}(\de_{l_{Y_2}}(\instructions_{\imath+3+l_A\dots+l_{Y_2}}))
   \end{aligned}
 \end{equation}
 
