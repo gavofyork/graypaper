@@ -14,6 +14,7 @@ https://graypaper.com/
 - [ ] Link and integrate to Bandersnatch RingVRF references (Davide/Syed) IN-PROGRESS
 - [ ] Remove any "TODOs" in text
 - [ ] Macrofy everything
+- [ ] Limit number of extrinsics in a WP.
 
 ### Final PVM
 - [ ] 64-bit PVM
