@@ -83,9 +83,9 @@ In addition to the active set of validator keys $\kappa$ and staging set $\iota$
 
 We must introduce $\mathbb{K}$, the set of validator key tuples. This is a combination of a set of cryptographic public keys and metadata which is an opaque octet sequence, but utilized to specify practical identifiers for the validator, not least a hardware address.
 
-The set of validator keys itself is a subset of the set of 336-octet sequences. For clarity, we divide the octets sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_b$, and is equivalent to the first 32-octets; the Ed25519 key, $k_e$, is the second 32 octets; the \textsc{bls} key denoted $k_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $k_m$ is the last 128 octets. Formally:
+The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_b$, and is equivalent to the first 32-octets; the Ed25519 key, $k_e$, is the second 32 octets; the \textsc{bls} key denoted $k_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $k_m$ is the last 128 octets. Formally:
 \begin{align}
-  \mathbb{K} \subset \mathbb{Y}_{336} \\
+  \mathbb{K} &\equiv \mathbb{Y}_{336} \\
   \forall k \in \mathbb{K} : k_b \in \H_B &\equiv k_{0\dots+32} \\
   \forall k \in \mathbb{K} : k_e \in \H_E &\equiv k_{32\dots+32} \\
   \forall k \in \mathbb{K} : k_{BLS} \in \Y_{BLS} &\equiv k_{64\dots+144} \\
@@ -241,7 +241,7 @@ The winning-tickets marker $\mathbf{H}_w$ is either empty or, if the block is th
 
 \subsection{The Extrinsic and Tickets}
 
-The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal "contest" to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index together with a proof of ticket's validity. The proof implies a ticket identifier, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
+The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index together with a proof of ticket's validity. The proof implies a ticket identifier, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
 
 Towards the end of the epoch (\ie $\mathsf{Y}$ slots from the start) this contest is closed implying successive blocks within the same epoch must have an empty tickets extrinsic. At this point, the following epoch's seal key sequence becomes fixed.
 
