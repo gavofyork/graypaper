@@ -30,6 +30,8 @@ https://graypaper.com/
   - [ ] assurance-specific stuff into relevant section
   - [ ] auditing-specific stuff into relevant section
 - [ ] Include an epochal on-chain lookup from Work Package hash to segments root.
+  - [ ] Allow import spec to be given as either WP hash (in case of being recent) or segments root.
+  - [ ] How can this work given that WP hash to segments-root needs to happen in-core?
 - [ ] Define Erasure Coding proof means
   - [x] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
   - [ ] Define binary Merkle proof-verification function exists sequence of values which contains our value and Merklised to some root.
@@ -69,6 +71,9 @@ https://graypaper.com/
 
 ## Ideas to consider
 
+### Work Packages
+At present all WorkItems can succeed or fail independently. Instead we should be able to specify co-dependency criteria, so that if one fails, both fail. This should be respected through to accumulation, whereby an accumulator can commit to accumulating the `WorkResult` iff there is a signal from the other accumulator that the result has been accumulated there.
+
 ### Statistics/Bookkeeping
 - [ ] Consider integrating the subjective extrinsic and state:
   - [ ] If so, have three items to allow for a whole epoch of opinion submission
@@ -83,12 +88,6 @@ https://graypaper.com/
 - Optional `on_report` entry point
 - Remove assignments from state - no need for it to be there as it's derivable from $\eta_2$ alone.
 - Make memo bounded, rather than fixed.
-
-## Stuff to replicate to PolkaJam
-
-- Beefy root and accumulate-result hash.
-- Judgements
-- Using posterior assignments.
 
 ## Done
 - Statistics/Bookkeeping
