@@ -2,13 +2,13 @@
 
 [ `git diff --name-only | wc -l` -gt 0 ] && echo "There are uncommitted changes. Please commit or stash them before releasing." && exit 1
 
-VERSION=${cat VERSION}
-OBRANCH=${git branch --show-current}
+VERSION=`cat VERSION`
+OBRANCH=`git branch --show-current`
 RBRANCH="release-v$VERSION"
 echo "Releasing version $VERSION from branch $OBRANCH into branch $RBRANCH..."
 
 git checkout -b $RBRANCH
-echo -n '' > VERSION_SUFFIX
+echo -n '' > context.tex
 
 echo "Committing..."
 git commit -a -m "Release version $VERSION"
