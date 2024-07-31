@@ -32,6 +32,9 @@ https://graypaper.com/
 - [ ] Include an epochal on-chain lookup from Work Package hash to segments root.
   - [ ] Allow import spec to be given as either WP hash (in case of being recent) or segments root.
   - [ ] How can this work given that WP hash to segments-root needs to happen in-core?
+  - [ ] Include a bond to any SR->WPh lookups in the WR.
+  - [ ] Check these bonds only just prior to accumulation; if they fail, drop the report and reduce the guarantors' points.
+  - [ ] Update on-chain SR->WPh immediately at the time of being reported (don't want for accumulation).
 - [ ] Define Erasure Coding proof means
   - [x] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
   - [ ] Define binary Merkle proof-verification function exists sequence of values which contains our value and Merklised to some root.
