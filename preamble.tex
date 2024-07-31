@@ -149,7 +149,22 @@
 \newcommand*{\xtassurances}{\mathbf{E}_A}
 \newcommand*{\xtpreimages}{\mathbf{E}_P}
 
-\title[JAM: Join-Accumulate Machine \\ {\smaller \textbf{Draft 0.3.1+changes \today}}]{Join-Accumulate Machine: A Semi-Coherent Scalable Trustless VM \\ {\smaller Draft 0.3.1+changes \today}}
+\newcommand*{\jamdraftversion}{\input{VERSION}\!\!\!}
+\newcommand*{\jamdraftversionstring}{\jamdraftversion}
+
+\newcommand*{\makegpbackground}{
+  \AddToShipoutPicture{
+    \checkoddpage
+    \ifoddpage
+        \put(-1 mm,0){\includegraphics[width=\paperwidth,height=\paperheight]{assets/grayr.png}}
+    \else
+        \put(-1 mm,0){\includegraphics[width=\paperwidth,height=\paperheight]{assets/grayl.png}}
+    \fi
+  }
+}
+\input{context.tex}
+
+\title[JAM: Join-Accumulate Machine \\ {\smaller \textbf{Draft \jamdraftversionstring\ \today}}]{Join-Accumulate Machine: A Semi-Coherent Scalable Trustless VM \\ {\smaller Draft \jamdraftversionstring\ \today}}
 \author{
   Dr. Gavin Wood\\
   Founder, Polkadot \& Ethereum\\%, Parity, Web3 Foundation, Fellowship\\
