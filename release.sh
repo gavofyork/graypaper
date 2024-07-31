@@ -4,10 +4,12 @@
 
 VERSION=${cat VERSION}
 BRANCH=${git branch --show-current}
-echo "Releasing version $VERSION from branch $BRANCH..."
+RBRANCH="release-v$VERSION"
+echo "Releasing version $VERSION from branch $BRANCH into branch $RBRANCH..."
 
-git checkout -b release-v$VERSION
+git checkout -b $RBRANCH
 touch VERSION_SUFFIX
+
 git commit -a -m "Release version $VERSION"
 git tag -a v$VERSION -m "Version $VERSION"
 git push --tags
