@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-[[ git diff --name-only | wc -l -gt 0 ]] && echo "There are uncommitted changes. Please commit or stash them before releasing." && exit 1
+[ `git diff --name-only | wc -l` -gt 0 ] && echo "There are uncommitted changes. Please commit or stash them before releasing." && exit 1
 
 VERSION=${cat VERSION}
 OBRANCH=${git branch --show-current}
