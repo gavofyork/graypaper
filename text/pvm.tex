@@ -395,7 +395,7 @@ We assume the skip length $\ell$ is well-defined:
 \bottomrule
 \end{longtable}
 
-Note, the term $h$ above refers to the beginning of the heap, the second major segment of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_Q + Q(|\mathbf{o}|)$. If `sbrk` instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
+Note, the term $h$ above refers to the beginning of the heap, the second major segment of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_Q + Q(|\mathbf{o}|)$. If $\token{sbrk}$ instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Immediate}
 \begin{equation}
@@ -410,8 +410,6 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
 \end{aligned}
 \end{equation}
-
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
@@ -469,8 +467,6 @@ In the case that the above condition is not met, then the instruction is conside
   \end{aligned}
 \end{equation}
 
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
-
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
@@ -503,8 +499,6 @@ In the case that the above condition is not met, then the instruction is conside
   \end{aligned}
 \end{equation}
 
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
-
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
@@ -532,8 +526,6 @@ In the case that the above condition is not met, then the instruction is conside
   \reg'_D \equiv \reg'_{r_D} \\
 \end{aligned}
 \end{equation}
-
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}[t]{p{8mm} p{20mm} p{5mm} p{100mm}}
