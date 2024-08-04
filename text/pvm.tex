@@ -561,12 +561,12 @@ In the case that the above condition is not met, then the instruction is conside
   \end{cases}$\\ \mrule
   73&\token{rem\_u}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
-    \floor{\reg_A \bmod \reg_B} &\otherwise
+    \reg_A \bmod \reg_B &\otherwise
   \end{cases}$\\ \mrule
   70&\token{rem\_s}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
     0 &\when \signed{\reg_A} = -2^{31} \wedge \signed{\reg_B} = -1\\
-    \unsigned{\floor{\signed{\reg_A} \bmod \signed{\reg_B}}} &\otherwise
+    \unsigned{\signed{\reg_A} \bmod \signed{\reg_B}} &\otherwise
   \end{cases}$\\ \mrule
   36&\token{set\_lt\_u}&0&$\reg'_D = \reg_A < \reg_B$\\ \mrule
   58&\token{set\_lt\_s}&0&$\reg'_D = \signed{\reg_A} < \signed{\reg_B}$\\ \mrule
