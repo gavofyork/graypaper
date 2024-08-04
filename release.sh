@@ -26,6 +26,6 @@ xelatex -halt-on-error graypaper-$VERSION > /dev/null
 
 echo "Tagging && pushing..."
 git tag -a v$VERSION -m "Version $VERSION"
-#git push --tags
+git push --tags
 
 cleanup
