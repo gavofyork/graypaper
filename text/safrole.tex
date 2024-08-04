@@ -81,7 +81,7 @@ In addition to the active set of validator keys $\kappa$ and staging set $\iota$
   \lambda \in \seq{\mathbb{K}}_{\mathsf{V}}
 \end{align}
 
-We must introduce $\mathbb{K}$, the set of validator key tuples. This is a combination of cryptographic public keys for Bandersnatch and Ed25519 cryptography, and a third metadata key which is an opaque octet sequence, but utilized to specify practical identifiers for the validator, not least a hardware address.
+We must introduce $\mathbb{K}$, the set of validator key tuples. This is a combination of a set of cryptographic public keys and metadata which is an opaque octet sequence, but utilized to specify practical identifiers for the validator, not least a hardware address.
 
 The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_b$, and is equivalent to the first 32-octets; the Ed25519 key, $k_e$, is the second 32 octets; the \textsc{bls} key denoted $k_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $k_m$ is the last 128 octets. Formally:
 \begin{align}
@@ -89,7 +89,7 @@ The set of validator keys itself is equivalent to the set of 336-octet sequences
   \forall k \in \mathbb{K} : k_b \in \H_B &\equiv k_{0\dots+32} \\
   \forall k \in \mathbb{K} : k_e \in \H_E &\equiv k_{32\dots+32} \\
   \forall k \in \mathbb{K} : k_{BLS} \in \Y_{BLS} &\equiv k_{64\dots+144} \\
-  \forall k \in \mathbb{K} : k_m \in \Y_{208} &\equiv k_{208\dots+128}
+  \forall k \in \mathbb{K} : k_m \in \Y_{128} &\equiv k_{208\dots+128}
 \end{align}
 
 With a new epoch under regular conditions, validator keys get rotated and the epoch's Bandersnatch key root is updated into $\gamma'_z$:
@@ -185,7 +185,7 @@ Here, we use $Z$ as the outside-in sequencer function, defined as follows:
   \end{aligned}\right.
 \end{equation}
 
-Finally, $F$ is the fallback key sequence function which selects an epoch's worth of validator Bandersnatch keys ($\seq{\mathbb{H}_B}_{\mathsf{E}}$) at random from the validator key set $\mathbf{k}$ using the entropy collected on-chain $r$:
+Finally, $F$ is the fallback key sequence function which selects an epoch's worth of validator Bandersnatch keys ($\seq{\mathbb{H}_B}_{\mathsf{E}}$) from the validator key set $\mathbf{k}$ using the entropy collected on-chain $r$:
 \begin{equation}\label{eq:fallbackkeysequence}
   F\colon \left\{\ \begin{aligned}
     \tuple{\H \ts \seq{\mathbb{K}}} &\to \seq{\mathbb{H}_B}_{\mathsf{E}}\\
@@ -241,7 +241,7 @@ The winning-tickets marker $\mathbf{H}_w$ is either empty or, if the block is th
 
 \subsection{The Extrinsic and Tickets}
 
-The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an ephemeral key and an entry index, both of which are elective, together with a proof of the ticket's validity. The proof implies a ticket identity, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
+The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index together with a proof of ticket's validity. The proof implies a ticket identifier, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
 
 Towards the end of the epoch (\ie $\mathsf{Y}$ slots from the start) this contest is closed implying successive blocks within the same epoch must have an empty tickets extrinsic. At this point, the following epoch's seal key sequence becomes fixed.
 
@@ -254,12 +254,12 @@ We define the extrinsic as a sequence of proofs of valid tickets, each of which 
   \end{cases}
 \end{align}
 
-We define $\mathbf{n}$ as the set of new tickets, with the ticket identity, a hash, defined as the output component of the Bandersnatch Ring\textsc{vrf} proof:
+We define $\mathbf{n}$ as the set of new tickets, with the ticket identifier, a hash, defined as the output component of the Bandersnatch Ring\textsc{vrf} proof:
 \begin{align}
   \mathbf{n} &\equiv [\ltup\is{\mathbf{y}}{\banderout{i_p}}\ts\is{r}{i_r}\rtup \mid i \orderedin \xttickets ]
 \end{align}
 
-The tickets submitted via the extrinsic must already have been placed in order of their implied identity. Duplicate identities are never allowed lest a validator submit the same ticket multiple times:
+The tickets submitted via the extrinsic must already have been placed in order of their implied identifier. Duplicate identifiers are never allowed lest a validator submit the same ticket multiple times:
 \begin{align}
   \mathbf{n} &= \orderuniqby{x_\mathbf{y}}{x \in \mathbf{n}} \\
   \{x_\mathbf{y} \mid x \in \mathbf{n}\} &\disjoint \{x_\mathbf{y} \mid x \in \gamma_\mathbf{a}\}
