@@ -39,7 +39,7 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
     (\mathbf{p}, c) &\mapsto \begin{cases}
       \mathbf{r} &\otherwhen \mathbf{r} \in \{ \oog, \panic \}  \\
       \mathbf{o} &\otherwhen \mathbf{r} = \tup{g, \mathbf{o}} \\
-      \multicolumn{2}{l}{\quad\where (\mathbf{r}, \none) = \Psi_M(\mathbf{p}_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(p, c), F, \none)}
+      \multicolumn{2}{l}{\quad\where (\mathbf{r}, \none) = \Psi_M(\mathbf{p}_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(\mathbf{p}, c), F, \none)}
     \end{cases} \\
   \end{aligned}\right. \\
   \label{eq:isauthorizedmutator}F&\colon\left\{\begin{aligned}
@@ -622,13 +622,14 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \mathbf{i}_{\omega_0} &\when \omega_0 < |\mathbf{i}| \\
       \none &\otherwise
     \end{cases} \\
-    \using o &= \omega_{1..3} \\
-    \mu'_{o\dots+\mathsf{W}_C\mathsf{W}_S} &\equiv \begin{cases}
-      \mathbf{v} & \when \mathbf{v} \ne \none \wedge \mathbb{N}_{o \dots+ \mathsf{W}_C\mathsf{W}_S} \subset \mathbb{V}^*_{\mu} \\
-      \mu_{o\dots+\mathsf{W}_C\mathsf{W}_S} & \otherwise
+    \using o &= \omega_1 \\
+    \using l &= \min(\omega_2, \mathsf{W}_C\mathsf{W}_S) \\
+    \mu'_{o\dots+l} &\equiv \begin{cases}
+      \mathbf{v} & \when \mathbf{v} \ne \none \wedge \mathbb{N}_{o \dots+ l} \subset \mathbb{V}^*_{\mu} \\
+      \mu_{o\dots+l} & \otherwise
     \end{cases} \\
     \omega'_0 &\equiv \begin{cases}
-      \mathtt{OOB} &\when \mathbb{Z}_{o \dots+ \mathsf{W}_C\mathsf{W}_S} \not\subset \mathbb{V}^*_{\mu} \\
+      \mathtt{OOB} &\when \mathbb{Z}_{o \dots+ l} \not\subset \mathbb{V}^*_{\mu} \\
       \mathtt{NONE} & \otherwhen \mathbf{v} = \none \\
       \mathtt{OK} &\otherwise \\
     \end{cases}
@@ -639,15 +640,16 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{export} = 15 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [p, z] &= \omega_{0\dots2} \\
+    \using p &= \omega_0 \\
+    \using z &= \min(\omega_1, \mathsf{W}_C\mathsf{W}_S) \\
     \using \mathbf{x} &= \begin{cases}
-      [\mem_{p+i\cdot\mathsf{W}_S\dots+\mathsf{W}_S} \mid i \orderedin \N_z] &\when \N_{p\dots+z\cdot\mathsf{W}_S} \in \mathbb{V}_\mu\\
+      \mathcal{P}_{\mathsf{W}_C\mathsf{W}_S}(\mem_{p\dots+z}) &\when \N_{p\dots+z} \in \mathbb{V}_\mu\\
       \error &\otherwise
     \end{cases}\\
     (\omega'_0, \mathbf{e}') &\equiv \begin{cases}
       (\mathtt{OOB}, \mathbf{e}) &\when \mathbf{x} = \error \\
       (\mathtt{FULL}, \mathbf{e}) &\otherwhen \segoff+|\mathbf{e}| \ge \mathsf{W}_X \\
-      (\segoff + |\mathbf{e}|, \mathbf{e} \concat \mathbf{x}) &\otherwise
+      (\segoff + |\mathbf{e}|, \mathbf{e} \doubleplus \mathbf{x}) &\otherwise
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}

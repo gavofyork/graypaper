@@ -395,7 +395,7 @@ We assume the skip length $\ell$ is well-defined:
 \bottomrule
 \end{longtable}
 
-Note, the term $h$ above refers to the beginning of the heap, the second major segment of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_Q + Q(|\mathbf{o}|)$. If `sbrk` instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
+Note, the term $h$ above refers to the beginning of the heap, the second major segment of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_Q + Q(|\mathbf{o}|)$. If $\token{sbrk}$ instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Immediate}
 \begin{equation}
@@ -410,8 +410,6 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
 \end{aligned}
 \end{equation}
-
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
@@ -469,8 +467,6 @@ In the case that the above condition is not met, then the instruction is conside
   \end{aligned}
 \end{equation}
 
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
-
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
@@ -503,8 +499,6 @@ In the case that the above condition is not met, then the instruction is conside
   \end{aligned}
 \end{equation}
 
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
-
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
@@ -532,8 +526,6 @@ In the case that the above condition is not met, then the instruction is conside
   \reg'_D \equiv \reg'_{r_D} \\
 \end{aligned}
 \end{equation}
-
-In the case that the above condition is not met, then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}[t]{p{8mm} p{20mm} p{5mm} p{100mm}}
@@ -595,7 +587,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
         &\varepsilon = \host \times h\\[2pt]
         &\fault \times a = f(h, \xi', \omega', \mem', \mathbf{x})\\[2pt]
       \end{aligned}\right.\\[8 pt]
-      \Psi_H(\mathbf{c}, \imath' + 1, \xi'', \omega'', \mem'', f, \mathbf{x}'') &\when \bigwedge\left\{\;\begin{aligned}
+      \Psi_H(\mathbf{c}, \imath' + 1 + \Fskip(\imath'), \xi'', \omega'', \mem'', f, \mathbf{x}'') &\when \bigwedge\left\{\;\begin{aligned}
         &\varepsilon = \host \times h\\[2pt]
         &(\xi'', \omega'', \mem'', \mathbf{x}'') = f(h, \xi', \omega', \mem', \mathbf{x})
       \end{aligned}\right.\\[8pt]
@@ -607,7 +599,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
 
 On exit, the instruction counter $\imath'$ references the instruction \emph{which caused the exit}. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed. This is sensible when the instruction is one which necessarily needs re-executing such as in the case of an out-of-gas or page fault reason.
 
-However, when the exit reason to $\Psi$ is a host-call $\host$, then the resultant instruction-counter has a value of the host-call instruction and resuming with this state would immediately exit with the same result. Re-invoking would therefore require both the post-host-call machine state \emph{and} the instruction counter value for the instruction following the one which resulted in the host-call exit reason. This is always one greater. Resuming the machine with this instruction counter will continue beyond the host-call instruction.
+However, when the exit reason to $\Psi$ is a host-call $\host$, then the resultant instruction-counter has a value of the host-call instruction and resuming with this state would immediately exit with the same result. Re-invoking would therefore require both the post-host-call machine state \emph{and} the instruction counter value for the instruction following the one which resulted in the host-call exit reason. This is always one greater plus the relevant argument skip distance. Resuming the machine with this instruction counter will continue beyond the host-call instruction.
 
 We use both values of instruction-counter for the definition of $\Psi_H$ since if the host-call results in a page fault we need to allow the outer environment to resolve the fault and re-try the host-call. Conversely, if we successfully transition state according to the host-call, then on resumption we wish to begin with the instruction directly following the host-call.
 

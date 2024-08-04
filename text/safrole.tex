@@ -171,7 +171,7 @@ On an epoch transition (identified as the condition $e' > e$), we therefore rota
 The posterior slot key sequence $\gamma'_\mathbf{s}$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\gamma_\mathbf{s}$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it takes the value of the prior ticket accumulator $\gamma_\mathbf{a}$. Otherwise, it takes the value of the fallback key sequence. Formally:
 \begin{align}\label{eq:slotkeysequence}
   \gamma'_\mathbf{s} &\equiv \begin{cases}
-    Z(\gamma_\mathbf{a}) &\when e' = e + 1 \wedge m' \geq \mathsf{Y} \wedge |\gamma_\mathbf{a}| = \mathsf{E}\!\!\\
+    Z(\gamma_\mathbf{a}) &\when e' = e + 1 \wedge m \geq \mathsf{Y} \wedge |\gamma_\mathbf{a}| = \mathsf{E}\!\!\\
     \gamma_\mathbf{s} &\when e' = e \\
     F(\eta'_2, \kappa') \!\!\!&\otherwise
   \end{cases}
