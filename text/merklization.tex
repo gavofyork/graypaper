@@ -175,7 +175,7 @@ For the latter justification to be acceptable, we must assume the target observe
 
 As above, we may assume a default value for $H$ of the Blake 2b hash function, $\mathcal{H}$.
 
-In all cases, a constancy preprocessor function $C$ is applied which hashes all data items with a fixed prefix and then pads them to the next power of two with the zero hash:
+In all cases, a constancy preprocessor function $C$ is applied which hashes all data items with a fixed prefix and then pads them to the next power of two with the zero hash $\mathbb{H}_0$:
 \begin{equation}
   C\colon\left\{\begin{aligned}
     (\seq{\Y}, \Y \to \H) &\to \seq{\H}\\
@@ -183,7 +183,7 @@ In all cases, a constancy preprocessor function $C$ is applied which hashes all 
       |\mathbf{v}'| &= 2^{\ceil{\log_2(|\mathbf{v}|)}}\\
       \mathbf{v}'_i &= \begin{cases}
         H(\token{\$leaf}\frown\mathbf{v}_i) &\when i < |\mathbf{v}|\\
-        H_0 &\otherwise \\
+        \mathbb{H}_0 &\otherwise \\
       \end{cases}
     \end{aligned}\right.
   \end{aligned}\right.
