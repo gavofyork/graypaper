@@ -1,6 +1,10 @@
 \section{Work Packages and Work Reports}\label{sec:workpackagesandworkreports}
 
 \newcommand*{\wp¬context}{\mathbf{x}} % Consider rename to \mathbf{c}
+\newcommand*{\wp¬workitems}{\mathbf{w}}
+\newcommand*{\wi¬importsegments}{\mathbf{i}}
+\newcommand*{\wi¬extrinsics}{\mathbf{x}}
+\newcommand*{\wi¬exportsegments}{e}
 
 \newcommand*{\newavailabilityspecifier}{A}
 \newcommand*{\itemtoresult}{C}
@@ -57,32 +61,32 @@ The guarantor is able to use this proof to justify to themselves that they are n
 
 \subsection{Packages and Items}\label{sec:packagesanditems}
 
-We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constituent \emph{work item}s, of set $\mathbb{I}$. A work-package includes a simple blob acting as an authorization token $\mathbf{j}$, the index of the service which hosts the authorization code $h$, an authorization code hash $c$ and a parameterization blob $\mathbf{p}$, a context $\wp¬context$ and a sequence of work items $\mathbf{i}$:
+We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constituent \emph{work item}s, of set $\mathbb{I}$. A work-package includes a simple blob acting as an authorization token $\mathbf{j}$, the index of the service which hosts the authorization code $h$, an authorization code hash $c$ and a parameterization blob $\mathbf{p}$, a context $\wp¬context$ and a sequence of work items $\wp¬workitems$:
 \begin{equation}\label{eq:workpackage}
   \mathbb{P} \equiv \tuple{\;\begin{aligned}
     &\isa{\mathbf{j}}{\Y},\ \isa{h}{\N_S},\ \isa{c}{\H},\\
-    &\isa{\mathbf{p}}{\Y},\ \isa{\wp¬context}{\mathbb{X}},\ \isa{\mathbf{i}}{\seq{\mathbb{I}}_{1:\mathsf{I}}}
+    &\isa{\mathbf{p}}{\Y},\ \isa{\wp¬context}{\mathbb{X}},\ \isa{\wp¬workitems}{\seq{\mathbb{I}}_{1:\mathsf{I}}}
   \end{aligned}}
 \end{equation}
 
-A work item includes: $s$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $c$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\mathbf{y}$, a gas limit $g$, and the three elements of its manifest, a sequence of imported data segments $\mathbf{i}$ identified by the root of the \emph{segments tree} and an index into it, $\mathbf{x}$, a sequence of hashed of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $e$ the number of data segments exported by this work item:
+A work item includes: $s$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $c$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\mathbf{y}$, a gas limit $g$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ identified by the root of the \emph{segments tree} and an index into it, $\wi¬extrinsics$, a sequence of hashed of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportsegments$ the number of data segments exported by this work item:
 \begin{equation}\label{eq:workitem}
     \mathbb{I} \equiv \tuple{\begin{aligned}
       &\isa{s}{\N_S} \ts
       \isa{c}{\H} \ts
       \isa{\mathbf{y}}{\Y} \ts
       \isa{g}{\N_G} \ts \\
-      &\isa{\mathbf{i}}{\seq{\tuple{\H,\N}}} \ts
-      \isa{\mathbf{x}}{\seq{(\H, \N)}} \ts
-      \isa{e}{\N}
+      &\isa{\wi¬importsegments}{\seq{\tuple{\H,\N}}} \ts
+      \isa{\wi¬extrinsics}{\seq{(\H, \N)}} \ts
+      \isa{\wi¬exportsegments}{\N}
     \end{aligned}}
 \end{equation}
 
 We limit the total number of exported items to $\mathsf{W}_M = 2^{11}$. We also place the same limit on the total number of imported items:
 \begin{align}
   \forall p \in \mathbb{P}:
-  \sum_{i \in p_\mathbf{i}} i_e &\le \mathsf{W}_M \ \wedge\ 
-  \sum_{i \in p_\mathbf{i}} |i_\mathbf{i}| \le \mathsf{W}_M
+  \sum_{w \in p_\wp¬workitems} w_\wi¬exportsegments &\le \mathsf{W}_M \ \wedge\ 
+  \sum_{w \in p_\wp¬workitems} |w_\wi¬importsegments| \le \mathsf{W}_M
 \end{align}
 
 We make an assumption that the preimage to each extrinsic hash in each work-item is known by the guarantor. In general this data will be passed to the guarantor alongside the work-package.
@@ -91,13 +95,13 @@ We limit the encoded size of a work-package plus the total size of the implied i
 \begin{align}
   \label{eq:checkextractsize}
   \forall p &\in \mathbb{P}: \left(
-  \sum_{i \in p_\mathbf{i}} |i_\mathbf{i}|\cdot\mathsf{W}_S\mathsf{W}_C + \sum_{i \in p_\mathbf{i}} \sum_{(h, l) \in i_\mathbf{x}} \!\!\!l\right) \le \mathsf{W}_P \\
+  \sum_{w \in p_\wp¬workitems} |w_\wi¬importsegments|\cdot\mathsf{W}_S\mathsf{W}_C + \sum_{w \in p_\wp¬workitems} \sum_{(h, l) \in w_\wi¬extrinsics} \!\!\!l\right) \le \mathsf{W}_P \\
   \mathsf{W}_P &= 12\cdot2^{20}
 \end{align}
 
 %The implication of equation \ref{eq:checkextractsize} is that we have access to the preimage of all extrinsic data. For guaranteeing, this implies the work-package author probably submits the preimages alongside the work-package itself. For auditing, the extrinsic preimages may be reconstructed in the same manner as the work-package. Both are described later.
 
-We define the item-to-result function $\itemtoresult$ as:
+Given the result $o$ of some work-item, we define the item-to-result function $\itemtoresult$ as:
 \begin{equation}
   \itemtoresult\colon\left\{\begin{aligned}
     (\mathbb{I}, \Y \cup \mathbb{J}) &\to \mathbb{L}\\
@@ -149,9 +153,30 @@ Formally:
 where:
 \begin{align*}
   \mathbf{o} &= \Psi_I(\mathbf{p}, c) \\
-  (\mathbf{r}, \overline{\mathbf{e}}) &= \transpose[(\itemtoresult(\mathbf{p}_\mathbf{i}[j], r), \mathbf{e}) \mid (r, \mathbf{e}) = \countupexports(\mathbf{p}, j), j \orderedin \N_{|\mathbf{p}_\mathbf{i}|}] \\
-  \countupexports(\mathbf{p}, j) &\equiv \marshallrefine(\mathbf{p}, \mathbf{p}_\mathbf{i}[j], \sum_{k < j}\mathbf{p}_\mathbf{i}[k]_e)\\
-  \marshallrefine(\mathbf{p}, i, \ell) &\equiv \Psi_R(i_c, i_g, i_s, \mathcal{H}(\mathbf{p}), i_\mathbf{y}, \mathbf{p}_\wp¬context, \mathbf{p}_a, \importsegmentdata(i), \extrinsicdata(i), \ell)
+  (\mathbf{r}, \overline{\mathbf{e}}) &= \transpose[
+    (\itemtoresult(\mathbf{p}_\wp¬workitems[j], r), \mathbf{e})
+    \mid
+    (r, \mathbf{e}) = \countupexports(\mathbf{p}, j),
+    j \orderedin \N_{|\mathbf{p}_\wp¬workitems|}
+  ] \\
+  \countupexports(\mathbf{p}, j) &\equiv \marshallrefine(
+    \mathbf{p},
+    \mathbf{p}_\wp¬workitems[j],
+    \sum_{k < j}\mathbf{p}_\wp¬workitems[k]_\wi¬exportsegments
+  )\\
+  \marshallrefine(\mathbf{p}, w, \ell) &\equiv \\
+  &\!\!\!\!\!\!\!\Psi_R(
+    w_c,
+    w_g,
+    w_s,
+    \mathcal{H}(\mathbf{p}),
+    w_\mathbf{y},
+    \mathbf{p}_\wp¬context,
+    \mathbf{p}_a,
+    \importsegmentdata(w),
+    \extrinsicdata(w),
+    \ell
+  )
 \end{align*}
 
 The definition here is staged over several functions for ease of reading. The first term to be introduced, $\mathbf{o}$ is the authorization output, the result of the Is-Authorized function. The second term, $(\mathbf{r}, \overline{\mathbf{e}})$ is the sequence of results for each of the work-items in the work-package together with all segments exported by each work-item.
@@ -159,11 +184,11 @@ The definition here is staged over several functions for ease of reading. The fi
 The third and forth definition are helper terms for this, with the third $\countupexports$ performing an ordered accumulation (\ie counter) in order to ensure that the Refine function has access to the total number of exports made from the work-package up to the current work-item. The fourth term, $\marshallrefine$, is essentially just a call to the Refine function, marshalling the relevant data from the work-package and work-item.
 
 
-The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $i$:
+The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $w$:
 \begin{equation}
   \begin{aligned}
-    \importsegmentdata(i \in \mathbb{I}) &\equiv [\mathbf{s}[n] \mid (\mathcal{M}(\mathbf{s}), n) \orderedin i_\mathbf{i}] \\
-    \extrinsicdata(i \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\mathcal{H}(\mathbf{d}), |\mathbf{d}|) \orderedin i_\mathbf{x}]
+    \importsegmentdata(w \in \mathbb{I}) &\equiv [\mathbf{s}[n] \mid (\mathcal{M}(\mathbf{s}), n) \orderedin w_\wi¬importsegments] \\
+    \extrinsicdata(w \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\mathcal{H}(\mathbf{d}), |\mathbf{d}|) \orderedin w_\wi¬extrinsics]
   \end{aligned}
 \end{equation}
 
@@ -171,9 +196,9 @@ We may then define $s$ as the data availability specification of the package usi
 \begin{equation}
   \begin{aligned}
     s &= \newavailabilityspecifier(\mathcal{H}(\mathbf{p}), \se(\var{\mathbf{p}}, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
-    \nonumber \where \mathbf{x} &= [[\var{\se(\mathbf{d})} \mid \mathbf{d} \in \extrinsicdata(i)] \mid i \orderedin \mathbf{p}_\mathbf{i}]\\
-    \nonumber \also \mathbf{i} &= [\importsegmentdata(i) \mid i \orderedin \mathbf{p}_\mathbf{i}]\\
-    \nonumber \also \mathbf{j} &= [\mathcal{J}(\mathbf{s}, n) \mid (\mathcal{M}(\mathbf{s}), n) \orderedin i_\mathbf{i}, i \orderedin \mathbf{p}_\mathbf{i}]
+    \nonumber \where \mathbf{x} &= [[\var{\se(\mathbf{d})} \mid \mathbf{d} \in \extrinsicdata(w)] \mid w \orderedin \mathbf{p}_\wp¬workitems]\\
+    \nonumber \also \mathbf{i} &= [\importsegmentdata(w) \mid w \orderedin \mathbf{p}_\wp¬workitems]\\
+    \nonumber \also \mathbf{j} &= [\mathcal{J}(\mathbf{s}, n) \mid (\mathcal{M}(\mathbf{s}), n) \orderedin w_\wi¬importsegments, w \orderedin \mathbf{p}_\wp¬workitems]
   \end{aligned}
 \end{equation}
 
