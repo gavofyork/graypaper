@@ -128,10 +128,18 @@ Guarantors are required to erasure-code and distribute two data sets: one blob, 
 We define the paged-proofs function $\pagedproofs$ which accepts a series of exported segments $\mathbf{s}$ and defines some series of additional segments placed into the Imports DA system via erasure-coding and distribution. The function evaluates to pages of hashes, together with subtree proofs, such that justifications of correctness based on a segments-root may be made from it:
 \begin{equation}\label{eq:pagedproofs}
   \pagedproofs\colon\left\{\begin{aligned}
-    \seq{\G} &\to \seq{\G} \\
-    \mathbf{s} &\mapsto [\mathcal{P}_{\mathsf{W}_S}(\mathcal{J}_6(\mathbf{s}, i) \concat \wideparen{\mathbf{s}_{i\dots+64}}) \mid i \orderedin 64\cdot\N_{\ceil{\nicefrac{|\mathbf{s}|}{64}}}]
+    \seq{\G} \to \,&\seq{\G} \\
+    \mathbf{s} \mapsto \,&[
+      \mathcal{P}_l(\se(
+        \var{\mathcal{J}_6(\mathbf{s}, i)},
+        \var{\mathbf{s}_{i\dots+64}}
+      ))
+      \mid i \orderedin 64\cdot\N_{\ceil{\nicefrac{|\mathbf{s}|}{64}}}
+    ] \\
+    & \where l = \mathsf{W}_S\mathsf{W}_C
   \end{aligned}\right.
 \end{equation}
+
 
 Note: in the case that $|\mathbf{s}|$ is not a multiple of 64, then the term $\mathbf{s}_{i\dots+64}$ will correctly refer to fewer than 64 elements if it is the final page.
 
@@ -198,7 +206,7 @@ We may then define $s$ as the data availability specification of the package usi
     s &= \newavailabilityspecifier(\mathcal{H}(\mathbf{p}), \se(\var{\mathbf{p}}, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
     \nonumber \where \mathbf{x} &= [[\var{\se(\mathbf{d})} \mid \mathbf{d} \in \extrinsicdata(w)] \mid w \orderedin \mathbf{p}_\wp¬workitems]\\
     \nonumber \also \mathbf{i} &= [\importsegmentdata(w) \mid w \orderedin \mathbf{p}_\wp¬workitems]\\
-    \nonumber \also \mathbf{j} &= [\mathcal{J}(\mathbf{s}, n) \mid (\mathcal{M}(\mathbf{s}), n) \orderedin w_\wi¬importsegments, w \orderedin \mathbf{p}_\wp¬workitems]
+    \nonumber \also \mathbf{j} &= [\var{\mathcal{J}(\mathbf{s}, n)} \mid (\mathcal{M}(\mathbf{s}), n) \orderedin w_\wi¬importsegments, w \orderedin \mathbf{p}_\wp¬workitems]
   \end{aligned}
 \end{equation}
 
