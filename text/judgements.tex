@@ -55,14 +55,15 @@ Offender signatures must be similarly valid and reference work-reports with judg
   \forall (r, k, s) &\in \xtculprits : \bigwedge \left\{
   \begin{aligned}
     &r \in \badset' \,,\\
-    &k \in (\lambda \cup \kappa) \setminus \offenders \,,\\
+    &k \in \mathbf{k} \,,\\
     &s \in \sig{k}{\mathsf{X}_G \frown r}
   \end{aligned}\right.\\
   \forall (r, v, k, s) &\in \xtfaults : \bigwedge \left\{ \begin{aligned}
     &r \in \badset' \Leftrightarrow r \not\in \goodset' \Leftrightarrow v \,,\\
-    &k \in (\lambda \cup \kappa) \setminus \offenders \,,\\
+    &k \in \mathbf{k} \,,\\
     &s \in \sig{k}{\mathsf{X}_v \concat r}\\
-  \end{aligned}\right.
+  \end{aligned}\right.\\
+  \nonumber\where \mathbf{k} &= \{k_e \mid k \in \lambda \cup \kappa\} \setminus \offenders
 \end{align}
 
 Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
