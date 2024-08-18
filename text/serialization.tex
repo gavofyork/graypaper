@@ -26,7 +26,7 @@ Passing multiple arguments to the serialization functions is equivalent to passi
 \end{align}
 
 \subsubsection{Integer Encoding}
-We first define the trivial natural number serialization functions which are subscripted by the number of octets of the final sequence. Values are encoded in a regular little-endian fashion. Formally:
+We first define the trivial natural number serialization functions which are subscripted by the number of octets of the final sequence. Values are encoded in a regular little-endian fashion. This is utilized for almost all integer encoding across the protocol. Formally:
 \begin{equation}
   \se_{l \in \N}\colon\left\{\begin{aligned}
     \N_{2^{8l}} &\to \Y_l \\
@@ -37,17 +37,17 @@ We first define the trivial natural number serialization functions which are sub
   \end{aligned}\right.
 \end{equation}
 
-We also define the variable-size prefix 29-bit natural serialization function $\se_{4*}$:
-\begin{equation}
-  \se_{4*}\colon\left\{\begin{aligned}
-    \N_{2^{29}} &\to \Y_{1:4} \\
-    x &\mapsto \begin{cases}
-      [0] &\when x = 0 \\
-      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \se_l(x \bmod 2^{8l}) &\when \exists l \in \N_3 : 2^{7l} \le x < 2^{7(l+1)} \\
-      \left[2^8-2^5 + \ffrac{x}{2^{24}}\right] \concat \se_3(x \bmod 2^{24}) &\when 2^{21} \le x < 2^{29} \\
-    \end{cases}
-  \end{aligned}\right.
-\end{equation}
+%We also define the variable-size prefix 29-bit natural serialization function $\se_{4*}$:
+%\begin{equation}
+%  \se_{4*}\colon\left\{\begin{aligned}
+%    \N_{2^{29}} &\to \Y_{1:4} \\
+%    x &\mapsto \begin{cases}
+%      [0] &\when x = 0 \\
+%      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \se_l(x \bmod 2^{8l}) &\when \exists l \in \N_3 : 2^{7l} \le x < 2^{7(l+1)} \\
+%      \left[2^8-2^5 + \ffrac{x}{2^{24}}\right] \concat \se_3(x \bmod 2^{24}) &\when 2^{21} \le x < 2^{29} \\
+%    \end{cases}
+%  \end{aligned}\right.
+%\end{equation}
 
 We define general natural number serialization, able to encode naturals of up to $2^{64}$, as:
 \begin{equation}
@@ -60,6 +60,8 @@ We define general natural number serialization, able to encode naturals of up to
     \end{cases}
   \end{aligned}\right.
 \end{equation}
+
+Note that at present this is utilized only in encoding the length prefix of variable-length sequences.
 
 \subsubsection{Sequence Encoding}
 We define the sequence serialization function $\se(\seq{T})$ for any $T$ which is itself a subset of the domain of $\se$. We simply concatenate the serializations of each element in the sequence in turn:
@@ -127,7 +129,7 @@ A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, 
     \var{[(r, a, [(v, \se_2(i), s) \mid (v, i, s) \orderedin \mathbf{v}]) \mid (r, a, \mathbf{v}) \orderedin \mathbf{j}]}, \var{\mathbf{c}}, \var{\mathbf{f}},\ \\
     &\var{[\tup{s, \var{p}} \mid \tup{s, p} \orderedin \xtpreimages]},\ 
     \var{\xtassurances},\ 
-    \var{[\tup{c, w, \var{a}} \mid \tup{c, w, a} \orderedin \xtguarantees]}
+    \var{[\tup{w, \se_4(t), \var{a}} \mid \tup{w, t, a} \orderedin \xtguarantees]}
   \end{aligned}\;\right\rparen \\
   \nonumber &\quad \where \xtdisputes \equiv (\mathbf{j}, \mathbf{c}, \mathbf{f}) \\
   \se(\mathbf{H}) &= \se_U(\mathbf{H})\concat\se(\mathbf{H}_s) \\
