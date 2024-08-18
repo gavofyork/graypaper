@@ -187,7 +187,7 @@ Any alterations of the program counter stemming from a static jump, call or bran
   \end{cases}
 \end{equation}
 
-Jumps whose next instruction is dynamically computed must use an address which may be indexed into the jump-table $\mathbf{j}$. Through a quirk of tooling\footnote{The popular code generation backend \textsc{llvm} requires and assumes in its code generation that dynamically computed jump destinations always have a certain memory alignment. Since at present we depend on this for our tooling, we must acquiesce to its assumptions.}, we define the dynamic address required by the instructions as the jump table index incremented by one and then multiplied by our jump alignment factor $\mathsf{Z}_A = 4$.
+Jumps whose next instruction is dynamically computed must use an address which may be indexed into the jump-table $\mathbf{j}$. Through a quirk of tooling\footnote{The popular code generation backend \textsc{llvm} requires and assumes in its code generation that dynamically computed jump destinations always have a certain memory alignment. Since at present we depend on this for our tooling, we must acquiesce to its assumptions.}, we define the dynamic address required by the instructions as the jump table index incremented by one and then multiplied by our jump alignment factor $\mathsf{Z}_A = 2$.
 
 As with other irregular alterations to the program counter, target code index must be the start of a basic block or else a panic occurs. Formally:
 \begin{equation}\label{eq:jumptablealignment}
