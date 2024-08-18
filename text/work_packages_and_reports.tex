@@ -203,14 +203,16 @@ The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ whi
 We may then define $s$ as the data availability specification of the package using these two functions together with the yet to be defined \emph{Availability Specifier} function $\newavailabilityspecifier$ (see section \ref{sec:availabiltyspecifier}):
 \begin{equation}
   \begin{aligned}
-    s &= \newavailabilityspecifier(\mathcal{H}(\mathbf{p}), \se(\var{\mathbf{p}}, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
-    \nonumber \where \mathbf{x} &= [[\var{\se(\mathbf{d})} \mid \mathbf{d} \in \extrinsicdata(w)] \mid w \orderedin \mathbf{p}_\wp¬workitems]\\
+    s &= \newavailabilityspecifier(\mathcal{H}(\mathbf{p}), \se(\mathbf{p}, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
+    \nonumber \where \mathbf{x} &= [\extrinsicdata(w) \mid w \orderedin \mathbf{p}_\wp¬workitems]\\
     \nonumber \also \mathbf{i} &= [\importsegmentdata(w) \mid w \orderedin \mathbf{p}_\wp¬workitems]\\
     \nonumber \also \mathbf{j} &= [\var{\mathcal{J}(\mathbf{s}, n)} \mid (\mathcal{M}(\mathbf{s}), n) \orderedin w_\wi¬importsegments, w \orderedin \mathbf{p}_\wp¬workitems]
   \end{aligned}
 \end{equation}
 
 Note that while $\importsegmentdata$ and $\mathbf{j}$ are both formulated using the term $\mathbf{s}$ (all segments exported by all work-packages exporting a segment to be imported) such a vast amount of data is not generally needed as the justification can be derived through a single paged-proof. This reduces the worst case data fetching for a guarantor to two segments for every one to be imported. In the case that contiguously exported segments are imported (which we might assume is a fairly common situation), then a single proof-page should be sufficient to justify many imported segments.
+
+Also of note is the lack of length prefixes: only the Merkle paths for the justifications (\ie the elements of $\mathbf{j}$) have a length prefix. All other sequence lengths are determinable through the work package itself.
 
 The Is-Authorized logic it references is first executed to ensure that the work-package warrants the needed core-time. Next, the guarantor should ensure that all segment-tree roots which form imported segment commitments are known and have not expired. Finally, the guarantor should ensure that they can fetch all preimage data referenced as the commitments of extrinsic segments.
 
