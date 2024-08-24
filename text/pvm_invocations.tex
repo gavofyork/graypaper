@@ -7,14 +7,14 @@
 
 \begin{description}
   \item[$\mathtt{NONE} = 2^{32} - 1$] The return value indicating an item does not exist.
-  \item[$\mathtt{OOB} = 2^{32} - 2$] The return value for when a memory index is provided for reading/writing which is not accessible.
-  \item[$\mathtt{WHO} = 2^{32} - 3$] Index unknown.
-  \item[$\mathtt{FULL} = 2^{32} - 4$] Storage full.
-  \item[$\mathtt{CORE} = 2^{32} - 5$] Core index unknown.
-  \item[$\mathtt{CASH} = 2^{32} - 6$] Insufficient funds.
-  \item[$\mathtt{LOW} = 2^{32} - 7$] Gas limit too low.
-  \item[$\mathtt{HIGH} = 2^{32} - 8$] Gas limit too high.
-  \item[$\mathtt{WHAT} = 2^{32} - 9$] Name unknown.
+  \item[$\mathtt{WHAT} = 2^{32} - 2$] Name unknown.
+  \item[$\mathtt{OOB} = 2^{32} - 3$] The return value for when a memory index is provided for reading/writing which is not accessible.
+  \item[$\mathtt{WHO} = 2^{32} - 4$] Index unknown.
+  \item[$\mathtt{FULL} = 2^{32} - 5$] Storage full.
+  \item[$\mathtt{CORE} = 2^{32} - 6$] Core index unknown.
+  \item[$\mathtt{CASH} = 2^{32} - 7$] Insufficient funds.
+  \item[$\mathtt{LOW} = 2^{32} - 8$] Gas limit too low.
+  \item[$\mathtt{HIGH} = 2^{32} - 9$] Gas limit too high.
   \item[$\mathtt{HUH} = 2^{32} - 10$] The item is already solicited or cannot be forgotten.
   \item[$\mathtt{OK} = 0$] The return value indicating general success.
 \end{description}
@@ -22,9 +22,9 @@
 Inner \textsc{pvm} invocations have their own set of result codes:
 \begin{description}
   \item[$\mathtt{HALT} = 0$] The invocation completed and halted normally.
-  \item[$\mathtt{PANIC} = 2^{32} - 12$] The invocation completed with a panic.
-  \item[$\mathtt{FAULT} = 2^{32} - 13$] The invocation completed with a page fault.
-  \item[$\mathtt{HOST} = 2^{32} - 14$] The invocation completed with a host-call fault.
+  \item[$\mathtt{PANIC} = 1$] The invocation completed with a panic.
+  \item[$\mathtt{FAULT} = 2$] The invocation completed with a page fault.
+  \item[$\mathtt{HOST} = 3$] The invocation completed with a host-call fault.
 \end{description}
 
 Note return codes for a host-call-request exit are any non-zero value less than $2^{32} - 13$.
@@ -66,7 +66,7 @@ The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated
 
 The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\mathsf{W}_S$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
 
-The Refine invocation function also implicitly draws upon some recent head state $\delta$ and explicitly accepts the work payload, $\mathbf{y}$, together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{c}$, the authorizer hash $a$ and its output $\mathbf{o}$, and an export segment offset $\segoff$, the import and extrinsic data blobs (both just concatenated segments) as dictated by the work-item, $\mathbf{i}$ and $\mathbf{x}$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
+The Refine invocation function also implicitly draws upon some recent head state $\delta$ and explicitly accepts the work payload, $\mathbf{y}$, together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{c}$, the authorizer hash $a$ and its output $\mathbf{o}$, and an export segment offset $\segoff$, the import segments and extrinsic data blobs as dictated by the work-item, $\mathbf{i}$ and $\overline{\mathbf{x}}$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   \Psi_R &\colon \left\{\begin{aligned}
     \left(\begin{aligned}
@@ -74,11 +74,11 @@ The Refine invocation function also implicitly draws upon some recent head state
       &\H, \Y, \seq{\G}, \seq{\Y}, \N
     \end{aligned}
     \right) &\to (\Y \cup \mathbb{J}, \seq{\Y}) \\
-    (c, g, s, p, \mathbf{y}, \mathbf{c}, a, \mathbf{o}, \mathbf{i}, \mathbf{x}, \segoff) &\mapsto \begin{cases}
+    (c, g, s, p, \mathbf{y}, \mathbf{c}, a, \mathbf{o}, \mathbf{i}, \overline{\mathbf{x}}, \segoff) &\mapsto \begin{cases}
       (\token{BAD}, []) &\when s \not\in \keys{\delta} \vee \Lambda(\delta[s], \mathbf{c}_t, c) = \none \\
       (\token{BIG}, []) &\otherwhen |\Lambda(\delta[s], \mathbf{c}_t, c)| > \mathsf{S} \\
       &\otherwise: \\
-      &\quad\using a = \se(s, \mathbf{y}, p, \mathbf{c}, a, \mathbf{o}, \var{\mathbf{x}})\ ,\\
+      &\quad\using a = \se(s, \mathbf{y}, p, \mathbf{c}, a, \mathbf{o}, \var{\sq{\var{\mathbf{x}} \mid \mathbf{x} \orderedin \overline{\mathbf{x}}}})\ ,\\
       &\quad\also (\mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[s], \mathbf{c}_t, c), 1, g, a, F, (\emptyset, []))\ \colon\\
       (\mathbf{r}, []) &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
       (\mathbf{u}, \mathbf{e}) &\quad\when \mathbf{r} = \tup{g, \mathbf{u}} \\

@@ -95,9 +95,9 @@ There are some constraints placed on the composition of this extrinsic: any verd
 We clear any work-reports which we judged as uncertain or invalid from their core:
 \begin{equation}\label{eq:removenonpositive}
   \forall c \in \N_\mathsf{C} : \rho^\dagger[c] = \begin{cases}
-    \none &\when \{ (\rho[c]_r, t) \in \verdicts, t < \floor{\nicefrac{2}{3}\mathsf{V}} \} \\
-    \rho_c &\otherwise
-  \end{cases}
+    \none &\!\!\!\!\when \{ (\mathcal{H}(\rho[c]_r), t) \in \verdicts, t < \floor{\nicefrac{2}{3}\mathsf{V}} \} \\
+    \rho_c &\!\!\!\!\otherwise
+  \end{cases}\!\!\!\!\!\!\!
 \end{equation}
 
 The state's good-set, bad-set and wonky-set assimilate the hashes of the reports from each verdict. Finally, the punish-set accumulates the keys of any validators who have been found guilty of offending. Formally:
@@ -110,8 +110,7 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
 
 \subsection{Header}\label{sec:judgementmarker}
 
-The verdicts and offenders markers must contain exactly the sequence of report hashes of all new bad \& wonky verdicts and keys of all new offenders, respectively. Formally:
+The offenders markers must contain exactly the keys of all new offenders, respectively. Formally:
 \begin{align}
-  \mathbf{H}_j &\equiv \sq{r \mid \tup{r, t} \orderedin \verdicts, t \ne \floor{\nicefrac{2}{3}\mathsf{V}} + 1}\\
   \mathbf{H}_o &\equiv \sq{ k \mid (r, k, s) \in \xtculprits} \frown \sq{ k \mid (r, v, k, s) \in \xtfaults }
 \end{align}
