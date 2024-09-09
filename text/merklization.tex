@@ -162,11 +162,11 @@ We define the constant-depth binary Merkle function as $\mathcal{M}$ and the cor
     (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}, H), H)
   \end{aligned}\right.\\
   \mathcal{J}&\colon \left\{\begin{aligned}\label{eq:constantdepthmerklejust}
-    (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \H\\
+    (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \seq{\H}\\
     (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), i, H)
   \end{aligned}\right.\\
   \mathcal{J}_x&\colon \left\{\begin{aligned}\label{eq:constantdepthsubtreemerklejust}
-    (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \H\\
+    (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \seq{\H}\\
     (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), i, H)_{\dots\max(0, \ceil{\log_2(|\mathbf{v}|) - x})}
   \end{aligned}\right.
 \end{align}
@@ -180,7 +180,7 @@ In all cases, a constancy preprocessor function $C$ is applied which hashes all 
   C\colon\left\{\begin{aligned}
     (\seq{\Y}, \Y \to \H) &\to \seq{\H}\\
     (\mathbf{v}, H) &\mapsto \mathbf{v}' \ \where \left\{\; \begin{aligned}
-      |\mathbf{v}'| &= 2^{\ceil{\log_2(|\mathbf{v}|)}}\\
+      |\mathbf{v}'| &= 2^{\ceil{\log_2(\max(1, |\mathbf{v}|))}}\\
       \mathbf{v}'_i &= \begin{cases}
         H(\token{\$leaf}\frown\mathbf{v}_i) &\when i < |\mathbf{v}|\\
         \mathbb{H}_0 &\otherwise \\
