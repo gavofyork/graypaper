@@ -84,12 +84,12 @@ We can thus define $\mathbf{a}_n$ beyond the initial tranche through a new \text
 \begin{align}
   \nonumber&\!\!\!\!\!\!\!\!\forall n > 0:\\
   &\ s_n(w) \in \bandersig{\kappa[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}\concat\mathcal{H}(w)\doubleplus n}{[]} \\
-  &\ \mathbf{a}_n \equiv \{ w \in \mathbf{Q} \mid \textstyle\frac{\mathsf{F}}{256\mathsf{V}}\banderout{s_n(w)}_0 < |A_{n - 1}(w) \setminus J_\top(w)| \}\!\!\!\!
+  &\ \mathbf{a}_n \equiv \{ w \in \mathbf{Q} \mid \textstyle\frac{\mathsf{V}}{256\mathsf{F}}\banderout{s_n(w)}_0 < |A_{n - 1}(w) \setminus J_\top(w)| \}\!\!\!\!
 \end{align}
 
 We define our bias factor $\mathsf{F} = 2$, which is the expected number of validators which will be required to issue a judgement for a work-report given a single no-show in the tranche before. Modeling by \cite{cryptoeprint:2024/961} shows that this is optimal.
 
-Later audits must be announced in a similar fashion to the first. If audit requirements lesson on the receipt of new information (\ie a positive judgement being returned for a previous \emph{no-show}), then any audits already announced are completed and judgements published. If audit requirements raise on the receipt of new information (\ie an additional announcement being found without an accompanying judgement), then we announce the additional audit(s) we will undertake.
+Later audits must be announced in a similar fashion to the first. If audit requirements lessen on the receipt of new information (\ie a positive judgement being returned for a previous \emph{no-show}), then any audits already announced are completed and judgements published. If audit requirements raise on the receipt of new information (\ie an additional announcement being found without an accompanying judgement), then we announce the additional audit(s) we will undertake.
 
 As $n$ increases with the passage of time $\mathbf{a}_n$ becomes known and defines our auditing responsibilities. We must attempt to reconstruct all work-packages and their requisite data corresponding to each work-report we must audit. This may be done through requesting erasure-coded chunks from one-third of the validators. It may also be short-cutted through asking a cooperative third-party (\eg an original guarantor) for the preimages.
 
