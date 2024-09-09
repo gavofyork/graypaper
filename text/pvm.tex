@@ -147,14 +147,14 @@ We define signed/unsigned transitions for various octet widths:
 \begin{align}
   \label{eq:signedfunc}
   \signfunc{n \in \N}&\colon\left\{\begin{aligned}
-    \N_{2^{8n}} &\to \Z_{-2^{8n-1}:2^{8n-1}}\\
+    \N_{2^{8n}} &\to \Z_{-2^{8n-1}\dots2^{8n-1}}\\
     a &\mapsto \begin{cases}
       a &\when a < 2^{8n-1} \\
       a -\ 2^{8n} &\otherwise
     \end{cases}
   \end{aligned}\right.\\
   \unsignfunc{n \in \N}&\colon\left\{\begin{aligned}
-    \Z_{-2^{8n-1}:2^{8n-1}} &\to \N_{2^{8n}}\\
+    \Z_{-2^{8n-1}\dots2^{8n-1}} &\to \N_{2^{8n}}\\
     a &\mapsto (2^{8n} + a) \bmod 2^{8n}
   \end{aligned}\right.\\
   \label{eq:bitsfunc}
@@ -634,7 +634,7 @@ If the above cannot be satisfied, then $x = \none$, otherwise $x = (\mathbf{c}, 
     &(\mathbf{w}_{i - (2\mathsf{Z}_Q + \rnq{|\mathbf{o}|})}, W) &&\ \when
         2\mathsf{Z}_Q + \rnq{|\mathbf{o}|}
             &\ \leq i < \ &&
-                2\mathsf{Z}_Q + \rnq{|\mathbf{o}|} + |w|\\
+                2\mathsf{Z}_Q + \rnq{|\mathbf{o}|} + |\mathbf{w}|\\
     &(0, W) &&\ \when
         2\mathsf{Z}_Q + \rnq{|\mathbf{o}|} + |\mathbf{w}|
             &\ \leq i < \ &&
