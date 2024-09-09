@@ -159,15 +159,15 @@ We define the constant-depth binary Merkle function as $\mathcal{M}$ and the cor
 \begin{align}\label{eq:constantdepthmerkleroot}
   \mathcal{M}&\colon \left\{\begin{aligned}
     (\seq{\Y}, \Y \to \H) &\to \H\\
-    (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}), H)
+    (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}, H), H)
   \end{aligned}\right.\\
   \mathcal{J}&\colon \left\{\begin{aligned}\label{eq:constantdepthmerklejust}
     (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \H\\
-    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}), i, H)
+    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), i, H)
   \end{aligned}\right.\\
   \mathcal{J}_x&\colon \left\{\begin{aligned}\label{eq:constantdepthsubtreemerklejust}
     (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \H\\
-    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}), i, H)_{\dots\max(0, \ceil{\log_2(|\mathbf{v}|) - x})}
+    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), i, H)_{\dots\max(0, \ceil{\log_2(|\mathbf{v}|) - x})}
   \end{aligned}\right.
 \end{align}
 
