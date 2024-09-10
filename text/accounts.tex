@@ -145,7 +145,14 @@ We may then define a second dependent term $t$, the minimum, or \emph{threshold}
 
 
 \subsection{Service Privileges}
-Up to three services may be recognized as privileged. The portion of state in which this is held is denoted $\chi$ and has three components, each a service index. $m$ is the index of the \emph{manager} service, the service able to effect an alteration of $\chi$ from block to block. $a$ and $v$ are each the indices of services able to alter $\varphi$ and $\iota$ from block to block. Formally:
+Up to three services may be recognized as privileged. The portion of state in which this is held is denoted $\chi$ and has three service index components together with a gas limit. The first, $\chi_m$, is the index of the \emph{manager} service which is the service able to effect an alteration of $\chi$ from block to block. The following two, $\chi_a$ and $\chi_v$, are each the indices of services able to alter $\varphi$ and $\iota$ from block to block.
+
+Finally, $\chi_\mathbf{g}$ is a small dictionary containing the indices of services which automatically accumulate in each block together with a basic amount of gas with which each accumulates. Formally:
 \begin{align}
-  \chi \equiv \ltuple\isa{\chi_m}{\N_S}\ts\isa{\chi_a}{\N_S}\ts\isa{\chi_v}{\N_S}\rtuple
+  \chi \equiv \tuple{
+    \isa{\chi_m}{\N_S} \ts
+    \isa{\chi_a}{\N_S} \ts
+    \isa{\chi_v}{\N_S} \ts
+    \isa{\chi_\mathbf{g}}{\dict{\N_S}{\N_G}}
+  }
 \end{align}

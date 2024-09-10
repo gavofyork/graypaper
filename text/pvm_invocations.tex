@@ -390,9 +390,15 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \texttt{empower} = 5 \\
   $g = 10$}&
   $\begin{aligned}
-    (\mathbf{x}'_p)_m = \omega_0 \\
-    (\mathbf{x}'_p)_a = \omega_1 \\
-    (\mathbf{x}'_p)_v = \omega_2 \\
+    \using [m, a, v, o, n] &= \omega_{0 \dots 5} \\
+    \using \mathbf{g} &= \begin{cases}
+      \left\{ (s \mapsto g) \ \where \se_4(s) \concat \se_8(g) = \mathbf{d}_{o+12i\dots+12} \mid i \in \N_n \right\} &\when \mathbb{Z}_{o \dots+ 12n} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    (\omega'_0, \mathbf{x}'_p) &= \begin{cases}
+      (\mathtt{OK}, \tuple{m, a, v, \mathbf{g}}) &\when \mathbf{g} \ne \error \\
+      (\mathtt{OOB}, \mathbf{x}_p) &\otherwise
+    \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
