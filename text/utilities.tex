@@ -5,7 +5,7 @@ The Fisher-Yates shuffle function is defined formally as:
   \forall T, l \in \N: \mathcal{F}\colon\left\{\begin{aligned}
     (\seq{T}_l, \seq{\N}_{l:}) &\to \seq{T}_l\\
     (\mathbf{s}, \mathbf{r}) &\mapsto \begin{cases}
-      [\mathbf{s}_{\mathbf{r}_0 \bmod l}] \frown \mathcal{F}([\mathbf{s}_i\mid i \orderedin \N_l \setminus \{\mathbf{r}_0 \bmod l\}], [\mathbf{r}_1, \mathbf{r}_2, \dots]) &\when \mathbf{s} \ne []\\
+      [\mathbf{s}_{\mathbf{r}_0 \bmod l}] \frown \mathcal{F}(\mathbf{s}'_{\dots l-1}, \mathbf{r}_{1\dots})\ \where \mathbf{s}' = \mathbf{s} \exc \mathbf{s'}_{\mathbf{r}_0 \bmod l} = \mathbf{s}_{l - 1} &\when \mathbf{s} \ne []\\
       [] &\otherwise
     \end{cases}
   \end{aligned}\right.
@@ -15,7 +15,7 @@ Since it is often useful to shuffle a sequence based on some random seed in the 
 \begin{align}
   \forall l \in \N:\ \mathcal{Q}_l&\colon\left\{\begin{aligned}
     \H &\to \seq{\N_l}\\
-    h &\mapsto [\de_4(\mathcal{H}(h \frown \se_4(\lfloor \nicefrac{i}{8}\rfloor))_{4i \bmod 32 \dots}) \mid i \in \N_l]
+    h &\mapsto [\de_4(\mathcal{H}(h \frown \se_4(\lfloor \nicefrac{i}{8}\rfloor))_{4i \bmod 32 \dots+4}) \mid i \in \N_l]
   \end{aligned}\right.\\
   \label{eq:sequencefromhash}
   \forall T, l \in \N:\ \mathcal{F}&\colon\left\{\begin{aligned}
