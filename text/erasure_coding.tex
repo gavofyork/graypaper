@@ -3,22 +3,27 @@
 \newcommand{\join}{\text{join}}
 \newcommand{\spl}{\text{split}}
 
-The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}(16) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\Y_2$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\se_2$. From this we may assume the encoding function $\mathcal{C}: \seq{\Y_2}_{342} \to \seq{\Y_2}_{1023}$ and the recovery function $\mathcal{R}: \powset[342]{\tuple{\Y_2, \N_{1023}}} \to \seq{\Y_2}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\mathbf{C}$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices and transforming this into the original sequence of 342 octet pairs.
+The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}(16) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\Y_2$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\se_2$. From this we may assume the encoding function $\mathcal{C}: \seq{\Y_2}_{342} \to \seq{\Y_2}_{1023}$ and the recovery function $\mathcal{R}: \powset[342]{\tuple{\Y_2, \N_{1023}}} \to \seq{\Y_2}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\mathcal{C}$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
 
 Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of 684 octets. Data whose length is not divisible by 684 must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit DA and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import DA system.
 
-For the Import DA system, we deal with an input size of 4,104 octets resulting in data-parallelism of order six. We may attain a greater degree of data parallelism if encoding or recovering more than one segment at a time though for recovery, we may be restricted to the requiring each segment to be formed from the same set of indices (depending on the specific algorithm).
+For the Import DA system, we deal with an input size of 4,104 octets resulting in data-parallelism of order six. We may attain a greater degree of data parallelism if encoding or recovering more than one segment at a time though for recovery, we may be restricted to requiring each segment to be formed from the same set of indices (depending on the specific algorithm).
 
 \subsection{Blob Encoding and Recovery}
 
-We assume some data blob $\mathbf{d} \in \Y_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\Y_{684}} = \spl_{684}(\mathbf{p})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $C$ as above to give 1,023 octet pairs per piece.
+\newcommand*{\unzip}{\text{unzip}}
+\newcommand*{\lace}{\text{lace}}
+
+We assume some data blob $\mathbf{d} \in \Y_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\Y_{684}} = \unzip_{684}(\mathbf{p})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $\mathcal{C}$ as above to give 1,023 octet pairs per piece.
 
 The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
-Formally we begin by defining two utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for joining subsequences back into a single large sequence:
+Formally we begin by defining four utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
 \begin{align}
-  \forall n, k \in \N :\ &\spl_n(\mathbf{d} \in \Y_{k\cdot n}) \in \seq{\Y_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
-  \forall n, k \in \N :\ &\join(\mathbf{c} \in \seq{\Y_n}_k) \in \Y_{k\cdot n} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots
+  \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \Y_{k\cdot n}) \in \seq{\Y_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
+  \forall n \in \N, k \in \N :\ &\join_n(\mathbf{c} \in \seq{\Y_n}_k) \in \Y_{k\cdot n} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots \\
+  \forall n \in \N, k \in \N :\ &\unzip_n(\mathbf{d} \in \Y_{k\cdot n}) \in \seq{\Y_n}_k \equiv \sq{ [\mathbf{d}_{j.k + i} \mid j \in \N_n] \mid i \in \N_k} \\
+  \forall n \in \N, k \in \N :\ &\lace_n(\mathbf{c} \in \seq{\Y_n}_k) \in \Y_{k\cdot n} \equiv \mathbf{d} \ \where \forall i \in \N_k, j \in \N_n: \mathbf{d}_{j.k + i} = (\mathbf{c}_i)_j
 \end{align}
 
 We define the transposition operator hence:
@@ -30,23 +35,28 @@ We may then define our erasure-code chunking function which accepts an arbitrary
 \begin{equation}\label{eq:erasurecoding}
   \mathcal{C}_{k \in \N}\colon\left\{\begin{aligned}
     \Y_{684k} &\to \seq{\Y_{2k}}_{1023} \\
-    \mathbf{d} &\mapsto [ \join(\mathbf{c}) \mid \mathbf{c} \orderedin {}^{\text{T}}[\mathcal{C}(\mathbf{p}) \mid \mathbf{p} \orderedin \text{split}_{684}(\mathbf{d})] ]
+    \mathbf{d} &\mapsto [ \join(\mathbf{c}) \mid \mathbf{c} \orderedin {}^{\text{T}}[\mathcal{C}(\mathbf{p}) \mid \mathbf{p} \orderedin \text{unzip}_{684}(\mathbf{d})] ]
   \end{aligned}\right.
 \end{equation}
 
-The original data may be reconstructed with only 342 of the 1,023 items of said function's result, together with the items' respective indices:
+The original data may be reconstructed with any 342 of the 1,023 resultant items (along with their indices). If the original 342 items are known then reconstruction is just their concatenation.
 \begin{equation}\label{eq:erasurecodinginv}
   \mathcal{R}_{k \in \N}\colon\left\{\begin{aligned}
     \{(\Y_{2k}, \N_{1023})\}_{342} &\to \Y_{684k} \\
-    \mathbf{c} &\mapsto \join([
-      \mathcal{R}([(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \orderedin \mathbf{c}])
-      \mid p \in \N_k
+    \mathbf{c} &\mapsto \begin{cases}
+      \se([\mathbf{x} \mid (\mathbf{x}, i) \orderedin \mathbf{c}]) &\when [i \mid (\mathbf{x}, i) \orderedin \mathbf{c}] = [0, 1, \dots 341]\\
+      \lace_k([
+        \mathcal{R}([(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \orderedin \mathbf{c}])
+      \mid p \in \N_k &\text{always}\\
+    \end{cases}
     ])
 %      [ \mathcal{R}(\mathbf{y}, i) \mid \mathbf{y} \orderedin \transpose[ \spl_2(\mathbf{x}) \mid (\mathbf{x}, i) \orderedin \mathbf{c}] ]
   \end{aligned}\right.
 \end{equation}
 
-Segment encoding is just this with $k = 6$.
+
+
+Segment encoding/decoding may be done using the same functions albeit with a constant $k = 6$.
 
 \subsection{Code Word representation}
 
@@ -62,7 +72,7 @@ Hence:
 
 We name the generator of $\frac{\mathbb{F}_{16}}{\mathbb{F}_2}$, the root of the above polynomial, $\alpha$ as such: $\mathbb{F}_{16} = \mathbb{F}_2(\alpha)$.
 
-Instead of using the standard basis $\{1, \alpha, \alpha, \dots, \alpha^{15}\}$, we opt for a representation of $\mathbb{F}_{16}$ which performs more efficiently for the encoding and the decoding process. To that aim, we name this specific representation of $\mathbb{F}_{16}$ as $\tilde{\mathbb{F}}_{16}$ and define it as a vector space generated by the following Cantor basis:
+Instead of using the standard basis $\{1, \alpha, \alpha^2, \dots, \alpha^{15}\}$, we opt for a representation of $\mathbb{F}_{16}$ which performs more efficiently for the encoding and the decoding process. To that aim, we name this specific representation of $\mathbb{F}_{16}$ as $\tilde{\mathbb{F}}_{16}$ and define it as a vector space generated by the following Cantor basis:
 
 \begin{center}
   \begin{tabular}{ll}
