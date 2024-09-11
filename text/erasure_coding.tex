@@ -11,19 +11,19 @@ For the Import DA system, we deal with an input size of 4,104 octets resulting i
 
 \subsection{Blob Encoding and Recovery}
 
-\newcommand*{\splinter}{\text{unzip}}
+\newcommand*{\unzip}{\text{unzip}}
 \newcommand*{\lace}{\text{lace}}
 
-We assume some data blob $\mathbf{d} \in \Y_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\Y_{684}} = \splinter_{684}(\mathbf{p})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $\mathcal{C}$ as above to give 1,023 octet pairs per piece.
+We assume some data blob $\mathbf{d} \in \Y_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\Y_{684}} = \unzip_{684}(\mathbf{p})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $\mathcal{C}$ as above to give 1,023 octet pairs per piece.
 
 The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
-Formally we begin by defining two utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for joining subsequences back into a single large sequence, together with their :
+Formally we begin by defining four utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
 \begin{align}
   \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \Y_{k\cdot n}) \in \seq{\Y_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
-  \forall n \in \N, k \in \N :\ &\join(\mathbf{c} \in \seq{\Y_n}_k) \in \Y_{k\cdot n} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots \\
-  \forall n \in \N, k \in \N :\ &\splinter_n(\mathbf{d} \in \Y_{k\cdot n}) \in \seq{\Y_n}_k \equiv \sq{ [\mathbf{d}_{j.k + i} \mid j \in \N_n] \mid i \in \N_k} \\
-  \forall n \in \N, k \in \N :\ &\lace_n(\mathbf{c} \in \seq{\Y_n}_k) \in \Y_{k\cdot n} \equiv \mathbf{d} \ \where \forall i \in \N_k, j \in \N_n: \mathbf{d}_{j.k + i} = (\mathbf{c}_i)_j \\
+  \forall n \in \N, k \in \N :\ &\join_n(\mathbf{c} \in \seq{\Y_n}_k) \in \Y_{k\cdot n} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots \\
+  \forall n \in \N, k \in \N :\ &\unzip_n(\mathbf{d} \in \Y_{k\cdot n}) \in \seq{\Y_n}_k \equiv \sq{ [\mathbf{d}_{j.k + i} \mid j \in \N_n] \mid i \in \N_k} \\
+  \forall n \in \N, k \in \N :\ &\lace_n(\mathbf{c} \in \seq{\Y_n}_k) \in \Y_{k\cdot n} \equiv \mathbf{d} \ \where \forall i \in \N_k, j \in \N_n: \mathbf{d}_{j.k + i} = (\mathbf{c}_i)_j
 \end{align}
 
 We define the transposition operator hence:
@@ -35,15 +35,22 @@ We may then define our erasure-code chunking function which accepts an arbitrary
 \begin{equation}\label{eq:erasurecoding}
   \mathcal{C}_{k \in \N}\colon\left\{\begin{aligned}
     \Y_{684k} &\to \seq{\Y_{2k}}_{1023} \\
-    \mathbf{d} &\mapsto [ \join(\mathbf{c}) \mid \mathbf{c} \orderedin {}^{\text{T}}[\mathcal{C}(\mathbf{p}) \mid \mathbf{p} \orderedin \text{split}_{684}(\mathbf{d})] ]
+    \mathbf{d} &\mapsto [ \join(\mathbf{c}) \mid \mathbf{c} \orderedin {}^{\text{T}}[\mathcal{C}(\mathbf{p}) \mid \mathbf{p} \orderedin \text{unzip}_{684}(\mathbf{d})] ]
   \end{aligned}\right.
 \end{equation}
 
+TODO: Check this!!!
+Should be v0p0v0p1v0p2v0p3v0p4v0p5v0p6 ++
+          v1p0v1p1v1p2v1p3v1p4v1p5v1p6 ++
+          ...
+          v341p0v341p1v341p2v341p3v341p4v341p5v341p6 ++
+
+          [p0, p1, p2, p3, p4, p5, p6]
 The original data may be reconstructed with only 342 of the 1,023 items of said function's result, together with the items' respective indices:
 \begin{equation}\label{eq:erasurecodinginv}
   \mathcal{R}_{k \in \N}\colon\left\{\begin{aligned}
     \{(\Y_{2k}, \N_{1023})\}_{342} &\to \Y_{684k} \\
-    \mathbf{c} &\mapsto \join([
+    \mathbf{c} &\mapsto \lace_k([
       \mathcal{R}([(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \orderedin \mathbf{c}])
       \mid p \in \N_k
     ])
@@ -51,7 +58,7 @@ The original data may be reconstructed with only 342 of the 1,023 items of said 
   \end{aligned}\right.
 \end{equation}
 
-Segment encoding is just this with $k = 6$.
+Segment encoding/decoding may be done using the same functions albeit with a constant $k = 6$.
 
 \subsection{Code Word representation}
 
@@ -67,7 +74,7 @@ Hence:
 
 We name the generator of $\frac{\mathbb{F}_{16}}{\mathbb{F}_2}$, the root of the above polynomial, $\alpha$ as such: $\mathbb{F}_{16} = \mathbb{F}_2(\alpha)$.
 
-Instead of using the standard basis $\{1, \alpha, \alpha, \dots, \alpha^{15}\}$, we opt for a representation of $\mathbb{F}_{16}$ which performs more efficiently for the encoding and the decoding process. To that aim, we name this specific representation of $\mathbb{F}_{16}$ as $\tilde{\mathbb{F}}_{16}$ and define it as a vector space generated by the following Cantor basis:
+Instead of using the standard basis $\{1, \alpha, \alpha^2, \dots, \alpha^{15}\}$, we opt for a representation of $\mathbb{F}_{16}$ which performs more efficiently for the encoding and the decoding process. To that aim, we name this specific representation of $\mathbb{F}_{16}$ as $\tilde{\mathbb{F}}_{16}$ and define it as a vector space generated by the following Cantor basis:
 
 \begin{center}
   \begin{tabular}{ll}
