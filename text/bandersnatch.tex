@@ -16,3 +16,5 @@ The singly-contextualized Bandersnatch Ring\textsc{vrf} proofs $\bandersnatch{r}
   \bandersnatch{r \in \Y_R}{c \in \H}{m \in \Y} \subset \Y_{784} &\equiv \{ x \mid x \in \Y_{784}, \text{verify}(r, c, m, \text{decode}(x_{\dots32}), \text{decode}(x_{32\dots})) = \top \}  \\
   \banderout{p \in \bandersnatch{r}{c}{m}} \in \H &\equiv \text{hashed\_output}(\text{decode}(x_{\dots32}) \mid x \in \bandersnatch{r}{c}{m})
 \end{align}
+
+Note that in the case a key $\H_B$ has no corresponding Bandersnatch point, then it is disregarded from the commitment $\mathcal{O}(\seq{\H_B})$.
