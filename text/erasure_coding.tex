@@ -39,24 +39,22 @@ We may then define our erasure-code chunking function which accepts an arbitrary
   \end{aligned}\right.
 \end{equation}
 
-TODO: Check this!!!
-Should be v0p0v0p1v0p2v0p3v0p4v0p5v0p6 ++
-          v1p0v1p1v1p2v1p3v1p4v1p5v1p6 ++
-          ...
-          v341p0v341p1v341p2v341p3v341p4v341p5v341p6 ++
-
-          [p0, p1, p2, p3, p4, p5, p6]
-The original data may be reconstructed with only 342 of the 1,023 items of said function's result, together with the items' respective indices:
+The original data may be reconstructed with any 342 of the 1,023 resultant items (along with their indices). If the original 342 items are known then reconstruction is just their concatenation.
 \begin{equation}\label{eq:erasurecodinginv}
   \mathcal{R}_{k \in \N}\colon\left\{\begin{aligned}
     \{(\Y_{2k}, \N_{1023})\}_{342} &\to \Y_{684k} \\
-    \mathbf{c} &\mapsto \lace_k([
-      \mathcal{R}([(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \orderedin \mathbf{c}])
-      \mid p \in \N_k
+    \mathbf{c} &\mapsto \begin{cases}
+      \se([\mathbf{x} \mid (\mathbf{x}, i) \orderedin \mathbf{c}]) &\when [i \mid (\mathbf{x}, i) \orderedin \mathbf{c}] = [0, 1, \dots 341]\\
+      \lace_k([
+        \mathcal{R}([(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \orderedin \mathbf{c}])
+      \mid p \in \N_k &\text{always}\\
+    \end{cases}
     ])
 %      [ \mathcal{R}(\mathbf{y}, i) \mid \mathbf{y} \orderedin \transpose[ \spl_2(\mathbf{x}) \mid (\mathbf{x}, i) \orderedin \mathbf{c}] ]
   \end{aligned}\right.
 \end{equation}
+
+
 
 Segment encoding/decoding may be done using the same functions albeit with a constant $k = 6$.
 
