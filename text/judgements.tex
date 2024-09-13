@@ -81,7 +81,7 @@ The judgements of all verdicts must be ordered by validator index and there may 
 
 
 We define $\verdicts$ to derive from the sequence of verdicts introduced in the block's extrinsic, containing only the report hash and the sum of positive judgements. We require this total to be either exactly two-thirds-plus-one, zero or one-third of the validator set indicating, respectively, that the report is good, that it's bad, or that it's wonky.\footnote{This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{cryptoeprint:2024/961} discusses the security implications in depth).} Formally:
-\begin{align}
+\begin{align}\label{eq:verdicts}
   \verdicts &\in \seq{\tup{\H, \{0, \floor{\nicefrac{1}{3}\mathsf{V}}, \floor{\nicefrac{2}{3}\mathsf{V}} + 1\}}} \\
   \verdicts &= \sq{\tup{r, \sum_{\tup{v, i, s} \in \mathbf{j}}\!\!\!\! v}\ \middle\mid\ \tup{r, a, \mathbf{j}} \orderedin \xtverdicts}
 \end{align}
