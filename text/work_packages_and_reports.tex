@@ -26,7 +26,7 @@ Beyond the production of blocks, incentivized honest behavior includes:
 
 \subsection{Segments and the Manifest}
 
-Our basic erasure-coding segment size is $\mathsf{W}_C = 684$ octets, derived from the fact we wish to be able to reconstruct even should almost two-thirds of our 1023 participants be malicious or incapacitated, the 16-bit Galois field on which the erasure-code is based and the desire to efficiently support encoding data of close to, but no less than, 4\textsc{kb}.
+Our basic erasure-coding segment size is $\mathsf{W}_E = 684$ octets, derived from the fact we wish to be able to reconstruct even should almost two-thirds of our 1023 participants be malicious or incapacitated, the 16-bit Galois field on which the erasure-code is based and the desire to efficiently support encoding data of close to, but no less than, 4\textsc{kb}.
 
 Work-packages are generally small to ensure guarantors need not invest a lot of bandwidth in order to discover whether they can get paid for their evaluation into a work-report. Rather than having much data inline, they instead \emph{reference} data through commitments. The simplest commitments are extrinsic data.
 
@@ -36,9 +36,9 @@ Work-packages have two other types of external data associated with them: A cryp
 
 \subsubsection{Segments, Imports and Exports}
 
-The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_S\mathsf{W}_C = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term \emph{Imports DA} during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the DA system.
+The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_S\mathsf{W}_E = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term \emph{Imports DA} during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the DA system.
 \begin{equation}\label{eq:segment}
-  \G \equiv \Y_{\mathsf{W}_S\mathsf{W}_C}
+  \G \equiv \Y_{\mathsf{W}_S\mathsf{W}_E}
 \end{equation}
 
 Exported segments are data which are \emph{generated} through the execution of the Refine logic and thus are a side effect of transforming the work-package into a work-report. Since their data is deterministic based on the execution of the Refine logic, we do not require any particular commitment to them in the work-package beyond knowing how many are associated with each Refine invocation in order that we can supply an exact index.
@@ -91,7 +91,7 @@ We limit the encoded size of a work-package plus the total size of the implied i
 \begin{align}
   \label{eq:checkextractsize}
   \forall \wpX &\in \mathbb{P}: \left(
-  \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments|\cdot\mathsf{W}_S\mathsf{W}_C + \sum_{\wiX \in \wpX_\wp¬workitems} \sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l\right) \le \mathsf{W}_P \\
+  \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments|\cdot\mathsf{W}_S\mathsf{W}_E + \sum_{\wiX \in \wpX_\wp¬workitems} \sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l\right) \le \mathsf{W}_P \\
   \mathsf{W}_P &= 12\cdot2^{20}
 \end{align}
 
@@ -132,7 +132,7 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
       ))
       \mid i \orderedin 64\cdot\N_{\ceil{\nicefrac{|\mathbf{s}|}{64}}}
     ] \\
-    & \where l = \mathsf{W}_S\mathsf{W}_C
+    & \where l = \mathsf{W}_S\mathsf{W}_E
   \end{aligned}\right.
 \end{equation}
 
@@ -235,7 +235,7 @@ We define the availability specifier function $\newavailabilityspecifier$, which
   \where u &= \mathcal{M}_B(
     [\wideparen{\mathbf{x}} \mid \mathbf{x} \in \transpose[\mathbf{b}^\clubsuit, \mathbf{s}^\clubsuit]]
   )\\
-  \also \mathbf{b}^\clubsuit &= \mathcal{H}^\#(\mathcal{C}_{\ceil{\nicefrac{|\mathbf{b}|}{\mathsf{W}_C}}}(\mathcal{P}_{\mathsf{W}_C}(\mathbf{b})))\\
+  \also \mathbf{b}^\clubsuit &= \mathcal{H}^\#(\mathcal{C}_{\ceil{\nicefrac{|\mathbf{b}|}{\mathsf{W}_E}}}(\mathcal{P}_{\mathsf{W}_E}(\mathbf{b})))\\
   \also \mathbf{s}^\clubsuit &= \mathcal{M}_B^\#(\transpose\mathcal{C}^\#_6(\mathbf{s} \concat \pagedproofs(\mathbf{s})))
 \end{align*}
 

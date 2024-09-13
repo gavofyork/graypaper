@@ -80,7 +80,7 @@ Finally, there is the output or error of the execution of the code $o$, which ma
   \mathbb{J} \in \{ \oog, \panic, \token{BAD}, \token{BIG} \}
 \end{align}
 
-The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining two, the first indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The second indicates that the code was available but was beyond the maximum size allowed $\mathsf{S}$.
+The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining two, the first indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The second indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
 
 
 
@@ -118,7 +118,7 @@ A bit may only be set if the corresponding core has a report pending availabilit
 \end{align}
 
 \subsubsection{Available Reports}
-A work-report is said to become \emph{available} if and only if there are a clear \nicefrac{2}{3} super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the series of available work-reports $\mathbf{W}$ as:
+A work-report is said to become \emph{available} if and only if there are a clear \nicefrac{2}{3} super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\mathbf{W}$ as:
 \begin{align}\label{eq:availableworkreports}
   \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \N_\mathsf{C},\;\sum_{a \in \xtassurances}\!a_v[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
 \end{align}

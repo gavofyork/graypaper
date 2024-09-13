@@ -171,7 +171,7 @@ These terms are all contextualized to a single block. They may be superscripted 
   \item[$\mathbf{S}$] The set of indices of services which have been accumulated (``progressed'') in the block. See equation \ref{eq:servicestoaccumulate}.
   \item[$\mathbf{T}$] The ticketed condition, true if the block was sealed with a ticket signature rather than a fallback. See equations \ref{eq:ticketconditiontrue} and \ref{eq:ticketconditionfalse}.
   \item[$\mathbf{U}$] The audit condition, equal to $\top$ once the block is audited. See section \ref{sec:auditing}.
-  \item[$\mathbf{W}$] The set of work-reports which have now become available and ready for accumulation. See equation \ref{eq:availableworkreports}.
+  \item[$\mathbf{W}$] The sequence of work-reports which have now become available and ready for accumulation. See equation \ref{eq:availableworkreports}.
 \end{description}
 
 Without any superscript, the block is assumed to the block being imported or, if no block is being imported, the head of the best chain (see section \ref{sec:bestchain}). Explicit block-contextualizing superscripts include:
@@ -222,9 +222,13 @@ Here, the prime annotation indicates posterior state. Individual components may 
     \item[$\chi_m$] The index of the empower service.
     \item[$\chi_v$] The index of the designate service.
     \item[$\chi_a$] The index of the assign service.
+    \item[$\chi_\mathbf{g}$] The always-accumulate service indices and their basic gas allowance.
   \end{description}
   \item[$\pi$] The activity statistics for the validators. % π
+  \item[$\vartheta$] The accumulation queue. % ϑ
+  \item[$\xi$] The accumulation history. % ξ
 \end{description}
+% ω
 
 \subsubsection{Virtual Machine components}
 
@@ -232,11 +236,11 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\varepsilon$] The exit-reason resulting from all machine state transitions. %	ε
   \item[$\nu$] The immediate values of an instruction. %	ν
   \item[$\mu$] The memory sequence; a member of the set $\mathbb{M}$. %	μ
-  \item[$\xi$] The gas counter. %	ξ
-  \item[$\omega$] The registers. %	ω
+  \item[$\theta$] The gas counter. % θ
+  \item[$\varrho$] The registers. %	ϱ
   \item[$\zeta$] The instruction sequence. %	ζ
-  \item[$\varpi$] The sequence of basic blocks of the program.
-  \item[$\imath$] The instruction counter.
+  \item[$\varpi$] The sequence of basic blocks of the program. % ϖ
+  \item[$\imath$] The instruction counter. % ı
 \end{description}
 
 \subsubsection{Constants}
@@ -263,10 +267,11 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{P} = 6$] The slot period, in seconds.
   \item[$\mathsf{Q} = 80$] The maximum number of items in the authorizations queue.
   \item[$\mathsf{R} = 10$] The rotation period of validator-core assignments, in timeslots.
-  \item[$\mathsf{S} = 4,000,000$] The maximum size of service code in octets.
+  \item[$\mathsf{S} = 1024$] The maximum number of entries in the accumulation queue.
   \item[$\mathsf{U} = 5$] The period in timeslots after which reported but unavailable work may be replaced.
   \item[$\mathsf{V} = 1023$] The total number of validators.
-  \item[$\mathsf{W}_C = 684$] The basic size of our erasure-coded pieces. See equation \ref{eq:erasurecoding}.
+  \item[$\mathsf{W}_C = 4,000,000$] The maximum size of service code in octets.
+  \item[$\mathsf{W}_E = 684$] The basic size of our erasure-coded pieces. See equation \ref{eq:erasurecoding}.
   \item[$\mathsf{W}_M = 2^{11}$] The maximum number of entries in a work-package manifest.
   \item[$\mathsf{W}_P = 12\cdot2^{20}$] The maximum size of an encoded work-package together with its extrinsic data and import implications, in octets.
   \item[$\mathsf{W}_R = 96\cdot2^{10}$] The maximum size of an encoded work-report in octets.

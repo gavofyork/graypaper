@@ -30,6 +30,40 @@ We define $\delta^\dagger$ as the state after the integration of the preimages:
 
 
 
+
+
+\subsection{History and Queuing}
+
+Accumulation of a work-package/work-report may be deferred in the case that it has a not-yet-fulfilled dependency or cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes, and an epochal history of all such accumulated work-package hashes is maintained along with the segment roots. This is the state item $\accumulated$. Formally:
+\begin{equation}
+  \accumulated \in \seq{\dict{\H}{\H}}_\mathsf{E}
+\end{equation}
+
+We also retain a queue of work-reports which are \emph{per se} ready to be accumulated but which have or had unfulfilled dependencies as $\ready$. Formally:
+\begin{equation}
+  \ready \in \seq{\seq{(\mathbb{W}, \{\H\})}}_\mathsf{S}
+\end{equation}
+
+At the first block of each new epoch, the dictionary is cycled, discarding any old entries with dependencies. We cannot yet define the posterior state $\ready'_0$, but do define the intermediate state from which it is derived, $\ready^\dagger_0$. Formally:
+\begin{align}
+  \using e =\; &\ffrac{\tau}{\mathsf{E}} \ ,\quad e' = \ffrac{\tau'}{\mathsf{E}}\\
+  (\ready^\dagger_0, \ready'_1) \equiv\;&\begin{cases}
+      (\ready_0, \ready_1) &\when e' = e \\
+      (\{\}, \ready_0 \cup \mathbf{k}) &\otherwise
+  \end{cases}\\
+  \where \mathbf{k} &= \{(w, \{\}) \mid (w, \{\}) \in \ready_1\}
+\end{align}
+
+The newly available work-reports, $\mathbf{W}$ are partitioned into a sequence of zero-prerequisite work-reports for priority accumulation $\mathbf{W}^!$ and a sequence of work-reports with prerequisites $\mathbf{W}_1$. Formally:, 
+
+We then define the accumulation priority queue.  is a sequence of work-packages, ordered by the epoch of their earliest work-report. Formally:
+
+
+
+
+
+
+
 \subsection{Gas Accounting}
 
 We define $\mathbf{S}$, the set of all services which will be accumulated in this block; this is all services which have at least one work output within $\mathbf{W}$, together with the privileged services, $\chi_\mathbf{g}$. Formally:
