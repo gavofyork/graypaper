@@ -36,7 +36,7 @@ Thus, \eg $\mathcal{U}(\none, 1, \none, 2) = 1$ and $\mathcal{U}(\none, \none) =
 
 Given some set $\mathbf{s}$, its power set and cardinality are denoted as the usual $\powset{\mathbf{s}}$ and $|\mathbf{s}|$. When forming a power set, we may use a numeric subscript in order to restrict the resultant expansion to a particular cardinality. \Eg $\powset[2]{\{1, 2, 3\}} = \{ \{1, 2\}, \{1, 3\}, \{2, 3\} \}$.
 
-Sets may be operated on with scalars, in which case the result is a set with the operation applied to each element, \eg $\{1, 2, 3\} + 3 = \{4, 5, 6\}$
+Sets may be operated on with scalars, in which case the result is a set with the operation applied to each element, \eg $\{1, 2, 3\} + 3 = \{4, 5, 6\}$. Functions may also be applied to all members of a set to yield a new set, but for clarity we denote this with a $\#$ superscript, \eg $f^{\#}(\{1, 2\}) \equiv \{f(1), f(2)\}$.
 
 We denote set-disjointness with the relation $\disjoint$. Formally:
 \begin{equation*}
@@ -96,6 +96,11 @@ To denote the active domain (\ie set of keys) of a dictionary $\mathbf{d} \in \d
 
 Note that since the co-domain of $\mathcal{V}$ is a set, should different keys with equal values appear in the dictionary, the set will only contain one such value.
 
+Dictionaries may be combined through the union operator $\cup$, which priorities the right-side operand in the case of a key-collision:
+\begin{equation}
+  \forall \mathbf{d} \in \mathbb{D}, \mathbf{e} \in \mathbb{D}: \mathbf{d} \cup \mathbf{e} \equiv (\mathbf{d} \setminus \keys{\mathbf{e}}) \cup \mathbf{e}
+\end{equation}
+
 \subsection{Tuples}\label{sec:tuples}
 
 Tuples are groups of values where each item may belong to a different set. They are denoted with parentheses, \eg the tuple $t$ of the naturals $3$ and $5$ is denoted $t = (3, 5)$, and it exists in the set of natural pairs sometimes denoted $\N \times \N$, but denoted in the present work as $(\N, \N)$.
@@ -113,10 +118,7 @@ We denote modulo subscription as $\mathbf{s}[i]^\circlearrowleft \equiv \mathbf{
 \subsubsection{Construction}
 We may wish to define a sequence in terms of incremental subscripts of other values: $[\mathbf{x}_0, \mathbf{x}_1, \dots ]_n$ denotes a sequence of $n$ values beginning $\mathbf{x}_0$ continuing up to $\mathbf{x}_{n-1}$. Furthermore, we may also wish to define a sequence as elements each of which are a function of their index $i$; in this case we denote $[f(i) \mid i \orderedin \N_n] \equiv [f(0), f(1), \dots, f(n - 1)]$. Thus, when the ordering of elements matters we use $\orderedin$ rather than the unordered notation $\in$. The latter may also be written in short form $[f(i \orderedin \N_n)]$. This applies to any set which has an unambiguous ordering, particularly sequences, thus $[\,i^2 \mid i \orderedin [1, 2, 3]\,] = [1, 4, 9]$. Multiple sequences may be combined, thus $[\,i\cdot j \mid i \orderedin [1, 2, 3], j \orderedin [2, 3, 4]\,] = [2, 6, 12]$.
 
-We use explicit notation $f^{\#}$ to denote a function mapping over all items of a sequence. Thus given some function $y = f(x)$:
-\begin{equation}
-  [f(\mathbf{x}_0), f(\mathbf{x}_1), \dots] = f^{\#}([\mathbf{x}_0, \mathbf{x}_1, \dots])
-\end{equation}
+As with sets, we use explicit notation $f^{\#}$ to denote a function mapping over all items of a sequence.
 
 Sequences may be constructed from sets or other sequences whose order should be ignored through sequence ordering notation $\orderby{i_k}{i \in X}$, which is defined to result in the set or sequence of its argument except that all elements $i$ are placed in ascending order of the corresponding value $i_k$.
 
