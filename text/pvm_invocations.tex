@@ -79,7 +79,7 @@ The Refine invocation function also implicitly draws upon some recent head state
       (\token{BIG}, []) &\otherwhen |\Lambda(\delta[s], \mathbf{c}_t, c)| > \mathsf{S} \\
       &\otherwise: \\
       &\quad\using a = \se(s, \mathbf{y}, p, \mathbf{c}, a, \mathbf{o}, \var{\sq{\var{\mathbf{x}} \mid \mathbf{x} \orderedin \overline{\mathbf{x}}}})\ ,\\
-      &\quad\also (\mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[s], \mathbf{c}_t, c), 1, g, a, F, (\emptyset, []))\ \colon\\
+      &\quad\also (\mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[s], \mathbf{c}_t, c), 5, g, a, F, (\emptyset, []))\ \colon\\
       (\mathbf{r}, []) &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
       (\mathbf{u}, \mathbf{e}) &\quad\when \mathbf{r} = \tup{g, \mathbf{u}} \\
     \end{cases} \\
@@ -132,8 +132,16 @@ We define $\Psi_A$, the Accumulation invocation function as:
     &\to
     \mathbf{X} \times \tuple{\isa{r}{\H?}}\\
     (\delta^\dagger, s, g, \mathbf{o}) &\mapsto \begin{cases}
-      \delta^\dagger[s] &\when \delta^\dagger[s]_\mathbf{c} = \none \vee \mathbf{o} = [] \\
-      C(\Psi_M(\delta^\dagger[s]_\mathbf{c}, 2, g, \mathcal{E}(\mathbf{o}), F, I(\delta^\dagger[s], s))) &\otherwise
+      \tup{
+        \is{\mathbf{s}}{\delta^\dagger[s]} \ts
+        \is{\mathbf{t}}{[]} \ts
+        \is{p}{\chi} \ts
+        \is{\mathbf{c}}{\varphi} \ts
+        \is{\mathbf{v}}{\iota} \ts
+        \is{\mathbf{n}}{\emptyset} \ts
+        \is{r}{\none}
+      } &\when \delta^\dagger[s]_\mathbf{c} = \none \\
+      C(\Psi_M(\delta^\dagger[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, I(\delta^\dagger[s], s))) &\otherwise
     \end{cases} \\
   \end{cases}
 \end{align}
@@ -146,7 +154,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
   F(n, \xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\equiv \begin{cases}
     G(\Omega_R(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
     G(\Omega_W(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
-    G(\Omega_L(\xi, \omega, \mu, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
+    G(\Omega_L(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
     G(\Omega_G(\xi, \omega, \mu), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
     G(\Omega_I(\xi, \omega, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
     \Omega_E(\xi, \omega, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{empower}\\
@@ -191,7 +199,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     (\dict{\N_S}{\mathbb{A}}, \N_S, \seq{\mathbb{T}}) &\to \mathbb{A} \\
     (\delta^\ddagger, s, \mathbf{t}) &\mapsto \begin{cases}
     \mathbf{s} &\when \mathbf{s}_\mathbf{c} = \none \vee \mathbf{t} = [] \\
-    \Psi_M(\mathbf{s}_\mathbf{c}, 3, \sum_{r \in \mathbf{t}}{(r_g)}, \mathcal{E}(\mathbf{t}), F, \mathbf{s}) &\otherwise
+    \Psi_M(\mathbf{s}_\mathbf{c}, 15, \sum_{r \in \mathbf{t}}{(r_g)}, \mathcal{E}(\mathbf{t}), F, \mathbf{s}) &\otherwise
     \end{cases} \\
   \end{cases} \\
   \where \mathbf{s} &= \delta^\ddagger[s]\exc\mathbf{s}_b = \delta^\ddagger[s]_b + \sum_{r \in \mathbf{t}}{r_a} \\
@@ -382,9 +390,15 @@ This defines a number of functions broadly of the form $(\xi' \in \Z_G, \omega' 
   \texttt{empower} = 5 \\
   $g = 10$}&
   $\begin{aligned}
-    (\mathbf{x}'_p)_m = \omega_0 \\
-    (\mathbf{x}'_p)_a = \omega_1 \\
-    (\mathbf{x}'_p)_v = \omega_2 \\
+    \using [m, a, v, o, n] &= \omega_{0 \dots 5} \\
+    \using \mathbf{g} &= \begin{cases}
+      \left\{ (s \mapsto g) \ \where \se_4(s) \concat \se_8(g) = \mathbf{d}_{o+12i\dots+12} \mid i \in \N_n \right\} &\when \mathbb{Z}_{o \dots+ 12n} \subset \mathbb{V}_{\mu} \\
+      \error &\otherwise
+    \end{cases} \\
+    (\omega'_0, \mathbf{x}'_p) &= \begin{cases}
+      (\mathtt{OK}, \tuple{m, a, v, \mathbf{g}}) &\when \mathbf{g} \ne \error \\
+      (\mathtt{OOB}, \mathbf{x}_p) &\otherwise
+    \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{

@@ -65,8 +65,8 @@ Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulatin
     \varphi' \\
     \mathbf{C}
   \end{rcases*} &\prec (\xtassurances, \rho', \delta^\dagger, \chi, \iota, \varphi) \\
-  \alpha' &\prec (\xtguarantees, \varphi', \alpha) \\
-  \pi' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \tau, \tau', \pi, \mathbf{H})
+  \alpha' &\prec (\mathbf{H}, \xtguarantees, \varphi', \alpha) \\
+  \pi' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \tau, \kappa', \pi, \mathbf{H})
 \end{align}
 
 The only synchronous entanglements are visible through the intermediate components superscripted with a dagger and defined in equations \ref{eq:betadagger}, \ref{eq:deltadagger} and \ref{eq:rhoddagger}. The latter two mark a merge and join in the dependency graph and, concretely, imply that the preimage lookup extrinsic must be folded into state before the availability extrinsic may be fully processed and accumulation of work happen.
@@ -169,7 +169,7 @@ The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for 
 
 We refer to the time-proportional computational steps as \emph{gas} (much like in the \emph{YP}) and limit it to a 64-bit quantity. We may use either $\N_G$ or $\Z_G$ to bound it, the first as a prior argument since it is known to be positive, the latter as a result where a negative value indicates an attempt to execute beyond the gas limit. Within the context of the \textsc{pvm}, $\xi \in \N_G$ is typically used to denote gas.
 \begin{equation}\label{eq:gasregentry}
-  \Z_G \equiv \mathbb{Z}_{-2^{63}:2^{63}}\ ,\quad
+  \Z_G \equiv \mathbb{Z}_{-2^{63}\dots2^{63}}\ ,\quad
   \N_G \equiv \mathbb{N}_{2^{64}}\ ,\quad
   \N_R \equiv \N_{2^{32}}
 \end{equation}

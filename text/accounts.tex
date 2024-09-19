@@ -45,7 +45,7 @@ There are three entry-points in the code:
 
 Whereas the first, executing in-core, is described in more detail in section \ref{sec:packagesanditems}, the latter two are defined in the present section.
 
-As stated in appendix \ref{sec:virtualmachine}, execution time in the \Jam virtual machine is measured deterministically in units of \emph{gas}, represented as a natural number less than $2^{64}$ and formally denoted $\N_G$. We may also use $\mathbf{Z}_G$ to denote the set $\mathbf{Z}_{-(2^{32})\dots2^{32}}$ if the quantity may be negative. There are two limits specified in the account, $g$, the minimum gas required in order to execute the \emph{Accumulate} entry-point of the service's code, and $m$, the minimum required for the \emph{On Transfer} entry-point.
+As stated in appendix \ref{sec:virtualmachine}, execution time in the \Jam virtual machine is measured deterministically in units of \emph{gas}, represented as a natural number less than $2^{64}$ and formally denoted $\N_G$. We may also use $\Z_G$ to denote the set $\Z_{-2^{63}\dots2^{63}}$ if the quantity may be negative. There are two limits specified in the account, $g$, the minimum gas required in order to execute the \emph{Accumulate} entry-point of the service's code, and $m$, the minimum required for the \emph{On Transfer} entry-point.
 
 
 
@@ -93,7 +93,7 @@ The state of the lookup system naturally satisfies a number of invariants. First
 
 \subsubsection{Semantics}
 
-The historical status component $h \in [\N_T]_{:3}$ is a sequence of up to three time slots and the cardinality of this sequence implies one of four modes:
+The historical status component $h \in \seq{\N_T}_{:3}$ is a sequence of up to three time slots and the cardinality of this sequence implies one of four modes:
 \begin{itemize}
   \item{$h = []$}: The preimage is \emph{requested}, but has not yet been supplied.
   \item{$h \in \seq{\N_T}_1$}: The preimage is \emph{available} and has been from time $h_0$.
@@ -145,7 +145,14 @@ We may then define a second dependent term $t$, the minimum, or \emph{threshold}
 
 
 \subsection{Service Privileges}
-Up to three services may be recognized as privileged. The portion of state in which this is held is denoted $\chi$ and has three components, each a service index. $m$ is the index of the \emph{manager} service, the service able to effect an alteration of $\chi$ from block to block. $a$ and $v$ are each the indices of services able to alter $\varphi$ and $\iota$ from block to block. Formally:
+Up to three services may be recognized as privileged. The portion of state in which this is held is denoted $\chi$ and has three service index components together with a gas limit. The first, $\chi_m$, is the index of the \emph{manager} service which is the service able to effect an alteration of $\chi$ from block to block. The following two, $\chi_a$ and $\chi_v$, are each the indices of services able to alter $\varphi$ and $\iota$ from block to block.
+
+Finally, $\chi_\mathbf{g}$ is a small dictionary containing the indices of services which automatically accumulate in each block together with a basic amount of gas with which each accumulates. Formally:
 \begin{align}
-  \chi \equiv \ltuple\isa{\chi_m}{\N_S}\ts\isa{\chi_a}{\N_S}\ts\isa{\chi_v}{\N_S}\rtuple
+  \chi \equiv \tuple{
+    \isa{\chi_m}{\N_S} \ts
+    \isa{\chi_a}{\N_S} \ts
+    \isa{\chi_v}{\N_S} \ts
+    \isa{\chi_\mathbf{g}}{\dict{\N_S}{\N_G}}
+  }
 \end{align}

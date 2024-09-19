@@ -1,11 +1,5 @@
 \section{Work Packages and Work Reports}\label{sec:workpackagesandworkreports}
 
-\newcommand*{\wp¬context}{\mathbf{x}} % Consider rename to \mathbf{c}
-\newcommand*{\wp¬workitems}{\mathbf{w}}
-\newcommand*{\wi¬importsegments}{\mathbf{i}}
-\newcommand*{\wi¬extrinsics}{\mathbf{x}}
-\newcommand*{\wi¬exportsegments}{e}
-
 \newcommand*{\newavailabilityspecifier}{A}
 \newcommand*{\itemtoresult}{C}
 \newcommand*{\countupexports}{I}
@@ -13,6 +7,8 @@
 \newcommand*{\pagedproofs}{P}
 \newcommand*{\marshallrefine}{R}
 \newcommand*{\extrinsicdata}{X}
+\newcommand*{\wpX}{p}
+\newcommand*{\wiX}{w}
 
 \subsection{Honest Behavior}
 
@@ -61,11 +57,11 @@ The guarantor is able to use this proof to justify to themselves that they are n
 
 \subsection{Packages and Items}\label{sec:packagesanditems}
 
-We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constituent \emph{work item}s, of set $\mathbb{I}$. A work-package includes a simple blob acting as an authorization token $\mathbf{j}$, the index of the service which hosts the authorization code $h$, an authorization code hash $c$ and a parameterization blob $\mathbf{p}$, a context $\wp¬context$ and a sequence of work items $\wp¬workitems$:
+We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constituent \emph{work item}s, of set $\mathbb{I}$. A work-package includes a simple blob acting as an authorization token $\wp¬authtoken$, the index of the service which hosts the authorization code $\wp¬authcodehost$, an authorization code hash $\wp¬authcodehash$ and a parameterization blob $\wp¬authparam$, a context $\wp¬context$ and a sequence of work items $\wp¬workitems$:
 \begin{equation}\label{eq:workpackage}
   \mathbb{P} \equiv \tuple{\;\begin{aligned}
-    &\isa{\mathbf{j}}{\Y},\ \isa{h}{\N_S},\ \isa{c}{\H},\\
-    &\isa{\mathbf{p}}{\Y},\ \isa{\wp¬context}{\mathbb{X}},\ \isa{\wp¬workitems}{\seq{\mathbb{I}}_{1:\mathsf{I}}}
+    &\isa{\wp¬authtoken}{\Y},\ \isa{\wp¬authcodehost}{\N_S},\ \isa{\wp¬authcodehash}{\H},\\
+    &\isa{\wp¬authparam}{\Y},\ \isa{\wp¬context}{\mathbb{X}},\ \isa{\wp¬workitems}{\seq{\mathbb{I}}_{1:\mathsf{I}}}
   \end{aligned}}
 \end{equation}
 
@@ -84,9 +80,9 @@ A work item includes: $s$ the identifier of the service to which it relates, the
 
 We limit the total number of exported items to $\mathsf{W}_M = 2^{11}$. We also place the same limit on the total number of imported items:
 \begin{align}
-  \forall p \in \mathbb{P}:
-  \sum_{w \in p_\wp¬workitems} w_\wi¬exportsegments &\le \mathsf{W}_M \ \wedge\ 
-  \sum_{w \in p_\wp¬workitems} |w_\wi¬importsegments| \le \mathsf{W}_M
+  \forall \wpX \in \mathbb{P}:
+  \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportsegments &\le \mathsf{W}_M \ \wedge\ 
+  \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments| \le \mathsf{W}_M
 \end{align}
 
 We make an assumption that the preimage to each extrinsic hash in each work-item is known by the guarantor. In general this data will be passed to the guarantor alongside the work-package.
@@ -94,8 +90,8 @@ We make an assumption that the preimage to each extrinsic hash in each work-item
 We limit the encoded size of a work-package plus the total size of the implied import and extrinsic items to 12\textsc{mb} in order to allow for around 2\textsc{mb}/s/core data throughput:
 \begin{align}
   \label{eq:checkextractsize}
-  \forall p &\in \mathbb{P}: \left(
-  \sum_{w \in p_\wp¬workitems} |w_\wi¬importsegments|\cdot\mathsf{W}_S\mathsf{W}_C + \sum_{w \in p_\wp¬workitems} \sum_{(h, l) \in w_\wi¬extrinsics} \!\!\!l\right) \le \mathsf{W}_P \\
+  \forall \wpX &\in \mathbb{P}: \left(
+  \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments|\cdot\mathsf{W}_S\mathsf{W}_C + \sum_{\wiX \in \wpX_\wp¬workitems} \sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l\right) \le \mathsf{W}_P \\
   \mathsf{W}_P &= 12\cdot2^{20}
 \end{align}
 
@@ -109,19 +105,19 @@ Given the result $o$ of some work-item, we define the item-to-result function $\
   \end{aligned}\right.
 \end{equation}
 
-We define the work-package's implied authorizer as $\mathbf{p}_a$, the hash of the concatenation of the authorization code and the parameterization. We define the authorization code as $\mathbf{p}_\mathbf{c}$ and require that it be available at the time of the lookup anchor block from the historical lookup of service $h$. Formally:
+We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the hash of the concatenation of the authorization code and the parameterization. We define the authorization code as $\wpX_\wp¬authcode$ and require that it be available at the time of the lookup anchor block from the historical lookup of service $\wpX_\wp¬authcodehost$. Formally:
 \begin{equation}
-  \forall \mathbf{p} \in \mathbb{P}: \left\{\,\begin{aligned}
-    \mathbf{p}_a &\equiv \mathcal{H}(\mathbf{p}_\mathbf{c} \concat \mathbf{p}_\mathbf{p}) \\
-    \mathbf{p}_\mathbf{c} &\equiv \Lambda(\delta[\mathbf{p}_h], (\mathbf{p}_x)_t, \mathbf{p}_c) \\
-    \mathbf{p}_\mathbf{c} &\in \Y
+  \forall \wpX \in \mathbb{P}: \left\{\,\begin{aligned}
+    \wpX_\wp¬authorizer &\equiv \mathcal{H}(\wpX_\wp¬authcode \concat \wpX_\wp¬authparam) \\
+    \wpX_\wp¬authcode &\equiv \Lambda(\delta[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_t, \wpX_\wp¬authcodehash) \\
+    \wpX_\wp¬authcode &\in \Y
   \end{aligned}\right.
 \end{equation}
 
-($\Lambda$ is the historical lookup function defined in equation \ref{eq:historicallookup}.)
+(The historical lookup function, $\Lambda$, is defined in equation \ref{eq:historicallookup}.)
 
 \subsubsection{Exporting}
-Any of a work-package's work-items may \emph{export} segments and a \emph{segments-root} is placed in the work-report committing to these, ordered according to the work-item which is exporting. It is formed as the root of a constant-depth binary Merkle tree as defined in equation \ref{eq:constantdepthmerkleroot}:
+Any of a work-package's work-items may \emph{export} segments and a \emph{segments-root} is placed in the work-report committing to these, ordered according to the work-item which is exporting. It is formed as the root of a constant-depth binary Merkle tree as defined in equation \ref{eq:constantdepthmerkleroot}.
 
 Guarantors are required to erasure-code and distribute two data sets: one blob, the auditable work-package containing the encoded work-package, extrinsic data and self-justifying imported segments which is placed in the short-term Audit DA store and a second set of exported-segments data together with the \emph{Paged-Proofs} metadata. Items in the first store are short-lived; assurers are expected to keep them only until finality of the block which included the work-result. Items in the second, meanwhile, are long-lived and expected to be kept for a minimum of 28 days (672 complete epochs) following the reporting of the work-report.
 
@@ -145,42 +141,42 @@ Note: in the case that $|\mathbf{s}|$ is not a multiple of 64, then the term $\m
 
 \subsection{Computation of Work Results}\label{sec:computeworkresult}
 
-We now come to the work result computation function $\Xi$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\mathbf{p}$ for some nominated core $c$ and results in either an error $\error$ or the work result and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization.
+We now come to the work result computation function $\Xi$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $c$ and results in either an error $\error$ or the work result and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization.
 
 Formally:
 \begin{equation}\label{eq:workresultfunction}
   \!\!\Xi \colon \left\{\begin{aligned}
     (\mathbb{P}, \N_\mathsf{C}) &\to \mathbb{W} \\
-    (\mathbf{p}, c) &\mapsto \begin{cases}
+    (\wpX, c) &\mapsto \begin{cases}
         \error &\when \mathbf{o} \not\in \Y \\
-        \tup{\is{a}{\mathbf{p}_a}, \mathbf{o}, \is{x}{\mathbf{p}_x}, s, \mathbf{r}} \!\!\!\!\!&\otherwise
+        \tup{\is{a}{\wpX_\wp¬authorizer}, \mathbf{o}, \is{x}{\wpX_\wp¬context}, s, \mathbf{r}} \!\!\!\!\!&\otherwise
     \end{cases}
   \end{aligned}\right.\!\!\!\!\!\!\!
 \end{equation}
 
 where:
 \begin{align*}
-  \mathbf{o} &= \Psi_I(\mathbf{p}, c) \\
+  \mathbf{o} &= \Psi_I(\wpX, c) \\
   (\mathbf{r}, \overline{\mathbf{e}}) &= \transpose[
-    (\itemtoresult(\mathbf{p}_\wp¬workitems[j], r), \mathbf{e})
+    (\itemtoresult(\wpX_\wp¬workitems[j], r), \mathbf{e})
     \mid
-    (r, \mathbf{e}) = \countupexports(\mathbf{p}, j),
-    j \orderedin \N_{|\mathbf{p}_\wp¬workitems|}
+    (r, \mathbf{e}) = \countupexports(\wpX, j),
+    j \orderedin \N_{|\wpX_\wp¬workitems|}
   ] \\
-  \countupexports(\mathbf{p}, j) &\equiv \marshallrefine(
-    \mathbf{p},
-    \mathbf{p}_\wp¬workitems[j],
-    \sum_{k < j}\mathbf{p}_\wp¬workitems[k]_\wi¬exportsegments
+  \countupexports(\wpX, j) &\equiv \marshallrefine(
+    \wpX,
+    \wpX_\wp¬workitems[j],
+    \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments
   )\\
-  \marshallrefine(\mathbf{p}, w, \ell) &\equiv \\
+  \marshallrefine(\wpX, w, \ell) &\equiv \\
   &\!\!\!\!\!\!\!\Psi_R(
-    w_c,
-    w_g,
-    w_s,
-    \mathcal{H}(\mathbf{p}),
-    w_\mathbf{y},
-    \mathbf{p}_\wp¬context,
-    \mathbf{p}_a,
+    \wiX_c,
+    \wiX_g,
+    \wiX_s,
+    \mathcal{H}(\wpX),
+    \wiX_\mathbf{y},
+    \wpX_\wp¬context,
+    \wpX_\wp¬authorizer,
     \importsegmentdata(w),
     \extrinsicdata(w),
     \ell
@@ -195,18 +191,18 @@ The third and forth definition are helper terms for this, with the third $\count
 The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $w$:
 \begin{equation}
   \begin{aligned}
-    \importsegmentdata(w \in \mathbb{I}) &\equiv [\mathbf{s}[n] \mid (\mathcal{M}(\mathbf{s}), n) \orderedin w_\wi¬importsegments] \\
-    \extrinsicdata(w \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\mathcal{H}(\mathbf{d}), |\mathbf{d}|) \orderedin w_\wi¬extrinsics]
+    \importsegmentdata(\wiX \in \mathbb{I}) &\equiv [\mathbf{s}[n] \mid (\mathcal{M}(\mathbf{s}), n) \orderedin \wiX_\wi¬importsegments] \\
+    \extrinsicdata(\wiX \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\mathcal{H}(\mathbf{d}), |\mathbf{d}|) \orderedin \wiX_\wi¬extrinsics]
   \end{aligned}
 \end{equation}
 
 We may then define $s$ as the data availability specification of the package using these two functions together with the yet to be defined \emph{Availability Specifier} function $\newavailabilityspecifier$ (see section \ref{sec:availabiltyspecifier}):
 \begin{equation}
   \begin{aligned}
-    s &= \newavailabilityspecifier(\mathcal{H}(\mathbf{p}), \se(\mathbf{p}, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
-    \nonumber \where \mathbf{x} &= [\extrinsicdata(w) \mid w \orderedin \mathbf{p}_\wp¬workitems]\\
-    \nonumber \also \mathbf{i} &= [\importsegmentdata(w) \mid w \orderedin \mathbf{p}_\wp¬workitems]\\
-    \nonumber \also \mathbf{j} &= [\var{\mathcal{J}(\mathbf{s}, n)} \mid (\mathcal{M}(\mathbf{s}), n) \orderedin w_\wi¬importsegments, w \orderedin \mathbf{p}_\wp¬workitems]
+    s &= \newavailabilityspecifier(\mathcal{H}(\wpX), \se(\wpX, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
+    \where \mathbf{x} &= [\extrinsicdata(\wiX) \mid \wiX \orderedin \wpX_\wp¬workitems]\\
+    \also \mathbf{i} &= [\importsegmentdata(\wiX) \mid \wiX \orderedin \wpX_\wp¬workitems]\\
+    \also \mathbf{j} &= [\var{\mathcal{J}(\mathbf{s}, n)} \mid (\mathcal{M}(\mathbf{s}), n) \orderedin \wiX_\wi¬importsegments, \wiX \orderedin \wpX_\wp¬workitems]
   \end{aligned}
 \end{equation}
 
@@ -251,7 +247,7 @@ The functions $\mathcal{M}$ and $\mathcal{M}_B$ are the fixed-depth and simple b
 
 And $\mathcal{P}$ is the zero-padding function to take an octet array to some multiple of $n$ in length:
 \begin{equation}\label{eq:zeropadding}
-  \mathcal{P}_{n \in \N_{1:}}\colon\left\{\begin{aligned}
+  \mathcal{P}_{n \in \N_{1\dots}}\colon\left\{\begin{aligned}
     \Y &\to \Y_{k\cdot n}\\
     \mathbf{x} &\mapsto \mathbf{x} \concat [0, 0, ...]_{((|x|+n - 1) \bmod n) + 1 \dots n}
   \end{aligned}\right.
@@ -261,7 +257,6 @@ Validators are incentivized to distribute each newly erasure-coded data chunk to
 
 We will see this function utilized in the next sections, for guaranteeing, auditing and judging.
 
-\undef{\wp¬context}
 \undef{\newavailabilityspecifier}
 \undef{\itemtoresult}
 \undef{\countupexports}
@@ -269,3 +264,5 @@ We will see this function utilized in the next sections, for guaranteeing, audit
 \undef{\pagedproofs}
 \undef{\marshallrefine}
 \undef{\extrinsicdata}
+\undef{\wpX}
+\undef{\wiX}

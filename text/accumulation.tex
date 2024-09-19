@@ -32,9 +32,9 @@ We define $\delta^\dagger$ as the state after the integration of the preimages:
 
 \subsection{Gas Accounting}
 
-We define $\mathbf{S}$, the set of all services which will be accumulated in this block; this is all services which have at least one work output within $\mathbf{W}$, together with all privileged services, $\chi$. Formally:
+We define $\mathbf{S}$, the set of all services which will be accumulated in this block; this is all services which have at least one work output within $\mathbf{W}$, together with the privileged services, $\chi_\mathbf{g}$. Formally:
 \begin{align}\label{eq:servicestoaccumulate}
-  \mathbf{S} \equiv \{ \mathbf{r}_s \mid w \in \mathbf{W}, \mathbf{r} \in w_\mathbf{r} \} \cup \{ \chi_m, \chi_a, \chi_v \}
+  \mathbf{S} \equiv \{ \mathbf{r}_s \mid w \in \mathbf{W}, \mathbf{r} \in w_\mathbf{r} \} \cup \keys(\chi_\mathbf{g})
 \end{align}
 
 We calculate the gas attributable for each service as the sum of each of the service's work outputs' share of their report's elective accumulation gas together with the subtotal of minimum gas requirements:
@@ -69,7 +69,7 @@ We finally define the results which will be given as an operand into the accumul
 
 \subsection{Invocation}
 
-Within this section, we define $A$, the function which conducts the accumulation of a single service. Formally speaking, $A$ assumes omnipresence of timeslot $\mathbf{H}_t$ and some prior state components $\delta^\dagger$, $\nu$, $\mathbf{W}_\mathbf{d}$, and takes as specific arguments the service index $s \in \mathbf{S}$ (from which it may derive the wrangled results $M(s)$ and gas limit $G(s)$) and yields values for $\delta^\dagger[s]$ and staging assignments into $\varphi$, $\iota$ together with a series of lookup solicitations/forgets, a series of deferred transfers and $\mathbf{C}$ mapping from service index to \textsc{Beefy} commitment hashes.
+Within this section, we define $A$, the function which conducts the accumulation of a single service. Formally speaking, $A$ assumes omnipresence of timeslot $\mathbf{H}_t$ and some prior state components $\delta^\dagger$, $\nu$, $\mathbf{W}_\mathbf{d}$, and takes as specific arguments the service index $s \in \mathbf{S}$ (from which it may derive the wrangled results $M(s)$ and gas limit $G(s)$) and yields values for $\delta^\ddagger[s]$ and staging assignments into $\varphi$, $\iota$ together with a series of lookup solicitations/forgets, a series of deferred transfers and $\mathbf{C}$ mapping from service index to \textsc{Beefy} commitment hashes.
 
 We first denote the set of deferred transfers as $\mathbb{T}$, noting that a transfer includes a memo component $m$ of 64 octets, together with the service index of the sender $s$, the service index of the receiver $d$, the amount of tokens to be transferred $a$ and the gas limit $g$ for the transfer. Formally:
 \begin{align}
@@ -86,13 +86,13 @@ We may then define $A$, the mapping from the index of accumulated services to th
         \isa{r}{\H\bm{?}}\ts\\
         \isa{\mathbf{c}&}{\lseq\lseq\H\rseq_\mathsf{Q}\rseq_\mathsf{C}}\ts\qquad
         \isa{\mathbf{n}}{\dict{\N_S}{\mathbb{A}}}\ts\\
-        \isa{p&}{\ltuple\isa{m}{\N_S}\ts\isa{a}{\N_S}\ts\isa{v}{\N_S}\rtuple}\\
+        \isa{p&}{\tuple{\isa{m}{\N_S}, \isa{a}{\N_S}, \isa{v}{\N_S}, \isa{\mathbf{g}}{\dict{\N_S}{\N_G}}}}\\
       \end{aligned}\rtuple \\
-      s &\mapsto \Psi_A(\delta^\dagger, s, M(s), G(s))
+      s &\mapsto \Psi_A(\delta^\dagger, s, G(s) + \subifnone((\chi_\mathbf{g})_s, 0), M(s))
     \end{aligned}\right.
 \end{align}
 
-As can be seen plainly, our accumulation mapping $A$ combines portions of the prior state into arguments for a virtual-machine invocation. Specifically the service accounts $\delta^\dagger$ together with the index of the service in question $s$ and its wrangled refine-results $M(s)$ and gas limit $G(s)$ are arranged to create the arguments for $\Psi_A$, itself using a virtual-machine invocation as defined in appendix \ref{sec:accumulateinvocation}.
+As can be seen plainly, our accumulation mapping $A$ combines portions of the prior state into arguments for a virtual-machine invocation. Specifically the service accounts $\delta^\dagger$ together with the index of the service in question $s$ and its gas limit and wrangled refine-results $M(s)$ are arranged to create the arguments for $\Psi_A$, itself using a virtual-machine invocation as defined in appendix \ref{sec:accumulateinvocation}. Note that the gas limit is the sum of the regular gas $G(s)$ together with any privileged gas it receives $(\chi_\mathbf{g})_s$.
 
 The \textsc{Beefy} commitment map is a function mapping all accumulated services to their accumulation result (the $r$ component of the result of $A$). This is utilized in determining the accumulation-result tree root for the present block, useful for the \textsc{Beefy} protocol:
 \begin{equation}\label{eq:beefycommitment}

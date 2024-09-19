@@ -96,13 +96,12 @@ A sequence of bits $b \in \mathbb{B}$ is a special case since encoding each indi
   \end{cases}
 \end{align}
 
-%\subsubsection{Dictionary Encoding}
-%Dictionaries whose key and value domains are encodable and whose key domains are ordered are themselves encodable in one of two manners. The first is as a sequence of encoded key/value pairs ordered by the key. This is generally used when the expected number of entries is somewhat less than the number of possible keys (i.e. the size of the active domain is somewhat less than the domain).
-%
-%\begin{equation}
-%  \forall K, V: \se(d \in \dict{K}{V}) \equiv \se(\var{\orderby{k}{\tup{\se(k), \se(d[k])} \mid k \in \keys{d}}})
-%\end{equation}
-%
+\subsubsection{Dictionary Encoding}
+In general, dictionaries are placed in the Merkle trie directly (see appendix \ref{sec:merklization} for details). However, small dictionaries may reasonably be encoded as a sequence of pairs ordered by the key. Formally:
+\begin{equation}
+  \forall K, V: \se(d \in \dict{K}{V}) \equiv \se(\var{\orderby{k}{\tup{\se(k), \se(d[k])} \mid k \in \keys{d}}})
+\end{equation}
+
 %The second is as a sequence of encoded values only, with each entry having an implicit key according to an enumeration over its domain. This is typically used when the domain is small in magnitude and typically similar in magnitude to the active domain. In order to account for the possibility of a key not existing in the dictionary (\ie the domain and the active domain not being equal) we prefix each value with an octet of one to indicate that the key is indeed present in the dictionary and place an octet of zero if the implied key is not.
 %
 %We provide a function $\mathcal{S}$ to deliver this from a regular dictionary:
@@ -126,19 +125,19 @@ A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, 
   \se(\mathbf{B}) &= \se\,\left\lparen\;\begin{aligned}
     &\mathbf{H},\ 
     \var{\xttickets},\ 
-    \var{[(r, a, [(v, \se_2(i), s) \mid (v, i, s) \orderedin \mathbf{v}]) \mid (r, a, \mathbf{v}) \orderedin \mathbf{j}]}, \var{\mathbf{c}}, \var{\mathbf{f}},\ \\
+    \var{[(r, \se_4(a), [(v, \se_2(i), s) \mid (v, i, s) \orderedin \mathbf{j}]) \mid (r, a, \mathbf{j}) \orderedin \mathbf{v}]}, \var{\mathbf{c}}, \var{\mathbf{f}},\ \\
     &\var{[\tup{s, \var{p}} \mid \tup{s, p} \orderedin \xtpreimages]},\ 
-    \var{\xtassurances},\ 
-    \var{[\tup{w, \se_4(t), \var{a}} \mid \tup{w, t, a} \orderedin \xtguarantees]}
+    \var{[\tup{a, f, \se_2(v), s} \mid \tup{a, f, v, s} \orderedin \xtassurances]},\ \\
+    &\var{[\tup{w, \se_4(t), \var{a}} \mid \tup{w, t, a} \orderedin \xtguarantees]}
   \end{aligned}\;\right\rparen \\
-  \nonumber &\quad \where \xtdisputes \equiv (\mathbf{j}, \mathbf{c}, \mathbf{f}) \\
+  \nonumber &\quad \where \xtdisputes \equiv (\mathbf{v}, \mathbf{c}, \mathbf{f}) \\
   \se(\mathbf{H}) &= \se_U(\mathbf{H})\concat\se(\mathbf{H}_s) \\
   \se_U(\mathbf{H}) &= \se(\mathbf{H}_p,\mathbf{H}_r,\mathbf{H}_x)\concat\se_4(\mathbf{H}_t)\concat\se(\maybe{\mathbf{H}_e},\maybe{\mathbf{H}_w},\var{\mathbf{H}_o},\se_2(\mathbf{H}_i),\mathbf{H}_v)\\
   \se(x \in \mathbb{X}) &\equiv \se(x_a, x_s, x_b, x_l)\concat\se_4(x_t)\concat\se(\maybe{x_p})\\
   \se(x \in \mathbb{S}) &\equiv \se(x_h) \concat \se_4(x_l)\concat\se(x_u, x_e) \\
   \se(x \in \mathbb{L}) &\equiv \se_4(x_s)\concat\se(x_c, x_l)\concat\se_8(x_g)\concat\se(O(x_o))\\
-  \se(x \in \mathbb{W}) &\equiv \se(x_a, x_c, \var{x_o}, x_x, x_s, \var{x_r}) \\
-  \se(x \in \mathbb{P}) &\equiv \se(\var{x_\mathbf{j}}, \se_4(x_h), x_c, \var{x_\mathbf{p}}, x_\mathbf{x}, \var{x_\mathbf{i}}) \\
+  \se(x \in \mathbb{W}) &\equiv \se(x_s, x_x, x_c, x_a, \var{x_o}, \var{x_r}) \\
+  \se(x \in \mathbb{P}) &\equiv \se(\var{x_\wp¬authtoken}, \se_4(x_\wp¬authcodehost), x_\wp¬authcodehash, \var{x_\wp¬authparam}, x_\wp¬context, \var{x_\wp¬workitems}) \\
   % TODO: \se_4(i) should be just \se(i), but we should wait for this to be written.
   \se(x \in \mathbb{I}) &\equiv \se(\se_4(x_s), x_c, \var{x_\mathbf{y}}, \se_8(x_g), \var{\sq{(h, \se_2(i)) \mid (h, i) \orderedin x_\mathbf{i}}}, \var{\sq{(h, \se_4(i)) \mid (h, i) \orderedin x_\mathbf{x}}}, \se_2(x_e)) \\
   \se(x \in \mathbb{C}) &\equiv \se(x_\mathbf{y}, x_r) \\

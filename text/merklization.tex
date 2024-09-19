@@ -35,12 +35,12 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(9) &\mapsto \se(\lambda) \;, \\
     &&C(10) &\mapsto \se([\maybe{(w, \se_4(t))} \mid (w, t) \orderedin \rho]) \;, \\
     &&C(11) &\mapsto \se_4(\tau) \;, \\
-    &&C(12) &\mapsto \se_4(\chi) \;, \\
+    &&C(12) &\mapsto \se_4(\chi_m, \chi_a, \chi_v) \concat \se(\chi_\mathbf{g}) \;, \\
     &&C(13) &\mapsto \se_4(\pi) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_l) \concat \se_4(\mathbf{a}_i) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, h) &\mapsto \mathbf{v} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, h) &\mapsto \mathbf{p} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat (\lnot h_{4:})) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
+    \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat (\lnot h_{4\dots})) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
   \end{aligned}\right\}
 \end{equation}
 
@@ -159,15 +159,15 @@ We define the constant-depth binary Merkle function as $\mathcal{M}$ and the cor
 \begin{align}\label{eq:constantdepthmerkleroot}
   \mathcal{M}&\colon \left\{\begin{aligned}
     (\seq{\Y}, \Y \to \H) &\to \H\\
-    (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}), H)
+    (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}, H), H)
   \end{aligned}\right.\\
   \mathcal{J}&\colon \left\{\begin{aligned}\label{eq:constantdepthmerklejust}
-    (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \H\\
-    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}), i, H)
+    (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \seq{\H}\\
+    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), i, H)
   \end{aligned}\right.\\
   \mathcal{J}_x&\colon \left\{\begin{aligned}\label{eq:constantdepthsubtreemerklejust}
-    (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \H\\
-    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}), i, H)_{\dots\max(0, \ceil{\log_2(|\mathbf{v}|) - x})}
+    (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \seq{\H}\\
+    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), i, H)_{\dots\max(0, \ceil{\log_2(\max(1, |\mathbf{v}|)) - x})}
   \end{aligned}\right.
 \end{align}
 
@@ -180,7 +180,7 @@ In all cases, a constancy preprocessor function $C$ is applied which hashes all 
   C\colon\left\{\begin{aligned}
     (\seq{\Y}, \Y \to \H) &\to \seq{\H}\\
     (\mathbf{v}, H) &\mapsto \mathbf{v}' \ \where \left\{\; \begin{aligned}
-      |\mathbf{v}'| &= 2^{\ceil{\log_2(|\mathbf{v}|)}}\\
+      |\mathbf{v}'| &= 2^{\ceil{\log_2(\max(1, |\mathbf{v}|))}}\\
       \mathbf{v}'_i &= \begin{cases}
         H(\token{\$leaf}\frown\mathbf{v}_i) &\when i < |\mathbf{v}|\\
         \mathbb{H}_0 &\otherwise \\
