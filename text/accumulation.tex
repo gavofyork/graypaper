@@ -34,66 +34,76 @@ We define $\delta^\dagger$ as the state after the integration of the preimages:
 
 \subsection{History and Queuing}
 
-Accumulation of a work-package/work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what was accumulated. This history, $\accumulated$, is sufficiently large for an epoch worth of work-reports. For all such reports, we also retain their segment-root in order that we may validate any proscribed segment-roots in work-reports prior to accumulation. Formally:
+Accumulation of a work-package/work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what has been accumulated. This history, $\accumulated$, is sufficiently large for an epoch worth of work-reports. For all such reports, we also retain their segment-root in order that we may validate any guarantor-proscribed segment-roots in work-reports prior to accumulation. Formally:
 \begin{align}
   \accumulated &\in \seq{\dict{\H}{\H}}_\mathsf{E} \\
-  \wideparen{\accumulated} &\equiv \{ x \mid x \in \accumulated \} \\
-  \wideparen{\accumulated}_K &\equiv \keys{\wideparen{\accumulated}}
+  \wideparen{\accumulated} &\equiv \{ x \mid x \in \accumulated \}
 \end{align}
 
-We also maintain knowledge of available but not-yet-accumulated work-reports in the state item $\ready$. Each of these have been available for at most $\mathsf{E}$ but have or had unfulfilled dependencies. Alongside the work-report itself, we retain its unaccumulated dependencies, a set of work-package hashes. Formally:
+We also maintain knowledge of available but not-yet-accumulated work-reports in the state item $\ready$. Each of these have been available for at most one epoch but have or had unfulfilled dependencies. Alongside the work-report itself, we retain its unaccumulated dependencies, a set of work-package hashes. Formally:
 \begin{align}
   \ready &\in \seq{\seq{(\mathbb{W}, \{\H\})}}_\mathsf{E}
 \end{align}
 
-The newly available work-reports, $\mathbf{W}$ are partitioned into a sequence of zero-prerequisite work-reports for immediate accumulation $\mathbf{W}^!$. Those not in said sequence are for queued execution $\mathbf{W}^Q$. Formally:
+The newly available work-reports, $\mathbf{W}$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\mathbf{W}^!$, are accumulated immediately. Those not, $\mathbf{W}^Q$, are for queued execution. Formally:
 \begin{align}
   \mathbf{W}^! &\equiv [ w \mid w \orderedin \mathbf{W}, (w_x)_p = \none ] \\
-  \mathbf{W}^Q &\equiv R([ w \mid w \orderedin \mathbf{W}, (w_x)_p \ne \none ], \{\}) \\
-  \ready'_{\mathsf{S} - 1} &= R(\mathbf{W}^Q, \mathbf{D}) \\
-  \accumulated'_{\mathsf{S} - 1} &= M(\mathbf{D}) \\
-  \forall i &\in \N_\mathsf{S - 1}: (\ready'_{i}, \accumulated'_{i}) \equiv (R(\ready_{i + 1}, \mathbf{D}), \accumulated_{i + 1})
+  \mathbf{W}^Q &\equiv E([ w \mid w \orderedin \mathbf{W}, (w_x)_p \ne \none ], \wideparen{\accumulated}) \\
+  \accumulated'_{\mathsf{E} - 1} &= M(\mathbf{D}) \\
+  \using s &= \min(\tau' - \tau, \mathsf{E}) \\
+  \forall i &\in \N_\mathsf{E} : \ready'^\circlearrowleft_{m - i} = \begin{cases}
+    E(\mathbf{W}^Q, \mathbf{D}) &\when i = 0 \\
+    [] &\when 1 \le i < s \\
+    \ready^\circlearrowleft_{m - i} &\when i \ge s
+  \end{cases} \\
+  \forall i &\in \N_\mathsf{E - 1}: \accumulated'_{i} \equiv \accumulated_{i + 1}
 \end{align}
 
-TODO: Remove (and check segments-root of) dependencies already in $\accumulated$ at the time of becoming newly available.
-
-TODO: Check segments-root of all ready items prior to enqueuing them.
-
-We then define the accumulation priority queue function $Q$ together with the queue-removal function $R$. The former may be given our two state items and will provide the sequence of work-reports which are accumulatable, on the provision that all work-reports in the sequence prior are themselves accumulated:
+We must define the various dependent functions. Firstly, the accumulation priority queue function $Q$, which is given our two state items and will provide the sequence of work-reports which are accumulatable, on the provision that all work-reports in the sequence prior are themselves accumulated. Secondly, the mapping function $M$ which builds a dictionary of work-package hashes to segment-roots from a set of work-reports. Formally:
 \begin{align}
   &Q\colon\left\{\begin{aligned}
     &(\seq{(\mathbb{W}, \{\H\})}, \dict{\H}{\H}) \to \seq{\mathbb{W}} \\
     &(\mathbf{r}, \mathbf{a}) \mapsto \begin{cases}
       [] &\when w = \none \\
-      \mathbf{g} \frown Q(R(\mathbf{r}, \mathbf{g}), \mathbf{a} \cup M(\mathbf{g}))\!\!\!\! &\otherwise
+      \mathbf{g} \frown Q(E(\mathbf{r}, \mathbf{g}), \mathbf{a} \cup M(\mathbf{g}))\!\!\!\! &\otherwise \\
+      \where \mathbf{g} = [w \mid (w, \{\}) \orderedin \mathbf{r}]\!\!\!\!\!\!\!\!\! &
     \end{cases}\!\!\!\!
   \end{aligned}\right.\\
-  \nonumber &\where M(\mathbf{w}) \equiv \{ w \in \mathbf{w} \mid ((w_s)_h \mapsto (w_s)_e) \} \\
-  \nonumber &\also \mathbf{g} = [w \mid (w, \{\}) \orderedin \mathbf{r}]\\
-  &R\colon\left\{\begin{aligned}
-    &(\seq{(\mathbb{W}, \{\H\})}, \{\mathbb{W}\}) \to \seq{(\mathbb{W}, \{\H\})} \\
-    &(\mathbf{r}, \mathbf{x}) \mapsto [(w, \mathbf{d} \setminus \mathbf{x}) \mid (w, \mathbf{d}) \orderedin \mathbf{r}, w \not\in \mathbf{x}]
-  \end{aligned}\right.\\
-  &V\colon\left\{\begin{aligned}
-    &(\seq{(\mathbb{W}, \{\H\})}, \dict{\H}{\H}) \to \seq{(\mathbb{W}, \{\H\})} \\
-    &(\mathbf{r}, \mathbf{a}) \mapsto [
-      w \mid w \orderedin \mathbf{r},
-      \mathbf{a} \cup w_\mathbf{d} = w_\mathbf{d} \cup \mathbf{a}
-      %\forall p \in \keys{w_\mathbf{d}} \cap \keys{\mathbf{a}} : w_\mathbf{d}[p] = \mathbf{a}[p]
-    ]
+  &M\colon\left\{\begin{aligned}
+    \{\mathbb{W}\} &\to \dict{\H}{\H}\\
+    \mathbf{w} &\mapsto \{ ((w_s)_h \mapsto (w_s)_e) \mid w \in \mathbf{w} \}
   \end{aligned}\right.
 \end{align}
 
-% TODO: Think hard about where V goes.
+Next, the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by a dictionary similar to the items in $\accumulated$. It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the parameter's keys, removes any dependencies which appear in said set and, crucially, removes any entries whose segment-root correspondences diverge from those in the dictionary. Formally:
+\begin{equation}
+  E\colon\left\{\begin{aligned}
+      &(\seq{(\mathbb{W}, \{\H\})}, \dict{\H}{\H}) \to \seq{(\mathbb{W}, \{\H\})} \\
+    &(\mathbf{r}, \mathbf{x}) \mapsto \left[
+      (w, \mathbf{d} \setminus \keys{\mathbf{x}})
+      \,\middle\vert\,
+      \left\{\,\begin{aligned}
+        &(w, \mathbf{d}) \orderedin \mathbf{r} ,\\
+        &\mathcal{H}(\se(w)) \not\in \keys{\mathbf{x}},\\
+        &\mathbf{x} \cup w_\mathbf{d} = w_\mathbf{d} \cup \mathbf{x}
+      \end{aligned}\right.
+      \right]
+  \end{aligned}\right.
+\end{equation}
 
 We may now define the sequence of accumulatable work-reports in this block as $\mathbf{W}^*$:
 \begin{equation}
-  \mathbf{W}^* \equiv \mathbf{W}^! \frown Q(\wideparen{\ready}, \wideparen{\accumulated})
+  \mathbf{W}^* \equiv \mathbf{W}^! \frown Q(\wideparen{\ready_{m\dots}} \concat \wideparen{\ready_{\dots m}} \concat \mathbf{W}^Q, \wideparen{\accumulated})
 \end{equation}
 
-We work with a limited amount of gas per block and therefore may not be able to process all items in $\mathbf{W}^*$ in a single block. As many as possible are processed while staying within our gas limit and aggregate the set of accumulated work-reports as $\mathbf{D}$.
+We work with a limited amount of gas per block and therefore may not be able to process all items in $\mathbf{W}^*$ in a single block. As many as possible are processed while staying within our gas limit and we aggregate the set of accumulated work-reports as $\mathbf{D}$.
 
-% TODO: Consider reserving some cores for processing the queue.
+
+TODO: Specify a single iteration of the accumulation-loop.
+
+TODO: Specify the accumulation loop.
+
+TODO: Consider reserving some cores for processing the queue.
 
 \subsection{Gas Accounting}
 
@@ -194,7 +204,6 @@ We first define $\delta^\ddagger$, an intermediate state after main accumulation
     \delta^\dagger[s] &\otherwise
   \end{cases}
 \end{aligned}\end{equation}
-
 
 We denote $R(s)$ the sequence of transfers received by a given service of index $s$, in order of them being sent from services of ascending index. (If some service $s$ received no transfers or simply does not exist then $R(s)$ would be validly defined as the empty sequence.) Formally:
 \begin{align}
