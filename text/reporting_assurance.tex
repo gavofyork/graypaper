@@ -232,10 +232,12 @@ No reports may be placed on cores with a report pending availability on it unles
   \end{aligned}\right.
 \end{equation}
 
-We specify the maximum total accumulation gas requirement a work-report may imply as $\mathsf{G}_A$, and we require the sum of all services' minimum gas requirements to be no greater than this:
-\begin{align}
-  \forall w \in \mathbf{w}: \sum_{s \in (w_r)_s}{\delta[s]_g}\ \le\ \mathsf{G}_A
-\end{align}
+We require that the gas allotted for accumulation of each work item in each work-report respects its service's minimum gas requirements. We also require that all work-reports total allotted accumulation gas is no greater than the overall gas limit $\mathsf{G}_A$:
+\begin{equation}
+  \forall w \in \mathbf{w}:
+    \sum_{r \in w_\mathbf{r}}\!(r_g) \le \mathsf{G}_A \ \wedge \ 
+    \forall r \in w_\mathbf{r}: r_g \ge \delta[r_s]_g
+\end{equation}
 
 
 
