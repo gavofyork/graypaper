@@ -107,22 +107,32 @@ TODO: Consider reserving some cores for processing the queue.
 
 \subsection{Recursive Accumulation}
 
-\begin{equation}
-  C \equiv \left(\begin{aligned}
-    \dict{\N_S}{\mathbb{A}},
-    (\N_S,\N_S,\N_S,\dict{\N_S}{\N_G}),\\
-    \seq{\mathbb{K}}_\mathsf{V},
-    \seq{\seq{\H}_\mathsf{Q}}_\mathsf{C},
-    \{(\N_S, \H)\}
-  \end{aligned}\right)
-\end{equation}
+\begin{align}
+  C &\equiv \left(\begin{aligned}
+    \dict{\N_S}{\mathbb{A}} \,,\;
+    \seq{\mathbb{K}}_\mathsf{V} \,,\;
+    \seq{\seq{\H}_\mathsf{Q}}_\mathsf{C} \,,\\
+    (\N_S,\N_S,\N_S,\dict{\N_S}{\N_G})
+  \end{aligned}\right)\\
+  B &\equiv \{(\N_S, \H)\}
+\end{align}
 
 \begin{equation}
   Z\colon\left\{\begin{aligned}
-    (\seq{\mathbb{W}}, \N_G, C) &\to C \\
-    (\mathbf{w}, (\mathbf{d}, p, \mathbf{v}, \mathbf{c}, \mathbf{r})) &\mapsto (\mathbf{d}', p', \mathbf{v}', \mathbf{c}', \mathbf{r}')
+    &(\N_G, \seq{\mathbb{W}}, C) \to (\seq{\mathbb{W}}, C, B) \\
+    &(g, \mathbf{w}, \mathbf{o}) \mapsto \begin{cases}
+      ([], \mathbf{o}, \{\}) &
+        \when i = 0 \\
+      (\mathbf{w}', \mathbf{o}', \mathbf{b}^* \cup \mathbf{b}) &
+        \otherwise \\
+    \end{cases} \\
+    &\quad\where i = \max(\N_{|\mathbf{w}| + 1}): \sum_{w \in \mathbf{w}_{\dots i}}\sum_{r \in w_\mathbf{r}}(r_g) \le g \\
+    &\quad\also (g^*, \mathbf{o}^*, \mathbf{b}^*) = A(\mathbf{o}, \mathbf{w}_{\dots i}) \\
+    &\quad\also (\mathbf{w}', \mathbf{o}', \mathbf{b}) = Z(g - u, \mathbf{w}_{i\dots}, \mathbf{o}')
   \end{aligned}\right.
 \end{equation}
+
+
 
 \subsection{Work Report Selection}
 
