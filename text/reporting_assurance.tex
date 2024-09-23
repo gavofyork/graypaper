@@ -13,7 +13,7 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 
 
 \subsection{State}
-The state of the reporting and availability portion of the protocol is largely contained within $\rho$, which tracks the work-reports which have been reported but not yet accumulated and the identities of the guarantors who reported them and the time at which it was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
+The state of the reporting and availability portion of the protocol is largely contained within $\rho$, which tracks the work-reports which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
 \begin{equation}\label{eq:reportingstate}
   \rho \in \seq{\tuple{\isa{w}{\mathbb{W}},\isa{t}{\N_T}}\bm{?}}_\mathsf{C}
 \end{equation}
@@ -114,13 +114,13 @@ The signature must be one whose public key is that of the validator assuring and
 
 A bit may only be set if the corresponding core has a report pending availability on it:
 \begin{align}
-  \forall a \in \xtassurances : \forall c \in \N_\mathsf{C} : a_v[c] \implies \rho^\dagger[c] \ne \none
+  \forall a \in \xtassurances : \forall c \in \N_\mathsf{C} : a_f[c] \implies \rho^\dagger[c] \ne \none
 \end{align}
 
 \subsubsection{Available Reports}
 A work-report is said to become \emph{available} if and only if there are a clear \nicefrac{2}{3} super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\mathbf{W}$ as:
 \begin{align}\label{eq:availableworkreports}
-  \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \N_\mathsf{C},\;\sum_{a \in \xtassurances}\!a_v[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
+  \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \N_\mathsf{C},\;\sum_{a \in \xtassurances}\!a_f[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
 \end{align}
 
 This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are now available:

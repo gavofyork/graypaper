@@ -88,7 +88,7 @@ The Refine invocation function also implicitly draws upon some recent head state
   F&\colon\left\{\begin{aligned}
     (\N, \N_G, \seq{\N_R}_6, \mathbb{M}, (\dict{\N}{\pvm}, \seq{\Y})) &\to (\N_G, \seq{\N_R}_2, \mathbb{M}, (\dict{\N}{\pvm}, \seq{\Y}))\\
     (n, \theta, \varrho, \mu, (\mathbf{m}, \mathbf{e})) &\mapsto \begin{cases}
-      \Omega_H(\theta, \varrho, \mu, (\mathbf{m}, \mathbf{e}), s, \delta, \mathbf{c}_t) &\when n = \mathtt{lookup}\\
+      \Omega_H(\theta, \varrho, \mu, (\mathbf{m}, \mathbf{e}), s, \delta, \mathbf{c}_t) &\when n = \mathtt{historical\_lookup}\\
       \Omega_Y(\theta, \varrho, \mu, (\mathbf{m}, \mathbf{e}), \mathbf{i}) &\when n = \mathtt{import}\\
       \Omega_Z(\theta, \varrho, \mu, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
       \Omega_G(\theta, \varrho, \mu, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas}\\
@@ -277,7 +277,7 @@ The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an el
       \begin{rcases}
         \mathtt{NONE} & \when \mathbf{v} = \none \\
         |\mathbf{v}| &\otherwise \\
-      \end{rcases} &\when k \ne \error \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\mu} \\
+      \end{rcases} &\when h \ne \error \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\mu} \\
       \mathtt{OOB} &\otherwise
     \end{cases}
   \end{aligned}$\\
@@ -357,7 +357,7 @@ The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an el
     \end{cases} \\
     \forall i \in \N_{|\mathbf{m}|} : \mu'_{o + i} &\equiv \begin{cases}
       \mathbf{m}_i & \when \mathbf{m} \ne \none \wedge \mathbb{Z}_{o \dots+ |\mathbf{m}|} \subset \mathbb{V}^*_{\mu} \\
-      \mu_{b_o + i} & \otherwise
+      \mu_{o + i} & \otherwise
     \end{cases} \\
     \varrho'_0 &\equiv \begin{cases}
       \mathtt{OK} & \when \mathbf{m} \ne \none \wedge \mathbb{Z}_{o \dots+ |\mathbf{m}|} \subset \mathbb{V}^*_{\mu} \\
@@ -425,7 +425,7 @@ This defines a number of functions broadly of the form $(\theta' \in \Z_G, \varr
   $\begin{aligned}
     \using o &= \varrho_0 \\
     \using \mathbf{v} &= \begin{cases}
-      \left[\mu_{o + 176i \dots+ 176} \mid i \orderedin \N_\mathsf{V}\right] &\when \mathbb{Z}_{o \dots+ 176\mathsf{V}} \subset \mathbb{V}_{\mu} \\
+      \left[\mu_{o + 336i \dots+ 336} \mid i \orderedin \N_\mathsf{V}\right] &\when \mathbb{Z}_{o \dots+ 336\mathsf{V}} \subset \mathbb{V}_{\mu} \\
       \error &\otherwise
     \end{cases} \\
     (\varrho'_0, \mathbf{x}') &= \begin{cases}
@@ -497,7 +497,7 @@ This defines a number of functions broadly of the form $(\theta' \in \Z_G, \varr
     \using a &= 2^{32}\cdot a_h + a_l \\
     \using g &= 2^{32}\cdot g_h + g_l \\
     \using \mathbf{t} \in \mathbb{T} \cup \{\error\} &= \begin{cases}
-      (s, d, a, m, g): m = \de(\mu_{o\dots+\mathsf{M}}) &\when \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\mu} \\
+      (s, d, a, m, g): m = \mu_{o\dots+\mathsf{M}} &\when \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\mu} \\
       \error &\otherwise
     \end{cases} \\
     \using b &= (\mathbf{x}_\mathbf{s})_b - a \\
@@ -512,7 +512,7 @@ This defines a number of functions broadly of the form $(\theta' \in \Z_G, \varr
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_X(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y}), s)$ \\
+  $\Omega_Q(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y}), s)$ \\
   \texttt{quit} = 12 \\
   $g = 10 + \varrho_1 + 2^{32}\cdot\varrho_2 $} &
   $\begin{aligned}

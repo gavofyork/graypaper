@@ -64,17 +64,19 @@ The program blob $\mathbf{p}$ is split into a series of octets which make up the
 
 The latter, dynamic jump table, is a sequence of indices into the instruction data blob and is indexed into when dynamically-computed jumps are taken. It is encoded as a sequence of natural numbers (i.e. non-negative integers) each encoded with the same length in octets. This length, term $z$ above, is itself encoded prior.
 
-The \textsc{pvm} counts instructions in octet terms (rather than in terms of instructions) and it is thus convenient to define which octets represent the beginning of an instruction, \ie the opcode octet, and which do not. This is the purpose of $\mathbf{k}$, the instruction-opcode bitmask. We assert that the length of the bitmask is no smaller than the length of the instruction blob (and in fact is simply rounded to the nearest multiple of eight for ease of octet-encoding).
+The \textsc{pvm} counts instructions in octet terms (rather than in terms of instructions) and it is thus convenient to define which octets represent the beginning of an instruction, \ie the opcode octet, and which do not. This is the purpose of $\mathbf{k}$, the instruction-opcode bitmask. We assert that the length of the bitmask is equal to the length of the instruction blob.
 
 \newcommand{\Fskip}{\text{skip}}
 
-We define the Skip function $\Fskip$ which provides the number of octets, minus one, to the next instruction's opcode, given the index of instruction's opcode index into $\mathbf{c}$ (and by extension  $\mathbf{k}$):
+We define the Skip function $\Fskip$ which provides the number of octets, minus one, to the next instruction's opcode, given the index of instruction's opcode index into $\mathbf{c}$ (and by extension $\mathbf{k}$):
 \begin{equation}
   \Fskip\colon\left\{\begin{aligned}
     \N &\to \N\\
-    i &\mapsto \min(24,\ j \in \N : \mathbf{k}_{i + 1 + j} = 1)
+    i &\mapsto \min(24,\ j \in \N : (\mathbf{k} \frown [1, 1, \dots])_{i + 1 + j} = 1)
   \end{aligned}\right.
 \end{equation}
+
+The Skip function appends $\mathbf{k}$ with a sequence of set bits in order to ensure a well-defined result for the final instruction $\Fskip(|\mathbf{c}| - 1)$.
 
 Given some instruction-index $i$, its opcode is readily expressed as $\mathbf{c}_i$ and the distance in octets to move forward to the next instruction is $1 + \Fskip(i)$. However, each instruction's ``length'' (defined as the number of contiguous octets starting with the opcode which are needed to fully define the instruction's semantics) is left implicit though limited to being at most 16.
 
@@ -583,7 +585,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
   \Psi_H\colon \left\{\begin{aligned}
     (\Y, \N_R, \N_G, \regs, \ram, \Omega_X, X) &\to (\{\panic, \oog, \halt\} \cup \{\fault\} \times \N_R, \Z_G, \regs, \ram, X)\\
     (\mathbf{c}, \imath, \theta, \varrho, \mem, f, \mathbf{x}) &\mapsto \begin{cases}
-      (\fault \times a, \imath', \theta', \varrho', \mem', \mathbf{x}') &\when \bigwedge\left\{\;\begin{aligned}
+      (\fault \times a, \imath', \theta', \varrho', \mem', \mathbf{x}) &\when \bigwedge\left\{\;\begin{aligned}
         &\varepsilon = \host \times h\\[2pt]
         &\fault \times a = f(h, \theta', \varrho', \mem', \mathbf{x})\\[2pt]
       \end{aligned}\right.\\[8 pt]
