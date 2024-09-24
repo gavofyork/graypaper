@@ -1,3 +1,7 @@
+\newcommand*{\srmap}{P}
+\newcommand*{\opers}{O}
+\newcommand*{\servouts}{B}
+
 \section{Accumulation}\label{sec:accumulation}
 
 Accumulation may be defined as some function whose arguments are $\mathbf{W}$ and $\delta$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\delta'$ together with additional state elements $\iota'$, $\varphi'$ and $\chi'$.
@@ -48,32 +52,16 @@ We also maintain knowledge of available but not-yet-accumulated work-reports in 
 The newly available work-reports, $\mathbf{W}$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\mathbf{W}^!$, are accumulated immediately. Those not, $\mathbf{W}^Q$, are for queued execution. Formally:
 \begin{align}
   \mathbf{W}^! &\equiv [ w \mid w \orderedin \mathbf{W}, (w_x)_p = \none ] \\
-  \mathbf{W}^Q &\equiv E([ w \mid w \orderedin \mathbf{W}, (w_x)_p \ne \none ], \wideparen{\accumulated}) \\
-  \accumulated'_{\mathsf{E} - 1} &= M(\mathbf{D}) \\
-  \using s &= \min(\tau' - \tau, \mathsf{E}) \\
-  \forall i &\in \N_\mathsf{E} : \ready'^\circlearrowleft_{m - i} = \begin{cases}
-    E(\mathbf{W}^Q, \mathbf{D}) &\when i = 0 \\
-    [] &\when 1 \le i < s \\
-    \ready^\circlearrowleft_{m - i} &\when i \ge s
-  \end{cases} \\
-  \forall i &\in \N_\mathsf{E - 1}: \accumulated'_{i} \equiv \accumulated_{i + 1}
+  \mathbf{W}^Q &\equiv E([ w \mid w \orderedin \mathbf{W}, (w_x)_p \ne \none ], \wideparen{\accumulated})
 \end{align}
 
-We must define the various dependent functions. Firstly, the accumulation priority queue function $Q$, which is given our two state items and will provide the sequence of work-reports which are accumulatable, on the provision that all work-reports in the sequence prior are themselves accumulated. Secondly, the mapping function $M$ which builds a dictionary of work-package hashes to segment-roots from a set of work-reports. Formally:
-\begin{align}
-  &Q\colon\left\{\begin{aligned}
-    &(\seq{(\mathbb{W}, \{\H\})}, \dict{\H}{\H}) \to \seq{\mathbb{W}} \\
-    &(\mathbf{r}, \mathbf{a}) \mapsto \begin{cases}
-      [] &\when w = \none \\
-      \mathbf{g} \frown Q(E(\mathbf{r}, \mathbf{g}), \mathbf{a} \cup M(\mathbf{g}))\!\!\!\! &\otherwise \\
-      \where \mathbf{g} = [w \mid (w, \{\}) \orderedin \mathbf{r}]\!\!\!\!\!\!\!\!\! &
-    \end{cases}\!\!\!\!
-  \end{aligned}\right.\\
-  &M\colon\left\{\begin{aligned}
+We must define the two dependent functions. Firstly, the mapping function $\srmap$ which builds a dictionary of work-package hashes to segment-roots from a set of work-reports. Formally:
+\begin{equation}
+  \srmap\colon\left\{\begin{aligned}
     \{\mathbb{W}\} &\to \dict{\H}{\H}\\
     \mathbf{w} &\mapsto \{ ((w_s)_h \mapsto (w_s)_e) \mid w \in \mathbf{w} \}
   \end{aligned}\right.
-\end{align}
+\end{equation}
 
 Next, the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by a dictionary similar to the items in $\accumulated$. It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the parameter's keys, removes any dependencies which appear in said set and, crucially, removes any entries whose segment-root correspondences diverge from those in the dictionary. Formally:
 \begin{equation}
@@ -91,164 +79,162 @@ Next, the queue-editing function $E$, which is essentially a mutator function fo
   \end{aligned}\right.
 \end{equation}
 
+We further define the accumulation priority queue function $Q$, which provides the sequence of work-reports which are accumulatable given the work-reports which have hitherto been accumulated and a set of not-yet-accumulated work-reports and their dependencies.
+\begin{equation}
+  Q\colon\left\{\begin{aligned}
+    &(\seq{(\mathbb{W}, \{\H\})}, \dict{\H}{\H}) \to \seq{\mathbb{W}} \\
+    &(\mathbf{r}, \mathbf{a}) \mapsto \begin{cases}
+      [] &\when w = \none \\
+      \mathbf{g} \frown Q(E(\mathbf{r}, \mathbf{g}), \mathbf{a} \cup \srmap(\mathbf{g}))\!\!\!\! &\otherwise \\
+      \where \mathbf{g} = [w \mid (w, \{\}) \orderedin \mathbf{r}]\!\!\!\!\!\!\!\!\! &
+    \end{cases}\!\!\!\!
+  \end{aligned}\right.
+\end{equation}
+
 We may now define the sequence of accumulatable work-reports in this block as $\mathbf{W}^*$:
 \begin{equation}
   \mathbf{W}^* \equiv \mathbf{W}^! \frown Q(\wideparen{\ready_{m\dots}} \concat \wideparen{\ready_{\dots m}} \concat \mathbf{W}^Q, \wideparen{\accumulated})
 \end{equation}
 
-We work with a limited amount of gas per block and therefore may not be able to process all items in $\mathbf{W}^*$ in a single block. As many as possible are processed while staying within our gas limit and we aggregate the set of accumulated work-reports as $\mathbf{D}$.
+\subsection{Execution}
 
+We work with a limited amount of gas per block and therefore may not be able to process all items in $\mathbf{W}^*$ in a single block. There are two slightly antagonistic factors allowing us to optimize the amount of work-items, and this work-reports, accumulated in a single block:
 
-TODO: Specify a single iteration of the accumulation-loop.
+Firstly, while we have a well-known gas-limit for each work-item to be accumulated, it is just that; a \emph{limit}. Accumulation may result in a lower amount of gas used, and only after a work-item is accumulated can it be known if further gas remains to be used. This implies a sequential execution pattern.
 
-TODO: Specify the accumulation loop.
+Secondly, since \textsc{pvm} setup cannot be expected to be zero-cost, we wish to amortize this cost over as many work-items as possible. This can be done by aggregating work-items associated with the same service into the same \textsc{pvm} invocation. This implies a non-sequential execution pattern.
+
+We resolve this by defining a function $\Delta^+$ which accumulates work-reports in a sequential manner, and which itself utilizes a function $\Delta^*$ which accumulates work-reports in a non-sequential, service-aggregated manner.
+
+Only once all such accumulation is executed do we integrate the results and thus define the relevent posterior state items. In doing so we also integrate the consequences of any \emph{deferred-transfers} implied by accumulation.
+
+Our formalisms begin by defining $\partialstate$ as a characterization (\ie values capable of representing) of state components which are both needed and mutable by the accumulation process. This comprises the service accounts state $\delta$, the privileges state $\chi$, the upcoming validator keys $\iota$ and the queue of work-reports $\varphi$. Formally:
+\begin{equation}
+  \label{eq:partialstate}
+  \partialstate \equiv \left(\begin{aligned}
+    &\isa{\mathbf{x}}{(\N_S,\N_S,\N_S,\dict{\N_S}{\N_G})} \,,\\
+    &\isa{\mathbf{d}}{\dict{\N_S}{\mathbb{A}}} \,,\;
+    \isa{\mathbf{i}}{\seq{\mathbb{K}}_\mathsf{V}} \,,\;
+    \isa{\mathbf{q}}{\seq{\seq{\H}_\mathsf{Q}}_\mathsf{C}}
+  \end{aligned}\right)
+\end{equation}
+
+We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $m$ of $\mathcal{M} = 128$ octets, together with the service index of the sender $s$, the service index of the receiver $d$, the amount of tokens to be transferred $a$ and the gas limit $g$ for the transfer. Formally:
+\begin{align}
+  \defxfer \equiv \ltuple\isa{s}{\N_S}\ts\isa{d}{\N_S}\ts\isa{a}{\N_B}\ts\isa{m}{\Y_{\mathsf{M}}}\ts\isa{g}{\N_G}\rtuple
+\end{align}
+
+Finally, we denote the set of service/hash pairs, utilized as a service-indexed commitment to the accumulation output, as $\servouts$:
+\begin{equation}
+  \servouts \equiv \{(\N_S, \H)\}
+\end{equation}
+
+We define the outer accumulation function $\Delta^+$ which transforms a gas-limit, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the total gas utilized in \textsc{pvm} execution $u$, a posterior state-context $(\mathbf{x}', \mathbf{d}', \mathbf{i}', \mathbf{q}')$ and the resultant deferred-transfers $\defxfer$ and accumulation-output pairings $\servouts$:
+\begin{equation}
+  \Delta^+\colon\left\{\begin{aligned}
+    &(\N_G, \seq{\mathbb{W}}, \partialstate, \dict{\N_S}{\N_G}) \to (\N, \partialstate, \defxfers, \servouts) \\
+    &(g, \mathbf{w}, \mathbf{o}, \mathbf{f}) \!\mapsto\! \begin{cases}
+      (0, \mathbf{o}, [], \{\}) &
+        \when i = 0 \\
+      (i + j, \mathbf{o}', \mathbf{t}^* \!\!\concat \mathbf{t}, \mathbf{b}^* \!\cup \mathbf{b})\!\!\!\! &
+        \otherwise\!\!\!\!\!\!\!\! \\
+    \end{cases} \\
+    &\quad\where i = \max(\N_{|\mathbf{w}| + 1}): \sum_{w \in \mathbf{w}_{\dots i}}\sum_{r \in w_\mathbf{r}}(r_g) \le g \\
+    &\quad\also (g^*, \mathbf{o}^*, \mathbf{t}^*, \mathbf{b}^*) = \Delta^*(\mathbf{o}, \mathbf{w}_{\dots i}, \mathbf{f}) \\
+    &\quad\also (j, \mathbf{o}', \mathbf{t}, \mathbf{b}) = \Delta^+(g - g^*, \mathbf{w}_{i\dots}, \mathbf{o}^*, \{\})
+  \end{aligned}\right.
+\end{equation}
+
+We come to define the parallelized accumulation function $\Delta^*$ which, with the help of the single-service accumulation function $\Delta^1$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution $u$, a posterior state-context $(\mathbf{x}', \mathbf{d}', \mathbf{i}', \mathbf{q}')$ and the resultant accumulation-output pairings $\mathbf{b}$ and deferred-transfers $\wideparen{\mathbf{t}}$:
+\begin{equation}
+  \Delta^*\colon\left\{\;\begin{aligned}
+    &(\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}) \to (\N_G, \partialstate, \defxfers, \servouts) \\
+    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto (u, (\mathbf{x}', \mathbf{d}', \mathbf{i}', \mathbf{q}'), \wideparen{\mathbf{t}}, \mathbf{b})\!\!\!\!\!\!\\
+    &\text{where:}\\
+    &\ \begin{aligned}
+      \mathbf{s} &= \{ \mathbf{r}_s \mid w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} \} \cup \keys{\mathbf{f}} \\
+      u &= \sum_{s \in \mathbf{s}}(\Delta^1(\mathbf{o}, \mathbf{w}, s)_u) \\
+      \mathbf{b} &= \{ (s, b) \mid s \in \mathbf{s},\, b = \Delta^1(\mathbf{o}, \mathbf{w}, s)_b,\, b \ne \none \} \\
+      \mathbf{t} &= [\Delta^1(\mathbf{o}, \mathbf{w}, s)_\mathbf{t} \mid s \orderedin \mathbf{s}] \\
+      &((m, a, v, \mathbf{z}), \mathbf{d}, \mathbf{i}, \mathbf{q}) = \mathbf{o} \\
+      \mathbf{x}' &= (\Delta^1(\mathbf{o}, \mathbf{w}, m)_\mathbf{o})_\mathbf{x} \\
+      \mathbf{i}' &= (\Delta^1(\mathbf{o}, \mathbf{w}, a)_\mathbf{o})_\mathbf{i} \\
+      \mathbf{q}' &= (\Delta^1(\mathbf{o}, \mathbf{w}, v)_\mathbf{o})_\mathbf{q} \\
+      \mathbf{d}' &= \{ s \mapsto \mathbf{d}_s \mid s \in \keys{\mathbf{d}} \setminus \mathbf{s} \} \cup \bigcup_{s \in \mathbf{s}}((\Delta^1(\mathbf{o}, \mathbf{w}, s)_\mathbf{o})_\mathbf{d})\!\!\!\!\!\!\!\!
+    \end{aligned}
+  \end{aligned}\right.
+\end{equation}
+
+We note that all newly added service indices, defined in the above context as $\bigcup_{s \in \mathbf{s}}\keys{(\Delta^1(\mathbf{o}, \mathbf{w}, s)_\mathbf{o})_\mathbf{d}} \setminus \mathbf{s}$, must not conflict with the indices of existing services $\keys{\delta}$ or other newly added services. This should never happen, since new indices are explicitly selected to avoid such conflicts, but in the unlikely event it happens, the block must be considered invalid.
+
+The single-service accumulation function, $\Delta^1$, transforms an initial state-context, sequence of work-reports and a service index into an alterations state-context, a sequence of \emph{transfers}, a possible accumulation-output and the actual \textsc{pvm} gas used. This function wrangles the work-items of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
+\begin{align}
+  &\mathbb{O} \equiv \tuple{\isa{o}{\Y \cup \mathbb{J}}, \isa{l}{\H}, \isa{k}{\H}, \isa{a}{\Y}} \\
+  &\Delta^1 \colon \left\{\;\begin{aligned}
+    &\begin{aligned}
+      (\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}, \N_S) &\to \tuple{
+        \begin{aligned}
+          &\isa{\mathbf{o}}{\partialstate}, \isa{\mathbf{t}}{\defxfers},\\
+          &\isa{b}{\H\bm{?}}, \isa{u}{\N_G}
+        \end{aligned}
+      } \\
+      (\mathbf{o}, \mathbf{w}, \mathbf{f}, s) &\mapsto \Psi_A(\mathbf{o}, s, g, \mathbf{o})
+    \end{aligned} \\
+    &\text{where:} \\
+    &\ \begin{aligned}
+      g &= \subifnone(\mathbf{f}_s, 0) + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} , \mathbf{r}_s = s}\!\!\!\!(\mathbf{r}_g) \\
+      \mathbf{o} &= \left[ \tup{\begin{alignedat}{3}
+        \is{o&}{\mathbf{r}_o}\ts\is{&l&}{\mathbf{r}_p}\ts\\
+        \is{a&}{w_o}\ts\is{&k&}{(w_s)_h}
+      \end{alignedat}}
+      \,\middle\vert\ 
+      w \orderedin \mathbf{w}, \mathbf{r} \orderedin w_\mathbf{r}, \mathbf{r}_s = s
+    \,\right]
+    \end{aligned}
+  \end{aligned}\right.\!\!\!\!
+\end{align}
+
+This introduces $\mathbb{O}$, the set of wrangled \emph{operand tuples}, used as an operand to the \textsc{pvm} Accumulation function $\Psi_A$. It also draws upon $g$, the gas limit implied by the work-reports and gas-privileges for $s$ and $\mathbf{o}$, a rephrasing of the work-items for $s$ within $\mathbf{w}$ into a sequence of operand tuples $\mathbb{O}$.
+
+TODO: Alter $\Phi_A$ to agree with the new function signature. Input has changed to accept $\mathbf{o}$ (the state). Output also now uses context. Context's service map must provide only itself if still extant and any created services.
+
+TODO: Check that new service indices do not systematically collide now.
 
 TODO: Consider reserving some cores for processing the queue.
 
-\subsection{Recursive Accumulation}
+\subsection{Deferred Transfers and State Integration}
 
+Given the result of the top-level $\Delta^+$, we may define the posterior state $\chi'$, $\varphi'$ and $\iota'$ as well as the second intermediate state of the service-accounts $\delta'$ and the \textsc{Beefy} commitment map $\beefycommitmap$:
 \begin{align}
-  C &\equiv \left(\begin{aligned}
-    \dict{\N_S}{\mathbb{A}} \,,\;
-    \seq{\mathbb{K}}_\mathsf{V} \,,\;
-    \seq{\seq{\H}_\mathsf{Q}}_\mathsf{C} \,,\\
-    (\N_S,\N_S,\N_S,\dict{\N_S}{\N_G})
-  \end{aligned}\right)\\
-  B &\equiv \{(\N_S, \H)\}
+  \using (n, \mathbf{o}, \mathbf{t}, \beefycommitmap) &= \Delta^+(\mathsf{G}_T, \mathbf{W}^*, (\chi, \delta^\dagger, \iota, \varphi), \chi_\mathbf{g}) \\
+  (\chi', \delta^\ddagger, \iota', \varphi') &\equiv \mathbf{o}
 \end{align}
 
-\begin{equation}
-  Z\colon\left\{\begin{aligned}
-    &(\N_G, \seq{\mathbb{W}}, C) \to (\seq{\mathbb{W}}, C, B) \\
-    &(g, \mathbf{w}, \mathbf{o}) \mapsto \begin{cases}
-      ([], \mathbf{o}, \{\}) &
-        \when i = 0 \\
-      (\mathbf{w}', \mathbf{o}', \mathbf{b}^* \cup \mathbf{b}) &
-        \otherwise \\
-    \end{cases} \\
-    &\quad\where i = \max(\N_{|\mathbf{w}| + 1}): \sum_{w \in \mathbf{w}_{\dots i}}\sum_{r \in w_\mathbf{r}}(r_g) \le g \\
-    &\quad\also (g^*, \mathbf{o}^*, \mathbf{b}^*) = A(\mathbf{o}, \mathbf{w}_{\dots i}) \\
-    &\quad\also (\mathbf{w}', \mathbf{o}', \mathbf{b}) = Z(g - u, \mathbf{w}_{i\dots}, \mathbf{o}')
-  \end{aligned}\right.
-\end{equation}
+Note that the accumulation commitment map $\beefycommitmap$ is set of pairs of indices of the output-yielding accumulated services to their accumulation result. This is utilized in equation \ref{eq:buildbeefymap}, when determining the accumulation-result tree root for the present block, useful for the \textsc{Beefy} protocol.
 
-
-
-\subsection{Work Report Selection}
-
-We select a series of work reports from 
-
-\subsection{Gas Accounting}
-
-We define $\mathbf{S}$, the set of all services which will be accumulated in this block; this is all services which have at least one work output within $\mathbf{W}$, together with the privileged services, $\chi_\mathbf{g}$. Formally:
-\begin{align}\label{eq:servicestoaccumulate}
-  \mathbf{S} \equiv \{ \mathbf{r}_s \mid w \in \mathbf{W}, \mathbf{r} \in w_\mathbf{r} \} \cup \keys{\chi_\mathbf{g}}
-\end{align}
-
-We calculate the gas attributable for each service as the sum of each of the service's work outputs' share of their report's elective accumulation gas together with the subtotal of minimum gas requirements:
-\begin{equation}
-  G\colon\left\{\;\begin{aligned}
-    \N_S &\to \N_G \\
-    \displaystyle s &\mapsto \subifnone((\chi_\mathbf{g})_s, 0) + \sum_{w \in \mathbf{W}}\sum_{\mathbf{r} \in w_\mathbf{r} , \mathbf{r}_s = s}{\mathbf{r}_g}
-  \end{aligned}\right.
-\end{equation}
-
-\subsection{Wrangling}
-
-We finally define the results which will be given as an operand into the accumulate function for each service in $\mathbf{S}$. This is a sequence of operand tuples $\mathbb{O}$, one sequence for each service in $\mathbf{S}$. Each sequence contains one element per work output (or error) to be accumulated for that service, together with said work output's payload hash, package hash and authorization output. The tuples are sequenced in the same order as they appear in $\mathbf{W}$. Formally:
-\begin{align}
-  \mathbb{O} \equiv \ltuple\isa{o}{\Y \cup \mathbb{J}}\ts\isa{l}{\H}\ts\isa{k}{\H}\ts\isa{a}{\Y}\rtuple
-\end{align}
-\begin{align}
-  M\colon\left\{\ \begin{aligned}
-    \N_S &\to \lseq\mathbb{O}\rseq \\
-    \displaystyle s &\mapsto \left[ \ltup\begin{alignedat}{3}
-        \is{o&}{\mathbf{r}_o}\ts\is{&l&}{\mathbf{r}_p}\ts\\
-        \is{a&}{w_o}\ts\is{&k&}{(w_s)_h}
-    \end{alignedat}\rtup
-      \,\middle\vert\ 
-    \begin{aligned}
-      w &\in \mathbf{W},\\
-      \mathbf{r} &\in w_\mathbf{r},\\
-      \mathbf{r}_s &= s
-    \end{aligned}\ \right]
-  \end{aligned}\right.
-\end{align}
-
-\subsection{Invocation}
-
-Within this section, we define $A$, the function which conducts the accumulation of a single service. Formally speaking, $A$ assumes omnipresence of timeslot $\mathbf{H}_t$ and some prior state components $\delta^\dagger$, $\nu$, $\mathbf{W}_\mathbf{d}$, and takes as specific arguments the service index $s \in \mathbf{S}$ (from which it may derive the wrangled results $M(s)$ and gas limit $G(s)$) and yields values for $\delta^\ddagger[s]$ and staging assignments into $\varphi$, $\iota$ together with a series of lookup solicitations/forgets, a series of deferred transfers and $\mathbf{C}$ mapping from service index to \textsc{Beefy} commitment hashes.
-
-We first denote the set of deferred transfers as $\mathbb{T}$, noting that a transfer includes a memo component $m$ of $\mathcal{M} = 128$ octets, together with the service index of the sender $s$, the service index of the receiver $d$, the amount of tokens to be transferred $a$ and the gas limit $g$ for the transfer. Formally:
-\begin{align}
-  \mathbb{T} \equiv \ltuple\isa{s}{\N_S}\ts\isa{d}{\N_S}\ts\isa{a}{\N_B}\ts\isa{m}{\Y_{\mathsf{M}}}\ts\isa{g}{\N_G}\rtuple
-\end{align}
-
-We may then define $A$, the mapping from the index of accumulated services to the various components in terms of which we will be imminently defining our posterior state:
-\begin{align}
-  A \colon \left\{\begin{aligned}
-      \N_S &\to \ltuple\ \begin{aligned}
-        \isa{\mathbf{s}&}{\mathbb{A}\bm{?}}\ts\quad
-        \isa{\mathbf{v}}{\seq{\mathbb{K}}_\mathsf{V}}\ts\quad
-        \isa{\mathbf{t}}{\seq{\mathbb{T}}}\ts\quad
-        \isa{r}{\H\bm{?}}\ts\\
-        \isa{\mathbf{c}&}{\lseq\lseq\H\rseq_\mathsf{Q}\rseq_\mathsf{C}}\ts\qquad
-        \isa{\mathbf{n}}{\dict{\N_S}{\mathbb{A}}}\ts\\
-        \isa{p&}{\tuple{\isa{m}{\N_S}, \isa{a}{\N_S}, \isa{v}{\N_S}, \isa{\mathbf{g}}{\dict{\N_S}{\N_G}}}}\\
-      \end{aligned}\rtuple \\
-      s &\mapsto \Psi_A(\delta^\dagger, s, G(s), M(s))
-    \end{aligned}\right.
-\end{align}
-
-As can be seen plainly, our accumulation mapping $A$ combines portions of the prior state into arguments for a virtual-machine invocation. Specifically the service accounts $\delta^\dagger$ together with the index of the service in question $s$ and its gas limit and wrangled refine-results $M(s)$ are arranged to create the arguments for $\Psi_A$, itself using a virtual-machine invocation as defined in appendix \ref{sec:accumulateinvocation}. Note that the gas limit is the sum of the regular gas $G(s)$ together with any privileged gas it receives $(\chi_\mathbf{g})_s$.
-
-The \textsc{Beefy} commitment map is a function mapping all accumulated services to their accumulation result (the $r$ component of the result of $A$). This is utilized in determining the accumulation-result tree root for the present block, useful for the \textsc{Beefy} protocol:
-\begin{equation}\label{eq:beefycommitment}
-  \mathbf{C} \equiv \{ (s, A(s)_r) \mid s \in \mathbf{S}, A(s)_r \ne \none \}
-\end{equation}
-
-Given our mapping $A$, which may be calculated exhaustively from the \textsc{vm} invocations of each accumulated service $\mathbf{S}$, we may define the posterior state $\delta'$, $\chi'$, $\varphi'$ and $\iota'$ as the result of integrating $A$ into our state.
-
-\subsubsection{Privileged Transitions}
-The staging core assignments, and validator keys and privileged service set are each altered based on the effects of the accumulation of each of the three privileged services:
-\begin{align}
-  \chi' \equiv A(\chi_m)_p \ ,\quad
-  \varphi' \equiv A(\chi_a)_\mathbf{c} \ ,\quad
-  \iota' \equiv A(\chi_v)_\mathbf{v}
-\end{align}
-
-\subsubsection{Service Account Transitions}
-Finally, we integrate all changes to the service accounts into state.
-
-We note that all newly added service indices, defined as $\keys{A(s)_\mathbf{n}}$ for any accumulated service $s$, must not conflict with the indices of existing services or newly added services. This should never happen, since new indices are explicitly selected to avoid such conflicts, but in the unlikely event it happens, the block would be invalid. Formally:
-\begin{equation}
-  \begin{aligned}
-  \forall s \in \mathbf{S} :\ &\keys{A(s)_\mathbf{n}} \cap \keys{\delta^\dagger} = \none, \\
-  \forall t \in \mathbf{S} \setminus \{s\} :\ &\keys{A(s)_\mathbf{n}} \cap \keys{A(t)_\mathbf{n}} = \none
-\end{aligned}
-\end{equation}
-
-We first define $\delta^\ddagger$, an intermediate state after main accumulation but before the transfers have been credited and handled:
-\begin{equation}\begin{aligned}
-  \keys{\delta^\ddagger} &\equiv \left ( \keys{\delta^\dagger} \cup \bigcup_{s \in \mathbf{S}} \keys{A(s)_\mathbf{n}} \right ) \setminus \left\{s\ \middle\vert\ \begin{aligned}s &\in \mathbf{S},\\s_\mathbf{s} &= \none\end{aligned}\ \right\}\!\!\\
-  \delta^\ddagger[s] &\equiv \begin{cases}
-    A(s)_\mathbf{s} &\when s \in \mathbf{S}\\
-    A(t)_\mathbf{n}[s] &\when \exists! t : t \in \mathbf{S}, s \in \keys{A(t)_\mathbf{n}} \\
-    \delta^\dagger[s] &\otherwise
-  \end{cases}
-\end{aligned}\end{equation}
-
-We denote $R(s)$ the sequence of transfers received by a given service of index $s$, in order of them being sent from services of ascending index. (If some service $s$ received no transfers or simply does not exist then $R(s)$ would be validly defined as the empty sequence.) Formally:
+We have denoted the sequence of implied transfers as $\mathbf{t}$, ordered internally according to the source service's execution. We define a selection function $R$, which maps a sequence of deferred transfers and a desired destination service index into the sequence of transfers targeting said service, ordered primarily according to the source service index and secondarily their order within $\mathbf{t}$. Formally:
 \begin{align}
   R\colon \left\{\;\begin{aligned}
-    \N_S &\to \lseq\mathbb{T}\rseq \\
-    d &\mapsto \left[\,t \mid s \orderedin \mathbf{S},\ t \orderedin A(s)_\mathbf{t},\ t_d = d\,\right]
+    (\defxfers, \N_S) &\to \defxfers \\
+    d &\mapsto \left[\,t \mid s \orderedin \N_S,\ t \orderedin \mathbf{t},\ t_s = s,\ t_d = d\,\right]
   \end{aligned}\right.
 \end{align}
 
 The posterior state $\delta'$ may then be defined as the intermediate state with all the deferred effects of the transfers applied:
 \begin{equation}
-  \delta' = \{ s \mapsto \Psi_T(\delta^\ddagger, a, R(a)) \mid (s \mapsto a) \in \delta^\ddagger \}
+  \delta' = \{ s \mapsto \Psi_T(\delta^\ddagger, a, R(\mathbf{t}, s)) \mid (s \mapsto a) \in \delta^\ddagger \}
 \end{equation}
 
 Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such that it results in $\delta^\ddagger[d]$, \ie no difference to the account's intermediate state, if $R(d) = []$, \ie said account received no transfers.
+
+We define the final state of the ready queue and the accumulated map by integrating those work-reports which were accumulated in this block and shifting any from the prior state with the oldest such items being dropped entirely:
+\begin{align}
+  \accumulated'_{\mathsf{E} - 1} &= \srmap(\mathbf{W}^*_{\dots n}) \\
+  \forall i &\in \N_\mathsf{E - 1}: \accumulated'_{i} \equiv \accumulated_{i + 1} \\
+  \forall i &\in \N_\mathsf{E} : \ready'^\circlearrowleft_{m - i} = \begin{cases}
+    E(\mathbf{W}^Q, \mathbf{W}^*_{\dots n}) &\when i = 0 \\
+    [] &\when 1 \le i < s \\
+    \ready^\circlearrowleft_{m - i} &\when i \ge s
+  \end{cases} \\
+  \where s &= \min(\tau' - \tau, \mathsf{E})
+\end{align}

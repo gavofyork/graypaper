@@ -55,8 +55,7 @@
   \item[$\mathbb{P}$] The set of work-packages. See equation \ref{eq:workpackage}.
   \item[$\mathbb{S}$] The set of availability specifications.
   \item[$\mathbb{T}$] The set of deferred transfers.
-  \item[$\mathbb{U}$] Unused.
-  \item[$\mathbb{V}_{\mu}$] The set of validly readable indices for \textsc{pvm} \textsc{ram} $\mu$. See appendix \ref{sec:virtualmachine}.
+  \item[$\mathbb{U}$] The set of partial state, used during accumulation. See equation \ref{eq:partialstate}.  \item[$\mathbb{V}_{\mu}$] The set of validly readable indices for \textsc{pvm} \textsc{ram} $\mu$. See appendix \ref{sec:virtualmachine}.
   \item[$\mathbb{V}^*_{\mu}$] The set of validly writable indices for \textsc{pvm} \textsc{ram} $\mu$. See appendix \ref{sec:virtualmachine}.
   \item[$\mathbb{W}$] The set of work-reports.
   \item[$\mathbb{X}$] The set of refinement contexts.
@@ -71,7 +70,12 @@
 
 \begin{description}
 %  \item[$\Gamma$] Unused. %	Γ
-%  \item[$\Delta$] Unused. %	Δ
+  \item[$\Delta$] The accumulation function; certain subscripts are used to denote helper functions: %	Δ
+  \begin{description}
+    \item[$\Delta_1$] The single-step accumulation function.
+    \item[$\Delta_*$] The parallel accumulation function.
+    \item[$\Delta_+$] The full sequential accumulation function.
+  \end{description}
 %  \item[$\Theta$] Unused. %	Θ
 %  \item[$\Pi$] Unused. %	Π
   \item[$\Lambda$] The historical lookup function. See equation \ref{eq:historicallookup}. % Λ
@@ -160,7 +164,7 @@ These terms are all contextualized to a single block. They may be superscripted 
 \begin{description}
   \item[$\mathbf{A}$] The ancestor set of the block. See equation \ref{eq:ancestors}.
   \item[$\mathbf{B}$] The block. See equation \ref{eq:block}.
-  \item[$\mathbf{C}$] The service accumulation-commitment, used to form the \textsc{Beefy} root. See equation \ref{eq:beefycommitment}.
+  \item[$\beefycommitmap$] The service accumulation-commitment, used to form the \textsc{Beefy} root. See equation \ref{eq:beefycommitment}.
   \item[$\mathbf{D}$] The set of accumulated work-reports in the present block. See equation \ref{eq:accumulatedwork}.\\
   \item[$\mathbf{E}$] The block extrinsic. See equation \ref{eq:extrinsic}.
   \item[$\mathbf{F}_v$] The \textsc{Beefy} signed commitment of validator $v$. See equation \ref{eq:beefysignedcommitment}.
@@ -259,6 +263,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{G}_A$] The total gas allocated to a core for Accumulation.
   \item[$\mathsf{G}_I$] The gas allocated to invoke a work-package's Is-Authorized logic.
   \item[$\mathsf{G}_R$] The total gas allocated for a work-package's Refine logic.
+  \item[$\mathsf{G}_T$] The total gas allocated across all cores for Accumulation. May be no smaller than $\mathsf{G}_A\cdot\mathsf{C} + \sum_{g \in \mathcal{V}(\chi_\mathbf{g})}(g)$.
   \item[$\mathsf{H} = 8$] The size of recent history, in blocks.
   \item[$\mathsf{I} = 4$] The maximum amount of work items in a package.
   \item[$\mathsf{K} = 16$] The maximum number of tickets which may be submitted in a single extrinsic.
