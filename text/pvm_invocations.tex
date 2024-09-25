@@ -112,11 +112,11 @@ Formally, we define our result context to be $\mathbf{X}$, and our invocation co
 We track both regular and exceptional dimensions within our context mutator, but collapse the result of the invocation to one or the other depending on whether the termination was regular or exceptional (\ie out-of-gas or panic).
 \begin{equation}
   \mathbf{X} \equiv \tuple{
-    \isa{\mathbf{u}}{\partialstate},
     \isa{\mathbf{d}}{\dict{\N_S}{\mathbb{A}}},
-    \isa{i}{\N_S},
-    \isa{\mathbf{t}}{\seq{\mathbb{T}}},
     \isa{s}{\N_S},
+    \isa{\mathbf{u}}{\partialstate},
+    \isa{i}{\N_S},
+    \isa{\mathbf{t}}{\seq{\mathbb{T}}}
   }
 \end{equation}
 
@@ -129,14 +129,9 @@ We define $\Psi_A$, the Accumulation invocation function as:
     }
     &\to
     \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G}\\
-    ((\mathbf{x}, \mathbf{d}, \mathbf{i}, \mathbf{q}), s, g, \mathbf{o}) &\mapsto \begin{cases}
-      \tup{
-        \is{\mathbf{o}}{\tuple{\is{\mathbf{d}}{\{s \mapsto \mathbf{d}[s]\}}, \is{\mathbf{x}}{\mathbf{o}_\mathbf{x}}, \is{\mathbf{i}}{\mathbf{o}_\mathbf{i}}, \is{\mathbf{q}}{\mathbf{o}_\mathbf{q}}}} \ts
-        \is{\mathbf{d}}{\mathbf{d} \setminus \{ s \}} \ts
-        \is{\mathbf{t}}{[]} \ts
-        \is{r}{\none}
-      } &\when \mathbf{d}[s]_\mathbf{c} = \none \\
-      C(\Psi_M(\mathbf{d}[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, I(\mathbf{d}[s], s))) &\otherwise
+    (\mathbf{u}, s, g, \mathbf{o}) &\mapsto \begin{cases}
+      \tup{I(\mathbb{u}, s)_\mathbf{u}, [], \none, 0} &\when \mathbf{d}[s]_\mathbf{c} = \none \\
+      C(\Psi_M(\mathbf{d}[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, \tup{I(\mathbb{u}, s), I(\mathbb{u}, s)})) &\otherwise
     \end{cases} \\
   \end{cases}
 \end{align}
@@ -144,48 +139,47 @@ We define $\Psi_A$, the Accumulation invocation function as:
 TODO... remove all greek state, replace with context
 TODO... wrangle context into result
 \begin{align}
-  I(\mathbf{u} \in \mathbb{U}, s \in \N_S) &\equiv (\mathbf{x}, \mathbf{y}) \text{ where }
-  \left\{ \begin{aligned}
-    \mathbf{x} &= \mathbf{y} = \tup{
-      \is{\mathbf{u}}{},
-      \is{\mathbf{t}}{[]},
-      \is{p}{\chi},
-      \is{\mathbf{c}}{\varphi},
-      \is{\mathbf{v}}{\iota},
-      \is{\mathbf{n}}{\emptyset},
-    }\ ,\\
-    i &= \text{check}((\de_4(\mathcal{H}(s, \eta'_0, \mathbf{H}_t)) \bmod (2^{32}-2^9)) + 2^8)
-  \end{aligned} \right. \\
+  I(\mathbf{u} \in \mathbb{U}, s \in \N_S) &\equiv \tup{
+    \is{\mathbf{d}}{\mathbf{d} \setminus \{ s \}},
+    s,
+    \is{\mathbf{u}}{\tuple{\is{\mathbf{d}}{\{s \mapsto \mathbf{d}[s]\}}, \is{\mathbf{x}}{\mathbf{o}_\mathbf{x}}, \is{\mathbf{i}}{\mathbf{o}_\mathbf{i}}, \is{\mathbf{q}}{\mathbf{o}_\mathbf{q}}}},
+    i,
+    \is{\mathbf{t}}{[]}
+  }\\
+  \where i &= \text{check}((\de_4(\mathcal{H}(s, \eta'_0, \mathbf{H}_t)) \bmod (2^{32}-2^9)) + 2^8) \\
   I(\mathbf{a} \in \mathbb{A}, s \in \N_S) &\equiv (\mathbf{x}, \mathbf{y}) \text{ where }
   \left\{ \begin{aligned}
     \mathbf{x} &= \mathbf{y} = \tup{\is{\mathbf{s}}{\mathbf{a}}\ts\is{\mathbf{t}}{[]}\ts i\ts\is{p}{\chi}\ts\is{\mathbf{c}}{\varphi}\ts\is{\mathbf{v}}{\iota}\ts\is{\mathbf{n}}{\emptyset}}\ ,\\
     i &= \text{check}((\de_4(\mathcal{H}(s, \eta'_0, \mathbf{H}_t)) \bmod (2^{32}-2^9)) + 2^8)
   \end{aligned} \right. \\
   F(n, \theta, \varrho, \mu, (\mathbf{x}, \mathbf{y})) &\equiv \begin{cases}
-    G(\Omega_R(\theta, \varrho, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
-    G(\Omega_W(\theta, \varrho, \mu, \mathbf{x}_\mathbf{s}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
-    G(\Omega_L(\theta, \varrho, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
+    G(\Omega_R(\theta, \varrho, \mu, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
+    G(\Omega_W(\theta, \varrho, \mu, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
+    G(\Omega_L(\theta, \varrho, \mu, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
     G(\Omega_G(\theta, \varrho, \mu), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
-    G(\Omega_I(\theta, \varrho, \mu, \mathbf{x}_\mathbf{s}, s, \delta^\dagger), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
+    G(\Omega_I(\theta, \varrho, \mu, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
     \Omega_E(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{empower}\\
     \Omega_A(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{assign}\\
     \Omega_D(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{designate}\\
     \Omega_C(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{checkpoint} \\
     \Omega_N(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{new} \\
-    \Omega_U(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y}), s) &\when n = \mathtt{upgrade} \\
-    \Omega_T(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y}), s, \delta^\dagger) &\when n = \mathtt{transfer} \\
-    \Omega_Q(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y}), s) &\when n = \mathtt{quit} \\
+    \Omega_U(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{x}_s) &\when n = \mathtt{upgrade} \\
+    \Omega_T(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{x}_s, \mathbf{d}) &\when n = \mathtt{transfer} \\
+    \Omega_Q(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{x}_s) &\when n = \mathtt{quit} \\
     \Omega_S(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{solicit} \\
     \Omega_F(\theta, \varrho, \mu, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{forget} \\
-    (\theta - 10, [\mathtt{WHAT}, \varrho_1, \dots], \mu, \mathbf{x}) &\otherwise
+    (\theta - 10, [\mathtt{WHAT}, \varrho_1, \dots], \mu, \mathbf{x}) &\otherwise\\
+    \quad \where \mathbf{d} = (\mathbf{x}_\mathbf{u})_\mathbf{d}\cup\mathbf{x}_\mathbf{d}\;,\ \mathbf{s} = (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!& \\
   \end{cases} \\
-  G((\theta', \varrho', \mu', \mathbf{s}'), (\mathbf{x}, \mathbf{y})) &\equiv (\theta', \varrho', \mu', (\mathbf{x}, \mathbf{y}))\ \where \mathbf{x} = \mathbf{x}' \exc \mathbf{x}_\mathbf{s} = \mathbf{s}' \\
+  G((\theta, \varrho, \mu, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\equiv (\theta, \varrho, \mu, (\mathbf{x}^*, \mathbf{y}))\ \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[(\mathbf{x}^*_\mathbf{u})_s] = \mathbf{s} \\
   C(\mathbf{o} \in \mathbb{Y} \cup \{\oog, \panic\}, (\mathbf{x}\in\mathbf{X}, \mathbf{y}\in\mathbf{X})) &\equiv \begin{cases}
     \mathbf{x} \times \tup{\is{r}{\mathbf{o}}} & \when \mathbf{o} \in \mathbb{H} \\
     \mathbf{x} \times \tup{\is{r}{\none}} & \when \mathbf{o} \in \mathbb{Y} \setminus \H \\
     \mathbf{y} \times \tup{\is{r}{\none}} & \when \mathbf{o} \in \{\oog, \panic\} \\
   \end{cases}
 \end{align}
+
+TODO: For upgrade, transfer and quit, just use the context directly and don't pass s/d
 
 The mutator $F$ governs how this context will alter for any given parameterization, and the collapse function $C$ selects one of the two dimensions of context depending on whether the virtual machine's halt was regular or exceptional.
 
