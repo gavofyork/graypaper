@@ -60,8 +60,8 @@ The guarantor is able to use this proof to justify to themselves that they are n
 We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constituent \emph{work item}s, of set $\mathbb{I}$. A work-package includes a simple blob acting as an authorization token $\wp¬authtoken$, the index of the service which hosts the authorization code $\wp¬authcodehost$, an authorization code hash $\wp¬authcodehash$ and a parameterization blob $\wp¬authparam$, a context $\wp¬context$ and a sequence of work items $\wp¬workitems$:
 \begin{equation}\label{eq:workpackage}
   \mathbb{P} \equiv \tuple{\;\begin{aligned}
-    &\isa{\wp¬authtoken}{\Y},\ \isa{\wp¬authcodehost}{\N_S},\ \isa{\wp¬authcodehash}{\H},\\
-    &\isa{\wp¬authparam}{\Y},\ \isa{\wp¬context}{\mathbb{X}},\ \isa{\wp¬workitems}{\seq{\mathbb{I}}_{1:\mathsf{I}}}
+    &\isa{\wp¬authtoken}{\Y},\ \ \isa{\wp¬authcodehost}{\N_S},\ \ \isa{\wp¬authcodehash}{\H},\ \ \isa{\wp¬authparam}{\Y},\\
+    &\isa{\wp¬context}{\mathbb{X}},\ \isa{\wp¬workitems}{\seq{\mathbb{I}}_{1:\mathsf{I}}},\ \isa{\wp¬srlookup}{\dict{\H}{\H}}
   \end{aligned}}
 \end{equation}
 
@@ -78,12 +78,13 @@ A work item includes: $s$ the identifier of the service to which it relates, the
     \end{aligned}}
 \end{equation}
 
-We limit the total number of exported items to $\mathsf{W}_M = 2^{11}$. We also place the same limit on the total number of imported items:
-\begin{align}
+We limit the number of items in the segment-root lookup dictionary to 8. We also limit both the total number of exported items and the total number of imported items to $\mathsf{W}_M = 2^{11}$:
+\begin{equation}
   \forall \wpX \in \mathbb{P}:
-  \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportsegments &\le \mathsf{W}_M \ \wedge\ 
-  \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments| \le \mathsf{W}_M
-\end{align}
+  \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportsegments \le \mathsf{W}_M \ \wedge\ 
+  \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments| \le \mathsf{W}_M \ \wedge\ 
+  |\wpX_\wp¬srlookup| \le 8
+\end{equation}
 
 We make an assumption that the preimage to each extrinsic hash in each work-item is known by the guarantor. In general this data will be passed to the guarantor alongside the work-package.
 
