@@ -126,26 +126,26 @@ We define $\Psi_A$, the Accumulation invocation function as:
 \begin{align}
   \Psi_A &:
   \begin{cases}
-    \left(
-        \dict{\N_S}{\mathbb{A}},\N_S,\N_G,\lseq\mathbb{O}\rseq
-    \right)
+    \tuple{
+      \partialstate, \N_S, \N_G, \seq{\mathbb{O}}
+    }
     &\to
-    \mathbf{X} \times \tuple{\isa{r}{\H?}}\\
-    (\delta^\dagger, s, g, \mathbf{o}) &\mapsto \begin{cases}
+    \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G}\\
+    ((\mathbf{x}, \mathbf{d}, \mathbf{i}, \mathbf{q}), s, g, \mathbf{o}) &\mapsto \begin{cases}
       \tup{
-        \is{\mathbf{s}}{\delta^\dagger[s]} \ts
+        TODO...
+        \is{\mathbf{o}}{\tuple{\is{\mathbf{d}}{\{s \mapsto \mathbf{d}_s\}}, \is{\mathbf{x}}{\mathbf{o}_\mathbf{x}}, \is{\mathbf{i}}{\mathbf{o}_\mathbf{i}}, \is{\mathbf{q}}{\mathbf{o}_\mathbf{q}}}} \ts
+        \is{\mathbf{d}}{\mathbf{d} \setminus \{ s \}} \ts
         \is{\mathbf{t}}{[]} \ts
-        \is{p}{\chi} \ts
-        \is{\mathbf{c}}{\varphi} \ts
-        \is{\mathbf{v}}{\iota} \ts
-        \is{\mathbf{n}}{\emptyset} \ts
         \is{r}{\none}
-      } &\when \delta^\dagger[s]_\mathbf{c} = \none \\
-      C(\Psi_M(\delta^\dagger[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, I(\delta^\dagger[s], s))) &\otherwise
+      } &\when \mathbf{d}[s]_\mathbf{c} = \none \\
+      C(\Psi_M(\mathbf{d}[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, I(\mathbf{d}[s], s))) &\otherwise
     \end{cases} \\
   \end{cases}
 \end{align}
 \begin{align}
+  TODO... remove all greek state, replace with context
+  TODO... wrangle context into result
   I(\mathbf{a} \in \mathbb{A}, s \in \N_S) &\equiv (\mathbf{x}, \mathbf{y}) \text{ where }
   \left\{ \begin{aligned}
     \mathbf{x} &= \mathbf{y} = \tup{\is{\mathbf{s}}{\mathbf{a}}\ts\is{\mathbf{t}}{[]}\ts i\ts\is{p}{\chi}\ts\is{\mathbf{c}}{\varphi}\ts\is{\mathbf{v}}{\iota}\ts\is{\mathbf{n}}{\emptyset}}\ ,\\
