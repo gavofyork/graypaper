@@ -159,9 +159,9 @@ TODO... wrangle context into result
     \Omega_D(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{designate}\\
     \Omega_C(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{checkpoint} \\
     \Omega_N(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{new} \\
-    \Omega_U(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{x}_s) &\when n = \mathtt{upgrade} \\
-    \Omega_T(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{x}_s, \mathbf{d}) &\when n = \mathtt{transfer} \\
-    \Omega_Q(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{x}_s) &\when n = \mathtt{quit} \\
+    \Omega_U(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{upgrade} \\
+    \Omega_T(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{transfer} \\
+    \Omega_Q(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{quit} \\
     \Omega_S(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{solicit} \\
     \Omega_F(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{forget} \\
     (\gascounter - 10, [\mathtt{WHAT}, \registers_1, \dots], \memory, \mathbf{x}) &\otherwise\\
@@ -189,8 +189,6 @@ TODO... wrangle context into result
     } & \when \mathbf{o} \in \{\oog, \panic\} \\
   \end{cases}
 \end{align}
-
-TODO: For upgrade, transfer and quit, just use the context directly and don't pass s/d
 
 The mutator $F$ governs how this context will alter for any given parameterization, and the collapse function $C$ selects one of the two dimensions of context depending on whether the virtual machine's halt was regular or exceptional.
 
@@ -485,7 +483,7 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-    $\Omega_U(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), s)$ \\
+    $\Omega_U(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}))$ \\
     \texttt{upgrade} = 10 \\
     $g = 10$
   } &
@@ -497,29 +495,30 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
     \end{cases} \\
     \using g &= 2^{32}\cdot g_h + g_l \\
     \using m &= 2^{32}\cdot m_h + m_l \\
-    (\registers'_0, \mathbf{x}'[s]_c, \mathbf{x}'[s]_g, \mathbf{x}'[s]_m) &\equiv \begin{cases}
+    (\registers'_0, \mathbf{x}'[\mathbf{x}_s]_c, \mathbf{x}'[\mathbf{x}_s]_g, \mathbf{x}'[\mathbf{x}_s]_m) &\equiv \begin{cases}
       (\mathtt{OK}, c, g, m) &\when c \ne \error\\
-      (\mathtt{OOB}, \mathbf{x}[s]_c, \mathbf{x}[s]_g, \mathbf{x}[s]_m) &\otherwise
+      (\mathtt{OOB}, \mathbf{x}[\mathbf{x}_s]_c, \mathbf{x}[\mathbf{x}_s]_g, \mathbf{x}[\mathbf{x}_s]_m) &\otherwise
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_T(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), s, \delta)$ \\
+  $\Omega_T(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}))$ \\
   \texttt{transfer} = 11 \\
   $g = 10 + \registers_1 + 2^{32}\cdot\registers_2 $} &
   $\begin{aligned}
     \using (d, a_l, a_h, g_l, g_h, o) &= \registers_{0..6},  \\
     \using a &= 2^{32}\cdot a_h + a_l \\
     \using g &= 2^{32}\cdot g_h + g_l \\
+    \using \mathbf{d} &= \mathbf{x}_\mathbf{d} \cup (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
     \using \mathbf{t} \in \mathbb{T} \cup \{\error\} &= \begin{cases}
-      (s, d, a, m, g): m = \memory_{o\dots+\mathsf{M}} &\when \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\memory} \\
+      (\mathbf{x}_s, d, a, m, g): m = \memory_{o\dots+\mathsf{M}} &\when \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using b &= (\mathbf{x}_\mathbf{s})_b - a \\
     (\registers'_0, \mathbf{x}'_\mathbf{t}, (\mathbf{x}'_\mathbf{s})_b) &\equiv \begin{cases}
       (\mathtt{OOB}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\when t = \error \\
-      (\mathtt{WHO}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen d \not \in \keys{\delta \cup \mathbf{x}_\mathbf{n}} \\
-      (\mathtt{LOW}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen g < (\delta \cup \mathbf{x}_\mathbf{n})[d]_m \\
+      (\mathtt{WHO}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen d \not \in \keys{\mathbf{d}} \\
+      (\mathtt{LOW}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen g < \mathbf{d}[d]_m \\
       (\mathtt{HIGH}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen \gascounter < g \\
       (\mathtt{CASH}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen b < (\mathbf{x}_\mathbf{s})_t \\
       (\mathtt{OK}, \mathbf{x}_\mathbf{t} \doubleplus \mathbf{t}, b) &\otherwise
@@ -527,7 +526,7 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_Q(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), s)$ \\
+  $\Omega_Q(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}))$ \\
   \texttt{quit} = 12 \\
   $g = 10 + \registers_1 + 2^{32}\cdot\registers_2 $} &
   $\begin{aligned}
@@ -535,8 +534,8 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
     \using a &= (\mathbf{x}_\mathbf{s})_b - (\mathbf{x}_\mathbf{s})_t + \mathsf{B}_S \\
     \using g &= \gascounter \\
     \using \mathbf{t} \in \mathbb{T} \cup \{\error,\none\} &= \begin{cases}
-      \none &\when d \in \{ s, 2^{32} - 1 \} \\
-      (s, d, a, m, g): m = \de(\memory_{o\dots+\mathsf{M}}) &\otherwhen \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\memory} \\
+      \none &\when d \in \{ \mathbf{x}_s, 2^{32} - 1 \} \\
+      (\mathbf{x}_s, d, a, m, g): \se(m) = \memory_{o\dots+\mathsf{M}} &\otherwhen \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     (\registers'_0, \mathbf{x}'_\mathbf{s}, \mathbf{x}'_\mathbf{t}) &\equiv \begin{cases}
