@@ -62,7 +62,7 @@ The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated
 
 The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\mathsf{W}_S$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
 
-The Refine invocation function also implicitly draws upon some recent head state $\delta$ and explicitly accepts the work payload, $\mathbf{y}$, together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{c}$, the authorizer hash $a$ and its output $\mathbf{o}$, and an export segment offset $\segoff$, the import segments and extrinsic data blobs as dictated by the work-item, $\mathbf{i}$ and $\overline{\mathbf{x}}$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
+Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\delta$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work payload, $\mathbf{y}$, together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{c}$, the authorizer hash $a$ and its output $\mathbf{o}$, and an export segment offset $\segoff$, the import segments and extrinsic data blobs as dictated by the work-item, $\mathbf{i}$ and $\overline{\mathbf{x}}$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   \Psi_R &\colon \left\{\begin{aligned}
     \left(\begin{aligned}
@@ -197,7 +197,7 @@ The initializer function $I$ maps some service account $\mathbf{s}$ along with i
 Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\eta_0$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
 \begin{equation}
   \text{check}(i \in \N_S) \equiv \begin{cases}
-    i &\when i \not\in \mathcal{K}(\delta^\dagger)\\
+    i &\when i \not\in \keys{\mathbf{o}_\mathbf{d}} \\
     \text{check}((i - 2^8 + 1) \bmod (2^{32}-2^9) + 2^8)&\otherwise
   \end{cases}
 \end{equation}
@@ -210,23 +210,21 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
 \begin{align}
   \Psi_T &: \begin{cases}
     (\dict{\N_S}{\mathbb{A}}, \N_S, \seq{\mathbb{T}}) &\to \mathbb{A} \\
-    (\delta^\ddagger, s, \mathbf{t}) &\mapsto \begin{cases}
+    (\mathbf{d}, s, \mathbf{t}) &\mapsto \begin{cases}
     \mathbf{s} &\when \mathbf{s}_\mathbf{c} = \none \vee \mathbf{t} = [] \\
     \Psi_M(\mathbf{s}_\mathbf{c}, 15, \sum_{r \in \mathbf{t}}{(r_g)}, \mathcal{E}(\mathbf{t}), F, \mathbf{s}) &\otherwise
     \end{cases} \\
   \end{cases} \\
-  \where \mathbf{s} &= \delta^\ddagger[s]\exc\mathbf{s}_b = \delta^\ddagger[s]_b + \sum_{r \in \mathbf{t}}{r_a} \\
+  \where \mathbf{s} &= \mathbf{d}[s]\exc\mathbf{s}_b = \mathbf{d}[s]_b + \sum_{r \in \mathbf{t}}{r_a} \\
   F(n, \gascounter, \registers, \memory, \mathbf{s}) &\equiv \begin{cases}
-    \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \delta^\ddagger) &\when n = \mathtt{lookup} \\
-    \Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \delta^\ddagger) &\when n = \mathtt{read} \\
+    \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{lookup} \\
+    \Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{read} \\
     \Omega_W(\gascounter, \registers, \memory, \mathbf{s}) &\when n = \mathtt{write} \\
     \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
-    \Omega_I(\gascounter, \registers, \memory, \mathbf{s}, s, \delta^\ddagger) &\when n = \mathtt{info} \\
+    \Omega_I(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{info} \\
     (\gascounter - 10, [\mathtt{WHAT}, \registers_1, \dots], \memory, \mathbf{s}) &\otherwise
   \end{cases}
 \end{align}
-
-\nb When considering the mutator functions $\Omega_R$ and $\Omega_I$, the final arguments passed are both the post-accumulation accounts state, $\delta^\ddagger$. Within the function, this parameter however is denoted simply $\mathbf{d}$. This is intentional and avoids potential confusion since the functions are also utilized for the Accumulation Invocation where the argument is $\delta^\dagger$.
 
 
 
@@ -613,13 +611,13 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
-  $\Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), s, \delta, t)$ \\
+  $\Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), s, \mathbf{d}, t)$ \\
   \texttt{historical\_lookup} = 15 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \delta[s] &\when \registers_0 = 2^{32} - 1 \wedge s \in \keys{\delta} \\
-      \delta[\registers_0] &\when \registers_0 \in \keys{\delta} \\
+      \mathbf{d}[s] &\when \registers_0 = 2^{32} - 1 \wedge s \in \keys{\mathbf{d}} \\
+      \mathbf{d}[\registers_0] &\when \registers_0 \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
     \using [h_o, b_o, b_z] &= \registers_{1..4} \\
