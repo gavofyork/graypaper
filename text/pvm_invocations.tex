@@ -36,11 +36,7 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
 \begin{align}
   \Psi_I &\colon \left\{\begin{aligned}
     (\mathbb{P}, \N_\mathsf{C}) &\to \Y \cup \mathbb{J} \\
-    (\mathbf{p}, c) &\mapsto \begin{cases}
-      \mathbf{r} &\otherwhen \mathbf{r} \in \{ \oog, \panic \}  \\
-      \mathbf{o} &\otherwhen \mathbf{r} = \tup{g, \mathbf{o}} \\
-      \multicolumn{2}{l}{\quad\where (\mathbf{r}, \none) = \Psi_M(\mathbf{p}_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(\mathbf{p}, c), F, \none)}
-    \end{cases} \\
+    (\mathbf{p}, c) &\mapsto \mathbf{r}\ \where (g, \mathbf{r}, \none) = \Psi_M(\mathbf{p}_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(\mathbf{p}, c), F, \none)
   \end{aligned}\right. \\
   \label{eq:isauthorizedmutator}F&\colon\left\{\begin{aligned}
     (\N, \N_G, \lseq\N_R\rseq_6, \mathbb{M}) &\to (\Z_G, \lseq\N_R\rseq_2, \mathbb{M})\\
@@ -79,9 +75,9 @@ The Refine invocation function also implicitly draws upon some recent head state
       (\token{BIG}, []) &\otherwhen |\Lambda(\delta[s], \mathbf{c}_t, c)| > \mathsf{W}_C \\
       &\otherwise: \\
       &\quad\using a = \se(s, \mathbf{y}, p, \mathbf{c}, a, \mathbf{o}, \var{\sq{\var{\mathbf{x}} \mid \mathbf{x} \orderedin \overline{\mathbf{x}}}})\ ,\\
-      &\quad\also (\mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[s], \mathbf{c}_t, c), 5, g, a, F, (\emptyset, []))\ \colon\\
+      &\quad\also (g, \mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[s], \mathbf{c}_t, c), 5, g, a, F, (\emptyset, []))\ \colon\\
       (\mathbf{r}, []) &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
-      (\mathbf{u}, \mathbf{e}) &\quad\when \mathbf{r} = \tup{g, \mathbf{u}} \\
+      (\mathbf{r}, \mathbf{e}) &\quad\otherwise \\
     \end{cases} \\
   \end{aligned}\right. \\
   \label{eq:refinemutator}
@@ -172,15 +168,25 @@ TODO... wrangle context into result
     \quad \where \mathbf{d} = (\mathbf{x}_\mathbf{u})_\mathbf{d}\cup\mathbf{x}_\mathbf{d}\;,\ \mathbf{s} = (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!& \\
   \end{cases} \\
   G((\gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\equiv (\gascounter, \registers, \memory, (\mathbf{x}^*, \mathbf{y}))\ \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[(\mathbf{x}^*_\mathbf{u})_s] = \mathbf{s} \\
-  C(\mathbf{o} \in \mathbb{Y} \cup \{\oog, \panic\}, (\mathbf{x}\in\mathbf{X}, \mathbf{y}\in\mathbf{X})) &\equiv \begin{cases}
+  C(g \in \N_G, \mathbf{o} \in \mathbb{Y} \cup \{\oog, \panic\}, (\mathbf{x}\in\mathbf{X}, \mathbf{y}\in\mathbf{X})) &\equiv \begin{cases}
     \tup{
       \mathbf{x}_\mathbf{u},
       \mathbf{x}_\mathbf{t},
       \mathbf{o},
-      \gascounter, TODO
+      g
     } & \when \mathbf{o} \in \mathbb{H} \\
-    \mathbf{x} \times \tup{\is{r}{\none}} & \when \mathbf{o} \in \mathbb{Y} \setminus \H \\
-    \mathbf{y} \times \tup{\is{r}{\none}} & \when \mathbf{o} \in \{\oog, \panic\} \\
+    \tup{
+      \mathbf{x}_\mathbf{u},
+      \mathbf{x}_\mathbf{t},
+      [],
+      g
+    } & \when \mathbf{o} \in \mathbb{Y} \setminus \H \\
+    \tup{
+      \mathbf{y}_\mathbf{u},
+      \mathbf{y}_\mathbf{t},
+      [],
+      g
+    } & \when \mathbf{o} \in \{\oog, \panic\} \\
   \end{cases}
 \end{align}
 

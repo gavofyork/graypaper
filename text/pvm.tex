@@ -671,18 +671,16 @@ If the above cannot be satisfied, then $x = \none$, otherwise $x = (\mathbf{c}, 
 The four instances where the \textsc{pvm} is utilized each expect to be able to pass argument data in and receive some return data back. We thus define the common \textsc{pvm} program-argument invocation function $\Psi_M$:
 \begin{align}
   \Psi_M&\colon \left\{\begin{aligned}
-    (\Y, \N, \N_G, \Y_{:\mathsf{Z}_I}, \Omega_X, X) &\to ((\N_G, \Y) \cup \{\panic, \oog\}, X)\\
+    (\Y, \N, \N_G, \Y_{:\mathsf{Z}_I}, \Omega_X, X) &\to (\N_G, \Y \cup \{\panic, \oog\}, X)\\
     (\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}) &\mapsto \begin{cases}
-      (\panic, \mathbf{x}) &\when Y(\mathbf{p}) = \none\\
+      (\gascounter, \panic, \mathbf{x}) &\when Y(\mathbf{p}) = \none\\
       R(\Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}) = (\mathbf{c}, \registers, \mem)
     \end{cases}
   \end{aligned}\right.\\
   \where R&\colon (\varepsilon, \imath', \gascounter', \registers', \mem', \mathbf{x}) \mapsto \begin{cases}
-    (\oog, \mathbf{x}) &\when \varepsilon = \oog \\
-    ((\gascounter', \memory'_{\registers'_{10}\dots+\registers'_{11}}), \mathbf{x}) &\when \varepsilon = \halt \wedge \mathbb{Z}_{\registers'_{10}\dots+\registers'_{11}} \subset \mathbb{V}_{\mem'} \\
-    ((\gascounter', []), \mathbf{x}) &\when \varepsilon = \halt \wedge \mathbb{Z}_{\registers'_{10}\dots+\registers'_{11}} \not\subset \mathbb{V}_{\mem'} \\
-    (\panic, \mathbf{x}) &\otherwise \\
+    (\gascounter', \oog, \mathbf{x}) &\when \varepsilon = \oog \\
+    (\gascounter', \memory'_{\registers'_{10}\dots+\registers'_{11}}, \mathbf{x}) &\when \varepsilon = \halt \wedge \mathbb{Z}_{\registers'_{10}\dots+\registers'_{11}} \subset \mathbb{V}_{\mem'} \\
+    (\gascounter', [], \mathbf{x}) &\when \varepsilon = \halt \wedge \mathbb{Z}_{\registers'_{10}\dots+\registers'_{11}} \not\subset \mathbb{V}_{\mem'} \\
+    (\gascounter', \panic, \mathbf{x}) &\otherwise \\
   \end{cases}
 \end{align}
-
-TODO: Panic should return gas counter!
