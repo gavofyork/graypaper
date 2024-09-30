@@ -83,11 +83,11 @@ In addition to the active set of validator keys $\kappa$ and staging set $\iota$
 
 We must introduce $\mathbb{K}$, the set of validator key tuples. This is a combination of a set of cryptographic public keys and metadata which is an opaque octet sequence, but utilized to specify practical identifiers for the validator, not least a hardware address.
 
-The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_b$, and is equivalent to the first 32-octets; the Ed25519 key, $k_e$, is the second 32 octets; the \textsc{bls} key denoted $k_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $k_m$ is the last 128 octets. Formally:
+The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_b$, and is equivalent to the first 32-octets; the Ed25519 key, $k_E$, is the second 32 octets; the \textsc{bls} key denoted $k_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $k_m$ is the last 128 octets. Formally:
 \begin{align}
   \mathbb{K} &\equiv \mathbb{Y}_{336} \\
   \forall k \in \mathbb{K} : k_b \in \H_B &\equiv k_{0\dots+32} \\
-  \forall k \in \mathbb{K} : k_e \in \H_E &\equiv k_{32\dots+32} \\
+  \forall k \in \mathbb{K} : k_E \in \H_E &\equiv k_{32\dots+32} \\
   \forall k \in \mathbb{K} : k_{BLS} \in \Y_{BLS} &\equiv k_{64\dots+144} \\
   \forall k \in \mathbb{K} : k_m \in \Y_{128} &\equiv k_{208\dots+128}
 \end{align}
@@ -99,7 +99,7 @@ With a new epoch under regular conditions, validator keys get rotated and the ep
   \end{cases} \\
   \nonumber \where z &= \mathcal{O}([k_b \mid k \orderedin \gamma'_\mathbf{k}]) \\
   \label{eq:blacklistfilter} \Phi(\mathbf{k}) &\equiv \sq{
-    \begin{rcases}[0, 0, \dots] &\when k_e \in \offenders' \\ k &\otherwise \end{rcases}
+    \begin{rcases}[0, 0, \dots] &\when k_E \in \offenders' \\ k &\otherwise \end{rcases}
     \,\middle\mid\, k \orderedin \mathbf{k}
   }
 \end{align}
