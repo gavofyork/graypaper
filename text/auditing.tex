@@ -28,7 +28,7 @@ All items in the work-package specification field of the work-report should be r
 
 \subsection{Selection of Reports}
 
-Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some block $\mathbf{B}$ with other terms corresponding, so $\sigma'$ is said block's posterior state, $\mathbf{H}$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
+Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\mathbf{B}$ with other terms corresponding to the state-transition implied by that block, so $\rho$ is said block's prior core-allocation, $\kappa'$ is its posterior validator set, $\mathbf{H}$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
 
 We define the sequence of work-reports which we may be required to audit as $\mathbf{Q}$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
 \begin{align}\label{eq:auditselection}
@@ -54,7 +54,7 @@ We may then define $\mathbf{a}_0$ as the non-empty items to audit through a veri
 
 Every $\mathsf{A} = 8$ seconds following a new time slot, a new tranche begins, and we may determine that additional cores warrant an audit from us. Such items are defined as $\mathbf{a}_n$ where $n$ is the current tranche. Formally:
 \begin{equation}
-  \using n = \ffrac{\mathcal{T} - \mathsf{P}\cdot\tau'}{\mathsf{A}}
+  \using n = \ffrac{\mathcal{T} - \mathsf{P}\cdot\mathbf{H}_t}{\mathsf{A}}
 \end{equation}
 
 New tranches may contain items from $\mathbf{Q}$ stemming from one of two reasons: either a negative judgement has been received; or the number of judgements from the previous tranche is less than the number of announcements from said tranche. In the first case, the validator is always required to issue a judgement on the work-report. In the second case, a new special-purpose \textsc{vrf} must be constructed to determine if an audit and judgement is warranted from us.
@@ -63,7 +63,7 @@ In all cases, we publish a signed statement of which of the cores we believe we 
 
 Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $s_n$ and all signed data. Validator's announcement statements must be in the set:
 \begin{align}
-  &\sig{\kappa[v]_e}{\mathsf{X}_I \doubleplus n \concat \se([\se_2(c) \frown \mathbf{H}(w) \mid \tup{c, w} \in \mathbf{a}_0])} \\
+  &\sig{\kappa[v]_e}{\mathsf{X}_I \doubleplus n \concat \se([\se_2(c) \frown \mathcal{H}(w) \mid \tup{c, w} \in \mathbf{a}_n])} \\
   &\mathsf{X}_I = \token{\$jam\_announce}
 \end{align}
 
