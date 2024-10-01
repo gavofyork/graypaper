@@ -5,7 +5,7 @@
 \newcommand*{\xtculprits}{\mathbf{c}}
 \newcommand*{\xtfaults}{\mathbf{f}}
 
-\Jam provides a means of recording \emph{judgements}: consequential votes amongst most of the validators over the validity of a \emph{work-report} (a unit of work done within \Jam, see section \ref{sec:reporting}). Such collections of judgements are known as \emph{verdicts}. \Jam also provides a means of registering \emph{offenses}, judgements and guarantees which dissent with an established \emph{verdict}. Together these form the \emph{disputes} system.
+\Jam provides a means of recording \emph{judgments}: consequential votes amongst most of the validators over the validity of a \emph{work-report} (a unit of work done within \Jam, see section \ref{sec:reporting}). Such collections of judgments are known as \emph{verdicts}. \Jam also provides a means of registering \emph{offenses}, judgments and guarantees which dissent with an established \emph{verdict}. Together these form the \emph{disputes} system.
 
 The registration of a verdict is not expected to happen very often in practice, however it is an important security backstop for removing and banning invalid work-reports from the processing pipeline as well as removing troublesome keys from the validator set where there is consensus over their malfunction. It also helps coordinate nodes to revert chain-extensions containing invalid work-reports and provides a convenient means of aggregating all offending validators for punishment in a higher-level system.
 
@@ -28,7 +28,7 @@ The \emph{disputes} state includes four items, three of which concern verdicts: 
 
 \subsection{Extrinsic}
 
-The disputes extrinsic, $\xtdisputes$, may contain one or more verdicts $\xtverdicts$ as a compilation of judgements coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\kappa$ or $\lambda$. Additionally, it may contain proofs of the misbehavior of one or more validators, either by guaranteeing a work-report found to be invalid (\emph{culprits}, $\xtculprits$), or by signing a judgement found to be contradiction to a work-report's validity (\emph{faults}, $\xtfaults$). Both are considered a kind of \emph{offense}. Formally:
+The disputes extrinsic, $\xtdisputes$, may contain one or more verdicts $\xtverdicts$ as a compilation of judgments coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\kappa$ or $\lambda$. Additionally, it may contain proofs of the misbehavior of one or more validators, either by guaranteeing a work-report found to be invalid (\emph{culprits}, $\xtculprits$), or by signing a judgement found to be contradiction to a work-report's validity (\emph{faults}, $\xtfaults$). Both are considered a kind of \emph{offense}. Formally:
 \begin{equation}
   \begin{aligned}
     \xtdisputes &\equiv (\xtverdicts, \xtculprits, \xtfaults) \\
@@ -38,7 +38,7 @@ The disputes extrinsic, $\xtdisputes$, may contain one or more verdicts $\xtverd
   \end{aligned}
 \end{equation}
 
-The signatures of all judgements must be valid in terms of one of the two allowed validator key-sets, identified by the verdict's second term which must be either the epoch index of the prior state or one less. Formally:
+The signatures of all judgments must be valid in terms of one of the two allowed validator key-sets, identified by the verdict's second term which must be either the epoch index of the prior state or one less. Formally:
 \begin{align}
   &\begin{aligned}
     &\forall (r, a, \mathbf{j}) \in \xtverdicts, \forall (v, i, s) \in \mathbf{j} : s \in \sig{\mathbf{k}[i]_e}{\mathsf{X}_v \concat r}\\
@@ -50,7 +50,7 @@ The signatures of all judgements must be valid in terms of one of the two allowe
   &\mathsf{X}_\top \equiv \text{{\small \texttt{\$jam\_valid}}}\,,\ \mathsf{X}_\bot \equiv \text{{\small \texttt{\$jam\_invalid}}}
 \end{align}
 
-Offender signatures must be similarly valid and reference work-reports with judgements and may not report keys which are already in the punish-set:
+Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set:
 \begin{align}
   \forall (r, k, s) &\in \xtculprits : \bigwedge \left\{
   \begin{aligned}
@@ -74,19 +74,19 @@ Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtc
   &\{r \mid \tup{r, a, \mathbf{j}} \in \xtverdicts\} \disjoint \goodset \cup \badset \cup \wonkyset
 \end{align}
 
-The judgements of all verdicts must be ordered by validator index and there may be no duplicates:
+The judgments of all verdicts must be ordered by validator index and there may be no duplicates:
 \begin{equation}
   \forall (r, a, \mathbf{j}) \in \xtverdicts : \mathbf{j} = \orderuniqby{i}{\tup{v, i, s} \in \mathbf{j}}
 \end{equation}
 
 
-We define $\verdicts$ to derive from the sequence of verdicts introduced in the block's extrinsic, containing only the report hash and the sum of positive judgements. We require this total to be either exactly two-thirds-plus-one, zero or one-third of the validator set indicating, respectively, that the report is good, that it's bad, or that it's wonky.\footnote{This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{cryptoeprint:2024/961} discusses the security implications in depth).} Formally:
+We define $\verdicts$ to derive from the sequence of verdicts introduced in the block's extrinsic, containing only the report hash and the sum of positive judgments. We require this total to be either exactly two-thirds-plus-one, zero or one-third of the validator set indicating, respectively, that the report is good, that it's bad, or that it's wonky.\footnote{This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{cryptoeprint:2024/961} discusses the security implications in depth).} Formally:
 \begin{align}\label{eq:verdicts}
   \verdicts &\in \seq{\tup{\H, \{0, \floor{\nicefrac{1}{3}\mathsf{V}}, \floor{\nicefrac{2}{3}\mathsf{V}} + 1\}}} \\
   \verdicts &= \sq{\tup{r, \sum_{\tup{v, i, s} \in \mathbf{j}}\!\!\!\! v}\ \middle\mid\ \tup{r, a, \mathbf{j}} \orderedin \xtverdicts}
 \end{align}
 
-There are some constraints placed on the composition of this extrinsic: any verdict containing solely valid judgements implies the same report having at least one valid entry in the faults sequence $\xtfaults$. Any verdict containing solely invalid judgements implies the same report having at least two valid entries in the culprits sequence $\xtculprits$. Formally:
+There are some constraints placed on the composition of this extrinsic: any verdict containing solely valid judgments implies the same report having at least one valid entry in the faults sequence $\xtfaults$. Any verdict containing solely invalid judgments implies the same report having at least two valid entries in the culprits sequence $\xtculprits$. Formally:
 \begin{align}
   \forall (r, \floor{\nicefrac{2}{3}\mathsf{V}} + 1) \in \verdicts &: \exists (r, \dots) \in \xtfaults \\
   \forall (r, 0) \in \verdicts &: |\{(r, \dots) \in \xtculprits\}| \ge 2
