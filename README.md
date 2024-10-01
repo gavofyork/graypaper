@@ -163,7 +163,7 @@ At present all WorkItems can succeed or fail independently. Instead we should be
   - [x] If so we continue.
   - [x] NOTE: The above should be done in guarantor stage also.
 - [x] Auditing: Always finish once announced.
-- [x] Judgements: Should cancel work-report from Rho prior to accumulation.
+- [x] Judgments: Should cancel work-report from Rho prior to accumulation.
 - [x] Signed judgments should not include guarantor keys;
   - [x] Judgement extrinsic should use from rho.
 - [x] Check "Which History" section and ensure it mentions possibility for reversion via judgement.
