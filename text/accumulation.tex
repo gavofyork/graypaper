@@ -51,8 +51,13 @@ We also maintain knowledge of available but not-yet-accumulated work-reports in 
 
 The newly available work-reports, $\mathbf{W}$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\mathbf{W}^!$, are accumulated immediately. Those not, $\mathbf{W}^Q$, are for queued execution. Formally:
 \begin{align}
-  \mathbf{W}^! &\equiv [ w \mid w \orderedin \mathbf{W}, (w_x)_p = \none ] \\
-  \mathbf{W}^Q &\equiv E([ w \mid w \orderedin \mathbf{W}, (w_x)_p \ne \none ], \wideparen{\accumulated})
+  \mathbf{W}^! &\equiv [ w \mid w \orderedin \mathbf{W}, (w_x)_p = \none \wedge w_\wr¬srlookup = \{\} ] \\
+  \mathbf{W}^Q &\equiv E(\sq{
+    D(w) \mid
+    w \orderedin \mathbf{W},
+    (w_x)_p \ne \none \vee w_\wr¬srlookup \ne \{\}
+  }, \wideparen{\accumulated})\!\!\\
+  D(w) &\equiv (w, (w_x)_p \cup \keys{w_\wr¬srlookup})
 \end{align}
 
 We must define the two dependent functions. Firstly, the mapping function $\srmap$ which builds a dictionary of work-package hashes to segment-roots from a set of work-reports. Formally:
@@ -73,7 +78,7 @@ Next, the queue-editing function $E$, which is essentially a mutator function fo
       \left\{\,\begin{aligned}
         &(w, \mathbf{d}) \orderedin \mathbf{r} ,\\
         &\mathcal{H}(\se(w)) \not\in \keys{\mathbf{x}},\\
-        &\mathbf{x} \cup w_\mathbf{d} = w_\mathbf{d} \cup \mathbf{x}
+        &\mathbf{x} \cup w_\wr¬srlookup = w_\wr¬srlookup \cup \mathbf{x}
       \end{aligned}\right.
       \right]
   \end{aligned}\right.

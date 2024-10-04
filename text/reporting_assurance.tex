@@ -21,25 +21,25 @@ The state of the reporting and availability portion of the protocol is largely c
 As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\rho'$) are held under the same constraints as the prior value.
 
 \subsubsection{Work Report}\label{sec:workreport}
-A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification $s$, the refinement context $x$, and the core-index (\ie on which the work is done) as well as the authorizer hash $a$ and output $\mathbf{o}$ and finally the results of the evaluation of each of the items in the package $\mathbf{r}$, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
+A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification $s$, the refinement context $x$, and the core-index (\ie on which the work is done) as well as the authorizer hash $a$ and output $\mathbf{o}$, a segment-root lookup dictionary $\wr¬srlookup$, and finally the results of the evaluation of each of the items in the package $\mathbf{r}$, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
 \begin{equation}\label{eq:workreport}
   \mathbb{W} \equiv \tuple{
-    \isa{s}{\mathbb{S}}\ts
-    \isa{x}{\mathbb{X}}\ts
-    \isa{c}{\N_\mathsf{C}}\ts
-    \isa{a}{\H}\ts
-    \isa{\mathbf{o}}{\Y}\ts
+    \isa{s}{\mathbb{S}},\ 
+    \isa{x}{\mathbb{X}},\ 
+    \isa{c}{\N_\mathsf{C}},\ 
+    \isa{a}{\H},\ 
+    \isa{\mathbf{o}}{\Y},\ 
+    \isa{\wr¬srlookup}{\dict{\H}{\H}},\ 
     \isa{\mathbf{r}}{\seq{\mathbb{L}}_{1:\mathsf{I}}}
-  }
+}
 \end{equation}
 
-% TODO: places where w \in \mathbb{W} : w_o should be replaced with w_\mathbb{o} and w_r with w_\mathbb{r}
+% TODO: places where w \in \mathbb{W} : w_o should be replaced with w_\mathbf{o} and w_r with w_\mathbf{r}
 
-The total serialized size of a work-report may be no greater than $\mathsf{W}_R$ bytes:
+We limit the number of items in the segment-root lookup dictionary to 8, and the total serialized size of a work-report may be no greater than $\mathsf{W}_R$ bytes:
 \begin{equation}
-  \forall w \in \mathbb{W} : |\se(w)| \leq \mathsf{W}_R
+  \forall w \in \mathbb{W} : |w_\wr¬srlookup| \le 8\ \wedge\ |\se(w)| \leq \mathsf{W}_R
 \end{equation}
-
 
 \subsubsection{Refinement Context}
 A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $a$ along with its associated posterior state-root $s$ and posterior \textsc{Beefy} root $b$; and the \emph{lookup-anchor}, header hash $l$ and of timeslot $t$. Finally, it identifies the hash of an optional prerequisite work-package $p$. Formally:
