@@ -453,7 +453,7 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
   \texttt{new} = 9 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [o, l, g_l, g_h, m_l, m_h] &= \registers_{0..6} \\
+    \using [o, l, g_l, g_h&, m_l, m_h] = \registers_{0..6} \\
     \using c &= \begin{cases}
       \memory_{o\dots+32} &\when \N_{o\dots+32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -464,13 +464,13 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
       (c, \mathbf{s}: \{\}, \mathbf{l}: \{ (c, l) \mapsto [] \}, b: \mathbf{a}_t, g, m) &\when c \ne \error\\
       \error &\otherwise
     \end{cases} \\
-    \using b &= (\mathbf{x}_\mathbf{s})_b - \mathbf{a}_t \\
-    (\registers'_0, \mathbf{x}'_i, \mathbf{x}'_\mathbf{n}, (\mathbf{x}'_\mathbf{s})_b) &\equiv \begin{cases}
-      (\mathbf{x}_i, \text{check}(\text{bump}(\mathbf{x}_i)), \mathbf{x}_\mathbf{n} \cup \{ \mathbf{x}_i \mapsto \mathbf{a} \}, b) &\when \mathbf{a} \ne \error \wedge b \ge (\mathbf{x}_\mathbf{s})_t \\
+    \using \mathbf{s} &= \mathbf{x}_\mathbf{d}[\mathbf{x}_s] \exc \mathbf{s}_b = \mathbf{x}_\mathbf{d}[\mathbf{x}_s]_b - \mathbf{a}_t \\
+    (\registers'_0, \mathbf{x}'_i, \mathbf{x}'_\mathbf{d}) &\equiv \begin{cases}
+      (\mathbf{x}_i, \text{check}(\text{bump}(\mathbf{x}_i)), \mathbf{x}_\mathbf{d} \cup \{ \mathbf{x}_i \mapsto \mathbf{a}, \mathbf{x}_s \mapsto \mathbf{s} \}, b) &\when \mathbf{a} \ne \error \wedge b \ge (\mathbf{x}_\mathbf{s})_t \\
+      \multicolumn{2}{l}{\quad \where \text{bump}(i \in \N_S) = 2^8 + (i - 2^8 + 42) \bmod (2^{32} - 2^9)}\\
       (\mathtt{OOB}, \mathbf{x}_T) &\when c = \error \\
       (\mathtt{CASH}, \mathbf{x}_T) &\otherwise
     \end{cases} \\
-    \where \text{bump}(i \in \N_S) &= 2^8 + (i - 2^8 + 42) \bmod (2^{32} - 2^9)
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
