@@ -84,7 +84,6 @@ A work item includes: $s$ the identifier of the service to which it relates, the
 
 Note that an imported data segment's work-package is identified through the union of sets $\H$ and a tagged variant $\H^\boxplus$. A value drawn from the regular $\H$ implies the hash value is of the segment-root containing the export, whereas a value drawn from $\H^\boxplus$ implies the hash value is the hash of the exporting work-package. In the latter case it must be converted into a segment-root by the guarantor and this conversion reported in the work-report for on-chain validation.
 
-
 We limit both the total number of exported items and the total number of imported items to $\mathsf{W}_M = 2^{11}$:
 \begin{equation}
   \forall \wpX \in \mathbb{P}:
@@ -143,7 +142,6 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
   \end{aligned}\right.
 \end{equation}
 
-
 Note: in the case that $|\mathbf{s}|$ is not a multiple of 64, then the term $\mathbf{s}_{i\dots+64}$ will correctly refer to fewer than 64 elements if it is the final page.
 
 \subsection{Computation of Work Results}\label{sec:computeworkresult}
@@ -156,13 +154,14 @@ Formally:
     (\mathbb{P}, \N_\mathsf{C}) &\to \mathbb{W} \\
     (\wpX, c) &\mapsto \begin{cases}
         \error &\when \mathbf{o} \not\in \Y \\
-        \tup{\is{a}{\wpX_\wp¬authorizer}, \mathbf{o}, \is{x}{\wpX_\wp¬context}, s, \mathbf{r}} \!\!\!\!\!&\otherwise
+        \tup{\is{a}{\wpX_\wp¬authorizer}, \mathbf{o}, \is{x}{\wpX_\wp¬context}, s, \mathbf{l}, \mathbf{r}} \!\!\!\!\!&\otherwise
     \end{cases}
   \end{aligned}\right.\!\!\!\!\!\!\!
 \end{equation}
 
 where:
 \begin{align*}
+  \keys{\mathbf{l}} &\equiv \{ h \mid w \in p_\mathbf{w}, (h^\boxplus, n) \in w_\mathbf{i} \} \wedge |\mathbf{l}| \le 8\\
   \mathbf{o} &= \Psi_I(\wpX, c) \\
   (\mathbf{r}, \overline{\mathbf{e}}) &= \transpose[
     (\itemtoresult(\wpX_\wp¬workitems[j], r), \mathbf{e})
@@ -178,23 +177,33 @@ where:
     \wiX_\mathbf{y},
     \wpX_\wp¬context,
     \wpX_\wp¬authorizer,
-    \importsegmentdata(w),
+    \importsegmentdata(w, \mathbf{l}),
     \extrinsicdata(w),
     \ell
   )\\
   &\!\!\!\!\!\!\!\!\where h = \mathcal{H}(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments
 \end{align*}
 
-The definition here is staged over several functions for ease of reading. The first term to be introduced, $\mathbf{o}$ is the authorization output, the result of the Is-Authorized function. The second term, $(\mathbf{r}, \overline{\mathbf{e}})$ is the sequence of results for each of the work-items in the work-package together with all segments exported by each work-item.
+Initially we constrain the segment-root dictionary $\mathbf{l}$: It should contain entries for all unique work-package hashes of imported segments not identified directly via a segment-root but rather through a work-package hash.
 
-The third and forth definition are helper terms for this, with the third $\countupexports$ performing an ordered accumulation (\ie counter) in order to ensure that the Refine function has access to the total number of exports made from the work-package up to the current work-item. The fourth term, $\marshallrefine$, is essentially just a call to the Refine function, marshalling the relevant data from the work-package and work-item.
+In order to expect to be compensated for a work-report they are building, guarantors must compose a value for $\mathbf{l}$ to ensure not only the above but also a further constraint (auditors are not expected to populate this but rather to reuse the value in the work-report they are auditing):
+\begin{equation}
+  \forall (h \mapsto e) \in \mathbf{l} : \exists w \in \mathbb{W} : (w_s)_h = h \wedge (w_s)_e = e
+\end{equation}
 
+As long as the guarantor is unable to satisfy the above constraints, then it should consider the work-package unable to be guaranteed.
+
+The next term to be introduced, $\mathbf{o}$, is the authorization output, the result of the Is-Authorized function. The second term, $(\mathbf{r}, \overline{\mathbf{e}})$ is the sequence of results for each of the work-items in the work-package together with all segments exported by each work-item. The third definition $\countupexports$ performs an ordered accumulation (\ie counter) in order to ensure that the Refine function has access to the total number of exports made from the work-package up to the current work-item.
 
 The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $w$:
 \begin{equation}
   \begin{aligned}
-    \importsegmentdata(\wiX \in \mathbb{I}) &\equiv [\mathbf{s}[n] \mid (\mathcal{M}(\mathbf{s}), n) \orderedin \wiX_\wi¬importsegments] \\
-    \extrinsicdata(\wiX \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\mathcal{H}(\mathbf{d}), |\mathbf{d}|) \orderedin \wiX_\wi¬extrinsics]
+    \importsegmentdata(\wiX \in \mathbb{I}, \mathbf{l}) &\equiv [\mathbf{s}[n] \mid \mathcal{M}(\mathbf{s}) = L(r, \mathbf{l}), (r, n) \orderedin \wiX_\wi¬importsegments]\!\!\!\! \\
+    \extrinsicdata(\wiX \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\mathcal{H}(\mathbf{d}), |\mathbf{d}|) \orderedin \wiX_\wi¬extrinsics] \\
+    L(r \in \H \cup \H^\boxplus, \mathbf{l}) &\equiv \begin{cases}
+      r &\when r \in \H \\
+      \mathbf{l}[h] &\when \exists h \in \H: r = h^\boxplus
+    \end{cases}
   \end{aligned}
 \end{equation}
 
@@ -203,7 +212,7 @@ We may then define $s$ as the data availability specification of the package usi
   \begin{aligned}
     s &= \newavailabilityspecifier(\mathcal{H}(\wpX), \se(\wpX, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
     \where \mathbf{x} &= [\extrinsicdata(\wiX) \mid \wiX \orderedin \wpX_\wp¬workitems]\\
-    \also \mathbf{i} &= [\importsegmentdata(\wiX) \mid \wiX \orderedin \wpX_\wp¬workitems]\\
+    \also \mathbf{i} &= [\importsegmentdata(\wiX, \mathbf{l}) \mid \wiX \orderedin \wpX_\wp¬workitems]\\
     \also \mathbf{j} &= [\var{\mathcal{J}(\mathbf{s}, n)} \mid (\mathcal{M}(\mathbf{s}), n) \orderedin \wiX_\wi¬importsegments, \wiX \orderedin \wpX_\wp¬workitems]
   \end{aligned}
 \end{equation}
@@ -212,7 +221,7 @@ Note that while $\importsegmentdata$ and $\mathbf{j}$ are both formulated using 
 
 Also of note is the lack of length prefixes: only the Merkle paths for the justifications (\ie the elements of $\mathbf{j}$) have a length prefix. All other sequence lengths are determinable through the work package itself.
 
-The Is-Authorized logic it references is first executed to ensure that the work-package warrants the needed core-time. Next, the guarantor should ensure that all segment-tree roots which form imported segment commitments are known and have not expired. Finally, the guarantor should ensure that they can fetch all preimage data referenced as the commitments of extrinsic segments.
+The Is-Authorized logic it references must be executed first in order to ensure that the work-package warrants the needed core-time. Next, the guarantor should ensure that all segment-tree roots which form imported segment commitments are known and have not expired. Finally, the guarantor should ensure that they can fetch all preimage data referenced as the commitments of extrinsic segments.
 
 Once done, then imported segments must be reconstructed. This process may in fact be lazy as the Refine function makes no usage of the data until the \emph{import} host-call is made. Fetching generally implies that, for each imported segment, erasure-coded chunks are retrieved from enough unique validators (342, including the guarantor) and is described in more depth in appendix \ref{sec:erasurecoding}. (Since we specify systematic erasure-coding, its reconstruction is trivial in the case that the correct 342 validators are responsive.) Chunks must be fetched for both the data itself and for justification metadata which allows us to ensure that the data is correct.
 
