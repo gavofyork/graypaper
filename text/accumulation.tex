@@ -113,18 +113,18 @@ We resolve this by defining a function $\Delta_+$ which accumulates work-reports
 
 Only once all such accumulation is executed do we integrate the results and thus define the relevent posterior state items. In doing so we also integrate the consequences of any \emph{deferred-transfers} implied by accumulation.
 
-Our formalisms begin by defining $\partialstate$ as a characterization (\ie values capable of representing) of state components which are both needed and mutable by the accumulation process. This comprises the service accounts state $\delta$, the privileges state $\chi$, the upcoming validator keys $\iota$ and the queue of work-reports $\varphi$. Formally:
+Our formalisms begin by defining $\partialstate$ as a characterization (\ie values capable of representing) of state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\delta$), the upcoming validator keys $\iota$, the queue of work-reports $\varphi$ and the privileges state $\chi$. Formally:
 \begin{equation}
   \label{eq:partialstate}
   \partialstate \equiv \left(\begin{aligned}
-    &\isa{\mathbf{x}}{(\N_S,\N_S,\N_S,\dict{\N_S}{\N_G})} \,,\\
     &\isa{\mathbf{d}}{\dict{\N_S}{\mathbb{A}}} \,,\;
     \isa{\mathbf{i}}{\seq{\mathbb{K}}_\mathsf{V}} \,,\;
-    \isa{\mathbf{q}}{\seq{\seq{\H}_\mathsf{Q}}_\mathsf{C}}
+    \isa{\mathbf{q}}{\seq{\seq{\H}_\mathsf{Q}}_\mathsf{C}} \,,\\
+    &\isa{\mathbf{x}}{(\N_S,\N_S,\N_S,\dict{\N_S}{\N_G})}
   \end{aligned}\right)
 \end{equation}
 
-We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $m$ of $\mathcal{M} = 128$ octets, together with the service index of the sender $s$, the service index of the receiver $d$, the amount of tokens to be transferred $a$ and the gas limit $g$ for the transfer. Formally:
+We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $m$ of $\mathsf{M} = 128$ octets, together with the service index of the sender $s$, the service index of the receiver $d$, the amount of tokens to be transferred $a$ and the gas limit $g$ for the transfer. Formally:
 \begin{align}
   \defxfer \equiv \ltuple\isa{s}{\N_S}\ts\isa{d}{\N_S}\ts\isa{a}{\N_B}\ts\isa{m}{\Y_{\mathsf{M}}}\ts\isa{g}{\N_G}\rtuple
 \end{align}
