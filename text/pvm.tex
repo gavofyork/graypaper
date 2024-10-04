@@ -581,23 +581,38 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \subsection{Host Call Definition}
 
 An extended version of the \textsc{pvm} invocation which is able to progress an inner \emph{host-call} state-machine in the case of a host-call halt condition is defined as $\Psi_H$:
-\begin{equation}
-  \Psi_H\colon \left\{\begin{aligned}
-    (\Y, \N_R, \N_G, \regs, \ram, \Omega_X, X) &\to (\{\panic, \oog, \halt\} \cup \{\fault\} \times \N_R, \Z_G, \regs, \ram, X)\\
+\begin{align}
+  &\Psi_H\colon \left\{\begin{aligned}
+    \tuple{\begin{aligned}
+      &\Y, \N_R, \N_G, \regs,\\&\ram, \Omega\langle X \rangle, X
+    \end{aligned}
+    }
+    &\to
+    \tuple{\{\panic, \oog, \halt\} \cup \{\fault\} \times \N_R, \Z_G, \regs, \ram, X}\\
     (\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}) &\mapsto \begin{cases}
+      \multicolumn{2}{l}{\text{let} (\varepsilon', \imath', \gascounter', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem)}:\\
+      (\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \varepsilon' \in \{ \halt, \panic, \oog \} \cup \{\fault\} \times \N_R \\
       (\fault \times a, \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \bigwedge\left\{\;\begin{aligned}
-        &\varepsilon = \host \times h\\[2pt]
+        &\varepsilon' = \host \times h\\[2pt]
         &\fault \times a = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
       \end{aligned}\right.\\[8 pt]
-      \Psi_H(\mathbf{c}, \imath' + 1 + \Fskip(\imath'), \gascounter'', \registers'', \mem'', f, \mathbf{x}'') &\when \bigwedge\left\{\;\begin{aligned}
-        &\varepsilon = \host \times h\\[2pt]
-        &(\gascounter'', \registers'', \mem'', \mathbf{x}'') = f(h, \gascounter', \registers', \mem', \mathbf{x})
+      \begin{aligned}
+        &\Psi_H(\mathbf{c}, \imath'', \gascounter'', \registers'', \mem'', f, \mathbf{x}'')\\[2pt]
+        &\quad\where\imath'' = \imath' + 1 + \Fskip(\imath')\\
+      \end{aligned}
+       &\when \bigwedge\left\{\;\begin{aligned}
+        &\varepsilon' = \host \times h\\[2pt]
+        &(\continue, \gascounter'', \registers'', \mem'', \mathbf{x}'') = f(h, \gascounter', \registers', \mem', \mathbf{x})
       \end{aligned}\right.\\[8pt]
-      (\varepsilon, \imath', \gascounter', \registers', \mem', \mathbf{x}) &\otherwise
+      (\varepsilon'', \imath', \gascounter'', \registers'', \mem'', \mathbf{x}'') &\when  \bigwedge\left\{\;\begin{aligned}
+        &\varepsilon' = \host \times h\\[2pt]
+        &(\varepsilon'', \gascounter'', \registers'', \mem'', \mathbf{x}'') = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
+        &\varepsilon'' \in \{\panic, \halt, \oog\}
+      \end{aligned}\right.\\[8pt]
     \end{cases} \\
-    \where (\varepsilon, \imath', \gascounter', \registers', \mem') &= \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem)\\
-    \end{aligned}\right.
-\end{equation}
+    \end{aligned}\right.\!\!\!\!\!\!\!\!\\
+    &\Omega\langle X \rangle \equiv (\N, \N_G, \regs, \ram, X) \to \tuple{\{\continue, \halt, \panic, \oog\}, \N_G, \regs, \ram, X} \cup \{\fault\} \times \N_R
+\end{align}
 
 On exit, the instruction counter $\imath'$ references the instruction \emph{which caused the exit}. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed. This is sensible when the instruction is one which necessarily needs re-executing such as in the case of an out-of-gas or page fault reason.
 
@@ -671,7 +686,7 @@ If the above cannot be satisfied, then $x = \none$, otherwise $x = (\mathbf{c}, 
 The four instances where the \textsc{pvm} is utilized each expect to be able to pass argument data in and receive some return data back. We thus define the common \textsc{pvm} program-argument invocation function $\Psi_M$:
 \begin{align}
   \Psi_M&\colon \left\{\begin{aligned}
-    (\Y, \N, \N_G, \Y_{:\mathsf{Z}_I}, \Omega_X, X) &\to (\N_G, \Y \cup \{\panic, \oog\}, X)\\
+    (\Y, \N, \N_G, \Y_{:\mathsf{Z}_I}, \Omega\langle X \rangle, X) &\to (\N_G, \Y \cup \{\panic, \oog\}, X)\\
     (\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}) &\mapsto \begin{cases}
       (\gascounter, \panic, \mathbf{x}) &\when Y(\mathbf{p}) = \none\\
       R(\Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}) = (\mathbf{c}, \registers, \mem)

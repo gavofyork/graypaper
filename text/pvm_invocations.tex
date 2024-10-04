@@ -104,33 +104,35 @@ Unlike the other invocation functions, the Refine invocation function implicitly
 Since this is a transition which can directly affect a substantial amount of on-chain state, our invocation context is accordingly complex. It is a tuple with elements for each of the aspects of state which can be altered through this invocation and beyond the account of the service itself includes the deferred transfer list and several dictionaries for alterations to preimage lookup state, core assignments, validator key assignments, newly created accounts and alterations to account privilege levels.
 
 Formally, we define our result context to be $\mathbf{X}$, and our invocation context to be a pair of these contexts, $\mathbf{X} \times \mathbf{X}$, with one dimension being the regular dimension and generally named $\mathbf{x}$ and the other being the exceptional dimension and being named $\mathbf{y}$. The only function which actually alters this second dimension is $\mathtt{checkpoint}$, $\Omega_C$ and so it is rarely seen.
-
-We track both regular and exceptional dimensions within our context mutator, but collapse the result of the invocation to one or the other depending on whether the termination was regular or exceptional (\ie out-of-gas or panic).
-\begin{equation}
-  \mathbf{X} \equiv \tuple{
+\begin{align}
+  \mathbf{X} &\equiv \tuple{
     \isa{\mathbf{d}}{\dict{\N_S}{\mathbb{A}}},
     \isa{s}{\N_S},
     \isa{\mathbf{u}}{\partialstate},
     \isa{i}{\N_S},
     \isa{\mathbf{t}}{\seq{\mathbb{T}}}
-  }
-\end{equation}
+  }\\
+  \forall \mathbf{x} \in \mathbf{X} : \mathbf{x}_\mathbf{s} &\equiv (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]
+\end{align}
+
+For all such contexts, we define a convenience equivalence, $\mathbf{x}_\mathbf{s}$, which is the accumulating service account, as found in the dictionary of $(\mathbf{x}_\mathbf{u})_\mathbf{d}$ at the index $\mathbf{x}_s$.
+
+We track both regular and exceptional dimensions within our context mutator, but collapse the result of the invocation to one or the other depending on whether the termination was regular or exceptional (\ie out-of-gas or panic).
 
 We define $\Psi_A$, the Accumulation invocation function as:
-\begin{align}
-  \Psi_A &:
-  \begin{cases}
+\begin{equation}
+  \Psi_A \colon\left\{\begin{aligned}
     \tuple{
       \partialstate, \N_S, \N_G, \seq{\mathbb{O}}
     }
     &\to
-    \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G}\\
+    \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G} \\
     (\mathbf{u}, s, g, \mathbf{o}) &\mapsto \begin{cases}
       \tup{I(\mathbb{u}, s)_\mathbf{u}, [], \none, 0} &\when \mathbf{d}[s]_\mathbf{c} = \none \\
       C(\Psi_M(\mathbf{d}[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, \tup{I(\mathbb{u}, s), I(\mathbb{u}, s)})) &\otherwise
     \end{cases} \\
-  \end{cases}
-\end{align}
+  \end{aligned}\right.
+\end{equation}
 
 \begin{align}
   I(\mathbf{u} \in \mathbb{U}, s \in \N_S) &\equiv \tup{
@@ -227,17 +229,20 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
 
 \subsection{General Functions}\label{sec:generalfunctions}
 
-This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, \registers' \in \seq{\N_R}_2, \memory', \mathbf{s}') = \Omega_\square(\gascounter \in \N_G, \registers \in \seq{\N_R}_6, \memory \in \mathbb{M}, \mathbf{s} \in \mathbf{A}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+We come now to defining the host functions which are utilized by the \textsc{pvm} invocations. Generally, these map some \textsc{pvm} state, including invocation context, possibly together with some additional parameters, to a new \textsc{pvm} state.
+
+The general fucntions are all broadly of the form $(\gascounter' \in \Z_G, \registers' \in \seq{\N_R}_2, \memory', \mathbf{s}') = \Omega_\square(\gascounter \in \N_G, \registers \in \seq{\N_R}_6, \memory \in \mathbb{M}, \mathbf{s} \in \mathbb{A}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
 Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context, but merely a service account $\mathbf{s}$.
 
 The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an ellipsis to denote that any additional parameters may be taken and are provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
+Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
   \gascounter' &\equiv \gascounter - g\\
-  (\registers', \memory', \mathbf{s}') &\equiv \begin{cases}
-    (\registers, \memory, \mathbf{s}) &\when \gascounter < g\\
-    (\registers, \memory, \mathbf{s}) \text{ except as indicated below} &\otherwise
+  (\varepsilon', \registers', \memory', \mathbf{s}') &\equiv \begin{cases}
+    (\oog, \registers, \memory, \mathbf{s}) &\when \gascounter < g\\
+    (\continue, \registers, \memory, \mathbf{s}) \text{ except as indicated below} &\otherwise
   \end{cases}
 \end{align}
 
@@ -375,11 +380,13 @@ The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an el
 \subsection{Accumulate Functions}\label{sec:accumulatefunctions}
 
 This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, \registers' \in \seq{\N_R}_2, \memory', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\gascounter \in \N_G, \registers \in \seq{\N_R}_6, \memory \in \mathbb{M}, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+
+Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
   \gascounter' &\equiv \gascounter - g\\
-  (\registers', \memory', \mathbf{x}', \mathbf{y}') &\equiv \begin{cases}
-    (\registers, \memory, \mathbf{x}, \mathbf{y}) &\when \gascounter < g\\
-    (\registers, \memory, \mathbf{x}, \mathbf{y}) \text{ except as indicated below} &\otherwise
+  (\varepsilon', \registers', \memory', \mathbf{x}', \mathbf{y}') &\equiv \begin{cases}
+    (\oog, \registers, \memory, \mathbf{x}, \mathbf{y}) &\when \gascounter < g\\
+    (\continue, \registers, \memory, \mathbf{x}, \mathbf{y}) \text{ except as indicated below} &\otherwise
   \end{cases}
 \end{align}
 
@@ -464,9 +471,9 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
       (c, \mathbf{s}: \{\}, \mathbf{l}: \{ (c, l) \mapsto [] \}, b: \mathbf{a}_t, g, m) &\when c \ne \error\\
       \error &\otherwise
     \end{cases} \\
-    \using \mathbf{s} &= \mathbf{x}_\mathbf{d}[\mathbf{x}_s] \exc \mathbf{s}_b = \mathbf{x}_\mathbf{d}[\mathbf{x}_s]_b - \mathbf{a}_t \\
-    (\registers'_0, \mathbf{x}'_i, \mathbf{x}'_\mathbf{d}) &\equiv \begin{cases}
-      (\mathbf{x}_i, \text{check}(\text{bump}(\mathbf{x}_i)), \mathbf{x}_\mathbf{d} \cup \{ \mathbf{x}_i \mapsto \mathbf{a}, \mathbf{x}_s \mapsto \mathbf{s} \}, b) &\when \mathbf{a} \ne \error \wedge b \ge (\mathbf{x}_\mathbf{s})_t \\
+    \using \mathbf{s} &= \mathbf{x}_\mathbf{s} \exc \mathbf{s}_b = (\mathbf{x}_\mathbf{s})_b - \mathbf{a}_t \\
+    (\registers'_0, \mathbf{x}'_i, (\mathbf{x}'_\mathbf{u})_\mathbf{d}) &\equiv \begin{cases}
+      (\mathbf{x}_i, \text{check}(\text{bump}(\mathbf{x}_i)), (\mathbf{x}_\mathbf{u})_\mathbf{d} \cup \{ \mathbf{x}_i \mapsto \mathbf{a}, \mathbf{x}_s \mapsto \mathbf{s} \}, b) &\when \mathbf{a} \ne \error \wedge b \ge (\mathbf{x}_\mathbf{s})_t \\
       \multicolumn{2}{l}{\quad \where \text{bump}(i \in \N_S) = 2^8 + (i - 2^8 + 42) \bmod (2^{32} - 2^9)}\\
       (\mathtt{OOB}, \mathbf{x}_T) &\when c = \error \\
       (\mathtt{CASH}, \mathbf{x}_T) &\otherwise
@@ -486,9 +493,9 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
     \end{cases} \\
     \using g &= 2^{32}\cdot g_h + g_l \\
     \using m &= 2^{32}\cdot m_h + m_l \\
-    (\registers'_0, \mathbf{x}'[\mathbf{x}_s]_c, \mathbf{x}'[\mathbf{x}_s]_g, \mathbf{x}'[\mathbf{x}_s]_m) &\equiv \begin{cases}
+    (\registers'_0, (\mathbf{x}'_\mathbf{s})_c, (\mathbf{x}'_\mathbf{s})_g, (\mathbf{x}'_\mathbf{s})_m) &\equiv \begin{cases}
       (\mathtt{OK}, c, g, m) &\when c \ne \error\\
-      (\mathtt{OOB}, \mathbf{x}[\mathbf{x}_s]_c, \mathbf{x}[\mathbf{x}_s]_g, \mathbf{x}[\mathbf{x}_s]_m) &\otherwise
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{s})_c, (\mathbf{x}_\mathbf{s})_g, (\mathbf{x}_\mathbf{s})_m) &\otherwise
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -497,7 +504,7 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
   \texttt{transfer} = 11 \\
   $g = 10 + \registers_1 + 2^{32}\cdot\registers_2 $} &
   $\begin{aligned}
-    \using (d, a_l, a_h, g_l, g_h, o) &= \registers_{0..6},  \\
+    \using [d, a_l, a_h, g_l, g_h, o] &= \registers_{0..6},  \\
     \using a &= 2^{32}\cdot a_h + a_l \\
     \using g &= 2^{32}\cdot g_h + g_l \\
     \using \mathbf{d} &= \mathbf{x}_\mathbf{d} \cup (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
@@ -524,17 +531,18 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
     \using [d, o] &= \registers_{0,1} \\
     \using a &= (\mathbf{x}_\mathbf{s})_b - (\mathbf{x}_\mathbf{s})_t + \mathsf{B}_S \\
     \using g &= \gascounter \\
+    \using \mathbf{d} &= \mathbf{x}_\mathbf{d} \cup (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
     \using \mathbf{t} \in \mathbb{T} \cup \{\error,\none\} &= \begin{cases}
       \none &\when d \in \{ \mathbf{x}_s, 2^{32} - 1 \} \\
       (\mathbf{x}_s, d, a, m, g): \se(m) = \memory_{o\dots+\mathsf{M}} &\otherwhen \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    (\registers'_0, \mathbf{x}'_\mathbf{s}, \mathbf{x}'_\mathbf{t}) &\equiv \begin{cases}
-      (\mathtt{OK}, \none, \mathbf{x}_\mathbf{t}),\ \textbf{virtual machine halts} &\when \mathbf{t} = \none \\
-      (\mathtt{OOB}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen t = \error \\
-      (\mathtt{WHO}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen d \not \in \keys{\delta \cup \mathbf{x}_\mathbf{n}} \\
-      (\mathtt{LOW}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen g < (\delta \cup \mathbf{x}_\mathbf{n})[d]_m \\
-      (\mathtt{OK}, \none, \mathbf{x}_\mathbf{t} \doubleplus \mathbf{t}),\ \textbf{virtual machine halts} &\otherwise
+    (\varepsilon', \registers'_0, (\mathbf{x}'_\mathbf{u})_\mathbf{d}, \mathbf{x}'_\mathbf{t}) &\equiv \begin{cases}
+      (\halt, \mathtt{OK}, (\mathbf{x}_\mathbf{u})_\mathbf{d} \setminus \{\mathbf{x}_s\}, \mathbf{x}_\mathbf{t}) &\when \mathbf{t} = \none \\
+      (\continue, \mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{d}, \mathbf{x}_\mathbf{t}) &\otherwhen t = \error \\
+      (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_\mathbf{d}, \mathbf{x}_\mathbf{t}) &\otherwhen d \not \in \keys{\mathbf{d}} \\
+      (\continue, \mathtt{LOW}, (\mathbf{x}_\mathbf{u})_\mathbf{d}, \mathbf{x}_\mathbf{t}) &\otherwhen g < \mathbf{d}[d]_m \\
+      (\halt, \mathtt{OK}, (\mathbf{x}_\mathbf{u})_\mathbf{d} \setminus \{\mathbf{x}_s\}, \mathbf{x}_\mathbf{t} \doubleplus \mathbf{t}) &\otherwise
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -595,7 +603,14 @@ This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, 
 
 \subsection{Refine Functions}\label{sec:refinefunctions}
 
-These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\pvm}, \seq{\Y_{\mathsf{W}_S}})$, which are both initially empty.
+These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\pvm}, \seq{\Y_{\mathsf{W}_S}})$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
+\begin{align}
+  \gascounter' &\equiv \gascounter - g\\
+  (\varepsilon', \registers', \memory') &\equiv \begin{cases}
+    (\oog, \registers, \memory) &\when \gascounter < g\\
+    (\continue, \registers, \memory) \text{ except as indicated below} &\otherwise
+  \end{cases}
+\end{align}
 
 \begin{longtable}{p{3.5cm} p{12.5cm}}
   \toprule
