@@ -166,7 +166,7 @@ At present all WorkItems can succeed or fail independently. Instead we should be
 - [x] Judgments: Should cancel work-report from Rho prior to accumulation.
 - [x] Signed judgments should not include guarantor keys;
   - [x] Judgement extrinsic should use from rho.
-- [x] Check "Which History" section and ensure it mentions possibility for reversion via judgement.
+- [x] Check "Which History" section and ensure it mentions possibility for reversion via judgment.
   - [x] No reversion beyond finalized
   - [x] Of unfinalized extension, not block containing work-reports which appear in the banned-set of any other (valid) block.
 - [x] Prior work and refine/remove the zk argumentation (work with Al)
@@ -191,9 +191,9 @@ At present all WorkItems can succeed or fail independently. Instead we should be
 - [x] Don't immediately alter kappa mid-epoch as it affects off-chain judgments.
 - [x] Instead, apply the blacklist to guarantor sig verification directly.
 - [x] Include the core in the WR.
-- [x] Deposit the WR's signatures in with the judgement.
+- [x] Deposit the WR's signatures in with the judgment.
 - [x] Require at >= 1 negative judgments to be included with a positive verdict, and place signer in offender keys.
-- [x] Serialization of judgement stuff
+- [x] Serialization of judgment stuff
 - [x] Should always be possible to submit more guarantee signatures of a known-bad report to place them in the offender set.
   - [x] Only from lambda and kappa?
 - [x] Use posterior kappa for everything except judgments.

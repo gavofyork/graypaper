@@ -9,9 +9,9 @@
 
 The registration of a verdict is not expected to happen very often in practice, however it is an important security backstop for removing and banning invalid work-reports from the processing pipeline as well as removing troublesome keys from the validator set where there is consensus over their malfunction. It also helps coordinate nodes to revert chain-extensions containing invalid work-reports and provides a convenient means of aggregating all offending validators for punishment in a higher-level system.
 
-Judgement statements come about naturally as part of the auditing process and are expected to be positive, further affirming the guarantors' assertion that the work-report is valid. In the event of a negative judgement, then all validators audit said work-report and we assume a verdict will be reached. Auditing and guaranteeing are off-chain processes properly described in sections \ref{sec:workpackagesandworkreports} and \ref{sec:auditing}.
+Judgement statements come about naturally as part of the auditing process and are expected to be positive, further affirming the guarantors' assertion that the work-report is valid. In the event of a negative judgment, then all validators audit said work-report and we assume a verdict will be reached. Auditing and guaranteeing are off-chain processes properly described in sections \ref{sec:workpackagesandworkreports} and \ref{sec:auditing}.
 
-A judgement against a report implies that the chain is already reverted to some point prior to the accumulation of said report, usually forking at the block immediately prior to that at which accumulation happened. The specific strategy for chain selection is described fully in section \ref{sec:bestchain}. Authoring a block with a non-positive verdict has the effect of cancelling its imminent accumulation, as can be seen in equation \ref{eq:removenonpositive}.
+A judgment against a report implies that the chain is already reverted to some point prior to the accumulation of said report, usually forking at the block immediately prior to that at which accumulation happened. The specific strategy for chain selection is described fully in section \ref{sec:bestchain}. Authoring a block with a non-positive verdict has the effect of cancelling its imminent accumulation, as can be seen in equation \ref{eq:removenonpositive}.
 
 Registering a verdict also has the effect of placing a permanent record of the event on-chain and allowing any offending keys to be placed on-chain both immediately or in forthcoming blocks, again for permanent record.
 
@@ -28,7 +28,7 @@ The \emph{disputes} state includes four items, three of which concern verdicts: 
 
 \subsection{Extrinsic}
 
-The disputes extrinsic, $\xtdisputes$, may contain one or more verdicts $\xtverdicts$ as a compilation of judgments coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\kappa$ or $\lambda$. Additionally, it may contain proofs of the misbehavior of one or more validators, either by guaranteeing a work-report found to be invalid (\emph{culprits}, $\xtculprits$), or by signing a judgement found to be contradiction to a work-report's validity (\emph{faults}, $\xtfaults$). Both are considered a kind of \emph{offense}. Formally:
+The disputes extrinsic, $\xtdisputes$, may contain one or more verdicts $\xtverdicts$ as a compilation of judgments coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\kappa$ or $\lambda$. Additionally, it may contain proofs of the misbehavior of one or more validators, either by guaranteeing a work-report found to be invalid (\emph{culprits}, $\xtculprits$), or by signing a judgment found to be contradiction to a work-report's validity (\emph{faults}, $\xtfaults$). Both are considered a kind of \emph{offense}. Formally:
 \begin{equation}
   \begin{aligned}
     \xtdisputes &\equiv (\xtverdicts, \xtculprits, \xtfaults) \\
@@ -108,7 +108,7 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
   \offenders' &\equiv \offenders \cup \{ k \mid (r, k, s) \in \xtculprits \}\cup \{ k \mid (r, v, k, s) \in \xtfaults \}
 \end{align}
 
-\subsection{Header}\label{sec:judgementmarker}
+\subsection{Header}\label{sec:judgmentmarker}
 
 The offenders markers must contain exactly the keys of all new offenders, respectively. Formally:
 \begin{align}
