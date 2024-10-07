@@ -590,12 +590,12 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     &\to
     \tuple{\{\panic, \oog, \halt\} \cup \{\fault\} \times \N_R, \Z_G, \regs, \ram, X}\\
     (\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}) &\mapsto \begin{cases}
-      \multicolumn{2}{l}{\text{let} (\varepsilon', \imath', \gascounter', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem)}:\\
-      (\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \varepsilon' \in \{ \halt, \panic, \oog \} \cup \{\fault\} \times \N_R \\
+      \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem):} \\[8pt]
+      (\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \varepsilon' \in \{ \halt, \panic, \oog \} \cup \{\fault\} \times \N_R \\[4pt]
       (\fault \times a, \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \bigwedge\left\{\;\begin{aligned}
         &\varepsilon' = \host \times h\\[2pt]
         &\fault \times a = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
-      \end{aligned}\right.\\[8 pt]
+      \end{aligned}\right.\\[10 pt]
       \begin{aligned}
         &\Psi_H(\mathbf{c}, \imath'', \gascounter'', \registers'', \mem'', f, \mathbf{x}'')\\[2pt]
         &\quad\where\imath'' = \imath' + 1 + \Fskip(\imath')\\
@@ -627,17 +627,20 @@ We thus define the standard program code format $\mathbf{p}$, which includes not
 \begin{equation}
 Y\colon\left\{\begin{aligned}
   \Y &\to (\Y, \regs, \ram)? \\
-  \mathbf{p} &\mapsto x
+  \mathbf{p} &\mapsto \begin{cases}
+    (\mathbf{c}, \registers, \mem) &\when \exists! (\mathbf{c}, \mathbf{o}, \mathbf{w}, z, s) \text{ which satisfy equation \ref{eq:conditions}}\\
+    \none &\otherwise
+  \end{cases}
 \end{aligned}\right.
 \end{equation}
-Where:
-\begin{align}
+With conditions:
+\begin{align}\label{eq:conditions}
   &\using \mathcal{E}_3(|\mathbf{o}|) \concat \mathcal{E}_3(|\mathbf{w}|) \concat \mathcal{E}_2(z) \concat \mathcal{E}_3(s) \concat \mathbf{o} \concat \mathbf{w} \concat \mathcal{E}_4(|\mathbf{c}|) \concat \mathbf{c} = \mathbf{p}\\
   &\mathsf{Z}_P = 2^{14}\ ,\quad\mathsf{Z}_Q = 2^{16}\ ,\quad\mathsf{Z}_I = 2^{24}\\
   &\using \rnp{x \in \N} \equiv \mathsf{Z}_P\left\lceil \frac{x}{\mathsf{Z}_P} \right\rceil\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_Q\left\lceil \frac{x}{\mathsf{Z}_Q} \right\rceil\\
   &5\mathsf{Z}_Q + Q(|\mathbf{o}|) + Q(|\mathbf{w}| + z\mathsf{Z}_P) + Q(s) + \mathsf{Z}_I \leq 2^{32}
 \end{align}
-If the above cannot be satisfied, then $x = \none$, otherwise $x = (\mathbf{c}, \registers, \mem)$ with $\mathbf{c}$ as above and $\mem$, $\registers$ such that:
+Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\mathbf{c}$ as above and $\mem$, $\registers$ such that:
 \begin{equation}\label{eq:memlayout}
   \forall i \in \N_R : \mem_i = \left\{\begin{alignedat}{5}
     &\tup{\is{\mathbf{V}}{\mathbf{o}_{i - \mathsf{Z}_Q}}\ts\is{\mathbf{A}}{R}} &&\ \when
@@ -671,7 +674,7 @@ If the above cannot be satisfied, then $x = \none$, otherwise $x = (\mathbf{c}, 
     &(0, \none) &&\otherwise&&&
   \end{alignedat}\right.\\
 \end{equation}
-\begin{equation}
+\begin{equation}\label{eq:registers}
   \forall i \in \N_{16} : \registers_i = \begin{cases}
       2^{32} - 2^{16} &\when i = 1\\
       2^{32} - 2\mathsf{Z}_Q - \mathsf{Z}_I &\when i = 2\\
