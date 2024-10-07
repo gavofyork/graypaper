@@ -41,7 +41,7 @@ We define $\delta^\dagger$ as the state after the integration of the preimages:
 Accumulation of a work-package/work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what has been accumulated. This history, $\accumulated$, is sufficiently large for an epoch worth of work-reports. For all such reports, we also retain their segment-root in order that we may validate any guarantor-proscribed segment-roots in work-reports prior to accumulation. Formally:
 \begin{align}
   \accumulated &\in \seq{\dict{\H}{\H}}_\mathsf{E} \\
-  \wideparen{\accumulated} &\equiv \{ x \mid x \in \accumulated \}
+  \wideparen{\accumulated} &\equiv \bigcup_{x \in \accumulated}(x)
 \end{align}
 
 We also maintain knowledge of available but not-yet-accumulated work-reports in the state item $\ready$. Each of these have been available for at most one epoch but have or had unfulfilled dependencies. Alongside the work-report itself, we retain its unaccumulated dependencies, a set of work-package hashes. Formally:
