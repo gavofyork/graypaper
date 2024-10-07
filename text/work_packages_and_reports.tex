@@ -129,17 +129,17 @@ Guarantors are required to erasure-code and distribute two data sets: one blob, 
 
 We define the paged-proofs function $\pagedproofs$ which accepts a series of exported segments $\mathbf{s}$ and defines some series of additional segments placed into the Imports DA system via erasure-coding and distribution. The function evaluates to pages of hashes, together with subtree proofs, such that justifications of correctness based on a segments-root may be made from it:
 \begin{equation}\label{eq:pagedproofs}
-  \pagedproofs\colon\left\{\begin{aligned}
+  \!\!\pagedproofs\colon\left\{\begin{aligned}
     \seq{\G} \to \,&\seq{\G} \\
-    \mathbf{s} \mapsto \,&[
+    \mathbf{s} \mapsto \,&\sq{
       \mathcal{P}_l(\se(
         \var{\mathcal{J}_6(\mathbf{s}, i)},
         \var{\mathbf{s}_{i\dots+64}}
       ))
       \mid i \orderedin 64\cdot\N_{\ceil{\nicefrac{|\mathbf{s}|}{64}}}
-    ] \\
+    } \\
     & \where l = \mathsf{W}_S\mathsf{W}_E
-  \end{aligned}\right.
+  \end{aligned}\right.\!\!\!\!
 \end{equation}
 
 Note: in the case that $|\mathbf{s}|$ is not a multiple of 64, then the term $\mathbf{s}_{i\dots+64}$ will correctly refer to fewer than 64 elements if it is the final page.
@@ -159,17 +159,17 @@ Formally:
   \end{aligned}\right.\!\!\!\!\!\!\!
 \end{equation}
 
-where:
+Where:
 \begin{align*}
-  \keys{\mathbf{l}} &\equiv \{ h \mid w \in p_\mathbf{w}, (h^\boxplus, n) \in w_\mathbf{i} \} \wedge |\mathbf{l}| \le 8\\
-  \mathbf{o} &= \Psi_I(\wpX, c) \\
-  (\mathbf{r}, \overline{\mathbf{e}}) &= \transpose[
+  \keys{\mathbf{l}} \equiv \,&\{ h \mid w \in p_\mathbf{w}, (h^\boxplus, n) \in w_\mathbf{i} \} \ ,\quad|\mathbf{l}| \le 8\\
+  \mathbf{o} = \,&\Psi_I(\wpX, c) \\
+  (\mathbf{r}, \overline{\mathbf{e}}) = \,&\transpose[
     (\itemtoresult(\wpX_\wp¬workitems[j], r), \mathbf{e})
     \mid
     (r, \mathbf{e}) = \countupexports(\wpX, j),
     j \orderedin \N_{|\wpX_\wp¬workitems|}
   ] \\
-  \countupexports(\wpX, j) &\equiv \Psi_R(
+  \countupexports(\wpX, j) \equiv \,&\Psi_R(
     \wiX_c,
     \wiX_g,
     \wiX_s,
@@ -181,7 +181,7 @@ where:
     \extrinsicdata(w),
     \ell
   )\\
-  &\!\!\!\!\!\!\!\!\where h = \mathcal{H}(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments
+  &\also h = \mathcal{H}(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments
 \end{align*}
 
 Initially we constrain the segment-root dictionary $\mathbf{l}$: It should contain entries for all unique work-package hashes of imported segments not identified directly via a segment-root but rather through a work-package hash.
