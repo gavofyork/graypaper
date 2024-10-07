@@ -90,10 +90,10 @@ We further define the accumulation priority queue function $Q$, which provides t
   Q\colon\left\{\begin{aligned}
     &(\seq{(\mathbb{W}, \{\H\})}, \dict{\H}{\H}) \to \seq{\mathbb{W}} \\
     &(\mathbf{r}, \mathbf{a}) \mapsto \begin{cases}
-      [] &\when w = \none \\
-      \mathbf{g} \frown Q(E(\mathbf{r}, \mathbf{g}), \mathbf{a} \cup \srmap(\mathbf{g}))\!\!\!\! &\otherwise \\
-      \multicolumn{2}{l}{\quad\where \mathbf{g} = [w \mid (w, \{\}) \orderedin \mathbf{r}]}
-    \end{cases}\!\!\!\!
+      [] &\when \mathbf{g} = \{\} \\
+      \mathbf{g} \frown Q(E(\mathbf{r}, \srmap(\mathbf{g})), \mathbf{a} \cup \srmap(\mathbf{g}))\!\!\!\! &\otherwise \\
+      \multicolumn{2}{l}{\,\where \mathbf{g} = [w \mid (w, \{\}) \orderedin \mathbf{r}]}
+    \end{cases}
   \end{aligned}\right.
 \end{equation}
 
