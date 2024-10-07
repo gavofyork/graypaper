@@ -201,8 +201,6 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
 
 This introduces $\mathbb{O}$, the set of wrangled \emph{operand tuples}, used as an operand to the \textsc{pvm} Accumulation function $\Psi_A$. It also draws upon $g$, the gas limit implied by the work-reports and gas-privileges for $s$ and $\mathbf{p}$, a rephrasing of the work-items for $s$ within $\mathbf{w}$ into a sequence of operand tuples $\mathbb{O}$.
 
-TODO: Consider reserving some cores for processing the queue.
-
 \subsection{Deferred Transfers and State Integration}
 
 Given the result of the top-level $\Delta_+$, we may define the posterior state $\chi'$, $\varphi'$ and $\iota'$ as well as the second intermediate state of the service-accounts $\delta'$ and the \textsc{Beefy} commitment map $\beefycommitmap$:
@@ -231,11 +229,11 @@ Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such th
 We define the final state of the ready queue and the accumulated map by integrating those work-reports which were accumulated in this block and shifting any from the prior state with the oldest such items being dropped entirely:
 \begin{align}
   \accumulated'_{\mathsf{E} - 1} &= \srmap(\mathbf{W}^*_{\dots n}) \\
-  \forall i &\in \N_\mathsf{E - 1}: \accumulated'_{i} \equiv \accumulated_{i + 1} \\
-  \forall i &\in \N_\mathsf{E} : \ready'^\circlearrowleft_{m - i} = \begin{cases}
+  \forall i \in \N_\mathsf{E - 1}: \accumulated'_{i} &\equiv \accumulated_{i + 1} \\
+  \forall i \in \N_\mathsf{E} : \ready'^\circlearrowleft_{m - i} &\equiv \begin{cases}
     E(\mathbf{W}^Q, \mathbf{W}^*_{\dots n}) &\when i = 0 \\
     [] &\when 1 \le i < s \\
-    \ready^\circlearrowleft_{m - i} &\when i \ge s
-  \end{cases} \\
-  \where s &= \min(\tau' - \tau, \mathsf{E})
+    \ready^\circlearrowleft_{m - i} &\when i \ge s\\
+    \multicolumn{2}{l}{\quad\where s = \min(\tau' - \tau, \mathsf{E})}
+  \end{cases}
 \end{align}
