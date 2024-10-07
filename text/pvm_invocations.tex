@@ -512,7 +512,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using g &= 2^{32}\cdot g_h + g_l \\
     \using \mathbf{d} &= \mathbf{x}_\mathbf{d} \cup (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
     \using \mathbf{t} \in \mathbb{T} \cup \{\error\} &= \begin{cases}
-      (\mathbf{x}_s, d, a, m, g): m = \memory_{o\dots+\mathsf{M}} &\when \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\memory} \\
+      (\mathbf{x}_s, d, a, m, g): m = \memory_{o\dots+\mathsf{W}_T} &\when \N_{o\dots+\mathsf{W}_T} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using b &= (\mathbf{x}_\mathbf{s})_b - a \\
@@ -537,7 +537,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using \mathbf{d} &= \mathbf{x}_\mathbf{d} \cup (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
     \using \mathbf{t} \in \mathbb{T} \cup \{\error,\none\} &= \begin{cases}
       \none &\when d \in \{ \mathbf{x}_s, 2^{32} - 1 \} \\
-      (\mathbf{x}_s, d, a, m, g): \se(m) = \memory_{o\dots+\mathsf{M}} &\otherwhen \N_{o\dots+\mathsf{M}} \subset \mathbb{V}_{\memory} \\
+      (\mathbf{x}_s, d, a, m, g): \se(m) = \memory_{o\dots+\mathsf{W}_T} &\otherwhen \N_{o\dots+\mathsf{W}_T} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     (\varepsilon', \registers'_0, (\mathbf{x}'_\mathbf{u})_\mathbf{d}, \mathbf{x}'_\mathbf{t}) &\equiv \begin{cases}

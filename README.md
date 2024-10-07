@@ -24,23 +24,12 @@ https://graypaper.com/
 - [ ] No pages mappable in first 64 KB
 
 ### Final DA
-- [ ] Formalize as much as possible.
 - [ ] Migrate formalization & explanation:
   - [ ] guaranteeing-specific stuff into relevant section
   - [ ] assurance-specific stuff into relevant section
   - [ ] auditing-specific stuff into relevant section
-- [ ] Include an epochal on-chain lookup from Work Package hash to segments root.
-  - [ ] Allow import spec to be given as either WP hash (in case of being recent) or segments root.
-  - [ ] How can this work given that WP hash to segments-root needs to happen in-core?
-  - [ ] Include a bond to any SR->WPh lookups in the WR.
-  - [ ] Check these bonds only just prior to accumulation; if they fail, drop the report and reduce the guarantors' points.
-  - [ ] Update on-chain SR->WPh immediately at the time of being reported (don't want for accumulation).
-- [ ] Define Erasure Coding proof means
-  - [x] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
-  - [ ] Define binary Merkle proof-verification function exists sequence of values which contains our value and Merklised to some root.
 
 ### Guaranteeing & Auditing
-- [ ] Guarantees by validator indices
 - [ ] Specify announcement signatures
 - [ ] Specify how to build perspective on other validators with announcements
 
@@ -89,7 +78,6 @@ At present all WorkItems can succeed or fail independently. Instead we should be
   - [ ] Currently passing in the WP hash, some WP fields and all manifest preimages: Consider passing in the whole work-package and a work-item index.
 - [ ] Consider removal of the arrow-above notation in favour of subscript and ellipsis (this only works for the right-arrow).
 - Optional `on_report` entry point
-- Remove assignments from state - no need for it to be there as it's derivable from $\eta_2$ alone.
 - Make memo bounded, rather than fixed.
 
 ## Done
@@ -187,6 +175,8 @@ At present all WorkItems can succeed or fail independently. Instead we should be
   - [x] payload hash - easy
   - [x] gas prioritization - just from WP?
   - [x] Consider introducing a host-call for reading manifest data rather than always passing it in.
+- [x] Guarantees by validator indices
+
 ### ELVES
 - [x] Don't immediately alter kappa mid-epoch as it affects off-chain judgments.
 - [x] Instead, apply the blacklist to guarantor sig verification directly.
@@ -199,3 +189,14 @@ At present all WorkItems can succeed or fail independently. Instead we should be
 - [x] Use posterior kappa for everything except judgments.
 
 % A set of independent, sequential, asynchronously interacting 32-octet state machines each of whose transitions lasts around 2 seconds of webassembly computation if a predetermined and fixed program and whose transition arguments are 5 MB. While well-suited to the verification of substrate blockchains, it is otherwise quite limiting.
+
+### Final DA
+- [x] Include an epochal on-chain lookup from Work Package hash to segments root.
+  - [x] Allow import spec to be given as either WP hash (in case of being recent) or segments root.
+  - [x] How can this work given that WP hash to segments-root needs to happen in-core?
+  - [x] Include a bond to any SR->WPh lookups in the WR.
+  - [x] Check these bonds only just prior to accumulation; if they fail, drop the report and reduce the guarantors' points.
+  - [x] Update on-chain SR->WPh immediately at the time of being reported (don't want for accumulation).
+- [x] Define Erasure Coding proof means
+  - [x] Define binary Merkle proof-generation function which compiles neighbours down to leaf.
+  - [x] Define binary Merkle proof-verification function exists sequence of values which contains our value and Merklised to some root.
