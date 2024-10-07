@@ -145,10 +145,10 @@ We define $\Psi_A$, the Accumulation invocation function as:
   \where i &= \text{check}((\de_4(\mathcal{H}(s, \eta'_0, \mathbf{H}_t)) \bmod (2^{32}-2^9)) + 2^8) \\
   F(n, \gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\equiv \begin{cases}
     G(\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
-    G(\Omega_W(\gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
+    G(\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
     G(\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
     G(\Omega_G(\gascounter, \registers, \memory), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
-    G(\Omega_I(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
+    G(\Omega_I(\gascounter, \registers, \memory, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
     \Omega_E(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{empower}\\
     \Omega_A(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{assign}\\
     \Omega_D(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{designate}\\
@@ -214,9 +214,9 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
   F(n, \gascounter, \registers, \memory, \mathbf{s}) &\equiv \begin{cases}
     \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{lookup} \\
     \Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{read} \\
-    \Omega_W(\gascounter, \registers, \memory, \mathbf{s}) &\when n = \mathtt{write} \\
+    \Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s) &\when n = \mathtt{write} \\
     \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
-    \Omega_I(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{info} \\
+    \Omega_I(\gascounter, \registers, \memory, s, \mathbf{d}) &\when n = \mathtt{info} \\
     (\gascounter - 10, [\mathtt{WHAT}, \registers_1, \dots], \memory, \mathbf{s}) &\otherwise
   \end{cases}
 \end{align}
@@ -325,7 +325,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_W(\gascounter, \registers, \memory, \mathbf{s})$ \\
+  $\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s)$ \\
   \texttt{write} = 3 \\
   $g = 10$
   } &
@@ -354,11 +354,14 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_I(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
+  $\Omega_I(\gascounter, \registers, \memory, s, \mathbf{d})$ \\
   \texttt{info} = 4 \\
   $g = 10$} &
   $\begin{aligned}
-    \using \mathbf{t} &= \begin{cases} \mathbf{s} &\when \registers_0 \in \{s, 2^{32} - 1\} \\ (\mathbf{d} \cup \mathbf{x}_\mathbf{n})[\registers_0] &\otherwise \end{cases} \\
+    \using \mathbf{t} &= \begin{cases}
+      \mathbf{d}[s] &\when \registers_0 = 2^{32} - 1 \\
+      \mathbf{d}[\registers_0] &\otherwise
+    \end{cases} \\
     \using o &= \registers_1 \\
     \using \mathbf{m} &= \begin{cases}
       \mathcal{E}(\mathbf{t}_c, \mathbf{t}_b, \mathbf{t}_t, \mathbf{t}_g, \mathbf{t}_m, \mathbf{t}_l, \mathbf{t}_i) &\when \mathbf{t} \ne \none \\
@@ -514,7 +517,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \using b &= (\mathbf{x}_\mathbf{s})_b - a \\
     (\registers'_0, \mathbf{x}'_\mathbf{t}, (\mathbf{x}'_\mathbf{s})_b) &\equiv \begin{cases}
-      (\mathtt{OOB}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\when t = \error \\
+      (\mathtt{OOB}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\when \mathbf{t} = \error \\
       (\mathtt{WHO}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen d \not \in \keys{\mathbf{d}} \\
       (\mathtt{LOW}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen g < \mathbf{d}[d]_m \\
       (\mathtt{HIGH}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen \gascounter < g \\
@@ -547,7 +550,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_S(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}))$ \\
+  $\Omega_S(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), t)$ \\
   \texttt{solicit} = 13 \\
   $g = 10$} &
   $\begin{aligned}
@@ -713,8 +716,8 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using [n, a, b, l] &= \registers_{0 \dots 4} \\
     \using \mathbf{s} &= \begin{cases}
       \none &\when n \not\in \keys{\mathbf{m}}\\
-      \error &\when \N_{b\dots+i} \not\in \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \\
-      \mathbf{m}[n]_{\mathbf{u}_{b\dots+i}} &\otherwise
+      \error &\when \N_{b\dots+l} \not\in \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \\
+      \mathbf{m}[n]_{\mathbf{u}_{b\dots+l}} &\otherwise
     \end{cases}\\
     (\registers'_0, \mem') &\equiv \begin{cases}
       (\mathtt{OOB}, \mem) &\when \mathbf{s} = \error \\
