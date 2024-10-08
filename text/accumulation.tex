@@ -217,7 +217,7 @@ We have denoted the sequence of implied transfers as $\mathbf{t}$, ordered inter
 \begin{align}
   R\colon \left\{\;\begin{aligned}
     (\defxfers, \N_S) &\to \defxfers \\
-    d &\mapsto \left[\,t \mid s \orderedin \N_S,\ t \orderedin \mathbf{t},\ t_s = s,\ t_d = d\,\right]
+    (\mathbf{t}, d) &\mapsto \left[\,t \mid s \orderedin \N_S,\ t \orderedin \mathbf{t},\ t_s = s,\ t_d = d\,\right]
   \end{aligned}\right.
 \end{align}
 
@@ -234,8 +234,7 @@ We define the final state of the ready queue and the accumulated map by integrat
   \forall i \in \N_\mathsf{E - 1}: \accumulated'_{i} &\equiv \accumulated_{i + 1} \\
   \forall i \in \N_\mathsf{E} : \ready'^\circlearrowleft_{m - i} &\equiv \begin{cases}
     E(\mathbf{W}^Q, \mathbf{W}^*_{\dots n}) &\when i = 0 \\
-    [] &\when 1 \le i < s \\
-    E(\ready^\circlearrowleft_{m - i}, \mathbf{W}^*_{\dots n}) &\when i \ge s\\
-    \multicolumn{2}{l}{\quad\where s = \min(\tau' - \tau, \mathsf{E})}
+    [] &\when 1 \le i < \tau' - \tau \\
+    E(\ready^\circlearrowleft_{m - i}, \mathbf{W}^*_{\dots n}) &\when i \ge \tau' - \tau
   \end{cases}
 \end{align}
