@@ -1,5 +1,7 @@
 \section{Virtual Machine Invocations}\label{sec:virtualmachineinvocations}
 
+
+
 \newcommand*{\pvm}{\mathbf{M}}
 \newcommand*{\segoff}{\varsigma}
 
@@ -42,7 +44,7 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
     (\N, \N_G, \lseq\N_R\rseq_6, \mathbb{M}) &\to (\Z_G, \lseq\N_R\rseq_2, \mathbb{M})\\
     (n, \gascounter, \registers, \memory) &\mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
-      (\gascounter - 10, [\mathtt{WHAT}, \registers_1, \dots], \memory) &\otherwise
+      (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
     \end{cases}
   \end{aligned}
   \right.
@@ -93,7 +95,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_O(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{poke}\\
       \Omega_K(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{invoke}\\
       \Omega_X(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{expunge}\\
-      (\gascounter - 10, [\mathtt{WHAT}, \registers_1, \dots], \memory) &\otherwise
+      (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
     \end{cases}
   \end{aligned}
   \right.
@@ -159,7 +161,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_Q(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{quit} \\
     \Omega_S(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{solicit} \\
     \Omega_F(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{forget} \\
-    (\gascounter - 10, [\mathtt{WHAT}, \registers_1, \dots], \memory, \mathbf{x}) &\otherwise\\
+    (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{x}) &\otherwise\\
     \quad \where \mathbf{d} = (\mathbf{x}_\mathbf{u})_\mathbf{d}\cup\mathbf{x}_\mathbf{d}\;,\ \mathbf{s} = (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!& \\
   \end{cases} \\
   G((\gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\equiv (\gascounter, \registers, \memory, (\mathbf{x}^*, \mathbf{y}))\ \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[(\mathbf{x}^*_\mathbf{u})_s] = \mathbf{s} \\
@@ -217,7 +219,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     \Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s) &\when n = \mathtt{write} \\
     \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
     \Omega_I(\gascounter, \registers, \memory, s, \mathbf{d}) &\when n = \mathtt{info} \\
-    (\gascounter - 10, [\mathtt{WHAT}, \registers_1, \dots], \memory, \mathbf{s}) &\otherwise
+    (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{s}) &\otherwise
   \end{cases}
 \end{align}
 
@@ -268,8 +270,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{lookup} = 1 \\
   $g = 10$} &
   $\begin{aligned}
-    \using \mathbf{a} &= \begin{cases} \mathbf{s} &\when \registers_0 \in \{ s, 2^{32} - 1 \} \\ \mathbf{d}[\registers_0] &\otherwise \end{cases} \\
-    \using [h_o, b_o, b_z] &= \registers_{1..4} \\
+    \using \mathbf{a} &= \begin{cases} \mathbf{s} &\when \registers_7 \in \{ s, 2^{32} - 1 \} \\ \mathbf{d}[\registers_7] &\otherwise \end{cases} \\
+    \using [h_o, b_o, b_z] &= \registers_{8..11} \\
     \using h &= \begin{cases}
       \mathcal{H}(\memory_{h_o\dots+32}) &\when \mathbb{Z}_{h_o \dots+ 32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -298,11 +300,11 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   % gas cost for cold reads dependent on trie depth.
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s} &\when \registers_0 \in \{ s, 2^{32} - 1 \} \\
-      \mathbf{d}[\registers_0] &\otherwhen \registers_0 \in \keys{\mathbf{d}} \\
+      \mathbf{s} &\when \registers_7 \in \{ s, 2^{32} - 1 \} \\
+      \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
-    \using [k_o, k_z, b_o, b_z] &= \registers_{1..5} \\
+    \using [k_o, k_z, b_o, b_z] &= \registers_{8..12} \\
     \using k &= \begin{cases}
       \mathcal{H}(\se_4(s) \concat \memory_{k_o\dots+k_z}) &\when \mathbb{Z}_{k_o \dots+ k_z} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -330,7 +332,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$
   } &
   $\begin{aligned}
-    \using [k_o, k_z, v_o, v_z] &= \registers_{0..4} \\
+    \using [k_o, k_z, v_o, v_z] &= \registers_{7..11} \\
     \using k &= \begin{cases}
       \mathcal{H}(\se_4(s) \concat \memory_{k_o\dots+k_z}) &\when \mathbb{Z}_{k_o \dots+ k_z} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -359,10 +361,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{t} &= \begin{cases}
-      \mathbf{d}[s] &\when \registers_0 = 2^{32} - 1 \\
-      \mathbf{d}[\registers_0] &\otherwise
+      \mathbf{d}[s] &\when \registers_7 = 2^{32} - 1 \\
+      \mathbf{d}[\registers_7] &\otherwise
     \end{cases} \\
-    \using o &= \registers_1 \\
+    \using o &= \registers_8 \\
     \using \mathbf{m} &= \begin{cases}
       \mathcal{E}(\mathbf{t}_c, \mathbf{t}_b, \mathbf{t}_t, \mathbf{t}_g, \mathbf{t}_m, \mathbf{t}_l, \mathbf{t}_i) &\when \mathbf{t} \ne \none \\
       \none &\otherwise
@@ -404,7 +406,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{empower} = 5 \\
   $g = 10$}&
   $\begin{aligned}
-    \using [m, a, v, o, n] &= \registers_{0 \dots 5} \\
+    \using [m, a, v, o, n] &= \registers_{7 \dots 12} \\
     \using \mathbf{g} &= \begin{cases}
       \left\{ (s \mapsto g) \ \where \se_4(s) \concat \se_8(g) = \mathbf{d}_{o+12i\dots+12} \mid i \in \N_n \right\} &\when \mathbb{Z}_{o \dots+ 12n} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -420,13 +422,13 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{assign} = 6 \\
   $g = 10$} &
   $\begin{aligned}
-    \using o &= \registers_1 \\
+    \using o &= \registers_8 \\
     \using \mathbf{c} &= \begin{cases}
       \left[\memory_{o + 32i \dots+ 32} \mid i \orderedin \N_\mathsf{Q}\right] &\when \mathbb{Z}_{o \dots+ 32\mathsf{Q}} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     (\registers'_0, \mathbf{x}') &= \begin{cases}
-      (\mathtt{OK}, \mathbf{x} \exc \mathbf{x}'_\mathbf{c}[\registers_0] = \mathbf{c}) &\when \registers_0 < \mathsf{C} \wedge \mathbf{c} \ne \error \\
+      (\mathtt{OK}, \mathbf{x} \exc \mathbf{x}'_\mathbf{c}[\registers_7] = \mathbf{c}) &\when \registers_7 < \mathsf{C} \wedge \mathbf{c} \ne \error \\
       (\mathtt{OOB}, \mathbf{x}) &\when \mathbf{c} = \error \\
       (\mathtt{CORE}, \mathbf{x}) &\otherwise \\
     \end{cases} \\
@@ -437,7 +439,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{designate} = 7 \\
   $g = 10$} &
   $\begin{aligned}
-    \using o &= \registers_0 \\
+    \using o &= \registers_7 \\
     \using \mathbf{v} &= \begin{cases}
       \left[\memory_{o + 336i \dots+ 336} \mid i \orderedin \N_\mathsf{V}\right] &\when \mathbb{Z}_{o \dots+ 336\mathsf{V}} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -463,7 +465,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{new} = 9 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [o, l, g_l, g_h&, m_l, m_h] = \registers_{0..6} \\
+    \using [o, l, g_l, g_h&, m_l, m_h] = \registers_{7..13} \\
     \using c &= \begin{cases}
       \memory_{o\dots+32} &\when \N_{o\dots+32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -489,7 +491,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     $g = 10$
   } &
   $\begin{aligned}
-    \using [o, g_h, g_l, m_h, m_l] &= \registers_{0..5} \\
+    \using [o, g_h, g_l, m_h, m_l] &= \registers_{7..12} \\
     \using c &= \begin{cases}
       \memory_{o\dots+32} &\when \N_{o \dots+ 32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -505,9 +507,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \makecell*[l]{
   $\Omega_T(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}))$ \\
   \texttt{transfer} = 11 \\
-  $g = 10 + \registers_1 + 2^{32}\cdot\registers_2 $} &
+  $g = 10 + \registers_8 + 2^{32}\cdot\registers_9 $} &
   $\begin{aligned}
-    \using [d, a_l, a_h, g_l, g_h, o] &= \registers_{0..6},  \\
+    \using [d, a_l, a_h, g_l, g_h, o] &= \registers_{7..13},  \\
     \using a &= 2^{32}\cdot a_h + a_l \\
     \using g &= 2^{32}\cdot g_h + g_l \\
     \using \mathbf{d} &= \mathbf{x}_\mathbf{d} \cup (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
@@ -529,9 +531,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \makecell*[l]{
   $\Omega_Q(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}))$ \\
   \texttt{quit} = 12 \\
-  $g = 10 + \registers_1 + 2^{32}\cdot\registers_2 $} &
+  $g = 10 + \registers_8 + 2^{32}\cdot\registers_9 $} &
   $\begin{aligned}
-    \using [d, o] &= \registers_{0,1} \\
+    \using [d, o] &= \registers_{7,8} \\
     \using a &= (\mathbf{x}_\mathbf{s})_b - (\mathbf{x}_\mathbf{s})_t + \mathsf{B}_S \\
     \using g &= \gascounter \\
     \using \mathbf{d} &= \mathbf{x}_\mathbf{d} \cup (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
@@ -554,7 +556,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{solicit} = 13 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [o, z] &= \registers_{0, 1} \\
+    \using [o, z] &= \registers_{7, 8} \\
     \using h &= \begin{cases}
       \memory_{o\dots+32} &\when \mathbb{Z}_{o \dots+ 32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -578,7 +580,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{forget} = 14 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [o, z] &= \registers_{0, 1} \\
+    \using [o, z] &= \registers_{7, 8} \\
     \using h &= \begin{cases}
       \memory_{o\dots+32} &\when \mathbb{Z}_{o \dots+ 32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -627,11 +629,11 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{d}[s] &\when \registers_0 = 2^{32} - 1 \wedge s \in \keys{\mathbf{d}} \\
-      \mathbf{d}[\registers_0] &\when \registers_0 \in \keys{\mathbf{d}} \\
+      \mathbf{d}[s] &\when \registers_7 = 2^{32} - 1 \wedge s \in \keys{\mathbf{d}} \\
+      \mathbf{d}[\registers_7] &\when \registers_7 \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
-    \using [h_o, b_o, b_z] &= \registers_{1..4} \\
+    \using [h_o, b_o, b_z] &= \registers_{8..11} \\
     \using h &= \begin{cases}
       \mathcal{H}(\memory_{h_o\dots+32}) &\when \mathbb{Z}_{h_o \dots+ 32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -656,11 +658,11 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{v} &= \begin{cases}
-      \mathbf{i}_{\registers_0} &\when \registers_0 < |\mathbf{i}| \\
+      \mathbf{i}_{\registers_7} &\when \registers_7 < |\mathbf{i}| \\
       \none &\otherwise
     \end{cases} \\
-    \using o &= \registers_1 \\
-    \using l &= \min(\registers_2, \mathsf{W}_E\mathsf{W}_S) \\
+    \using o &= \registers_8 \\
+    \using l &= \min(\registers_9, \mathsf{W}_E\mathsf{W}_S) \\
     \memory'_{o\dots+l} &\equiv \begin{cases}
       \mathbf{v} & \when \mathbf{v} \ne \none \wedge \mathbb{N}_{o \dots+ l} \subset \mathbb{V}^*_{\memory} \\
       \memory_{o\dots+l} & \otherwise
@@ -677,8 +679,8 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{export} = 17 \\
   $g = 10$} &
   $\begin{aligned}
-    \using p &= \registers_0 \\
-    \using z &= \min(\registers_1, \mathsf{W}_E\mathsf{W}_S) \\
+    \using p &= \registers_7 \\
+    \using z &= \min(\registers_8, \mathsf{W}_E\mathsf{W}_S) \\
     \using \mathbf{x} &= \begin{cases}
       \mathcal{P}_{\mathsf{W}_E\mathsf{W}_S}(\mem_{p\dots+z}) &\when \N_{p\dots+z} \in \mathbb{V}_\memory\\
       \error &\otherwise
@@ -695,7 +697,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{machine} = 18 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [p_o, p_z, i] &= \registers_{0 \dots 3} \\
+    \using [p_o, p_z, i] &= \registers_{7 \dots 10} \\
     \using \mathbf{p} &= \begin{cases}
       \memory_{p_o\dots+p_z} &\when \mathbb{Z}_{p_o \dots+ p_z} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -713,7 +715,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{peek} = 19 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, a, b, l] &= \registers_{0 \dots 4} \\
+    \using [n, a, b, l] &= \registers_{7 \dots 11} \\
     \using \mathbf{s} &= \begin{cases}
       \none &\when n \not\in \keys{\mathbf{m}}\\
       \error &\when \N_{b\dots+l} \not\in \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \\
@@ -731,7 +733,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{poke} = 20 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, a, b, l] &= \registers_{0 \dots 4} \\
+    \using [n, a, b, l] &= \registers_{7 \dots 11} \\
     \using \mathbf{u} &= \begin{cases}
       \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
       \error &\otherwise\\
@@ -756,7 +758,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{invoke} = 21 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, o] &= \registers_{0 \dots 2} \\
+    \using [n, o] &= \registers_{7, 8} \\
     \using (g, \mathbf{w}) &= \begin{cases}
       (\de_8(\mem_{o\dots+8}), [\de_4(\mem_{o+8+4x\dots+4}) \mid x \orderedin \N_{13}]) &\when \N_{o \dots+ 60} \subset \mathbb{V}^*_{\mem} \\
       (\error, \error) &\otherwise
@@ -771,12 +773,12 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \end{cases}
     \end{cases}\\
     (\registers'_0, \registers'_1, \mem', \mathbf{m}') &\equiv \begin{cases}
-      (\mathtt{OOB}, \registers_1, \mem, \mathbf{m}) &\when g = \error \\
-      (\mathtt{WHO}, \registers_1, \mem, \mathbf{m}) &\otherwhen n \not\in \mathbf{m} \\
+      (\mathtt{OOB}, \registers_8, \mem, \mathbf{m}) &\when g = \error \\
+      (\mathtt{WHO}, \registers_8, \mem, \mathbf{m}) &\otherwhen n \not\in \mathbf{m} \\
       (\mathtt{HOST}, h, \mem^*, \mathbf{m}^*) &\otherwhen c = \host \times h \\
       (\mathtt{FAULT}, x, \mem^*, \mathbf{m}^*) &\otherwhen c = \fault \times x \\
-      (\mathtt{PANIC}, \registers_1, \mem^*, \mathbf{m}^*) &\otherwhen c = \panic \\
-      (\mathtt{HALT}, \registers_1, \mem^*, \mathbf{m}^*) &\otherwhen c = \halt \\
+      (\mathtt{PANIC}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \panic \\
+      (\mathtt{HALT}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \halt \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -785,7 +787,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{expunge} = 22 \\
   $g = 10$} &
   $\begin{aligned}
-    \using n &= \registers_{0} \\
+    \using n &= \registers_7 \\
     (\registers'_0, \mathbf{m}') &\equiv \begin{cases}
       (\mathtt{WHO}, \mathbf{m}) &\when n \ne \keys{\mathbf{m}} \\
       (\mathbf{m}[n]_i, \mathbf{m} \setminus n) &\otherwise \\
