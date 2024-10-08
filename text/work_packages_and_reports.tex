@@ -3,7 +3,8 @@
 \newcommand*{\newavailabilityspecifier}{A}
 \newcommand*{\itemtoresult}{C}
 \newcommand*{\countupexports}{I}
-\newcommand*{\importsegmentdata}{M}
+\newcommand*{\importsegmentdata}{S}
+\newcommand*{\justifysegmentdata}{J}
 \newcommand*{\pagedproofs}{P}
 \newcommand*{\marshallrefine}{R}
 \newcommand*{\extrinsicdata}{X}
@@ -187,40 +188,49 @@ Where:
 
 Initially we constrain the segment-root dictionary $\mathbf{l}$: It should contain entries for all unique work-package hashes of imported segments not identified directly via a segment-root but rather through a work-package hash.
 
+We immediately define the segment-root lookup function $L$, dependent on this dictionary, which collapses a union of segment-roots and work-package hashes into segment-roots using the dictionary:
+\begin{equation}
+  L(r \in \H\cup\H^\boxplus) \equiv \begin{cases}
+    r &\when r \in \H \\
+    \mathbf{l}[h] &\when \exists h \in \H: r = h^\boxplus
+  \end{cases}
+\end{equation}
+
 In order to expect to be compensated for a work-report they are building, guarantors must compose a value for $\mathbf{l}$ to ensure not only the above but also a further constraint that all pairs of work-package hashes and segment-roots do properly correspond:
 \begin{equation}
-  \forall (h \mapsto e) \in \mathbf{l} : \exists p, c \in \mathbb{P}, \N_\mathsf{C} : \mathcal{H}(p) = h \wedge (\Xi(p, c)_s)_e = e
+  \forall (h \mapsto e) \in \mathbf{l} : \exists p, c \in \mathbb{P}, \N_\mathsf{C} : \mathcal{H}(p) = h \wedge (\Xi(p, c)_s)_e = e\!\!\!\!
 \end{equation}
 
 As long as the guarantor is unable to satisfy the above constraints, then it should consider the work-package unable to be guaranteed. Auditors are not expected to populate this but rather to reuse the value in the work-report they are auditing.
 
 The next term to be introduced, $\mathbf{o}$, is the authorization output, the result of the Is-Authorized function. The second term, $(\mathbf{r}, \overline{\mathbf{e}})$ is the sequence of results for each of the work-items in the work-package together with all segments exported by each work-item. The third definition $\countupexports$ performs an ordered accumulation (\ie counter) in order to ensure that the Refine function has access to the total number of exports made from the work-package up to the current work-item.
 
-The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $w$:
+The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $w$. We also define $J$, which compiles justifications of segment data:
 \begin{equation}
   \begin{aligned}
-    \importsegmentdata(\wiX \in \mathbb{I}, \mathbf{l}) &\equiv [\mathbf{s}[n] \mid \mathcal{M}(\mathbf{s}) = L(r, \mathbf{l}), (r, n) \orderedin \wiX_\wi¬importsegments]\!\!\!\! \\
     \extrinsicdata(\wiX \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\mathcal{H}(\mathbf{d}), |\mathbf{d}|) \orderedin \wiX_\wi¬extrinsics] \\
-    L(r \in \H \cup \H^\boxplus, \mathbf{l}) &\equiv \begin{cases}
-      r &\when r \in \H \\
-      \mathbf{l}[h] &\when \exists h \in \H: r = h^\boxplus
-    \end{cases}
+    \importsegmentdata(\wiX \in \mathbb{I}) &\equiv [\mathbf{s}[n] \mid \mathcal{M}(\mathbf{s}) = L(r), (r, n) \orderedin \wiX_\wi¬importsegments] \\
+    \justifysegmentdata(\wiX \in \mathbb{I}) &\equiv [\var{\mathcal{J}(\mathbf{s}, n)} \mid \mathcal{M}(\mathbf{s}) = L(r), (r, n) \orderedin \wiX_\wi¬importsegments]
   \end{aligned}
 \end{equation}
 
 We may then define $s$ as the data availability specification of the package using these two functions together with the yet to be defined \emph{Availability Specifier} function $\newavailabilityspecifier$ (see section \ref{sec:availabiltyspecifier}):
 \begin{equation}
-  \begin{aligned}
-    s &= \newavailabilityspecifier(\mathcal{H}(\wpX), \se(\wpX, \mathbf{x}, \mathbf{i}, \mathbf{j}), \wideparen{\overline{\mathbf{e}}}) \\
-    \where \mathbf{x} &= [\extrinsicdata(\wiX) \mid \wiX \orderedin \wpX_\wp¬workitems]\\
-    \also \mathbf{i} &= [\importsegmentdata(\wiX, \mathbf{l}) \mid \wiX \orderedin \wpX_\wp¬workitems]\\
-    \also \mathbf{j} &= [\var{\mathcal{J}(\mathbf{s}, n)} \mid (\mathcal{M}(\mathbf{s}), n) \orderedin \wiX_\wi¬importsegments, \wiX \orderedin \wpX_\wp¬workitems]
-  \end{aligned}
+  s = \newavailabilityspecifier(
+    \mathcal{H}(\wpX),
+    \se(
+      \wpX,
+      \extrinsicdata^\#(\wpX_\wp¬workitems),
+      \importsegmentdata^\#(\wpX_\wp¬workitems),
+      \justifysegmentdata^\#(\wpX_\wp¬workitems)
+    ),
+    \wideparen{\overline{\mathbf{e}}}
+  )\!\!\!\!
 \end{equation}
 
-Note that while $\importsegmentdata$ and $\mathbf{j}$ are both formulated using the term $\mathbf{s}$ (all segments exported by all work-packages exporting a segment to be imported) such a vast amount of data is not generally needed as the justification can be derived through a single paged-proof. This reduces the worst case data fetching for a guarantor to two segments for every one to be imported. In the case that contiguously exported segments are imported (which we might assume is a fairly common situation), then a single proof-page should be sufficient to justify many imported segments.
+Note that while $\importsegmentdata$ and $\justifysegmentdata$ are both formulated using the term $\mathbf{s}$ (all segments exported by all work-packages exporting a segment to be imported) such a vast amount of data is not generally needed as the justification can be derived through a single paged-proof. This reduces the worst case data fetching for a guarantor to two segments for every one to be imported. In the case that contiguously exported segments are imported (which we might assume is a fairly common situation), then a single proof-page should be sufficient to justify many imported segments.
 
-Also of note is the lack of length prefixes: only the Merkle paths for the justifications (\ie the elements of $\mathbf{j}$) have a length prefix. All other sequence lengths are determinable through the work package itself.
+Also of note is the lack of length prefixes: only the Merkle paths for the justifications have a length prefix. All other sequence lengths are determinable through the work package itself.
 
 The Is-Authorized logic it references must be executed first in order to ensure that the work-package warrants the needed core-time. Next, the guarantor should ensure that all segment-tree roots which form imported segment commitments are known and have not expired. Finally, the guarantor should ensure that they can fetch all preimage data referenced as the commitments of extrinsic segments.
 
