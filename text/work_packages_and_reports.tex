@@ -187,12 +187,12 @@ Where:
 
 Initially we constrain the segment-root dictionary $\mathbf{l}$: It should contain entries for all unique work-package hashes of imported segments not identified directly via a segment-root but rather through a work-package hash.
 
-In order to expect to be compensated for a work-report they are building, guarantors must compose a value for $\mathbf{l}$ to ensure not only the above but also a further constraint (auditors are not expected to populate this but rather to reuse the value in the work-report they are auditing):
+In order to expect to be compensated for a work-report they are building, guarantors must compose a value for $\mathbf{l}$ to ensure not only the above but also a further constraint that all pairs of work-package hashes and segment-roots do properly correspond:
 \begin{equation}
-  \forall (h \mapsto e) \in \mathbf{l} : \exists w \in \mathbb{W} : (w_s)_h = h \wedge (w_s)_e = e
+  \forall (h \mapsto e) \in \mathbf{l} : \exists p, c \in \mathbb{P}, \N_\mathsf{C} : \mathcal{H}(p) = h \wedge (\Xi(p, c)_s)_e = e
 \end{equation}
 
-As long as the guarantor is unable to satisfy the above constraints, then it should consider the work-package unable to be guaranteed.
+As long as the guarantor is unable to satisfy the above constraints, then it should consider the work-package unable to be guaranteed. Auditors are not expected to populate this but rather to reuse the value in the work-report they are auditing.
 
 The next term to be introduced, $\mathbf{o}$, is the authorization output, the result of the Is-Authorized function. The second term, $(\mathbf{r}, \overline{\mathbf{e}})$ is the sequence of results for each of the work-items in the work-package together with all segments exported by each work-item. The third definition $\countupexports$ performs an ordered accumulation (\ie counter) in order to ensure that the Refine function has access to the total number of exports made from the work-package up to the current work-item.
 
@@ -234,8 +234,8 @@ Validators, in their role as availability assurers, should index such chunks acc
 We define the availability specifier function $\newavailabilityspecifier$, which creates an availability specifier from the package hash, an octet sequence of the audit-friendly work-package bundle (comprising the work-package itself, the extrinsic data and the concatenated import segments along with their proofs of correctness), and the sequence of exported segments:
 \begin{equation}
   \!\!\!\newavailabilityspecifier\colon\left\{\,\begin{aligned}
-    &\tuple{\H, \Y, \seq{\G}} \to \mathbb{S}\\
-    &\tup{h, \mathbf{b},\,\mathbf{s}} \mapsto \tup{
+    \tuple{\H, \Y, \seq{\G}} &\to \mathbb{S}\\
+    \tup{h, \mathbf{b},\,\mathbf{s}} &\mapsto \tup{
       h,\,
       \is{l}{|\mathbf{b}|},\,
       u,\,
