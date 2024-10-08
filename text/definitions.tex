@@ -55,9 +55,8 @@
   \item[$\mathbb{P}$] The set of work-packages. See equation \ref{eq:workpackage}.
   \item[$\mathbb{S}$] The set of availability specifications.
   \item[$\mathbb{T}$] The set of deferred transfers.
-  \item[$\mathbb{U}$] Unused.
-  \item[$\mathbb{V}_{\mu}$] The set of validly readable indices for \textsc{pvm} \textsc{ram} $\mu$. See appendix \ref{sec:virtualmachine}.
-  \item[$\mathbb{V}^*_{\mu}$] The set of validly writable indices for \textsc{pvm} \textsc{ram} $\mu$. See appendix \ref{sec:virtualmachine}.
+  \item[$\mathbb{U}$] The set of partial state, used during accumulation. See equation \ref{eq:partialstate}.  \item[$\mathbb{V}_{\memory}$] The set of validly readable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
+  \item[$\mathbb{V}^*_{\memory}$] The set of validly writable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
   \item[$\mathbb{W}$] The set of work-reports.
   \item[$\mathbb{X}$] The set of refinement contexts.
   \item[$\Y$] The set of octet strings/``blobs''. Subscript denotes length. See section \ref{sec:sequences}.
@@ -71,8 +70,13 @@
 
 \begin{description}
 %  \item[$\Gamma$] Unused. %	Γ
-%  \item[$\Delta$] Unused. %	Δ
-%  \item[$\Theta$] Unused. %	Θ
+  \item[$\Delta$] The accumulation function; certain subscripts are used to denote helper functions: %	Δ
+  \begin{description}
+    \item[$\Delta_1$] The single-step accumulation function.
+    \item[$\Delta_*$] The parallel accumulation function.
+    \item[$\Delta_+$] The full sequential accumulation function.
+  \end{description}
+%  \item[$\gascounter$] Unused. %	Θ
 %  \item[$\Pi$] Unused. %	Π
   \item[$\Lambda$] The historical lookup function. See equation \ref{eq:historicallookup}. % Λ
   \item[$\Xi$] The work result computation function. See equation \ref{eq:workresultfunction}. %	Ξ
@@ -160,7 +164,7 @@ These terms are all contextualized to a single block. They may be superscripted 
 \begin{description}
   \item[$\mathbf{A}$] The ancestor set of the block. See equation \ref{eq:ancestors}.
   \item[$\mathbf{B}$] The block. See equation \ref{eq:block}.
-  \item[$\mathbf{C}$] The service accumulation-commitment, used to form the \textsc{Beefy} root. See equation \ref{eq:beefycommitment}.
+  \item[$\beefycommitmap$] The service accumulation-commitment, used to form the \textsc{Beefy} root. See equation \ref{eq:beefycommitment}.
   \item[$\mathbf{E}$] The block extrinsic. See equation \ref{eq:extrinsic}.
   \item[$\mathbf{F}_v$] The \textsc{Beefy} signed commitment of validator $v$. See equation \ref{eq:beefysignedcommitment}.
   \item[$\mathbf{G}$] The mapping from cores to guarantor keys. See section \ref{sec:coresandvalidators}.
@@ -171,7 +175,8 @@ These terms are all contextualized to a single block. They may be superscripted 
   \item[$\mathbf{S}$] The set of indices of services which have been accumulated (``progressed'') in the block. See equation \ref{eq:servicestoaccumulate}.
   \item[$\mathbf{T}$] The ticketed condition, true if the block was sealed with a ticket signature rather than a fallback. See equations \ref{eq:ticketconditiontrue} and \ref{eq:ticketconditionfalse}.
   \item[$\mathbf{U}$] The audit condition, equal to $\top$ once the block is audited. See section \ref{sec:auditing}.
-  \item[$\mathbf{W}$] The set of work-reports which have now become available and ready for accumulation. See equation \ref{eq:availableworkreports}.
+  \item[$\mathbf{V}$] The set of verdicts in the present block. See equation \ref{eq:verdicts}.\\
+  \item[$\mathbf{W}$] The sequence of work-reports which have now become available and ready for accumulation. See equation \ref{eq:availableworkreports}.
 \end{description}
 
 Without any superscript, the block is assumed to the block being imported or, if no block is being imported, the head of the best chain (see section \ref{sec:bestchain}). Explicit block-contextualizing superscripts include:
@@ -204,39 +209,43 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\lambda$] The validator keys and metadata which were active in the prior epoch. %	λ
   \item[$\rho$] The $\rho$ending reports, per core, which are being made available prior to accumulation. %	ρ
   \begin{description}
-    \item[$\rho^\dagger$] The post-judgement, pre-guarantees-extrinsic intermediate state. %	δ
+    \item[$\rho^\dagger$] The post-judgment, pre-guarantees-extrinsic intermediate state. %	δ
     \item[$\rho^\ddagger$] The post-guarantees-extrinsic, pre-assurances-extrinsic, intermediate state. %	δ
   \end{description}
   \item[$\sigma$] The $\sigma$verall state of the system. See equations \ref{eq:statetransition}, \ref{eq:statecomposition}. %	σ
   \item[$\tau$] The most recent block's $\tau$imeslot. %	τ
   \item[$\varphi$] The authorization queue. %	ϕ
-  \item[$\psi$] Past judgements on work-reports and validators. %	ψ
+  \item[$\psi$] Past judgments on work-reports and validators. %	ψ
   \begin{description}
     \item[$\badset$] Work-reports judged to be incorrect.
     \item[$\goodset$] Work-reports judged to be correct.
     \item[$\wonkyset$] Work-reports whose validity is judged to be unknowable.
-    \item[$\offenders$] Validators who made a judgement found to be incorrect.
+    \item[$\offenders$] Validators who made a judgment found to be incorrect.
   \end{description}
   \item[$\chi$] The privileged service indices. %	χ
   \begin{description}
     \item[$\chi_m$] The index of the empower service.
     \item[$\chi_v$] The index of the designate service.
     \item[$\chi_a$] The index of the assign service.
+    \item[$\chi_\mathbf{g}$] The always-accumulate service indices and their basic gas allowance.
   \end{description}
   \item[$\pi$] The activity statistics for the validators. % π
+  \item[$\vartheta$] The accumulation queue. % ϑ
+  \item[$\xi$] The accumulation history. % ξ
 \end{description}
+% θ
 
 \subsubsection{Virtual Machine components}
 
 \begin{description}
   \item[$\varepsilon$] The exit-reason resulting from all machine state transitions. %	ε
   \item[$\nu$] The immediate values of an instruction. %	ν
-  \item[$\mu$] The memory sequence; a member of the set $\mathbb{M}$. %	μ
-  \item[$\xi$] The gas counter. %	ξ
-  \item[$\omega$] The registers. %	ω
+  \item[$\memory$] The memory sequence; a member of the set $\mathbb{M}$. %	μ
+  \item[$\gascounter$] The gas counter. % ϱ
+  \item[$\registers$] The registers. % ω
   \item[$\zeta$] The instruction sequence. %	ζ
-  \item[$\varpi$] The sequence of basic blocks of the program.
-  \item[$\imath$] The instruction counter.
+  \item[$\varpi$] The sequence of basic blocks of the program. % ϖ
+  \item[$\imath$] The instruction counter. % ı
 \end{description}
 
 \subsubsection{Constants}
@@ -253,24 +262,26 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{G}_A$] The total gas allocated to a core for Accumulation.
   \item[$\mathsf{G}_I$] The gas allocated to invoke a work-package's Is-Authorized logic.
   \item[$\mathsf{G}_R$] The total gas allocated for a work-package's Refine logic.
+  \item[$\mathsf{G}_T$] The total gas allocated across all cores for Accumulation. May be no smaller than $\mathsf{G}_A\cdot\mathsf{C} + \sum_{g \in \mathcal{V}(\chi_\mathbf{g})}(g)$.
   \item[$\mathsf{H} = 8$] The size of recent history, in blocks.
   \item[$\mathsf{I} = 4$] The maximum amount of work items in a package.
   \item[$\mathsf{K} = 16$] The maximum number of tickets which may be submitted in a single extrinsic.
   \item[$\mathsf{L} = 14,400$] The maximum age in timeslots of the lookup anchor.
-  \item[$\mathsf{M} = 128$] The size of a transfer memo in octets.
   \item[$\mathsf{N} = 2$] The number of ticket entries per validator.
   \item[$\mathsf{O} = 8$] The maximum number of items in the authorizations pool.
   \item[$\mathsf{P} = 6$] The slot period, in seconds.
   \item[$\mathsf{Q} = 80$] The maximum number of items in the authorizations queue.
   \item[$\mathsf{R} = 10$] The rotation period of validator-core assignments, in timeslots.
-  \item[$\mathsf{S} = 4,000,000$] The maximum size of service code in octets.
+  \item[$\mathsf{S} = 1024$] The maximum number of entries in the accumulation queue.
   \item[$\mathsf{U} = 5$] The period in timeslots after which reported but unavailable work may be replaced.
   \item[$\mathsf{V} = 1023$] The total number of validators.
-  \item[$\mathsf{W}_C = 684$] The basic size of our erasure-coded pieces. See equation \ref{eq:erasurecoding}.
+  \item[$\mathsf{W}_C = 4,000,000$] The maximum size of service code in octets.
+  \item[$\mathsf{W}_E = 684$] The basic size of erasure-coded pieces in octets. See equation \ref{eq:erasurecoding}.
   \item[$\mathsf{W}_M = 2^{11}$] The maximum number of entries in a work-package manifest.
   \item[$\mathsf{W}_P = 12\cdot2^{20}$] The maximum size of an encoded work-package together with its extrinsic data and import implications, in octets.
   \item[$\mathsf{W}_R = 96\cdot2^{10}$] The maximum size of an encoded work-report in octets.
-  \item[$\mathsf{W}_S = 6$] The size of an exported segment in erasure-coded pieces.
+  \item[$\mathsf{W}_S = 6$] The size of an exported segment in erasure-coded pieces in octets.
+  \item[$\mathsf{W}_T = 128$] The size of a transfer memo in octets.
   \item[$\mathsf{X}$] Context strings, see below.
   \item[$\mathsf{Y} = 500$] The number of slots into an epoch at which ticket-submission ends.
   \item[$\mathsf{Z}_A = 2$] The \textsc{pvm} dynamic address alignment factor. See equation \ref{eq:jumptablealignment}.
@@ -290,6 +301,6 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{X}_I = \token{\$jam\_announce}$] \emph{Ed25519} Audit announcement statements.
   \item[$\mathsf{X}_T = \token{\$jam\_ticket\_seal}$] \emph{Bandersnatch Ring\textsc{vrf}} Ticket generation and regular block seal.
   \item[$\mathsf{X}_U = \token{\$jam\_audit}$] \emph{Bandersnatch} Audit selection entropy.
-  \item[$\mathsf{X}_\top = \token{\$jam\_valid}$] \emph{Ed25519} Judgements for valid work-reports.
-  \item[$\mathsf{X}_\bot = \token{\$jam\_invalid}$] \emph{Ed25519} Judgements for invalid work-reports.
+  \item[$\mathsf{X}_\top = \token{\$jam\_valid}$] \emph{Ed25519} Judgments for valid work-reports.
+  \item[$\mathsf{X}_\bot = \token{\$jam\_invalid}$] \emph{Ed25519} Judgments for invalid work-reports.
 \end{description}

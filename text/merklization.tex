@@ -37,11 +37,13 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(11) &\mapsto \se_4(\tau) \;, \\
     &&C(12) &\mapsto \se_4(\chi_m, \chi_a, \chi_v) \concat \se(\chi_\mathbf{g}) \;, \\
     &&C(13) &\mapsto \se_4(\pi) \;, \\
+    &&C(14) &\mapsto \se([\var{i} \mid i \orderedin \ready]) \;, \\
+    &&C(15) &\mapsto \se(\accumulated) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_l) \concat \se_4(\mathbf{a}_i) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, h) &\mapsto \mathbf{v} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, h) &\mapsto \mathbf{p} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat (\lnot h_{4\dots})) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
-  \end{aligned}\right\}
+  \end{aligned}\right.
 \end{equation}
 
 Note that most rows describe a single mapping between key derived from a natural and the serialization of a state component. However, the final four rows each define sets of mappings since these items act over all service accounts and in the case of the final three rows, the keys of a nested dictionary with the service.
@@ -86,11 +88,12 @@ We may then define the basic Merklization function $\mathcal{M}_\sigma$ as:
   M(d: \dict{\mathbb{B}}{(\H, \Y)}) &\equiv \begin{cases}
     \H^0 &\when |d| = 0\\
     \mathcal{H}(\text{bits}^{-1}(L(k, v))) &\when \mathcal{V}(d) = \{ (k, v) \}\\
-    \mathcal{H}(\text{bits}^{-1}(B(M(l), M(r)))) &\otherwise, \where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b_{1\dots} \mapsto p) \in \begin{cases}
+    \mathcal{H}(\text{bits}^{-1}(B(M(l), M(r)))) &\otherwise\\
+    \multicolumn{2}{l}{\quad\where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b_{1\dots} \mapsto p) \in \begin{cases}
       l &\when b_0 = 0 \\
       r &\when b_0 = 1
     \end{cases}
-  \end{cases}
+  }\end{cases}
 \end{align}
 
 \section{General Merklization}\label{sec:merklization}
@@ -115,25 +118,25 @@ The astute reader will realize that if our $\Y_n$ happens to be equivalent $\H$ 
 
 We also define the \emph{trace} function $T$, which returns each opposite node from top to bottom as the tree is navigated to arrive at some leaf corresponding to the item of a given index into the sequence. It is useful in creating justifications of data inclusion.
 \begin{equation}
-  \begin{aligned}
-    T\colon\left\{\begin{aligned}
-      (\seq{\Y_n}, \N_{|\mathbf{v}|}, \Y \to \H)\ &\to \seq{\Y_n \cup \H}\\
-      (\mathbf{v}, i, H) &\mapsto \begin{cases}
-        [N(P^\bot(\mathbf{v}, i), H)] \concat T(P^\top(\mathbf{v}, i), i - P_I(\mathbf{v}, i), H) &\when |\mathbf{v}| > 1\\
-        [] &\otherwise
-      \end{cases}
-    \end{aligned}\right.\\
-    \where\ \left\{\begin{aligned}
-      P^s(\mathbf{v}, i) &\equiv \begin{cases}
-        \mathbf{v}_{\dots\ceil{\nicefrac{|\mathbf{v}|}{2}}} &\when (i < \ceil{\nicefrac{|\mathbf{v}|}{2}}) = s\\
-        \mathbf{v}_{\ceil{\nicefrac{|\mathbf{v}|}{2}}\dots} &\otherwise
-      \end{cases}\\
-      P_I(\mathbf{v}, i) &\equiv \begin{cases}
-        0 &\when i < \ceil{\nicefrac{|\mathbf{v}|}{2}} \\
-        \ceil{\nicefrac{|\mathbf{v}|}{2}} &\otherwise
-      \end{cases}
-    \end{aligned}\right.
-  \end{aligned}
+  T\colon\left\{\begin{aligned}
+    (\seq{\Y_n}, \N_{|\mathbf{v}|}, \Y \to \H)\ &\to \seq{\Y_n \cup \H}\\
+    (\mathbf{v}, i, H) &\mapsto \begin{cases}
+      [N(P^\bot(\mathbf{v}, i), H)] \concat T(P^\top(\mathbf{v}, i), i - P_I(\mathbf{v}, i), H) &\when |\mathbf{v}| > 1\\
+      [] &\otherwise\\
+      \multicolumn{2}{l}{
+        \begin{aligned}
+          \quad \where P^s(\mathbf{v}, i) &\equiv \begin{cases}
+            \mathbf{v}_{\dots\ceil{\nicefrac{|\mathbf{v}|}{2}}} &\when (i < \ceil{\nicefrac{|\mathbf{v}|}{2}}) = s\\
+            \mathbf{v}_{\ceil{\nicefrac{|\mathbf{v}|}{2}}\dots} &\otherwise
+          \end{cases}\\[4pt]
+          \quad \also P_I(\mathbf{v}, i) &\equiv \begin{cases}
+            0 &\when i < \ceil{\nicefrac{|\mathbf{v}|}{2}} \\
+            \ceil{\nicefrac{|\mathbf{v}|}{2}} &\otherwise
+          \end{cases}\\
+        \end{aligned}
+      }
+    \end{cases}\\
+  \end{aligned}\right.
 \end{equation}
 
 From this we define our other Merklization functions.

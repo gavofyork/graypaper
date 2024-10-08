@@ -12,10 +12,11 @@ During the accumulation stage, a value with the partial transition of this state
   \beta^\dagger \equiv \beta\quad\exc\quad\beta^\dagger[|\beta| - 1]_s = \mathbf{H}_r
 \end{equation}
 
-We define an item $n$ comprising the new block's header hash, its accumulation-result Merkle tree root and the set of work-reports made into it (for which we use the guarantees extrinsic, $\xtguarantees$). Note that the accumulation-result tree root $r$ is derived from $\mathbf{C}$ (defined in section \ref{sec:accumulation}) using the basic binary Merklization function $\mathcal{M}_B$ (defined in appendix \ref{sec:merklization}) and appending it using the \textsc{mmr} append function $\mathcal{A}$ (defined in appendix \ref{sec:mmr}) to form a Merkle mountain range.
+We define an item $n$ comprising the new block's header hash, its accumulation-result Merkle tree root and the set of work-reports made into it (for which we use the guarantees extrinsic, $\xtguarantees$). Note that the accumulation-result tree root $r$ is derived from $\beefycommitmap$ (defined in section \ref{sec:accumulation}) using the basic binary Merklization function $\mathcal{M}_B$ (defined in appendix \ref{sec:merklization}) and appending it using the \textsc{mmr} append function $\mathcal{A}$ (defined in appendix \ref{sec:mmr}) to form a Merkle mountain range.
 \begin{equation}
   \begin{aligned}
-    \using r &= \mathcal{M}_B(\orderby{s}{\se_4(s)\frown\se(h) \mid (s, h) \in \mathbf{C}}, \mathcal{H}_K) \\
+    \label{eq:buildbeefymap}
+    \using r &= \mathcal{M}_B(\orderby{s}{\se_4(s)\frown\se(h) \mid (s, h) \in \beefycommitmap}, \mathcal{H}_K) \\
     \using \mathbf{b} &= \mathcal{A}(\text{last}(\sq{\sq{}} \concat \sq{x_\mathbf{b} \mid x \orderedin \beta}), r, \mathcal{H}_K) \\
     \using n &= \tup{
       \is{\mathbf{p}}{[((g_w)_s)_h \mid g \orderedin \xtguarantees]}\ts
