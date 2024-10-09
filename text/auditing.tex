@@ -61,10 +61,11 @@ New tranches may contain items from $\mathbf{Q}$ stemming from one of two reason
 
 In all cases, we publish a signed statement of which of the cores we believe we are required to audit (an \emph{announcement}) together with evidence of the \textsc{vrf} signature to select them and the other validators' announcements from the previous tranche unmatched with a judgment in order that all other validators are capable of verifying the announcement. \emph{Publication of an announcement should be taken as a contract to complete the audit regardless of any future information.}
 
-Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $s_n$ and all signed data. Validator's announcement statements must be in the set:
+Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $s_n$ and all signed data. Validator's announcement statements must be in the set $S$:
 \begin{align}
-  &\sig{\kappa'[v]_e}{\mathsf{X}_I \doubleplus n \concat \se([\se_2(c) \frown \mathcal{H}(w) \mid \tup{c, w} \in \mathbf{a}_n])} \\
-  &\mathsf{X}_I = \token{\$jam\_announce}
+  S &\equiv \sig{\kappa'[v]_e}{\mathsf{X}_I \doubleplus n \concat \mathbf{x}_n \concat \mathcal{H}(\mathbf{H})} \\
+  \where \mathbf{x}_n &= \se([\se_2(c) \frown \mathcal{H}(w) \mid \tup{c, w} \in \mathbf{a}_n])\\
+  \mathsf{X}_I &= \token{\$jam\_announce}
 \end{align}
 
 We define $A_n$ as our perception of which validator is required to audit each of the work-reports (identified by their associated core) at tranche $n$. This comes from each other validators' announcements (defined above). It cannot be correctly evaluated until $n$ is current. We have absolute knowledge about our own audit requirements.
@@ -82,9 +83,10 @@ We are able to define $\mathbf{a}_n$ for tranches beyond the first on the basis 
 
 We can thus define $\mathbf{a}_n$ beyond the initial tranche through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
 \begin{align}
-  \nonumber&\!\!\!\!\!\!\!\!\forall n > 0:\\
-  &\ s_n(w) \in \bandersig{\kappa'[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}\concat\mathcal{H}(w)\doubleplus n}{[]} \\
-  &\ \mathbf{a}_n \equiv \{ w \in \mathbf{Q} \mid \textstyle\frac{\mathsf{V}}{256\mathsf{F}}\banderout{s_n(w)}_0 < |A_{n - 1}(w) \setminus J_\top(w)| \}\!\!\!\!
+  \nonumber\forall n > 0:&\\
+  \ s_n(w) &\in \bandersig{\kappa'[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}\concat\mathcal{H}(w)\doubleplus n}{[]} \\
+  \ \mathbf{a}_n &\equiv \{ \textstyle\frac{\mathsf{V}}{256\mathsf{F}}\banderout{s_n(w)}_0 < m_n \mid w \in \mathbf{Q}, w \ne \none \}\!\!\!\!\\
+  \nonumber \where m_n &= |A_{n - 1}(w) \setminus J_\top(w)|
 \end{align}
 
 We define our bias factor $\mathsf{F} = 2$, which is the expected number of validators which will be required to issue a judgment for a work-report given a single no-show in the tranche before. Modeling by \cite{cryptoeprint:2024/961} shows that this is optimal.
