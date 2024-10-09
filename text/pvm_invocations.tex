@@ -130,8 +130,8 @@ We define $\Psi_A$, the Accumulation invocation function as:
     &\to
     \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G} \\
     (\mathbf{u}, s, g, \mathbf{o}) &\mapsto \begin{cases}
-      \tup{I(\mathbb{u}, s)_\mathbf{u}, [], \none, 0} &\when \mathbf{d}[s]_\mathbf{c} = \none \\
-      C(\Psi_M(\mathbf{d}[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, \tup{I(\mathbb{u}, s), I(\mathbb{u}, s)})) &\otherwise
+      \tup{I(\mathbf{u}, s)_\mathbf{u}, [], \none, 0} &\when \mathbf{d}[s]_\mathbf{c} = \none \\
+      C(\Psi_M(\mathbf{d}[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, \tup{I(\mathbf{u}, s), I(\mathbf{u}, s)})) &\otherwise
     \end{cases} \\
   \end{aligned}\right.
 \end{equation}
@@ -140,7 +140,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
   I(\mathbf{u} \in \mathbb{U}, s \in \N_S) &\equiv \tup{
     \is{\mathbf{d}}{\mathbf{d} \setminus \{ s \}},
     s,
-    \is{\mathbf{u}}{\tuple{\is{\mathbf{d}}{\{s \mapsto \mathbf{d}[s]\}}, \is{\mathbf{x}}{\mathbf{o}_\mathbf{x}}, \is{\mathbf{i}}{\mathbf{o}_\mathbf{i}}, \is{\mathbf{q}}{\mathbf{o}_\mathbf{q}}}},
+    \is{\mathbf{u}}{\tuple{\is{\mathbf{d}}{\{s \mapsto \mathbf{d}[s]\}}, \is{\mathbf{x}}{\mathbf{u}_\mathbf{x}}, \is{\mathbf{i}}{\mathbf{u}_\mathbf{i}}, \is{\mathbf{q}}{\mathbf{u}_\mathbf{q}}}},
     i,
     \is{\mathbf{t}}{[]}
   }\\
@@ -194,7 +194,7 @@ The initializer function $I$ maps some service account $\mathbf{s}$ along with i
 Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\eta_0$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
 \begin{equation}
   \text{check}(i \in \N_S) \equiv \begin{cases}
-    i &\when i \not\in \keys{\mathbf{o}_\mathbf{d}} \\
+    i &\when i \not\in \keys{\mathbf{u}_\mathbf{d}} \\
     \text{check}((i - 2^8 + 1) \bmod (2^{32}-2^9) + 2^8)&\otherwise
   \end{cases}
 \end{equation}
