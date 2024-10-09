@@ -41,7 +41,7 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
     (\mathbf{p}, c) &\mapsto \mathbf{r}\ \where (g, \mathbf{r}, \none) = \Psi_M(\mathbf{p}_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(\mathbf{p}, c), F, \none)
   \end{aligned}\right. \\
   \label{eq:isauthorizedmutator}F&\colon\left\{\begin{aligned}
-    (\N, \N_G, \lseq\N_R\rseq_6, \mathbb{M}) &\to (\Z_G, \lseq\N_R\rseq_2, \mathbb{M})\\
+    (\N, \N_G, \regs, \ram) &\to (\Z_G, \regs, \ram)\\
     (n, \gascounter, \registers, \memory) &\mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
       (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
@@ -84,7 +84,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   \end{aligned}\right. \\
   \label{eq:refinemutator}
   F&\colon\left\{\begin{aligned}
-    (\N, \N_G, \seq{\N_R}_6, \mathbb{M}, (\dict{\N}{\pvm}, \seq{\Y})) &\to (\N_G, \seq{\N_R}_2, \mathbb{M}, (\dict{\N}{\pvm}, \seq{\Y}))\\
+    (\N, \N_G, \regs, \ram, (\dict{\N}{\pvm}, \seq{\Y})) &\to (\N_G, \regs, \ram, (\dict{\N}{\pvm}, \seq{\Y}))\\
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\mapsto \begin{cases}
       \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), s, \delta, \mathbf{c}_t) &\when n = \mathtt{historical\_lookup}\\
       \Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \mathbf{i}) &\when n = \mathtt{import}\\
@@ -233,7 +233,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
 
 We come now to defining the host functions which are utilized by the \textsc{pvm} invocations. Generally, these map some \textsc{pvm} state, including invocation context, possibly together with some additional parameters, to a new \textsc{pvm} state.
 
-The general fucntions are all broadly of the form $(\gascounter' \in \Z_G, \registers' \in \seq{\N_R}_2, \memory', \mathbf{s}') = \Omega_\square(\gascounter \in \N_G, \registers \in \seq{\N_R}_6, \memory \in \mathbb{M}, \mathbf{s} \in \mathbb{A}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+The general fucntions are all broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory', \mathbf{s}') = \Omega_\square(\gascounter \in \N_G, \registers \in \regs, \memory \in \ram, \mathbf{s} \in \mathbb{A}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
 Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context, but merely a service account $\mathbf{s}$.
 
@@ -384,7 +384,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
 
 \subsection{Accumulate Functions}\label{sec:accumulatefunctions}
 
-This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, \registers' \in \seq{\N_R}_2, \memory', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\gascounter \in \N_G, \registers \in \seq{\N_R}_6, \memory \in \mathbb{M}, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\gascounter \in \N_G, \registers \in \regs, \memory \in \ram, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
 Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
@@ -764,7 +764,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       (\error, \error) &\otherwise
     \end{cases} \\
     \using (c, i', g', \mathbf{w}', \mathbf{u}') &= \Psi(\mathbf{m}[n]_\mathbf{p}, \mathbf{m}[n]_i, g, \mathbf{w}, \mathbf{m}[n]_\mathbf{u})\\
-    \using \mem^* &= \mem \exc \mem^*_{o\dots+60} = \se_8(g') \concat \se([\se_4(x) \mid x \orderedin \mathbf{w}'])\\
+    \using \mem^* &= \mem \exc \mem^*_{o\dots+60} = \se_8(g') \concat \joined{\se_4^\#(\mathbf{w}')}\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*[n]_\mathbf{u} = \mathbf{u}'\\
       \mathbf{m}^*[n]_i = \begin{cases}
