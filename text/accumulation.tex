@@ -100,8 +100,8 @@ Finally, we define the mapping function $\srmap$ which builds a dictionary of wo
 We may now define the sequence of accumulatable work-reports in this block as $\mathbf{W}^*$:
 \begin{align}
   \using m &= \mathbf{H}_t \bmod \mathsf{E}\\
-  \mathbf{W}^* &\equiv \mathbf{W}^! \frown Q(q, \accumulatedcup \cup\;\srmap(\mathbf{W}^!)) \\
-  \quad\where q &= E(\wideparen{\ready_{m\dots}} \concat \wideparen{\ready_{\dots m}} \concat \mathbf{W}^Q, \srmap(\mathbf{W}^!))
+  \mathbf{W}^* &\equiv \mathbf{W}^! \frown Q(\mathbf{q}, \accumulatedcup \cup\;\srmap(\mathbf{W}^!)) \\
+  \quad\where \mathbf{q} &= E(\wideparen{\ready_{m\dots}} \concat \wideparen{\ready_{\dots m}} \concat \mathbf{W}^Q, \srmap(\mathbf{W}^!))
 \end{align}
 
 \subsection{Execution}
@@ -127,7 +127,7 @@ Our formalisms begin by defining $\partialstate$ as a characterization (\ie valu
   \end{aligned}\right)
 \end{equation}
 
-We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $m$ of $\mathsf{W}_T = 128$ octets, together with the service index of the sender $s$, the service index of the receiver $d$, the amount of tokens to be transferred $a$ and the gas limit $g$ for the transfer. Formally:
+We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $m$ of $\mathsf{W}_T = 128$ octets, together with the service index of the sender $s$, the service index of the receiver $d$, the balance to be transferred $a$ and the gas limit $g$ for the transfer. Formally:
 \begin{align}
   \defxfer \equiv \ltuple\isa{s}{\N_S}\ts\isa{d}{\N_S}\ts\isa{a}{\N_B}\ts\isa{m}{\Y_{\mathsf{W}_T}}\ts\isa{g}{\N_G}\rtuple
 \end{align}
