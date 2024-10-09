@@ -100,7 +100,8 @@ Finally, we define the mapping function $\srmap$ which builds a dictionary of wo
 We may now define the sequence of accumulatable work-reports in this block as $\mathbf{W}^*$:
 \begin{align}
   \using m &= \mathbf{H}_t \bmod \mathsf{E}\\
-  \mathbf{W}^* &\equiv \mathbf{W}^! \frown Q(\wideparen{\ready_{m\dots}} \concat \wideparen{\ready_{\dots m}} \concat \mathbf{W}^Q, \accumulatedcup)
+  \mathbf{W}^* &\equiv \mathbf{W}^! \frown Q(q, \accumulatedcup \cup\;\srmap(\mathbf{W}^!)) \\
+  \quad\where q &= E(\wideparen{\ready_{m\dots}} \concat \wideparen{\ready_{\dots m}} \concat \mathbf{W}^Q, \srmap(\mathbf{W}^!))
 \end{align}
 
 \subsection{Execution}
