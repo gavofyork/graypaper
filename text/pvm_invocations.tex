@@ -411,9 +411,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \left\{ (s \mapsto g) \ \where \se_4(s) \concat \se_8(g) = \mathbf{d}_{o+12i\dots+12} \mid i \in \N_n \right\} &\when \mathbb{Z}_{o \dots+ 12n} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    (\registers'_7, \mathbf{x}'_p) &= \begin{cases}
+    (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{x}) &= \begin{cases}
       (\mathtt{OK}, \tuple{m, a, v, \mathbf{g}}) &\when \mathbf{g} \ne \error \\
-      (\mathtt{OOB}, \mathbf{x}_p) &\otherwise
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{x}) &\otherwise
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -427,10 +427,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \left[\memory_{o + 32i \dots+ 32} \mid i \orderedin \N_\mathsf{Q}\right] &\when \mathbb{Z}_{o \dots+ 32\mathsf{Q}} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    (\registers'_7, \mathbf{x}') &= \begin{cases}
-      (\mathtt{OK}, \mathbf{x} \exc \mathbf{x}'_\mathbf{c}[\registers_7] = \mathbf{c}) &\when \registers_7 < \mathsf{C} \wedge \mathbf{c} \ne \error \\
-      (\mathtt{OOB}, \mathbf{x}) &\when \mathbf{c} = \error \\
-      (\mathtt{CORE}, \mathbf{x}) &\otherwise \\
+    (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{q}[\registers_7]) &= \begin{cases}
+      (\mathtt{OK}, \mathbf{c}) &\when \registers_7 < \mathsf{C} \wedge \mathbf{c} \ne \error \\
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\when \mathbf{c} = \error \\
+      (\mathtt{CORE}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -440,13 +440,13 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   $\begin{aligned}
     \using o &= \registers_7 \\
-    \using \mathbf{v} &= \begin{cases}
+    \using \mathbf{i} &= \begin{cases}
       \left[\memory_{o + 336i \dots+ 336} \mid i \orderedin \N_\mathsf{V}\right] &\when \mathbb{Z}_{o \dots+ 336\mathsf{V}} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    (\registers'_7, \mathbf{x}') &= \begin{cases}
-      (\mathtt{OK}, \mathbf{x} \exc \mathbf{x}'_\mathbf{v} = \mathbf{v}) &\when \mathbf{v} \ne \error \\
-      (\mathtt{OOB}, \mathbf{x}) &\otherwise
+    (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{i}) &= \begin{cases}
+      (\mathtt{OK}, \mathbf{i}) &\when \mathbf{v} \ne \error \\
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{i}) &\otherwise
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
