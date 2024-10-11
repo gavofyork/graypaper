@@ -27,6 +27,7 @@ Inner \textsc{pvm} invocations have their own set of result codes:
   \item[$\mathtt{PANIC} = 1$] The invocation completed with a panic.
   \item[$\mathtt{FAULT} = 2$] The invocation completed with a page fault.
   \item[$\mathtt{HOST} = 3$] The invocation completed with a host-call fault.
+  \item[$\mathtt{OOG} = 4$] The invocation completed by running out of gas.
 \end{description}
 
 Note return codes for a host-call-request exit are any non-zero value less than $2^{32} - 13$.
@@ -777,6 +778,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       (\mathtt{WHO}, \registers_8, \mem, \mathbf{m}) &\otherwhen n \not\in \mathbf{m} \\
       (\mathtt{HOST}, h, \mem^*, \mathbf{m}^*) &\otherwhen c = \host \times h \\
       (\mathtt{FAULT}, x, \mem^*, \mathbf{m}^*) &\otherwhen c = \fault \times x \\
+      (\mathtt{OOG}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \oog \\
       (\mathtt{PANIC}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \panic \\
       (\mathtt{HALT}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \halt \\
     \end{cases} \\
