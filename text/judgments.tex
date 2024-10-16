@@ -41,7 +41,7 @@ The disputes extrinsic, $\xtdisputes$, may contain one or more verdicts $\xtverd
 The signatures of all judgments must be valid in terms of one of the two allowed validator key-sets, identified by the verdict's second term which must be either the epoch index of the prior state or one less. Formally:
 \begin{align}
   &\begin{aligned}
-    &\forall (r, a, \mathbf{j}) \in \xtverdicts, \forall (v, i, s) \in \mathbf{j} : s \in \sig{\mathbf{k}[i]_e}{\mathsf{X}_v \concat r}\\
+    &\forall (r, a, \mathbf{j}) \in \xtverdicts, \forall (v, i, s) \in \mathbf{j} : s \in \sig{\mathbf{k}[i]_E}{\mathsf{X}_v \concat r}\\
     &\quad\where \mathbf{k} = \begin{cases}
       \kappa &\when a = \displaystyle \ffrac{\tau}{\mathsf{E}}\\
       \lambda &\otherwise\\
@@ -63,7 +63,7 @@ Offender signatures must be similarly valid and reference work-reports with judg
     &k \in \mathbf{k} \,,\\
     &s \in \sig{k}{\mathsf{X}_v \concat r}\\
   \end{aligned}\right.\\
-  \nonumber\where \mathbf{k} &= \{k_e \mid k \in \lambda \cup \kappa\} \setminus \offenders
+  \nonumber\where \mathbf{k} &= \{k_E \mid k \in \lambda \cup \kappa\} \setminus \offenders
 \end{align}
 
 Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
