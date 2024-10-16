@@ -47,6 +47,7 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
     (\mathbf{p}, \imath, \gascounter, \registers, \mem) &\mapsto \begin{cases}
       \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
       (\oog, \imath', \gascounter', \registers', \mem') &\when \gascounter' < 0\\
+      (\varepsilon, 0, \gascounter', \registers', \mem') &\when \varepsilon \in \{ \panic, \halt \}\\
       (\varepsilon, \imath', \gascounter', \registers', \mem') &\otherwise
     \end{cases} \\
     \where (\varepsilon, \imath', \gascounter', \registers', \mem') &= \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem)\\

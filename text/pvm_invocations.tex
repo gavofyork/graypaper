@@ -27,6 +27,7 @@ Inner \textsc{pvm} invocations have their own set of result codes:
   \item[$\mathtt{PANIC} = 1$] The invocation completed with a panic.
   \item[$\mathtt{FAULT} = 2$] The invocation completed with a page fault.
   \item[$\mathtt{HOST} = 3$] The invocation completed with a host-call fault.
+  \item[$\mathtt{OOG} = 4$] The invocation completed by running out of gas.
 \end{description}
 
 Note return codes for a host-call-request exit are any non-zero value less than $2^{32} - 13$.
@@ -130,8 +131,8 @@ We define $\Psi_A$, the Accumulation invocation function as:
     &\to
     \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G} \\
     (\mathbf{u}, s, g, \mathbf{o}) &\mapsto \begin{cases}
-      \tup{I(\mathbb{u}, s)_\mathbf{u}, [], \none, 0} &\when \mathbf{d}[s]_\mathbf{c} = \none \\
-      C(\Psi_M(\mathbf{d}[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, \tup{I(\mathbb{u}, s), I(\mathbb{u}, s)})) &\otherwise
+      \tup{I(\mathbf{u}, s)_\mathbf{u}, [], \none, 0} &\when \mathbf{d}[s]_\mathbf{c} = \none \\
+      C(\Psi_M(\mathbf{d}[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, \tup{I(\mathbf{u}, s), I(\mathbf{u}, s)})) &\otherwise
     \end{cases} \\
   \end{aligned}\right.
 \end{equation}
@@ -140,7 +141,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
   I(\mathbf{u} \in \mathbb{U}, s \in \N_S) &\equiv \tup{
     \is{\mathbf{d}}{\mathbf{d} \setminus \{ s \}},
     s,
-    \is{\mathbf{u}}{\tuple{\is{\mathbf{d}}{\{s \mapsto \mathbf{d}[s]\}}, \is{\mathbf{x}}{\mathbf{o}_\mathbf{x}}, \is{\mathbf{i}}{\mathbf{o}_\mathbf{i}}, \is{\mathbf{q}}{\mathbf{o}_\mathbf{q}}}},
+    \is{\mathbf{u}}{\tuple{\is{\mathbf{d}}{\{s \mapsto \mathbf{d}[s]\}}, \is{\mathbf{x}}{\mathbf{u}_\mathbf{x}}, \is{\mathbf{i}}{\mathbf{u}_\mathbf{i}}, \is{\mathbf{q}}{\mathbf{u}_\mathbf{q}}}},
     i,
     \is{\mathbf{t}}{[]}
   }\\
@@ -194,7 +195,7 @@ The initializer function $I$ maps some service account $\mathbf{s}$ along with i
 Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\eta_0$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
 \begin{equation}
   \text{check}(i \in \N_S) \equiv \begin{cases}
-    i &\when i \not\in \keys{\mathbf{o}_\mathbf{d}} \\
+    i &\when i \not\in \keys{\mathbf{u}_\mathbf{d}} \\
     \text{check}((i - 2^8 + 1) \bmod (2^{32}-2^9) + 2^8)&\otherwise
   \end{cases}
 \end{equation}
@@ -411,9 +412,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \left\{ (s \mapsto g) \ \where \se_4(s) \concat \se_8(g) = \mathbf{d}_{o+12i\dots+12} \mid i \in \N_n \right\} &\when \mathbb{Z}_{o \dots+ 12n} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    (\registers'_7, \mathbf{x}'_p) &= \begin{cases}
+    (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{x}) &= \begin{cases}
       (\mathtt{OK}, \tuple{m, a, v, \mathbf{g}}) &\when \mathbf{g} \ne \error \\
-      (\mathtt{OOB}, \mathbf{x}_p) &\otherwise
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{x}) &\otherwise
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -427,10 +428,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \left[\memory_{o + 32i \dots+ 32} \mid i \orderedin \N_\mathsf{Q}\right] &\when \mathbb{Z}_{o \dots+ 32\mathsf{Q}} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    (\registers'_7, \mathbf{x}') &= \begin{cases}
-      (\mathtt{OK}, \mathbf{x} \exc \mathbf{x}'_\mathbf{c}[\registers_7] = \mathbf{c}) &\when \registers_7 < \mathsf{C} \wedge \mathbf{c} \ne \error \\
-      (\mathtt{OOB}, \mathbf{x}) &\when \mathbf{c} = \error \\
-      (\mathtt{CORE}, \mathbf{x}) &\otherwise \\
+    (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{q}[\registers_7]) &= \begin{cases}
+      (\mathtt{OK}, \mathbf{c}) &\when \registers_7 < \mathsf{C} \wedge \mathbf{c} \ne \error \\
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\when \mathbf{c} = \error \\
+      (\mathtt{CORE}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -440,13 +441,13 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   $\begin{aligned}
     \using o &= \registers_7 \\
-    \using \mathbf{v} &= \begin{cases}
+    \using \mathbf{i} &= \begin{cases}
       \left[\memory_{o + 336i \dots+ 336} \mid i \orderedin \N_\mathsf{V}\right] &\when \mathbb{Z}_{o \dots+ 336\mathsf{V}} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    (\registers'_7, \mathbf{x}') &= \begin{cases}
-      (\mathtt{OK}, \mathbf{x} \exc \mathbf{x}'_\mathbf{v} = \mathbf{v}) &\when \mathbf{v} \ne \error \\
-      (\mathtt{OOB}, \mathbf{x}) &\otherwise
+    (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{i}) &= \begin{cases}
+      (\mathtt{OK}, \mathbf{i}) &\when \mathbf{v} \ne \error \\
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{i}) &\otherwise
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -777,6 +778,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       (\mathtt{WHO}, \registers_8, \mem, \mathbf{m}) &\otherwhen n \not\in \mathbf{m} \\
       (\mathtt{HOST}, h, \mem^*, \mathbf{m}^*) &\otherwhen c = \host \times h \\
       (\mathtt{FAULT}, x, \mem^*, \mathbf{m}^*) &\otherwhen c = \fault \times x \\
+      (\mathtt{OOG}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \oog \\
       (\mathtt{PANIC}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \panic \\
       (\mathtt{HALT}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \halt \\
     \end{cases} \\
