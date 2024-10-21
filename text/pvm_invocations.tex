@@ -645,11 +645,9 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \memory_{b_o + i} & \otherwise
     \end{cases} \\
     \registers'_7 &\equiv \begin{cases}
-      \begin{rcases}
-        |\mathbf{v}| & \when \mathbf{v} \ne \none \\
-        \mathtt{NONE} &\otherwise \\
-      \end{rcases} &\when k \ne \error \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\memory} \\
-      \mathtt{OOB} &\otherwise
+      \mathtt{OOB} &\when h = \error \vee \mathbb{Z}_{b_o \dots+ b_z} \not\subset \mathbb{V}^*_{\memory} \\
+      \mathtt{NONE} &\otherwhen \mathbf{v} = \none \\
+      |\mathbf{v}| &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
