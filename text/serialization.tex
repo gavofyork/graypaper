@@ -118,6 +118,13 @@ In general, dictionaries are placed in the Merkle trie directly (see appendix \r
 %  \forall K, V: \se_D(d \in \dict{K}{V}) \equiv r \suchthat k \in \keys{d} \Leftrightarrow \se(k) \in \keys{r} \wedge \forall k \in \keys{d} : r[\se(k)] = \se(d[k])
 %\end{equation}
 
+\subsubsection{Set Encoding}
+Sets are encoded in a manner similar to dictionaries, but without the value parts. We encode a set as a sequence of its encoded elements, ordered to ensure a unique representation. Formally:
+
+\begin{equation}
+  \se(s \in \mathbb{S}) \equiv \se(\var{\orderby{x}{\se(x) \mid x \in s}})
+\end{equation}
+
 \subsection{Block Serialization}
 
 A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\se_U$. Formally:
