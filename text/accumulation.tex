@@ -77,13 +77,13 @@ We define the queue-editing function $E$, which is essentially a mutator functio
   \end{aligned}\right.
 \end{equation}
 
-We further define the accumulation priority queue function $Q$, which provides the sequence of work-reports which are accumulatable given the work-reports which have hitherto been accumulated and a set of not-yet-accumulated work-reports and their dependencies.
+We further define the accumulation priority queue function $Q$, which provides the sequence of work-reports which are accumulatable given a set of not-yet-accumulated work-reports and their dependencies.
 \begin{equation}
   Q\colon\left\{\begin{aligned}
-    &(\seq{(\mathbb{W}, \{\H\})}, \dict{\H}{\H}) \to \seq{\mathbb{W}} \\
-    &(\mathbf{r}, \mathbf{a}) \mapsto \begin{cases}
-      [] &\when \mathbf{g} = \{\} \\
-      \mathbf{g} \frown Q(E(\mathbf{r}, \srmap(\mathbf{g})), \mathbf{a} \cup \srmap(\mathbf{g}))\!\!\!\! &\otherwise \\
+    &\seq{(\mathbb{W}, \{\H\})} \to \seq{\mathbb{W}} \\
+    &\mathbf{r} \mapsto \begin{cases}
+      [] &\when \mathbf{g} = [] \\
+      \mathbf{g} \frown Q(E(\mathbf{r}, \srmap(\mathbf{g})))\!\!\!\! &\otherwise \\
       \multicolumn{2}{l}{\,\where \mathbf{g} = [w \mid (w, \{\}) \orderedin \mathbf{r}]}
     \end{cases}
   \end{aligned}\right.
@@ -100,7 +100,7 @@ Finally, we define the mapping function $\srmap$ which builds a dictionary of wo
 We may now define the sequence of accumulatable work-reports in this block as $\mathbf{W}^*$:
 \begin{align}
   \using m &= \mathbf{H}_t \bmod \mathsf{E}\\
-  \mathbf{W}^* &\equiv \mathbf{W}^! \frown Q(\mathbf{q}, \accumulatedcup \cup\;\srmap(\mathbf{W}^!)) \\
+  \mathbf{W}^* &\equiv \mathbf{W}^! \frown Q(\mathbf{q}) \\
   \quad\where \mathbf{q} &= E(\wideparen{\ready_{m\dots}} \concat \wideparen{\ready_{\dots m}} \concat \mathbf{W}^Q, \srmap(\mathbf{W}^!))
 \end{align}
 
@@ -192,7 +192,7 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
     &\ \begin{aligned}
       g &= \subifnone(\mathbf{f}_s, 0) + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} , \mathbf{r}_s = s}\!\!\!\!(\mathbf{r}_g) \\
       \mathbf{p} &= \left[ \tup{\begin{alignedat}{3}
-        \is{o&}{\mathbf{r}_o}\ts\is{&l&}{\mathbf{r}_p}\ts\\
+        \is{o&}{\mathbf{r}_o}\ts\is{&l&}{\mathbf{r}_l}\ts\\
         \is{a&}{w_o}\ts\is{&k&}{(w_s)_h}
       \end{alignedat}}
       \,\middle\vert\ 
