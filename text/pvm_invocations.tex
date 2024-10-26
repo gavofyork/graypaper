@@ -45,7 +45,7 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
     (\N, \N_G, \regs, \ram) &\to (\Z_G, \regs, \ram)\\
     (n, \gascounter, \registers, \memory) &\mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
-      (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
+      (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \registers_9, \dots], \memory) &\otherwise
     \end{cases}
   \end{aligned}
   \right.
@@ -96,7 +96,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_O(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{poke}\\
       \Omega_K(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{invoke}\\
       \Omega_X(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{expunge}\\
-      (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
+      (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \registers_9, \dots], \memory) &\otherwise
     \end{cases}
   \end{aligned}
   \right.
@@ -162,7 +162,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_Q(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{quit} \\
     \Omega_S(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{solicit} \\
     \Omega_F(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{forget} \\
-    (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{x}) &\otherwise\\
+    (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \registers_9, \dots], \memory, \mathbf{x}) &\otherwise\\
     \quad \where \mathbf{d} = (\mathbf{x}_\mathbf{u})_\mathbf{d}\cup\mathbf{x}_\mathbf{d}\;,\ \mathbf{s} = (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!& \\
   \end{cases} \\
   G((\gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\equiv (\gascounter, \registers, \memory, (\mathbf{x}^*, \mathbf{y}))\ \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[(\mathbf{x}^*_\mathbf{u})_s] = \mathbf{s} \\
@@ -220,7 +220,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     \Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s) &\when n = \mathtt{write} \\
     \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
     \Omega_I(\gascounter, \registers, \memory, s, \mathbf{d}) &\when n = \mathtt{info} \\
-    (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{s}) &\otherwise
+    (\gascounter - 10, [\mathtt{WHAT}, \registers_8, \registers_9, \dots], \memory, \mathbf{s}) &\otherwise
   \end{cases}
 \end{align}
 
