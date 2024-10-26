@@ -282,18 +282,21 @@ We also require that we have a record of it; this is one of the few conditions w
   \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \mathcal{H}(h) = x_h
 \end{align}
 
-We require that the work-package of the report not be the work-package of some other report made in the past. Since the work-package implies the anchor block, and the anchor block is limited to the most recent blocks, we need only ensure that the work-package not appear in our recent history:
+We require that the work-package of the report not be the work-package of some other report made in the past. Since the work-package implies the anchor block, and the anchor block is limited to the most recent blocks, we need only ensure that the work-package not appear in our recent history. Formally:
 \begin{equation}
   \forall p \in \mathbf{p}, \forall x \in \beta : p \not\in x_\mathbf{p}
 \end{equation}
 
-We require that the prerequisite work-package, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history:
-\begin{equation}\begin{aligned}
-  &\forall w \in \mathbf{w}, \forall p \in ((w_x)_\mathbf{p} \cup \keys{w_\mathbf{l}}) :\\
-  &\quad p \in \mathbf{p} \cup \{ x \mid x \in b_\mathbf{p} ,\, b \in \beta \}
-\end{aligned}\end{equation}
+We require that the set of prerequisite work-packages be disjoint with the set of work-packages mentioned in the segment-root lookup. We also require that the prerequisite work-package, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history.
+\begin{align}
+  &\forall w \in \mathbf{w} : (w_x)_\mathbf{p} \disjoint \keys{w_\mathbf{l}}\\
+  &\begin{aligned}
+    &\forall w \in \mathbf{w}, \forall p \in ((w_x)_\mathbf{p} \cup \keys{w_\mathbf{l}}) :\\
+    &\quad p \in \mathbf{p} \cup \{ x \mid x \in b_\mathbf{p} ,\, b \in \beta \}
+  \end{aligned}
+\end{align}
 
-We require that all work results within the extrinsic predicted the correct code hash for their corresponding service:
+Finally, we require that all work results within the extrinsic predicted the correct code hash for their corresponding service:
 \begin{align}\label{eq:reportcodesarecorrect}
   \forall w \in \mathbf{w}, \forall r \in w_r : r_c = \delta[r_s]_c
 \end{align}
