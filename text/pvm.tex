@@ -624,7 +624,7 @@ We use both values of instruction-counter for the definition of $\Psi_H$ since i
 \subsection{Standard Program Initialization}\label{sec:standardprograminit}
 The software programs which will run in each of the four instances where the \textsc{pvm} is utilized in the main document have a very typical setup pattern characteristic of an output of a compiler and linker. This means sections for program-specific read-only data, read-write (heap) data and the stack. An adjunct to this, very typical of our usage patterns is an extra read-only segment via which invocation-specific data may be passed (\ie arguments). It thus makes sense to define this properly in a single initializer function.
 
-We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} and registers at program start. Given some $\mathbf{p}$ which is appropriately encoded together with some argument data $\mathbf{a}$, we can define program code $\mathbf{c}$, registers $\registers$ and \textsc{ram} $\mem$ through the standard initialization decoder function $Y$:
+We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} at program start. Given some $\mathbf{p}$ which is appropriately encoded together with some argument data $\mathbf{a}$, we can define program code $\mathbf{c}$, registers $\registers$ and \textsc{ram} $\mem$ through the standard initialization decoder function $Y$:
 \begin{equation}
 Y\colon\left\{\begin{aligned}
   \Y &\to (\Y, \regs, \ram)? \\

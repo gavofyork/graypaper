@@ -234,8 +234,8 @@ We define the final state of the ready queue and the accumulated map by integrat
   \accumulated'_{\mathsf{E} - 1} &= \srmap(\mathbf{W}^*_{\dots n}) \\
   \forall i \in \N_\mathsf{E - 1}: \accumulated'_{i} &\equiv \accumulated_{i + 1} \\
   \forall i \in \N_\mathsf{E} : \ready'^\circlearrowleft_{m - i} &\equiv \begin{cases}
-    E(\mathbf{W}^Q, \mathbf{W}^*_{\dots n}) &\when i = 0 \\
+    E(\mathbf{W}^Q, \accumulated'_{\mathsf{E} - 1}) &\when i = 0 \\
     [] &\when 1 \le i < \tau' - \tau \\
-    E(\ready^\circlearrowleft_{m - i}, \mathbf{W}^*_{\dots n}) &\when i \ge \tau' - \tau
+    E(\ready^\circlearrowleft_{m - i}, \accumulated'_{\mathsf{E} - 1}) &\when i \ge \tau' - \tau
   \end{cases}
 \end{align}
