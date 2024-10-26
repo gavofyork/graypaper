@@ -38,17 +38,17 @@ A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-packag
 
 % TODO: places where w \in \mathbb{W} : w_o should be replaced with w_\mathbf{o} and w_r with w_\mathbf{r}
 
-We limit the number of items in the segment-root lookup dictionary to 8, and the total serialized size of a work-report may be no greater than $\mathsf{W}_R$ bytes:
+We limit the number of (unique) items in the segment-root lookup dictionary to 8, and the total serialized size of a work-report may be no greater than $\mathsf{W}_R$ bytes:
 \begin{equation}
-  \forall w \in \mathbb{W} : |w_\wr¬srlookup| \le 8\ \wedge\ |\se(w)| \leq \mathsf{W}_R
+  \forall w \in \mathbb{W} : |\keys{w_\wr¬srlookup} \cup (w_x)_\mathbf{p}| \le 8\ \wedge\ |\se(w)| \leq \mathsf{W}_R
 \end{equation}
 
 \subsubsection{Refinement Context}
-A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $a$ along with its associated posterior state-root $s$ and posterior \textsc{Beefy} root $b$; and the \emph{lookup-anchor}, header hash $l$ and of timeslot $t$. Finally, it identifies the hash of an optional prerequisite work-package $p$. Formally:
+A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $a$ along with its associated posterior state-root $s$ and posterior \textsc{Beefy} root $b$; and the \emph{lookup-anchor}, header hash $l$ and of timeslot $t$. Finally, it identifies the hash of any prerequisite work-packages $\mathbf{p}$. Formally:
 \begin{equation}
   \mathbb{X} \equiv \ltuple\,\begin{alignedat}{7}
     \isa{a&}{\H}\ts\quad \isa{&s&}{\H}\ts\quad \isa{&b}{\H}\ts\\
-    \isa{l&}{\H}\ts\quad \isa{&t&}{\N_T}\ts\quad \isa{&p}{\H\bm{?}}
+    \isa{l&}{\H}\ts\quad \isa{&t&}{\N_T}\ts\quad \isa{&\mathbf{p}}{\{\H\}}
   \end{alignedat}\rtuple
 \end{equation}
 
@@ -287,10 +287,10 @@ We require that the work-package of the report not be the work-package of some o
   \forall p \in \mathbf{p}, \forall x \in \beta : p \not\in x_\mathbf{p}
 \end{equation}
 
-We require that the prerequisite work-package, if present, be either in the extrinsic or in our recent history:
+We require that the prerequisite work-package, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history:
 \begin{equation}\begin{aligned}
-  &\forall w \in \mathbf{w}, (w_x)_p \ne \none :\\
-  &\quad(w_x)_p \in \mathbf{p} \cup \{ x \mid x \in b_\mathbf{p} ,\, b \in \beta \}
+  &\forall w \in \mathbf{w}, \forall p \in ((w_x)_\mathbf{p} \cup \keys{w_\mathbf{l}}) :\\
+  &\quad p \in \mathbf{p} \cup \{ x \mid x \in b_\mathbf{p} ,\, b \in \beta \}
 \end{aligned}\end{equation}
 
 We require that all work results within the extrinsic predicted the correct code hash for their corresponding service:
