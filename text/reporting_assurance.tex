@@ -40,7 +40,7 @@ A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-packag
 
 We limit the number of (unique) items in the segment-root lookup dictionary to 8, and the total serialized size of a work-report may be no greater than $\mathsf{W}_R$ bytes:
 \begin{equation}
-  \forall w \in \mathbb{W} : |\keys{w_\wr¬srlookup} \cup (w_x)_\mathbf{p}| \le 8\ \wedge\ |\se(w)| \leq \mathsf{W}_R
+  \forall w \in \mathbb{W} : |\keys{w_\wr¬srlookup}| + |(w_x)_\mathbf{p}| \le 8\ \wedge\ |\se(w)| \leq \mathsf{W}_R
 \end{equation}
 
 \subsubsection{Refinement Context}
@@ -287,9 +287,8 @@ We require that the work-package of the report not be the work-package of some o
   \forall p \in \mathbf{p}, \forall x \in \beta : p \not\in \keys{x_\mathbf{p}}
 \end{equation}
 
-We require that the set of prerequisite work-packages be disjoint with the set of work-packages mentioned in the segment-root lookup. We also require that the prerequisite work-package, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history.
+We require that the prerequisite work-package, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history.
 \begin{align}
-  &\forall w \in \mathbf{w} : (w_x)_\mathbf{p} \disjoint \keys{w_\mathbf{l}}\\
   &\begin{aligned}
     &\forall w \in \mathbf{w}, \forall p \in (w_x)_\mathbf{p} \cup \keys{w_\mathbf{l}} :\\
     &\quad p \in \mathbf{p} \cup \{ x \mid x \in \keys{b_\mathbf{p}} ,\, b \in \beta \}
