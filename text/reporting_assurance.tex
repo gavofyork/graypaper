@@ -284,7 +284,7 @@ We also require that we have a record of it; this is one of the few conditions w
 
 We require that the work-package of the report not be the work-package of some other report made in the past. Since the work-package implies the anchor block, and the anchor block is limited to the most recent blocks, we need only ensure that the work-package not appear in our recent history. Formally:
 \begin{equation}
-  \forall p \in \mathbf{p}, \forall x \in \beta : p \not\in x_\mathbf{p}
+  \forall p \in \mathbf{p}, \forall x \in \beta : p \not\in \keys{x_\mathbf{p}}
 \end{equation}
 
 We require that the set of prerequisite work-packages be disjoint with the set of work-packages mentioned in the segment-root lookup. We also require that the prerequisite work-package, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history.
@@ -292,9 +292,17 @@ We require that the set of prerequisite work-packages be disjoint with the set o
   &\forall w \in \mathbf{w} : (w_x)_\mathbf{p} \disjoint \keys{w_\mathbf{l}}\\
   &\begin{aligned}
     &\forall w \in \mathbf{w}, \forall p \in (w_x)_\mathbf{p} \cup \keys{w_\mathbf{l}} :\\
-    &\quad p \in \mathbf{p} \cup \{ x \mid x \in b_\mathbf{p} ,\, b \in \beta \}
+    &\quad p \in \mathbf{p} \cup \{ x \mid x \in \keys{b_\mathbf{p}} ,\, b \in \beta \}
   \end{aligned}
 \end{align}
+
+We require that any segment roots mentioned in the segment-root lookup be verified as correct based on our recent work-package history and the present block:
+\begin{align}
+  &\using \mathbf{p} = \{ ((g_w)_s)_h \mapsto ((g_w)_s)_e \mid g \in \xtguarantees \} \\
+  &\forall w \in \mathbf{w}: w_\mathbf{l} \subset \mathbf{p} \cup \bigcup_{b \in \beta} b_\mathbf{p}
+\end{align}
+
+(Note that these checks leave open the possibility of accepting work-reports in apparent dependency loops. We do not consider this a problem: the pre-accumulation stage effectively guarantees that accumulation never happens in these cases and the reports are simply ignored.)
 
 Finally, we require that all work results within the extrinsic predicted the correct code hash for their corresponding service:
 \begin{align}\label{eq:reportcodesarecorrect}
