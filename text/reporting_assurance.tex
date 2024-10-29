@@ -279,7 +279,7 @@ We require that each lookup-anchor block be within the last $\mathsf{L}$ timeslo
 
 We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\mathsf{L}$ headers as the ancestor set $\mathbf{A}$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
 \begin{align}
-  \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \mathcal{H}(h) = x_h
+  \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \mathcal{H}(h) = x_l
 \end{align}
 
 We require that the work-package of the report not be the work-package of some other report made in the past. Since the work-package implies the anchor block, and the anchor block is limited to the most recent blocks, we need only ensure that the work-package not appear in our recent history. Formally:
