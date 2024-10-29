@@ -38,9 +38,9 @@ A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-packag
 
 % TODO: places where w \in \mathbb{W} : w_o should be replaced with w_\mathbf{o} and w_r with w_\mathbf{r}
 
-We limit the number of (unique) items in the segment-root lookup dictionary to 8, and the total serialized size of a work-report may be no greater than $\mathsf{W}_R$ bytes:
+We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\mathsf{J} = 8$, and the total serialized size of a work-report may be no greater than $\mathsf{W}_R$ bytes:
 \begin{equation}
-  \forall w \in \mathbb{W} : |\keys{w_\wr¬srlookup}| + |(w_x)_\mathbf{p}| \le 8\ \wedge\ |\se(w)| \leq \mathsf{W}_R
+  \forall w \in \mathbb{W} : |w_\wr¬srlookup| + |(w_x)_\mathbf{p}| \le \mathsf{J}\ \wedge\ |\se(w)| \leq \mathsf{W}_R
 \end{equation}
 
 \subsubsection{Refinement Context}
@@ -287,7 +287,7 @@ We require that the work-package of the report not be the work-package of some o
   \forall p \in \mathbf{p}, \forall x \in \beta : p \not\in \keys{x_\mathbf{p}}
 \end{equation}
 
-We require that the prerequisite work-package, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history.
+We require that the prerequisite work-packages, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history.
 \begin{align}
   &\begin{aligned}
     &\forall w \in \mathbf{w}, \forall p \in (w_x)_\mathbf{p} \cup \keys{w_\mathbf{l}} :\\
@@ -298,7 +298,7 @@ We require that the prerequisite work-package, if present, and any work-packages
 We require that any segment roots mentioned in the segment-root lookup be verified as correct based on our recent work-package history and the present block:
 \begin{align}
   &\using \mathbf{p} = \{ ((g_w)_s)_h \mapsto ((g_w)_s)_e \mid g \in \xtguarantees \} \\
-  &\forall w \in \mathbf{w}: w_\mathbf{l} \subset \mathbf{p} \cup \bigcup_{b \in \beta} b_\mathbf{p}
+  &\forall w \in \mathbf{w}: w_\mathbf{l} \subseteq \mathbf{p} \cup \bigcup_{b \in \beta} b_\mathbf{p}
 \end{align}
 
 (Note that these checks leave open the possibility of accepting work-reports in apparent dependency loops. We do not consider this a problem: the pre-accumulation stage effectively guarantees that accumulation never happens in these cases and the reports are simply ignored.)

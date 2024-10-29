@@ -39,7 +39,7 @@ We define $\delta^\dagger$ as the state after the integration of the preimages:
 
 \subsection{History and Queuing}
 
-Accumulation of a work-package/work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what has been accumulated. This history, $\accumulated$, is sufficiently large for an epoch worth of work-reports. For all such reports, we also retain their segment-root in order that we may validate any guarantor-proscribed segment-roots in work-reports prior to accumulation. Formally:
+Accumulation of a work-package/work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what has been accumulated. This history, $\accumulated$, is sufficiently large for an epoch worth of work-reports. Formally:
 \begin{align}
   \accumulated &\in \seq{\{\H\}}_\mathsf{E} \\
   \accumulatedcup &\equiv \bigcup_{x \in \accumulated}(x)
@@ -52,16 +52,16 @@ We also maintain knowledge of ready (\ie available and/or audited) but not-yet-a
 
 The newly available work-reports, $\mathbf{W}$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\mathbf{W}^!$, are accumulated immediately. Those not, $\mathbf{W}^Q$, are for queued execution. Formally:
 \begin{align}
-  \mathbf{W}^! &\equiv [ w \mid w \orderedin \mathbf{W}, (w_x)_p = \none \wedge w_\wr¬srlookup = \{\} ] \\
+  \mathbf{W}^! &\equiv [ w \mid w \orderedin \mathbf{W}, (w_x)_\mathbf{p} = \none \wedge w_\wr¬srlookup = \{\} ] \\
   \mathbf{W}^Q &\equiv E(\sq{
     D(w) \mid
     w \orderedin \mathbf{W},
-    (w_x)_p \ne \none \vee w_\wr¬srlookup \ne \{\}
+    (w_x)_\mathbf{p} \ne \none \vee w_\wr¬srlookup \ne \{\}
   }, \accumulatedcup)\!\!\!\!\\
-  D(w) &\equiv (w, \{(w_x)_p\} \cup \keys{w_\wr¬srlookup})
+  D(w) &\equiv (w, \{(w_x)_\mathbf{p}\} \cup \keys{w_\wr¬srlookup})
 \end{align}
 
-We define the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by a dictionary such as the items in $\accumulated$. It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the parameter's keys, removes any dependencies which appear in said set and, crucially, removes any entries whose segment-root correspondences diverge from those in the dictionary. Formally:
+We define the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by sets of now-accumulated work-package hashes (those in $\accumulated$). It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the parameter's keys, removes any dependencies which appear in said set and, crucially, removes any entries whose segment-root correspondences diverge from those in the dictionary. Formally:
 \begin{equation}
   E\colon\left\{\begin{aligned}
       &(\seq{(\mathbb{W}, \{\H\})}, \{\H\}) \to \seq{(\mathbb{W}, \{\H\})} \\
@@ -88,7 +88,7 @@ We further define the accumulation priority queue function $Q$, which provides t
   \end{aligned}\right.
 \end{equation}
 
-Finally, we define the mapping function $\srmap$ which extracts all work-package hashes in the segment-root dictionaries of a set of work-reports:
+Finally, we define the mapping function $\srmap$ which extracts the corresponding work-package hashes from a set of work-reports:
 \begin{equation}
   \srmap\colon\left\{\begin{aligned}
     \{\mathbb{W}\} &\to \{\H\}\\
