@@ -2,10 +2,10 @@
 
 We retain in state information on the most recent $\mathsf{H}$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
 \begin{equation}
-  \beta \in \lseq\ltuple \isa{h}{\H}\ts\isa{\mathbf{b}}{\seq{\H?}}\ts\isa{s}{\H}\ts\isa{\mathbf{p}}{\lseq\H\rseq_{:\mathsf{C}}} \rtuple\rseq_{:\mathsf{H}}
+  \beta \in \lseq\ltuple \isa{h}{\H}\ts\isa{\mathbf{b}}{\seq{\H?}}\ts\isa{s}{\H}\ts\isa{\mathbf{p}}{\dict{\H}{\H}} \rtuple\rseq_{:\mathsf{H}}
 \end{equation}
 
-For each recent block, we retain its header hash, its state root, its accumulation-result \textsc{mmr} and the hash of each work-report made into it which is no more than the total number of cores, $\mathsf{C} = 341$.
+For each recent block, we retain its header hash, its state root, its accumulation-result \textsc{mmr} and the corresponding work-package hashes of each item reported (which is no more than the total number of cores, $\mathsf{C} = 341$).
 
 During the accumulation stage, a value with the partial transition of this state is provided which contains the update for the newly-known roots of the parent block:
 \begin{equation}
@@ -18,17 +18,17 @@ We define an item $n$ comprising the new block's header hash, its accumulation-r
     \label{eq:buildbeefymap}
     \using r &= \mathcal{M}_B(\orderby{s}{\se_4(s)\frown\se(h) \mid (s, h) \in \beefycommitmap}, \mathcal{H}_K) \\
     \using \mathbf{b} &= \mathcal{A}(\text{last}(\sq{\sq{}} \concat \sq{x_\mathbf{b} \mid x \orderedin \beta}), r, \mathcal{H}_K) \\
+    \using \mathbf{p} &= \{ ((g_w)_s)_h \mapsto ((g_w)_s)_e \mid g \in \xtguarantees \} \\
     \using n &= \tup{
-      \is{\mathbf{p}}{[((g_w)_s)_h \mid g \orderedin \xtguarantees]}\ts
+      \mathbf{p}\ts
       \is{h}{\mathcal{H}(\mathbf{H})}\ts\mathbf{b}\ts\is{s}{\H^0}
-      }
-    \end{aligned}
-  \end{equation}
-  
-  The state-trie root is as being the zero hash, $\H^0$ which while inaccurate at the end state of the block $\beta'$, it is nevertheless safe since $\beta'$ is not utilized except to define the next block's $\beta^\dagger$, which contains a corrected value for this.
-  
-  The final state transition is then:
-  \begin{equation}
-    \beta' \equiv {\overleftarrow{\beta^\dagger \doubleplus n}}^\mathsf{H}
-  \end{equation}
-  
+    }
+  \end{aligned}
+\end{equation}
+
+The state-trie root is as being the zero hash, $\H^0$ which while inaccurate at the end state of the block $\beta'$, it is nevertheless safe since $\beta'$ is not utilized except to define the next block's $\beta^\dagger$, which contains a corrected value for this.
+
+The final state transition is then:
+\begin{equation}
+  \beta' \equiv {\overleftarrow{\beta^\dagger \doubleplus n}}^\mathsf{H}
+\end{equation}

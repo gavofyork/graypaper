@@ -11,7 +11,7 @@ We define the state-key constructor functions $C$ as:
   C\colon\left\{\begin{aligned}
     \N_{2^8} \cup (\N_{2^8}, \N_S) \cup \tup{\N_S, \Y} &\to \H \\
     i \in \N_{2^8} &\mapsto [i, 0, 0, \dots] \\
-    (i, s \in \N_S) &\mapsto [i, n_0, n_1, n_2, n_3, 0, 0, \dots]\ \where n = \se_4(s) \\
+    (i, s \in \N_S) &\mapsto [i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots]\ \where n = \se_4(s) \\
     (s, h) &\mapsto [n_0, h_0, n_1, h_1, n_2, h_2, n_3, h_3, h_4, h_5, \dots, h_{27}]\ \where n = \se_4(s)
   \end{aligned}
   \right.
@@ -40,9 +40,9 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(14) &\mapsto \se([\var{i} \mid i \orderedin \ready]) \;, \\
     &&C(15) &\mapsto \se(\accumulated) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_l) \concat \se_4(\mathbf{a}_i) \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, h) &\mapsto \mathbf{v} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, h) &\mapsto \mathbf{p} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat (\lnot h_{4\dots})) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
+    \forall (s \mapsto \mathbf{a}) \in \delta, (k \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \frown k_{0\dots 28}) &\mapsto \mathbf{v} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \se_4(2^{32}-2) \frown h_{1\dots 29}) &\mapsto \mathbf{p} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat \mathcal{H}(h)) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
   \end{aligned}\right.
 \end{equation}
 
