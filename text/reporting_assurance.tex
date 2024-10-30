@@ -282,10 +282,12 @@ We also require that we have a record of it; this is one of the few conditions w
   \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \mathcal{H}(h) = x_l
 \end{align}
 
-We require that the work-package of the report not be the work-package of some other report made in the past. Since the work-package implies the anchor block, and the anchor block is limited to the most recent blocks, we need only ensure that the work-package not appear in our recent history. Formally:
-\begin{equation}
-  \forall p \in \mathbf{p}, \forall x \in \beta : p \not\in \keys{x_\mathbf{p}}
-\end{equation}
+We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:
+\begin{align}
+  &\using \mathbf{q} = \{(w_x)_p \mid \mathbf{q} \in \ready, w \in \keys{\mathbf{q}}\} \\
+  &\using \mathbf{a} = \{((i_w)_x)_p \mid i \in \rho, i \ne \none\}\\
+  &\forall p \in \mathbf{p}, p \not\in \bigcup_{x \in \beta}\keys{x_\mathbf{p}} \cup \bigcup_{x \in \accumulated}x \cup \mathbf{q} \cup \mathbf{a}
+\end{align}
 
 We require that the prerequisite work-packages, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history.
 \begin{align}
