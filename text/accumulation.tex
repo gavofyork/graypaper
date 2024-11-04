@@ -52,11 +52,11 @@ We also maintain knowledge of ready (\ie available and/or audited) but not-yet-a
 
 The newly available work-reports, $\mathbf{W}$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\mathbf{W}^!$, are accumulated immediately. Those not, $\mathbf{W}^Q$, are for queued execution. Formally:
 \begin{align}
-  \mathbf{W}^! &\equiv [ w \mid w \orderedin \mathbf{W}, (w_x)_\mathbf{p} = \none \wedge w_\wr¬srlookup = \{\} ] \\
+  \mathbf{W}^! &\equiv [ w \mid w \orderedin \mathbf{W}, |(w_x)_\mathbf{p}| = 0 \wedge w_\wr¬srlookup = \{\} ] \\
   \mathbf{W}^Q &\equiv E(\sq{
     D(w) \mid
     w \orderedin \mathbf{W},
-    (w_x)_\mathbf{p} \ne \none \vee w_\wr¬srlookup \ne \{\}
+    |(w_x)_\mathbf{p}| > 0 \vee w_\wr¬srlookup \ne \{\}
   }, \accumulatedcup)\!\!\!\!\\
   D(w) &\equiv (w, \{(w_x)_\mathbf{p}\} \cup \keys{w_\wr¬srlookup})
 \end{align}
