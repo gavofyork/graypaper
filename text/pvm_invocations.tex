@@ -150,8 +150,8 @@ We define $\Psi_A$, the Accumulation invocation function as:
     G(\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
     G(\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
     G(\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
-    G(\Omega_G(\gascounter, \registers, \memory), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
-    G(\Omega_I(\gascounter, \registers, \memory, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
+    \Omega_G(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
+    \Omega_I(\gascounter, \registers, \memory, \mathbf{x}_s, \mathbf{d}, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
     \Omega_E(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{empower}\\
     \Omega_A(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{assign}\\
     \Omega_D(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{designate}\\
@@ -165,7 +165,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     (\gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{x}) &\otherwise\\
     \quad \where \mathbf{d} = (\mathbf{x}_\mathbf{u})_\mathbf{d}\cup\mathbf{x}_\mathbf{d}\;,\ \mathbf{s} = (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!& \\
   \end{cases} \\
-  G((\gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\equiv (\gascounter, \registers, \memory, (\mathbf{x}^*, \mathbf{y}))\ \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[(\mathbf{x}^*_\mathbf{u})_s] = \mathbf{s} \\
+  G((\gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\equiv (\gascounter, \registers, \memory, (\mathbf{x}^*, \mathbf{y}))\ \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[\mathbf{x}^*_s] = \mathbf{s} \\
   C(g \in \N_G, \mathbf{o} \in \mathbb{Y} \cup \{\oog, \panic\}, (\mathbf{x}\in\mathbf{X}, \mathbf{y}\in\mathbf{X})) &\equiv \begin{cases}
     \tup{
       \mathbf{x}_\mathbf{u},
@@ -479,7 +479,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \using \mathbf{s} &= \mathbf{x}_\mathbf{s} \exc \mathbf{s}_b = (\mathbf{x}_\mathbf{s})_b - \mathbf{a}_t \\
     (\registers'_7, \mathbf{x}'_i, (\mathbf{x}'_\mathbf{u})_\mathbf{d}) &\equiv \begin{cases}
-      (\mathbf{x}_i, \text{check}(\text{bump}(\mathbf{x}_i)), (\mathbf{x}_\mathbf{u})_\mathbf{d} \cup \{ \mathbf{x}_i \mapsto \mathbf{a}, \mathbf{x}_s \mapsto \mathbf{s} \}, b) &\when \mathbf{a} \ne \error \wedge b \ge (\mathbf{x}_\mathbf{s})_t \\
+      (\mathbf{x}_i, \text{check}(\text{bump}(\mathbf{x}_i)), (\mathbf{x}_\mathbf{u})_\mathbf{d} \cup \{ \mathbf{x}_i \mapsto \mathbf{a}, \mathbf{x}_s \mapsto \mathbf{s} \}) &\when \mathbf{a} \ne \error \wedge \mathbf{s}_b \ge (\mathbf{x}_\mathbf{s})_t \\
       \multicolumn{2}{l}{\quad \where \text{bump}(i \in \N_S) = 2^8 + (i - 2^8 + 42) \bmod (2^{32} - 2^9)}\\
       (\mathtt{OOB}, \mathbf{x}_i, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\when c = \error \\
       (\mathtt{CASH}, \mathbf{x}_i, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwise
