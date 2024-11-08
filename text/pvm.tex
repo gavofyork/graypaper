@@ -427,30 +427,31 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \endhead
   16&\token{store\_ind\_u8}&0&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
   29&\token{store\_ind\_u16}&0&$\memwr_{\reg_B + \immed_X \dots+ 2} = \se_2(\reg_A \bmod 2^{16})$\\ \mrule
-  3&\token{store\_ind\_u32}&0&$\memwr_{\reg_B + \immed_X \dots+ 4} = \se_4(\reg_A)$\\ \mrule
+  3&\token{store\_ind\_u32}&0&$\memwr_{\reg_B + \immed_X \dots+ 4} = \se_4(\reg_A \bmod 2^{32})$\\ \mrule
+  ???&\token{store\_ind\_u64}&0&$\memwr_{\reg_B + \immed_X \dots+ 8} = \se_8(\reg_A)$\\ \mrule
   11&\token{load\_ind\_u8}&0&$\reg'_A = \memr_{\reg_B + \immed_X}$\\ \mrule
   21&\token{load\_ind\_i8}&0&$\reg'_A = \unsigned{\signedn{1}{\memr_{\reg_B + \immed_X}}}$\\ \mrule
   37&\token{load\_ind\_u16}&0&$\reg'_A = \de_2(\memr_{\reg_B + \immed_X\dots+2})$\\ \mrule
   33&\token{load\_ind\_i16}&0&$\reg'_A = \unsigned{\signedn{2}{\de_2(\memr_{\reg_B + \immed_X\dots+2})}}$\\ \mrule
-  1&\token{load\_ind\_u32}&0&$\reg'_A = \de_4(\memr_{\reg_B + \immed_X\dots+4})$\\ \mrule
-  2&\token{add\_imm}&0&$\reg'_A = (\reg_B + \immed_X) \bmod 2^{32}$\\ \mrule
-  18&\token{and\_imm}&0&$\forall i \in \N_{32} : \bits{\reg'_A}_i = \bits{\reg_B}_i \wedge \bits{\immed_X}_i$\\ \mrule
-  31&\token{xor\_imm}&0&$\forall i \in \N_{32} : \bits{\reg'_A}_i = \bits{\reg_B}_i \oplus \bits{\immed_X}_i$\\ \mrule
-  49&\token{or\_imm}&0&$\forall i \in \N_{32} : \bits{\reg'_A}_i = \bits{\reg_B}_i \vee \bits{\immed_X}_i$\\ \mrule
-  35&\token{mul\_imm}&0&$\reg'_A = (\reg_B \cdot \immed_X) \bmod 2^{32}$\\ \mrule
-  65&\token{mul\_upper\_s\_s\_imm}&0&$\reg'_A = \unsigned{\floor{(\signed{\reg_B} \cdot \signed{\immed_X}) \div 2^{32}}}$\\ \mrule
-  63&\token{mul\_upper\_u\_u\_imm}&0&$\reg'_A = \floor{(\reg_B \cdot \immed_X) \div 2^{32}}$\\ \mrule
+  ???&\token{load\_ind\_u32}&0&$\reg'_A = \de_4(\memr_{\reg_B + \immed_X\dots+4})$\\ \mrule
+  1&\token{load\_ind\_i32}&0&$\reg'_A = \unsigned{\signedn{4}{\de_4(\memr_{\reg_B + \immed_X\dots+4})}}$\\ \mrule
+  ???&\token{load\_ind\_u64}&0&$\reg'_A = \de_8(\memr_{\reg_B + \immed_X\dots+8})$\\ \mrule
+  2&\token{add\_imm\_32}&0&$\reg'_A = \sext_4((\reg_B + \immed_X) \bmod 2^{32})$\\ \mrule
+  18&\token{and\_imm}&0&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \wedge \bits{\immed_X}_i$\\ \mrule
+  31&\token{xor\_imm}&0&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \oplus \bits{\immed_X}_i$\\ \mrule
+  49&\token{or\_imm}&0&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \vee \bits{\immed_X}_i$\\ \mrule
+  35&\token{mul\_imm\_32}&0&$\reg'_A = \sext_4((\reg_B \cdot \immed_X) \bmod 2^{32})$\\ \mrule
   27&\token{set\_lt\_u\_imm}&0&$\reg'_A = \reg_B < \immed_X$\\ \mrule
   56&\token{set\_lt\_s\_imm}&0&$\reg'_A = \signed{\reg_B} < \signed{\immed_X}$\\ \mrule
-  9&\token{shlo\_l\_imm}&0&$\reg'_A = (\reg_B \cdot 2^{\immed_X \bmod 32}) \bmod 2^{32}$\\ \mrule
-  14&\token{shlo\_r\_imm}&0&$\reg'_A = \floor{\reg_B \div 2^{\immed_X \bmod 32}}$\\ \mrule
-  25&\token{shar\_r\_imm}&0&$\reg'_A = \unsigned{\floor{\signed{\reg_B} \div 2^{\immed_X \bmod 32}}}$\\ \mrule
-  40&\token{neg\_add\_imm}&0&$\reg'_A = (\immed_X + 2^{32} - \reg_B) \bmod 2^{32}$\\ \mrule
+  9&\token{shlo\_l\_imm\_32}&0&$\reg'_A = \sext_4((\reg_B \cdot 2^{\immed_X \bmod 32}) \bmod 2^{32})$\\ \mrule
+  14&\token{shlo\_r\_imm\_32}&0&$\reg'_A = \sext_4(\floor{\reg_B \bmod 2^{32} \div 2^{\immed_X \bmod 32}})$\\ \mrule
+  25&\token{shar\_r\_imm\_32}&0&$\reg'_A = \unsigned{\floor{\signedn{4}{\reg_B \bmod 2^{32} } \div 2^{\immed_X \bmod 32}}}$\\ \mrule
+  40&\token{neg\_add\_imm\_32}&0&$\reg'_A = \sext_4((\immed_X + 2^{32} - \reg_B) \bmod 2^{32})$\\ \mrule
   39&\token{set\_gt\_u\_imm}&0&$\reg'_A = \reg_B > \immed_X$\\ \mrule
   61&\token{set\_gt\_s\_imm}&0&$\reg'_A = \signed{\reg_B} > \signed{\immed_X}$\\ \mrule
-  75&\token{shlo\_l\_imm\_alt}&0&$\reg'_A = (\immed_X \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}$\\ \mrule
-  72&\token{shlo\_r\_imm\_alt}&0&$\reg'_A = \floor{\immed_X \div 2^{\reg_B \bmod 32}}$\\ \mrule
-  80&\token{shar\_r\_imm\_alt}&0&$\reg'_A = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  75&\token{shlo\_l\_imm\_alt\_32}&0&$\reg'_A = \sext_4((\immed_X \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
+  72&\token{shlo\_r\_imm\_alt\_32}&0&$\reg'_A = \sext_4(\floor{\immed_X \div 2^{\reg_B \bmod 32}})$\\ \mrule
+  80&\token{shar\_r\_imm\_alt\_32}&0&$\reg'_A = \unsigned{\floor{\signedn{4}{\immed_X} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
   85&\token{cmov\_iz\_imm}&0&$\reg'_A = \begin{cases}
     \immed_X &\when \reg_B = 0\\
     \reg_A &\otherwise
@@ -458,7 +459,17 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   86&\token{cmov\_nz\_imm}&0&$\reg'_A = \begin{cases}
     \immed_X &\when \reg_B \ne 0\\
     \reg_A &\otherwise
-  \end{cases}$\\ \bottomrule
+  \end{cases}$\\ \mrule
+  ???&\token{add\_imm\_64}&0&$\reg'_A = (\reg_B + \immed_X) \bmod 2^{64}$\\ \mrule
+  ???&\token{mul\_imm\_64}&0&$\reg'_A = (\reg_B \cdot \immed_X) \bmod 2^{64}$\\ \mrule
+  ???&\token{shlo\_l\_imm\_64}&0&$\reg'_A = \sext_8((\reg_B \cdot 2^{\immed_X \bmod 64}) \bmod 2^{64})$\\ \mrule
+  ???&\token{shlo\_r\_imm\_64}&0&$\reg'_A = \sext_8(\floor{\reg_B \div 2^{\immed_X \bmod 64}})$\\ \mrule
+  ???&\token{shar\_r\_imm\_64}&0&$\reg'_A = \unsigned{\floor{\signed{\reg_B} \div 2^{\immed_X \bmod 64}}}$\\ \mrule
+  ???&\token{neg\_add\_imm\_64}&0&$\reg'_A = (\immed_X + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
+  ???&\token{shlo\_l\_imm\_alt\_64}&0&$\reg'_A = (\immed_X \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
+  ???&\token{shlo\_r\_imm\_alt\_64}&0&$\reg'_A = \floor{\immed_X \div 2^{\reg_B \bmod 64}}$\\ \mrule
+  ???&\token{shar\_r\_imm\_alt\_64}&0&$\reg'_A = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
+  \bottomrule
 \end{longtable}
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Offset}
