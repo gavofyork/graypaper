@@ -117,9 +117,10 @@ The signature must be one whose public key is that of the validator assuring and
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
-A bit may only be set if the corresponding core has a report pending availability on it:
+A bit may only be set if the corresponding core has a report pending availability on it which has not timed out:
 \begin{align}
-  \forall a \in \xtassurances : \forall c \in \N_\mathsf{C} : a_f[c] \implies \rho^\dagger[c] \ne \none
+  &\forall a \in \xtassurances, c \in \N_\mathsf{C} :\\
+  &\quad a_f[c] \Rightarrow \rho^\dagger[c] \ne \none \wedge \mathbf{H}_t \le \rho^\dagger[c]_t + \mathsf{U}
 \end{align}
 
 \subsubsection{Available Reports}
