@@ -128,15 +128,15 @@ For any values which are sets and don't already have a defined encoding above, w
 
 A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\se_U$. Formally:
 \begin{align}
-  \se(\mathbf{B}) &= \se\,\left\lparen\;\begin{aligned}
-    &\mathbf{H},\ 
-    \var{\xttickets},\ 
-    \var{[(r, \se_4(a), [(v, \se_2(i), s) \mid (v, i, s) \orderedin \mathbf{j}]) \mid (r, a, \mathbf{j}) \orderedin \mathbf{v}]}, \var{\mathbf{c}}, \var{\mathbf{f}},\ \\
-    &\var{[\tup{s, \var{p}} \mid \tup{s, p} \orderedin \xtpreimages]},\ 
-    \var{[\tup{a, f, \se_2(v), s} \mid \tup{a, f, v, s} \orderedin \xtassurances]},\ \\
-    &\var{[\tup{w, \se_4(t), \var{a}} \mid \tup{w, t, a} \orderedin \xtguarantees]}
-  \end{aligned}\;\right\rparen \\
-  \nonumber &\quad \where \xtdisputes \equiv (\mathbf{v}, \mathbf{c}, \mathbf{f}) \\
+  \se(\mathbf{B}) &= \se\,\left\lparen
+    \mathbf{H},\ \se_T(\xttickets),\ \se_P(\xtpreimages),\ \se_G(\xtguarantees),\ \se_A(\xtassurances),\ \se_D(\xtdisputes)
+  \right\rparen \\
+  \se_T(\xttickets) &= \se(\var{\xttickets}) \\
+  \se_P(\xtpreimages) &= \se(\var{[\tup{s, \var{p}} \mid \tup{s, p} \orderedin \xtpreimages]}) \\
+  \se_G(\xtguarantees) &= \se(\var{\se_g^\#(\xtguarantees)}) \\
+  \se_g(\tup{w, t, a}) &= \se(\tup{w, \se_4(t), \var{a}}) \\
+  \se_A(\xtassurances) &= \se(\var{[\tup{a, f, \se_2(v), s} \mid \tup{a, f, v, s} \orderedin \xtassurances]}) \\
+  \se_D((\mathbf{v}, \mathbf{c}, \mathbf{f})) &= \se(\var{[(r, \se_4(a), [(v, \se_2(i), s) \mid (v, i, s) \orderedin \mathbf{j}]) \mid (r, a, \mathbf{j}) \orderedin \mathbf{v}]}, \var{\mathbf{c}}, \var{\mathbf{f}}) \\
   \se(\mathbf{H}) &= \se_U(\mathbf{H})\concat\se(\mathbf{H}_s) \\
   \se_U(\mathbf{H}) &= \se(\mathbf{H}_p,\mathbf{H}_r,\mathbf{H}_x)\concat\se_4(\mathbf{H}_t)\concat\se(\maybe{\mathbf{H}_e},\maybe{\mathbf{H}_w},\var{\mathbf{H}_o},\se_2(\mathbf{H}_i),\mathbf{H}_v)\\
   \se(x \in \mathbb{X}) &\equiv \se(x_a, x_s, x_b, x_l)\concat\se_4(x_t)\concat\se(\var{x_\mathbf{p}})\\

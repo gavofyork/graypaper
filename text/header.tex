@@ -19,10 +19,13 @@ $P$ is thus defined as being the mapping from one block header to its parent blo
 
 We only require implementations to store headers of ancestors which were authored in the previous $\mathsf{L} = $ 24 hours of any block $\mathbf{B}$ they wish to validate.
 
-The extrinsic hash is the hash of the block's extrinsic data. Given any block $\mathbf{B} = (\mathbf{H}, \mathbf{E})$, then formally:
-\begin{equation}
-  \mathbf{H}_x \in \H \,,\quad \mathbf{H}_x \equiv \mathcal{H}(\mathcal{E}(\mathbf{E}))
-\end{equation}
+The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports to individually have their inclusion proven. Given any block $\mathbf{B} = (\mathbf{H}, \mathbf{E})$, then formally:
+\begin{align}
+  \mathbf{H}_x &\in \H \ ,\quad
+  \mathbf{H}_x \equiv \mathcal{H}(\se(\mathcal{H}^\#(\mathbf{a}))) \\
+  \where \mathbf{a} &= [\se_T(\xttickets), \se_P(\xtpreimages), g, \se_A(\xtassurances), \se_D(\xtdisputes)] \\
+  \also g &= \se(\mathcal{H}^\#(\se^\#_g(\xtguarantees)))
+\end{align}
 
 A block may only be regarded as valid once the time-slot index $\mathbf{H}_t$ is in the past. It is always strictly greater than that of its parent. Formally:
 \begin{equation}
