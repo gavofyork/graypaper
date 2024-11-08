@@ -683,7 +683,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using p &= \registers_7 \\
     \using z &= \min(\registers_8, \mathsf{W}_E\mathsf{W}_S) \\
     \using \mathbf{x} &= \begin{cases}
-      \mathcal{P}_{\mathsf{W}_E\mathsf{W}_S}(\mem_{p\dots+z}) &\when \N_{p\dots+z} \in \mathbb{V}_\memory\\
+      \mathcal{P}_{\mathsf{W}_E\mathsf{W}_S}(\memr_{p\dots+z}) &\when \N_{p\dots+z} \in \mathbb{V}_\memory\\
       \error &\otherwise
     \end{cases}\\
     (\registers'_7, \mathbf{e}') &\equiv \begin{cases}
@@ -725,7 +725,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     (\registers'_7, \mem') &\equiv \begin{cases}
       (\mathtt{OOB}, \mem) &\when \mathbf{s} = \error \\
       (\mathtt{WHO}, \mem) &\when \mathbf{s} = \none \\
-      (\mathtt{OK}, \mem') \ \where \mem' = \mem \exc \mem'_{a\dots+l} = \mathbf{s} &\otherwise
+      (\mathtt{OK}, \mem') \ \where \mem' = \mem \exc \memwr_{a\dots+l} = \mathbf{s} &\otherwise
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -760,7 +760,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \error &\otherwise\\
     \end{cases} \\
     \using \mathbf{s} &= \begin{cases}
-      \mem_{a\dots+l} &\when \N_{a\dots+l} \in \mathbb{V}_\mathbf{u}\\
+      \memr_{a\dots+l} &\when \N_{a\dots+l} \in \mathbb{V}_\mathbf{u}\\
       \error &\otherwise
     \end{cases}\\
     \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
@@ -800,7 +800,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $\begin{aligned}
     \using [n, o] &= \registers_{7, 8} \\
     \using (g, \mathbf{w}) &= \begin{cases}
-      (\de_8(\mem_{o\dots+8}), [\de_4(\mem_{o+8+4x\dots+4}) \mid x \orderedin \N_{13}]) &\when \N_{o \dots+ 60} \subset \mathbb{V}^*_{\mem} \\
+      (\de_8(\memr_{o\dots+8}), [\de_4(\memr_{o+8+4x\dots+4}) \mid x \orderedin \N_{13}]) &\when \N_{o \dots+ 60} \subset \mathbb{V}^*_{\mem} \\
       (\error, \error) &\otherwise
     \end{cases} \\
     \using (c, i', g', \mathbf{w}', \mathbf{u}') &= \Psi(\mathbf{m}[n]_\mathbf{p}, \mathbf{m}[n]_i, g, \mathbf{w}, \mathbf{m}[n]_\mathbf{u})\\

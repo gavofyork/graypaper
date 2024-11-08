@@ -142,7 +142,7 @@ In general, when transitioning machine state for an instruction a number of cond
   \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \gascounter' = \gascounter - \gas,\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
 \end{equation}
 
-Where \textsc{ram} must be inspected and yet access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest address to be read which is inaccessible. More formally, let $\mathbf{a}$ be the set of indices in to which $\mem$ must be subscripted in order to calculate the result of $\Psi_1$. If $\mathbf{a} \not\subset \mathbb{V}_\mem$ then let $\varepsilon=\fault \times \text{min}(\mathbf{a} \setminus \mathbb{V}_\mem)$.
+Where \textsc{ram} must be inspected and yet access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest address to be read which is inaccessible. More formally, let $\mathbf{a}$ be the set of indices, modulo $2^{32}$, in to which $\mem$ must be subscripted in order to calculate the result of $\Psi_1$. If $\mathbf{a} \not\subset \mathbb{V}_\mem$ then let $\varepsilon=\fault \times \text{min}(\mathbf{a} \setminus \mathbb{V}_\mem)$.
 
 Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest address to be read which is inaccessible. More formally, let $\mathbf{a}$ be the set of indices in to which $\mem'$ must be subscripted in order to calculate the result of $\Psi_1$. If $\mathbf{a} \not\subset \mathbb{V}^*_\mem$ then let $\varepsilon=\fault \times \text{min}(\mathbf{a} \setminus \mathbb{V}^*_\mem)$.
 
@@ -175,9 +175,9 @@ We define signed/unsigned transitions for various octet widths:
 
 Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values. We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
 \begin{align}\label{eq:signedextension}
-  \sext_{n\in\{0, 1, 2, 3, 4\}}\colon\left\{\begin{aligned}
-    \N_{2^{8n}} &\to \N_{2^{32}}\\
-    x &\mapsto x + \ffrac{x}{2^{8n-1}}(2^{32}-2^{8n})
+  \sext_{n \in \{0, 1, 2, 3, 4\}}\colon\left\{\begin{aligned}
+    \N_{2^{8n}} &\to \N_R\\
+    x &\mapsto x + \ffrac{x}{2^{8n-1}}(2^{64}-2^{8n})
   \end{aligned}\right.
 \end{align}
 
@@ -258,9 +258,10 @@ We assume the skip length $\ell$ is well-defined:
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  62&\token{store\_imm\_u8}&0&${\mem'}^\circlearrowleft_{\immed_X} = \immed_Y \bmod 2^8 $\\ \mrule
-  79&\token{store\_imm\_u16}&0&${\mem'}^\circlearrowleft_{\immed_X\dots+2} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
-  38&\token{store\_imm\_u32}&0&${\mem'}^\circlearrowleft_{\immed_X\dots+4} = \se_4(\immed_Y)$\\
+  62&\token{store\_imm\_u8}&0&$\memwr_{\immed_X} = \immed_Y \bmod 2^8 $\\ \mrule
+  79&\token{store\_imm\_u16}&0&$\memwr_{\immed_X\dots+2} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
+  38&\token{store\_imm\_u32}&0&$\memwr_{\immed_X\dots+4} = \se_4(\immed_Y \bmod 2^{32})$\\ \mrule
+  254&\token{store\_imm\_u64}&0&$\memwr_{\immed_X\dots+8} = \se_8(\immed_Y)$\\
 \bottomrule
 \end{longtable}
 
@@ -301,8 +302,8 @@ We assume the skip length $\ell$ is well-defined:
   \endhead
   19&\token{jump\_ind}&0&$\token{djump}((\reg_A + \immed_X) \bmod 2^{32})$\\ \mrule
   4&\token{load\_imm}&0&$\reg'_A = \immed_X$\\ \mrule
-  60&\token{load\_u8}&0&$\reg'_A = \mem_{\immed_X}$\\ \mrule
-  74&\token{load\_i8}&0&$\reg'_A = \unsigned{\signedn{1}{\mem_{\immed_X}}}$\\ \mrule
+  60&\token{load\_u8}&0&$\reg'_A = \memr_{\immed_X}$\\ \mrule
+  74&\token{load\_i8}&0&$\reg'_A = \unsigned{\signedn{1}{\memr_{\immed_X}}}$\\ \mrule
   76&\token{load\_u16}&0&$\reg'_A = \de_2(\memr_{\immed_X\dots+2})$\\ \mrule
   66&\token{load\_i16}&0&$\reg'_A = \unsigned{\signedn{2}{\de_2(\memr_{\immed_X\dots+2})}}$\\ \mrule
   10&\token{load\_u32}&0&$\reg'_A = \de_4(\memr_{\immed_X\dots+4})$\\ \mrule
@@ -423,8 +424,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   16&\token{store\_ind\_u8}&0&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
   29&\token{store\_ind\_u16}&0&$\memwr_{\reg_B + \immed_X \dots+ 2} = \se_2(\reg_A \bmod 2^{16})$\\ \mrule
   3&\token{store\_ind\_u32}&0&$\memwr_{\reg_B + \immed_X \dots+ 4} = \se_4(\reg_A)$\\ \mrule
-  11&\token{load\_ind\_u8}&0&$\reg'_A = \mem_{\reg_B + \immed_X}$\\ \mrule
-  21&\token{load\_ind\_i8}&0&$\reg'_A = \unsigned{\signedn{1}{\mem_{\reg_B + \immed_X}}}$\\ \mrule
+  11&\token{load\_ind\_u8}&0&$\reg'_A = \memr_{\reg_B + \immed_X}$\\ \mrule
+  21&\token{load\_ind\_i8}&0&$\reg'_A = \unsigned{\signedn{1}{\memr_{\reg_B + \immed_X}}}$\\ \mrule
   37&\token{load\_ind\_u16}&0&$\reg'_A = \de_2(\memr_{\reg_B + \immed_X\dots+2})$\\ \mrule
   33&\token{load\_ind\_i16}&0&$\reg'_A = \unsigned{\signedn{2}{\de_2(\memr_{\reg_B + \immed_X\dots+2})}}$\\ \mrule
   1&\token{load\_ind\_u32}&0&$\reg'_A = \de_4(\memr_{\reg_B + \immed_X\dots+4})$\\ \mrule
@@ -637,13 +638,13 @@ Y\colon\left\{\begin{aligned}
 With conditions:
 \begin{align}\label{eq:conditions}
   &\using \mathcal{E}_3(|\mathbf{o}|) \concat \mathcal{E}_3(|\mathbf{w}|) \concat \mathcal{E}_2(z) \concat \mathcal{E}_3(s) \concat \mathbf{o} \concat \mathbf{w} \concat \mathcal{E}_4(|\mathbf{c}|) \concat \mathbf{c} = \mathbf{p}\\
-  &\mathsf{Z}_G = 2^{14}\ ,\quad\mathsf{Z}_Q = 2^{16}\ ,\quad\mathsf{Z}_I = 2^{24}\\
-  &\using \rnp{x \in \N} \equiv \mathsf{Z}_G\left\lceil \frac{x}{\mathsf{Z}_G} \right\rceil\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_Q\left\lceil \frac{x}{\mathsf{Z}_Q} \right\rceil\\
-  &5\mathsf{Z}_Q + Q(|\mathbf{o}|) + Q(|\mathbf{w}| + z\mathsf{Z}_G) + Q(s) + \mathsf{Z}_I \leq 2^{32}
+  &\mathsf{Z}_P = 2^{14}\ ,\quad\mathsf{Z}_Q = 2^{16}\ ,\quad\mathsf{Z}_I = 2^{24}\\
+  &\using \rnp{x \in \N} \equiv \mathsf{Z}_P\left\lceil \frac{x}{\mathsf{Z}_P} \right\rceil\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_Q\left\lceil \frac{x}{\mathsf{Z}_Q} \right\rceil\\
+  &5\mathsf{Z}_Q + Q(|\mathbf{o}|) + Q(|\mathbf{w}| + z\mathsf{Z}_P) + Q(s) + \mathsf{Z}_I \leq 2^{32}
 \end{align}
 Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\mathbf{c}$ as above and $\mem$, $\registers$ such that:
 \begin{equation}\label{eq:memlayout}
-  \forall i \in \N_R : \mem_i = \left\{\begin{alignedat}{5}
+  \forall i \in \N_R : \memr_i = \left\{\begin{alignedat}{5}
     &\tup{\is{\mathbf{V}}{\mathbf{o}_{i - \mathsf{Z}_Q}}\ts\is{\mathbf{A}}{R}} &&\ \when
         \mathsf{Z}_Q
             &\ \leq i < \ &&
@@ -659,7 +660,7 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
     &(0, W) &&\ \when
         2\mathsf{Z}_Q + \rnq{|\mathbf{o}|} + |\mathbf{w}|
             &\ \leq i < \ &&
-                2\mathsf{Z}_Q + \rnq{|\mathbf{o}|} + \rnp{|\mathbf{w}|} + z\mathsf{Z}_G\\
+                2\mathsf{Z}_Q + \rnq{|\mathbf{o}|} + \rnp{|\mathbf{w}|} + z\mathsf{Z}_P\\
     &(0, W) &&\ \when
         2^{32} - 2\mathsf{Z}_Q - \mathsf{Z}_I - \rnp{s}
             &\ \leq i < \ &&
