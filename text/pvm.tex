@@ -637,9 +637,9 @@ Y\colon\left\{\begin{aligned}
 With conditions:
 \begin{align}\label{eq:conditions}
   &\using \mathcal{E}_3(|\mathbf{o}|) \concat \mathcal{E}_3(|\mathbf{w}|) \concat \mathcal{E}_2(z) \concat \mathcal{E}_3(s) \concat \mathbf{o} \concat \mathbf{w} \concat \mathcal{E}_4(|\mathbf{c}|) \concat \mathbf{c} = \mathbf{p}\\
-  &\mathsf{Z}_P = 2^{14}\ ,\quad\mathsf{Z}_Q = 2^{16}\ ,\quad\mathsf{Z}_I = 2^{24}\\
-  &\using \rnp{x \in \N} \equiv \mathsf{Z}_P\left\lceil \frac{x}{\mathsf{Z}_P} \right\rceil\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_Q\left\lceil \frac{x}{\mathsf{Z}_Q} \right\rceil\\
-  &5\mathsf{Z}_Q + Q(|\mathbf{o}|) + Q(|\mathbf{w}| + z\mathsf{Z}_P) + Q(s) + \mathsf{Z}_I \leq 2^{32}
+  &\mathsf{Z}_G = 2^{14}\ ,\quad\mathsf{Z}_Q = 2^{16}\ ,\quad\mathsf{Z}_I = 2^{24}\\
+  &\using \rnp{x \in \N} \equiv \mathsf{Z}_G\left\lceil \frac{x}{\mathsf{Z}_G} \right\rceil\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_Q\left\lceil \frac{x}{\mathsf{Z}_Q} \right\rceil\\
+  &5\mathsf{Z}_Q + Q(|\mathbf{o}|) + Q(|\mathbf{w}| + z\mathsf{Z}_G) + Q(s) + \mathsf{Z}_I \leq 2^{32}
 \end{align}
 Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\mathbf{c}$ as above and $\mem$, $\registers$ such that:
 \begin{equation}\label{eq:memlayout}
@@ -659,7 +659,7 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
     &(0, W) &&\ \when
         2\mathsf{Z}_Q + \rnq{|\mathbf{o}|} + |\mathbf{w}|
             &\ \leq i < \ &&
-                2\mathsf{Z}_Q + \rnq{|\mathbf{o}|} + \rnp{|\mathbf{w}|} + z\mathsf{Z}_P\\
+                2\mathsf{Z}_Q + \rnq{|\mathbf{o}|} + \rnp{|\mathbf{w}|} + z\mathsf{Z}_G\\
     &(0, W) &&\ \when
         2^{32} - 2\mathsf{Z}_Q - \mathsf{Z}_I - \rnp{s}
             &\ \leq i < \ &&
