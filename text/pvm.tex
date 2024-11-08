@@ -17,14 +17,14 @@
 \newcommand*{\instrlen}{\ell}
 \newcommand*{\bitsfunc}[1]{\mathcal{B}_{#1}}
 \newcommand*{\unbitsfunc}[1]{\bitsfunc{#1}^{-1}}
-\newcommand*{\bits}[1]{\bitsn{4}{#1}}
-\newcommand*{\unbits}[1]{\unbitsn{4}{#1}}
+\newcommand*{\bits}[1]{\bitsn{8}{#1}}
+\newcommand*{\unbits}[1]{\unbitsn{8}{#1}}
 \newcommand*{\bitsn}[2]{\bitsfunc{#1}(#2)}
 \newcommand*{\unbitsn}[2]{\unbitsfunc{#1}(#2)}
 \newcommand*{\signfunc}[1]{\mathcal{Z}_{#1}}
 \newcommand*{\unsignfunc}[1]{\signfunc{#1}^{-1} }
-\newcommand*{\signed}[1]{\signedn{4}{#1}}
-\newcommand*{\unsigned}[1]{\unsignedn{4}{#1}}
+\newcommand*{\signed}[1]{\signedn{8}{#1}}
+\newcommand*{\unsigned}[1]{\unsignedn{8}{#1}}
 \newcommand*{\signedn}[2]{\signfunc{#1}(#2)}
 \newcommand*{\unsignedn}[2]{\unsignfunc{#1}(#2)}
 %\newcommand*{\signed}[1]{{{}^{\mathord{\mp}}#1}}
@@ -338,6 +338,7 @@ We assume the skip length $\ell$ is well-defined:
   26&\token{store\_imm\_ind\_u8}&0&$\memwr_{\reg_A + \immed_X} = \immed_Y \bmod 2^8$\\ \mrule
   54&\token{store\_imm\_ind\_u16}&0&$\memwr_{\reg_A + \immed_X \dots+ 2} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
   13&\token{store\_imm\_ind\_u32}&0&$\memwr_{\reg_A + \immed_X \dots+ 4} = \se_4(\immed_Y)$\\
+  ???&\token{store\_imm\_ind\_u64}&0&$\memwr_{\reg_A + \immed_X \dots+ 8} = \se_8(\immed_Y)$\\
   \bottomrule
 \end{longtable}
 
