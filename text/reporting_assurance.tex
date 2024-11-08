@@ -53,13 +53,14 @@ A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the cont
 \end{equation}
 
 \subsubsection{Availability}
-We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tuple of the work-package's hash $h$, an auditable work bundle length $l$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $u$ and a segment-root $e$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
+We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tuple of the work-package's hash $h$, an auditable work bundle length $l$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $u$, a segment-root $e$ and segment-count $n$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
 \begin{align}
   \mathbb{S} &\equiv \tuple{
     \isa{h}{\H}\ts
     \isa{l}{\N_L}\ts
     \isa{u}{\H}\ts
-    \isa{e}{\H}
+    \isa{e}{\H}\ts
+    \isa{n}{\N}
   }
 \end{align}
 
