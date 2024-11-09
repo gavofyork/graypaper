@@ -552,38 +552,64 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  8&\token{add}&0&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{32}$\\ \mrule
-  20&\token{sub}&0&$\reg'_D = (\reg_A + 2^{32} - \reg_B) \bmod 2^{32}$\\ \mrule
-  23&\token{and}&0&$\forall i \in \N_{32} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \bits{\reg_B}_i$\\ \mrule
-  28&\token{xor}&0&$\forall i \in \N_{32} : \bits{\reg'_D}_i = \bits{\reg_A}_i \oplus \bits{\reg_B}_i$\\ \mrule
-  12&\token{or}&0&$\forall i \in \N_{32} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \bits{\reg_B}_i$\\ \mrule
-  34&\token{mul}&0&$\reg'_D = (\reg_A \cdot \reg_B) \bmod 2^{32}$\\ \mrule
-  67&\token{mul\_upper\_s\_s}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \signed{\reg_B}) \div 2^{32}}}$\\ \mrule
-  57&\token{mul\_upper\_u\_u}&0&$\reg'_D = \floor{(\reg_A \cdot \reg_B) \div 2^{32}}$\\ \mrule
-  81&\token{mul\_upper\_s\_u}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \reg_B) \div 2^{32}}}$\\ \mrule
-  68&\token{div\_u}&0&$\reg'_D = \begin{cases}
-    2^{32} - 1 &\when \reg_B = 0\\
-    \floor{\reg_A \div \reg_B} &\otherwise
+  8&\token{add\_32}&0&$\reg'_D = \sext_4((\reg_A + \reg_B) \bmod 2^{32})$\\ \mrule
+  20&\token{sub\_32}&0&$\reg'_D = \sext_4((\reg_A + 2^{32} - \reg_B) \bmod 2^{32})$\\ \mrule
+  34&\token{mul\_32}&0&$\reg'_D = \sext_4((\reg_A \cdot \reg_B) \bmod 2^{32})$\\ \mrule
+  68&\token{div\_u\_32}&0&$\reg'_D = \begin{cases}
+    2^{64} - 1 &\when \reg_B = 0\\
+    \sext_4(\floor{\reg_A \div \reg_B}) &\otherwise
   \end{cases}$\\ \mrule
-  64&\token{div\_s}&0&$\reg'_D = \begin{cases}
-    2^{32} - 1 &\when \reg_B = 0\\
-    \reg_A &\when \signed{\reg_A} = -2^{31} \wedge \signed{\reg_B} = -1\\
-    \unsigned{\floor{\signed{\reg_A} \div \signed{\reg_B}}} &\otherwise
+  64&\token{div\_s\_32}&0&$\reg'_D = \begin{cases}
+    2^{64} - 1 &\when \reg_B = 0\\
+    \reg_A &\when \signedn{4}{\reg_A} = -2^{31} \wedge \signedn{4}{\reg_B} = -1\\
+    \unsigned{\floor{\signedn{4}{\reg_A} \div \signedn{4}{\reg_B}}} &\otherwise
   \end{cases}$\\ \mrule
-  73&\token{rem\_u}&0&$\reg'_D = \begin{cases}
+  73&\token{rem\_u\_32}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
     \reg_A \bmod \reg_B &\otherwise
   \end{cases}$\\ \mrule
-  70&\token{rem\_s}&0&$\reg'_D = \begin{cases}
+  70&\token{rem\_s\_32}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
     0 &\when \signed{\reg_A} = -2^{31} \wedge \signed{\reg_B} = -1\\
     \unsigned{\signed{\reg_A} \bmod \signed{\reg_B}} &\otherwise
   \end{cases}$\\ \mrule
+  55&\token{shlo\_l\_32}&0&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}$\\ \mrule
+  51&\token{shlo\_r\_32}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 32}}$\\ \mrule
+  77&\token{shar\_r\_32}&0&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+
+  ???&\token{add\_64}&0&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{64}$\\ \mrule
+  ???&\token{sub\_64}&0&$\reg'_D = (\reg_A + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
+  ???&\token{mul\_64}&0&$\reg'_D = (\reg_A \cdot \reg_B) \bmod 2^{64}$\\ \mrule
+  ???&\token{div\_u\_64}&0&$\reg'_D = \begin{cases}
+    2^{64} - 1 &\when \reg_B = 0\\
+    \floor{\reg_A \div \reg_B} &\otherwise
+  \end{cases}$\\ \mrule
+  ???&\token{div\_s\_64}&0&$\reg'_D = \begin{cases}
+    2^{64} - 1 &\when \reg_B = 0\\
+    \reg_A &\when \signed{\reg_A} = -2^{63} \wedge \signed{\reg_B} = -1\\
+    \unsigned{\floor{\signed{\reg_A} \div \signed{\reg_B}}} &\otherwise
+  \end{cases}$\\ \mrule
+  ???&\token{rem\_u\_64}&0&$\reg'_D = \begin{cases}
+    \reg_A &\when \reg_B = 0\\
+    \reg_A \bmod \reg_B &\otherwise
+  \end{cases}$\\ \mrule
+  ???&\token{rem\_s\_64}&0&$\reg'_D = \begin{cases}
+    \reg_A &\when \reg_B = 0\\
+    0 &\when \signed{\reg_A} = -2^{63} \wedge \signed{\reg_B} = -1\\
+    \unsigned{\signed{\reg_A} \bmod \signed{\reg_B}} &\otherwise
+  \end{cases}$\\ \mrule
+  ???&\token{shlo\_l\_64}&0&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
+  ???&\token{shlo\_r\_64}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 64}}$\\ \mrule
+  ???&\token{shar\_r\_64}&0&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
+
+  23&\token{and}&0&$\forall i \in \N_{32} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \bits{\reg_B}_i$\\ \mrule
+  28&\token{xor}&0&$\forall i \in \N_{32} : \bits{\reg'_D}_i = \bits{\reg_A}_i \oplus \bits{\reg_B}_i$\\ \mrule
+  12&\token{or}&0&$\forall i \in \N_{32} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \bits{\reg_B}_i$\\ \mrule
+  67&\token{mul\_upper\_s\_s}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \signed{\reg_B}) \div 2^{64}}}$\\ \mrule
+  57&\token{mul\_upper\_u\_u}&0&$\reg'_D = \floor{(\reg_A \cdot \reg_B) \div 2^{64}}$\\ \mrule
+  81&\token{mul\_upper\_s\_u}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \reg_B) \div 2^{64}}}$\\ \mrule
   36&\token{set\_lt\_u}&0&$\reg'_D = \reg_A < \reg_B$\\ \mrule
   58&\token{set\_lt\_s}&0&$\reg'_D = \signed{\reg_A} < \signed{\reg_B}$\\ \mrule
-  55&\token{shlo\_l}&0&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}$\\ \mrule
-  51&\token{shlo\_r}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 32}}$\\ \mrule
-  77&\token{shar\_r}&0&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
   83&\token{cmov\_iz}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
     \reg_D &\otherwise
