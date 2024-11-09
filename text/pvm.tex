@@ -320,11 +320,11 @@ We assume the skip length $\ell$ is well-defined:
   50&\token{jump\_ind}&0&$\token{djump}((\reg_A + \immed_X) \bmod 2^{32})$\\ \mrule
   51&\token{load\_imm}&0&$\reg'_A = \immed_X$\\ \mrule
   52&\token{load\_u8}&0&$\reg'_A = \memr_{\immed_X}$\\ \mrule
-  53&\token{load\_i8}&0&$\reg'_A = \unsigned{\signedn{1}{\memr_{\immed_X}}}$\\ \mrule
+  53&\token{load\_i8}&0&$\reg'_A = \sext_1(\memr_{\immed_X})$\\ \mrule
   54&\token{load\_u16}&0&$\reg'_A = \de_2(\memr_{\immed_X\dots+2})$\\ \mrule
-  55&\token{load\_i16}&0&$\reg'_A = \unsigned{\signedn{2}{\de_2(\memr_{\immed_X\dots+2})}}$\\ \mrule
+  55&\token{load\_i16}&0&$\reg'_A = \sext_2(\de_2(\memr_{\immed_X\dots+2}))$\\ \mrule
   56&\token{load\_u32}&0&$\reg'_A = \de_4(\memr_{\immed_X\dots+4})$\\ \mrule
-  57&\token{load\_i32}&0&$\reg'_A = \unsigned{\signedn{4}{\de_4(\memr_{\immed_X\dots+4})}}$\\ \mrule
+  57&\token{load\_i32}&0&$\reg'_A = \sext_4(\de_4(\memr_{\immed_X\dots+4}))$\\ \mrule
   58&\token{load\_u64}&0&$\reg'_A = \de_8(\memr_{\immed_X\dots+8})$\\ \mrule
   59&\token{store\_u8}&0&$\memwr_{\immed_X} = \reg_A \bmod 2^8$\\ \mrule
   60&\token{store\_u16}&0&$\memwr_{\immed_X\dots+2} = \se_2(\reg_A \bmod 2^{16})$\\ \mrule
