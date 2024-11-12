@@ -719,7 +719,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using [n, o, s, l] &= \registers_{7 \dots 11} \\
     \using \mathbf{s} &= \begin{cases}
       \none &\when n \not\in \keys{\mathbf{m}}\\
-      \mathbf{m}[n]_{\mathbf{u}_{s\dots+l}} &\when \N_{s\dots+l} \in \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \wedge \N_{o\dots+l} \in \mathbb{V}^*_\lambda \\
+      \mathbf{m}[n]_{\mathbf{u}_{s\dots+l}} &\when \N_{s\dots+l} \in \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \wedge \N_{o\dots+l} \in \mathbb{V}^*_\memory \\
       \error &\otherwise
     \end{cases}\\
     (\registers'_7, \mem') &\equiv \begin{cases}
@@ -737,13 +737,13 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using [n, s, o, l] &= \registers_{7 \dots 11} \\
     \using \mathbf{s} &= \begin{cases}
       \none &\when n \not\in \keys{\mathbf{m}} \\
-      \mem_{s\dots+l} &\when \N_{s\dots+l} \in \mathbb{V}_\mathbf{u} \wedge \N_{o\dots+l} \in \mathbb{V}^*_\memory \\
+      \mem_{s\dots+l} &\when \N_{s\dots+l} \in \mathbb{V}_\memory \wedge \N_{o\dots+l} \in \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
       \error &\otherwise
     \end{cases}\\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
       (\mathtt{OOB}, \mathbf{m}) &\when \mathbf{s} = \error \\
       (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{s} = \none \\
-      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'[n]_\mathbf{u})_{o\dots+l} = \mathbf{s} = \mathbf{u}' &\otherwise \\
+      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'[n]_\mathbf{u})_{o\dots+l} = \mathbf{s} &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
