@@ -683,7 +683,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using p &= \registers_7 \\
     \using z &= \min(\registers_8, \mathsf{W}_E\mathsf{W}_S) \\
     \using \mathbf{x} &= \begin{cases}
-      \mathcal{P}_{\mathsf{W}_E\mathsf{W}_S}(\memr_{p\dots+z}) &\when \N_{p\dots+z} \in \mathbb{V}_\memory\\
+      \mathcal{P}_{\mathsf{W}_E\mathsf{W}_S}(\memr_{p\dots+z}) &\when \N_{p\dots+z} \subseteq \mathbb{V}_\memory\\
       \error &\otherwise
     \end{cases}\\
     (\registers'_7, \mathbf{e}') &\equiv \begin{cases}
@@ -719,7 +719,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using [n, o, s, l] &= \registers_{7 \dots 11} \\
     \using \mathbf{s} &= \begin{cases}
       \none &\when n \not\in \keys{\mathbf{m}}\\
-      (\mathbf{m}[n]_\mathbf{u})_{s\dots+l} &\when \N_{s\dots+l} \in \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \wedge \N_{o\dots+l} \in \mathbb{V}^*_\memory \\
+      (\mathbf{m}[n]_\mathbf{u})_{s\dots+l} &\when \N_{s\dots+l} \subseteq \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \wedge \N_{o\dots+l} \subseteq \mathbb{V}^*_\memory \\
       \error &\otherwise
     \end{cases}\\
     (\registers'_7, \mem') &\equiv \begin{cases}
@@ -737,7 +737,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using [n, s, o, l] &= \registers_{7 \dots 11} \\
     \using \mathbf{s} &= \begin{cases}
       \none &\when n \not\in \keys{\mathbf{m}} \\
-      \memr_{s\dots+l} &\when \N_{s\dots+l} \in \mathbb{V}_\memory \wedge \N_{o\dots+l} \in \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
+      \memr_{s\dots+l} &\when \N_{s\dots+l} \subseteq \mathbb{V}_\memory \wedge \N_{o\dots+l} \subseteq \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
       \error &\otherwise
     \end{cases}\\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
