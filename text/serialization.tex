@@ -133,8 +133,7 @@ A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, 
   \right\rparen \\
   \se_T(\xttickets) &= \se(\var{\xttickets}) \\
   \se_P(\xtpreimages) &= \se(\var{[\tup{s, \var{p}} \mid \tup{s, p} \orderedin \xtpreimages]}) \\
-  \se_G(\xtguarantees) &= \se(\var{\se_g^\#(\xtguarantees)}) \\
-  \se_g(\tup{w, t, a}) &= \se(\tup{w, \se_4(t), \var{a}}) \\
+  \se_G(\xtguarantees) &= \se(\var{[\tup{w, \se_4(t), \var{a}} \mid \tup{w, t, a} \orderedin \xtguarantees]}) \\
   \se_A(\xtassurances) &= \se(\var{[\tup{a, f, \se_2(v), s} \mid \tup{a, f, v, s} \orderedin \xtassurances]}) \\
   \se_D((\mathbf{v}, \mathbf{c}, \mathbf{f})) &= \se(\var{[(r, \se_4(a), [(v, \se_2(i), s) \mid (v, i, s) \orderedin \mathbf{j}]) \mid (r, a, \mathbf{j}) \orderedin \mathbf{v}]}, \var{\mathbf{c}}, \var{\mathbf{f}}) \\
   \se(\mathbf{H}) &= \se_U(\mathbf{H})\concat\se(\mathbf{H}_s) \\

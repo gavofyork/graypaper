@@ -154,8 +154,10 @@ We note that all newly added service indices, defined in the above context as $\
 
 The single-service accumulation function, $\Delta_1$, transforms an initial state-context, sequence of work-reports and a service index into an alterations state-context, a sequence of \emph{transfers}, a possible accumulation-output and the actual \textsc{pvm} gas used. This function wrangles the work-items of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
 \begin{align}
-  &\mathbb{O} \equiv \tuple{\isa{o}{\Y \cup \mathbb{J}}, \isa{l}{\H}, \isa{k}{\H}, \isa{a}{\Y}} \\
-  &\Delta_1 \colon \left\{\;\begin{aligned}
+  &\mathbb{O} \equiv \tuple{\isa{o}{\Y \cup \mathbb{J}}, \isa{l}{\H}, \isa{k}{\H}, \isa{a}{\Y}}
+\end{align}
+\begin{align}
+    &\Delta_1 \colon \left\{\;\begin{aligned}
     &\begin{aligned}
       (\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}, \N_S) &\to \tuple{
         \begin{aligned}
@@ -227,21 +229,24 @@ We define the final state of the ready queue and the accumulated map by integrat
 
 \subsection{Preimage Integration}
 
-After accumulation, we must integrate all preimages provided in the lookup extrinsic to arrive at the posterior account state. The lookup extrinsic is a sequence of pairs of service indices and data. These pairs must be ordered and without duplicates (equation \ref{eq:preimagesareordered} requires this). The data must have been solicited by a service but not yet be provided. Formally:
+After accumulation, we must integrate all preimages provided in the lookup extrinsic to arrive at the posterior account state. The lookup extrinsic is a sequence of pairs of service indices and data. These pairs must be ordered and without duplicates (equation \ref{eq:preimagesareordered} requires this). The data must have been solicited by a service but not yet provided in the \emph{prior} state. Formally:
 \begin{align}
   \xtpreimages &\in \lseq \ltuple\N_S\ts\Y\rtuple \rseq \\
   \label{eq:preimagesareordered}\xtpreimages &= \orderuniqby{i}{i \in \xtpreimages} \\
-  \forall \tup{s\ts\mathbf{p}} \in \xtpreimages &: \left\{\ 
-    \begin{aligned}
-      &\keys{\delta[s]_\mathbf{p}}\ \not\ni\ \mathcal{H}(\mathbf{p})\ ,\\
-      &\delta[s]_\mathbf{l}[\tup{\mathcal{H}(\mathbf{p}), |\mathbf{p}|}]\ =\ []
-    \end{aligned}
-  \right.
+  R(\mathbf{d}, s, h, l) &\equiv
+  h \not\in \mathbf{d}[s]_\mathbf{p} \wedge
+    \mathbf{d}[s]_\mathbf{l}[\tup{h, l}] = []\\
+  \forall \tup{s, \mathbf{p}} &\in \xtpreimages : R(\accountspre, s, \mathcal{H}(\mathbf{p}), |\mathbf{p}|)
 \end{align}
 
-We define $\accountspostpreimage$ as the state after the integration of the preimages:
+We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
 \begin{align}
-  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{s\ts\mathbf{p}} \in \xtpreimages : \left\{\,\begin{aligned}
+  \using \mathbf{P} = \{
+    (s, \mathbf{p})
+    \mid
+      \tup{s, \mathbf{p}} \in \xtpreimages, R(\accountspostxfer, s, \mathcal{H}(\mathbf{p}), |\mathbf{p}|)
+    \}\\
+  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{s\ts\mathbf{p}} \in \mathbf{P} : \left\{\,\begin{aligned}
       \quad\accountspostpreimage[s]_\mathbf{p}[\mathcal{H}(\mathbf{p})] &= \mathbf{p} \\
       \accountspostpreimage[s]_\mathbf{l}[\mathcal{H}(\mathbf{p}), |\mathbf{p}|] &= [\tau']
     \end{aligned}\right.\!\!\!\!
