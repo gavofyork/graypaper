@@ -140,9 +140,9 @@ We further presume that a number of constant \emph{prices} stated in terms of to
 
 \subsection{The Virtual Machine and Gas}\label{sec:virtualmachineandgas}
 
-In the present work, we presume the definition of a \emph{Polka Virtual Machine} (\textsc{pvm}). This virtual machine is based around the \textsc{risc-v} instruction set architecture, specifically the \textsc{rv}\oldstylenums{32}\textsc{em} variant, and is the basis for introducing permissionless logic into our state-transition function.
+In the present work, we presume the definition of a \emph{Polka Virtual Machine} (\textsc{pvm}). This virtual machine is based around the \textsc{risc-v} instruction set architecture, specifically the \textsc{rv}\oldstylenums{64}\textsc{em} variant, and is the basis for introducing permissionless logic into our state-transition function.
 
-The \textsc{pvm} is comparable to the \textsc{evm} defined in the Yellow Paper, but somewhat simpler: the complex instructions for cryptographic operations are missing as are those which deal with environmental interactions. Overall it is far less opinionated since it alters a pre-existing general purpose design, \textsc{risc-v}, and optimizes it for our needs. This gives us excellent pre-existing tooling, since \textsc{pvm} remains essentially compatible with \textsc{risc-v}, including support from the compiler toolkit \textsc{llvm} and languages such as Rust and C++. Furthermore, the instruction set simplicity which \textsc{risc-v} and \textsc{pvm} share, together with the register size (32-bit), active number (13) and endianness (little) make it especially well-suited for creating efficient recompilers on to common hardware architectures.
+The \textsc{pvm} is comparable to the \textsc{evm} defined in the Yellow Paper, but somewhat simpler: the complex instructions for cryptographic operations are missing as are those which deal with environmental interactions. Overall it is far less opinionated since it alters a pre-existing general purpose design, \textsc{risc-v}, and optimizes it for our needs. This gives us excellent pre-existing tooling, since \textsc{pvm} remains essentially compatible with \textsc{risc-v}, including support from the compiler toolkit \textsc{llvm} and languages such as Rust and C++. Furthermore, the instruction set simplicity which \textsc{risc-v} and \textsc{pvm} share, together with the register size (64-bit), active number (13) and endianness (little) make it especially well-suited for creating efficient recompilers on to common hardware architectures.
 
 The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for contextualization we will briefly summarize the basic invocation function $\Psi$ which computes the resultant state of a \textsc{pvm} instance initialized with some registers ($\lseq\N_R\rseq_{13}$) and \textsc{ram} ($\mathbb{M}$) and has executed for up to some amount of gas ($\N_G$), a number of approximately time-proportional computational steps:
 \begin{equation}
@@ -166,12 +166,12 @@ We refer to the time-proportional computational steps as \emph{gas} (much like i
 \begin{equation}\label{eq:gasregentry}
   \Z_G \equiv \mathbb{Z}_{-2^{63}\dots2^{63}}\ ,\quad
   \N_G \equiv \mathbb{N}_{2^{64}}\ ,\quad
-  \N_R \equiv \N_{2^{32}}
+  \N_R \equiv \N_{2^{64}}
 \end{equation}
 
 It is left as a rather important implementation detail to ensure that the amount of time taken while computing the function $\Psi(\dots, \gascounter, \dots)$ has a maximum computation time approximately proportional to the value of $\gascounter$ regardless of other operands.
 
-The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 32-bit quantity, denoted as $\N_R$, a natural less than $2^{32}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\registers \in \seq{\N_R}_{13}$ is typically used to denote the registers.
+The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 64-bit quantity, denoted as $\N_R$, a natural less than $2^{64}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\registers \in \seq{\N_R}_{13}$ is typically used to denote the registers.
 \begin{align}\label{eq:pvmmemory}
   \mathbb{M} &\equiv \tuple{
     \isa{\mathbf{V}}{\Y_{2^{32}}},
