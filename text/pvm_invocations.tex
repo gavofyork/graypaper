@@ -716,59 +716,52 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{peek} = 19 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, a, b, l] &= \registers_{7 \dots 11} \\
+    \using [n, o, s, l] &= \registers_{7 \dots 11} \\
     \using \mathbf{s} &= \begin{cases}
       \none &\when n \not\in \keys{\mathbf{m}}\\
-      \error &\when \N_{b\dots+l} \not\in \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \\
-      \mathbf{m}[n]_{\mathbf{u}_{b\dots+l}} &\otherwise
+      \mathbf{m}[n]_{\mathbf{u}_{s\dots+l}} &\when \N_{s\dots+l} \in \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \wedge \N_{o\dots+l} \in \mathbb{V}^*_\lambda \\
+      \error &\otherwise
     \end{cases}\\
     (\registers'_7, \mem') &\equiv \begin{cases}
       (\mathtt{OOB}, \mem) &\when \mathbf{s} = \error \\
       (\mathtt{WHO}, \mem) &\when \mathbf{s} = \none \\
-      (\mathtt{OK}, \mem') \ \where \mem' = \mem \exc \mem'_{a\dots+l} = \mathbf{s} &\otherwise
-    \end{cases} \\
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_Z(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{zero} = 20 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using [n, b, l] &= \registers_{7 \dots 10} \\
-    \using \mathbf{u} &= \begin{cases}
-      \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
-      \error &\otherwise\\
-    \end{cases} \\
-    \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
-      (\mathbf{u}'_\mathbf{V})_{b\dots+l} = [0, 0, \dots] \\
-      (\mathbf{u}'_\mathbf{A})_{\floor{\nicefrac{b}{\mathsf{Z}_P}}\dots\floor{\nicefrac{b+l-1}{\mathsf{Z}_P}} + 1} = [\mathrm{W}, \mathrm{W}, \dots]
-    \end{cases}\\
-    (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\mathtt{WHO}, \mathbf{m}) &\otherwhen \mathbf{u} = \error \\
-      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}' &\otherwise \\
+      (\mathtt{OK}, \mem') \ \where \mem' = \mem \exc \mem'_{o\dots+l} = \mathbf{s} &\otherwise
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_O(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{poke} = 21 \\
+  \texttt{poke} = 20 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, a, b, l] &= \registers_{7 \dots 11} \\
+    \using [n, s, o, l] &= \registers_{7 \dots 11} \\
+    \using \mathbf{s} &= \begin{cases}
+      \none &\when n \not\in \keys{\mathbf{m}} \\
+      \mem_{s\dots+l} &\when \N_{s\dots+l} \in \mathbb{V}_\mathbf{u} \wedge \N_{o\dots+l} \in \mathbb{V}^*_\memory \\
+      \error &\otherwise
+    \end{cases}\\
+    (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
+      (\mathtt{OOB}, \mathbf{m}) &\when \mathbf{s} = \error \\
+      (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{s} = \none \\
+      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'[n]_\mathbf{u})_{o\dots+l} = \mathbf{s} = \mathbf{u}' &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_Z(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{zero} = 21 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [n, p, c] &= \registers_{7 \dots 10} \\
     \using \mathbf{u} &= \begin{cases}
       \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
       \error &\otherwise\\
     \end{cases} \\
-    \using \mathbf{s} &= \begin{cases}
-      \mem_{a\dots+l} &\when \N_{a\dots+l} \in \mathbb{V}_\mathbf{u}\\
-      \error &\otherwise
-    \end{cases}\\
     \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
-      (\mathbf{u}'_\mathbf{V})_{b\dots+l} = \mathbf{s} \\
-      (\mathbf{u}'_\mathbf{A})_{\floor{\nicefrac{b}{\mathsf{Z}_P}}\dots\floor{\nicefrac{b+l-1}{\mathsf{Z}_P}} + 1} = [\mathrm{W}, \mathrm{W}, ...]
+      (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = [0, 0, \dots] \\
+      (\mathbf{u}'_\mathbf{A})_{p\dots c} = [\mathrm{W}, \mathrm{W}, \dots]
     \end{cases}\\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\mathtt{OOB}, \mathbf{m}) &\when \mathbf{s} = \error \\
       (\mathtt{WHO}, \mathbf{m}) &\otherwhen \mathbf{u} = \error \\
       (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}' &\otherwise \\
     \end{cases} \\
@@ -779,14 +772,14 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{void} = 22 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, b, l] &= \registers_{7 \dots 10} \\
+    \using [n, p, c] &= \registers_{7 \dots 10} \\
     \using \mathbf{u} &= \begin{cases}
       \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
       \error &\otherwise\\
     \end{cases} \\
     \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
-      (\mathbf{u}'_\mathbf{V})_{b\dots+l} = [0, 0, \dots] \\
-      (\mathbf{u}'_\mathbf{A})_{\floor{\nicefrac{b}{\mathsf{Z}_P}}\dots\floor{\nicefrac{b+l-1}{\mathsf{Z}_P}} + 1} = [\none, \none, \dots]
+      (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = [0, 0, \dots] \\
+      (\mathbf{u}'_\mathbf{A})_{p\dots c} = [\none, \none, \dots]
     \end{cases}\\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
       (\mathtt{WHO}, \mathbf{m}) &\otherwhen \mathbf{u} = \error \\
