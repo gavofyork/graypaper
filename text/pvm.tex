@@ -242,11 +242,11 @@ We assume the skip length $\ell$ is well-defined:
 \bottomrule
 \end{longtable}
 
-\subsubsection{Instructions with Arguments of One Extended Width Immediate}
+\subsubsection{Instructions with Arguments of One Register and One Extended Width Immediate}
 \begin{equation}
-\begin{aligned}
-  \immed_X \equiv \de_8(\instructions_{\imath+1\dots+8}))
-\end{aligned}
+  \using r_A = \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad
+  \reg'_A \equiv \reg'_{r_A} \,,\quad
+  \immed_X \equiv \de_8(\instructions_{\imath+1\dots+8})
 \end{equation}
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
@@ -255,7 +255,7 @@ We assume the skip length $\ell$ is well-defined:
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  20&\token{load\_imm}&0&$\reg'_A = \immed_X$\\ \mrule
+  20&\token{load\_imm\_64}&0&$\reg'_A = \immed_X$\\ \mrule
 \bottomrule
 \end{longtable}
 
@@ -354,7 +354,7 @@ We assume the skip length $\ell$ is well-defined:
   \endhead
   70&\token{store\_imm\_ind\_u8}&0&$\memwr_{\reg_A + \immed_X} = \immed_Y \bmod 2^8$\\ \mrule
   71&\token{store\_imm\_ind\_u16}&0&$\memwr_{\reg_A + \immed_X \dots+ 2} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
-  72&\token{store\_imm\_ind\_u32}&0&$\memwr_{\reg_A + \immed_X \dots+ 4} = \se_4(\immed_Y)$\\
+  72&\token{store\_imm\_ind\_u32}&0&$\memwr_{\reg_A + \immed_X \dots+ 4} = \se_4(\immed_Y)$\\ \mrule
   73&\token{store\_imm\_ind\_u64}&0&$\memwr_{\reg_A + \immed_X \dots+ 8} = \se_8(\immed_Y)$\\
   \bottomrule
 \end{longtable}
@@ -570,29 +570,31 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \midrule
   \endhead
   170&\token{add\_32}&0&$\reg'_D = \sext_4((\reg_A + \reg_B) \bmod 2^{32})$\\ \mrule
-  171&\token{sub\_32}&0&$\reg'_D = \sext_4((\reg_A + 2^{32} - \reg_B) \bmod 2^{32})$\\ \mrule
+  171&\token{sub\_32}&0&$\reg'_D = \sext_4((\reg_A + 2^{32} - (\reg_B \bmod 2^{32})) \bmod 2^{32})$\\ \mrule
   172&\token{mul\_32}&0&$\reg'_D = \sext_4((\reg_A \cdot \reg_B) \bmod 2^{32})$\\ \mrule
   173&\token{div\_u\_32}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B = 0\\
-    \sext_4(\floor{\reg_A \div \reg_B}) &\otherwise
+    \floor{(\reg_A \bmod 2^{32}) \div (\reg_B \bmod 2^{32})} &\otherwise
   \end{cases}$\\ \mrule
   174&\token{div\_s\_32}&0&$\reg'_D = \begin{cases}
-    2^{64} - 1 &\when \reg_B = 0\\
-    \reg_A &\when \signedn{4}{\reg_A} = -2^{31} \wedge \signedn{4}{\reg_B} = -1\\
-    \unsigned{\floor{\signedn{4}{\reg_A} \div \signedn{4}{\reg_B}}} &\otherwise
+    2^{64} - 1 &\when b = 0\\
+    a &\when a = -2^{31} \wedge b = -1\\
+    \unsigned{\floor{a \div b}} &\otherwise \\[2pt]
+    \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
   175&\token{rem\_u\_32}&0&$\reg'_D = \begin{cases}
-    \reg_A &\when \reg_B = 0\\
-    \reg_A \bmod \reg_B &\otherwise
+    \reg_A &\when \reg_B \bmod 2^{32} = 0\\
+    (\reg_A \bmod 2^{32}) \bmod (\reg_B \bmod 2^{32}) &\otherwise
   \end{cases}$\\ \mrule
   176&\token{rem\_s\_32}&0&$\reg'_D = \begin{cases}
-    \reg_A &\when \reg_B = 0\\
-    0 &\when \signed{\reg_A} = -2^{31} \wedge \signed{\reg_B} = -1\\
-    \unsigned{\signed{\reg_A} \bmod \signed{\reg_B}} &\otherwise
+    \unsigned{a} &\when b = 0 \\
+    0 &\when a = -2^{31} \wedge b = -1 \\
+    \unsigned{a \bmod b} &\otherwise \\[2pt]
+    \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
   177&\token{shlo\_l\_32}&0&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}$\\ \mrule
-  178&\token{shlo\_r\_32}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 32}}$\\ \mrule
-  179&\token{shar\_r\_32}&0&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  178&\token{shlo\_r\_32}&0&$\reg'_D = \floor{(\reg_A \bmod 2^{32}) \div 2^{\reg_B \bmod 32}}$\\ \mrule
+  179&\token{shar\_r\_32}&0&$\reg'_D = \unsigned{\floor{\signedn{4}{\reg_A \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
 
   180&\token{add\_64}&0&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{64}$\\ \mrule
   181&\token{sub\_64}&0&$\reg'_D = (\reg_A + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
@@ -619,9 +621,9 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   188&\token{shlo\_r\_64}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 64}}$\\ \mrule
   189&\token{shar\_r\_64}&0&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
 
-  190&\token{and}&0&$\forall i \in \N_{32} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \bits{\reg_B}_i$\\ \mrule
-  191&\token{xor}&0&$\forall i \in \N_{32} : \bits{\reg'_D}_i = \bits{\reg_A}_i \oplus \bits{\reg_B}_i$\\ \mrule
-  192&\token{or}&0&$\forall i \in \N_{32} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \bits{\reg_B}_i$\\ \mrule
+  190&\token{and}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \bits{\reg_B}_i$\\ \mrule
+  191&\token{xor}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \oplus \bits{\reg_B}_i$\\ \mrule
+  192&\token{or}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \bits{\reg_B}_i$\\ \mrule
   193&\token{mul\_upper\_s\_s}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \signed{\reg_B}) \div 2^{64}}}$\\ \mrule
   194&\token{mul\_upper\_u\_u}&0&$\reg'_D = \floor{(\reg_A \cdot \reg_B) \div 2^{64}}$\\ \mrule
   195&\token{mul\_upper\_s\_u}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \reg_B) \div 2^{64}}}$\\ \mrule
