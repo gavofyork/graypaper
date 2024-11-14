@@ -41,14 +41,11 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
     (\mathbb{P}, \N_\mathsf{C}) &\to \Y \cup \mathbb{J} \\
     (\mathbf{p}, c) &\mapsto \mathbf{r}\ \where (g, \mathbf{r}, \none) = \Psi_M(\mathbf{p}_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(\mathbf{p}, c), F, \none)
   \end{aligned}\right. \\
-  \label{eq:isauthorizedmutator}F&\colon\left\{\begin{aligned}
-    (\N, \N_G, \regs, \ram) &\to (\Z_G, \regs, \ram)\\
-    (n, \gascounter, \registers, \memory) &\mapsto \begin{cases}
+  \label{eq:isauthorizedmutator}F \in \Omega\ang{\{\}} &\colon
+    (n, \gascounter, \registers, \memory) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
-      (\gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
+      (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
     \end{cases}
-  \end{aligned}
-  \right.
 \end{align}
 Note for the Is-Authorized host-call dispatch function $F$ in equation \ref{eq:isauthorizedmutator}, we elide the host-call context since, being essentially stateless, it is always $\none$.
 
@@ -67,7 +64,7 @@ The Export host-call depends on two pieces of context; one sequence of segments 
 
 Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\delta$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work payload, $\mathbf{y}$, together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{c}$, the authorizer hash $a$ and its output $\mathbf{o}$, and an export segment offset $\segoff$, the import segments and extrinsic data blobs as dictated by the work-item, $\mathbf{i}$ and $\overline{\mathbf{x}}$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
-  \Psi_R &\colon \left\{\begin{aligned}
+  &\Psi_R \colon \left\{\begin{aligned}
     \left(\begin{aligned}
       &\H, \N_G, \N_S, \H, \Y, \mathbb{X},\\
       &\H, \Y, \seq{\G}, \seq{\Y}, \N
@@ -84,9 +81,8 @@ Unlike the other invocation functions, the Refine invocation function implicitly
     \end{cases} \\
   \end{aligned}\right. \\
   \label{eq:refinemutator}
-  F&\colon\left\{\begin{aligned}
-    (\N, \N_G, \regs, \ram, (\dict{\N}{\pvm}, \seq{\Y})) &\to (\N_G, \regs, \ram, (\dict{\N}{\pvm}, \seq{\Y}))\\
-    (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\mapsto \begin{cases}
+  &F \in \Omega\ang{(\dict{\N}{\pvm}, \seq{\Y})} \colon
+    (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
       \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), s, \delta, \mathbf{c}_t) &\when n = \mathtt{historical\_lookup}\\
       \Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \mathbf{i}) &\when n = \mathtt{import}\\
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
@@ -98,10 +94,9 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_V(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{void}\\
       \Omega_K(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{invoke}\\
       \Omega_X(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{expunge}\\
-      (\gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
+      (\continue, \gascounter - 10, \registers', \memory) &\otherwise\\
+      \multicolumn{2}{l}{\where \registers' = \registers \exc \registers_7 = \mathtt{WHAT}}
     \end{cases}
-  \end{aligned}
-  \right.
 \end{align}
 
 \subsection{Accumulate Invocation}\label{sec:accumulateinvocation}
@@ -125,8 +120,8 @@ For all such contexts, we define a convenience equivalence, $\mathbf{x}_\mathbf{
 We track both regular and exceptional dimensions within our context mutator, but collapse the result of the invocation to one or the other depending on whether the termination was regular or exceptional (\ie out-of-gas or panic).
 
 We define $\Psi_A$, the Accumulation invocation function as:
-\begin{equation}
-  \Psi_A \colon\left\{\begin{aligned}
+\begin{align}
+  \Psi_A& \colon\left\{\begin{aligned}
     \tuple{
       \partialstate, \N_S, \N_G, \seq{\mathbb{O}}
     }
@@ -136,19 +131,19 @@ We define $\Psi_A$, the Accumulation invocation function as:
       \tup{I(\mathbf{u}, s)_\mathbf{u}, [], \none, 0} &\when \mathbf{u}_\mathbf{d}[s]_\mathbf{c} = \none \\
       C(\Psi_M(\mathbf{u}_\mathbf{d}[s]_\mathbf{c}, 10, g, \mathcal{E}(\var{\mathbf{o}}), F, \tup{I(\mathbf{u}, s), I(\mathbf{u}, s)})) &\otherwise
     \end{cases} \\
-  \end{aligned}\right.
-\end{equation}
-
-\begin{align}
-  I(\mathbf{u} \in \mathbb{U}, s \in \N_S) &\equiv \tup{
-    \is{\mathbf{d}}{\mathbf{d} \setminus \{ s \}},
-    s,
-    \is{\mathbf{u}}{\tuple{\is{\mathbf{d}}{\{s \mapsto \mathbf{d}[s]\}}, \is{\mathbf{x}}{\mathbf{u}_\mathbf{x}}, \is{\mathbf{i}}{\mathbf{u}_\mathbf{i}}, \is{\mathbf{q}}{\mathbf{u}_\mathbf{q}}}},
-    i,
-    \is{\mathbf{t}}{[]}
-  }\\
-  \where i &= \text{check}((\de_4(\mathcal{H}(\se(s, \eta'_0, \mathbf{H}_t))) \bmod (2^{32}-2^9)) + 2^8) \\
-  F(n, \gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\equiv \begin{cases}
+  \end{aligned}\right.\\
+  I&\colon\left\{\begin{aligned}
+    (\mathbb{U}, \N_S) &\to \mathbf{X}\\
+    (\mathbf{u}, s) &\mapsto \tup{
+      \is{\mathbf{d}}{\mathbf{d} \setminus \{ s \}},
+      s,
+      \is{\mathbf{u}}{\tuple{\is{\mathbf{d}}{\{s \mapsto \mathbf{d}[s]\}}, \is{\mathbf{x}}{\mathbf{u}_\mathbf{x}}, \is{\mathbf{i}}{\mathbf{u}_\mathbf{i}}, \is{\mathbf{q}}{\mathbf{u}_\mathbf{q}}}},
+      i,
+      \is{\mathbf{t}}{[]}
+    }\\
+    &\qquad\where i = \text{check}((\de_4(\mathcal{H}(\se(s, \eta'_0, \mathbf{H}_t))) \bmod (2^{32}-2^9)) + 2^8) \\
+  \end{aligned}\right.\\
+  F \in \Omega\ang{(\mathbf{X}, \mathbf{X})} &\colon (n, \gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) \mapsto \begin{cases}
     G(\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
     G(\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
     G(\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
@@ -164,30 +159,37 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_Q(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{quit} \\
     \Omega_S(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{solicit} \\
     \Omega_F(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{forget} \\
-    (\gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{x}) &\otherwise\\
+    (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{x}) &\otherwise\\
     \quad \where \mathbf{d} = (\mathbf{x}_\mathbf{u})_\mathbf{d}\cup\mathbf{x}_\mathbf{d}\;,\ \mathbf{s} = (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!& \\
   \end{cases} \\
-  G((\gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\equiv (\gascounter, \registers, \memory, (\mathbf{x}^*, \mathbf{y}))\ \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[\mathbf{x}^*_s] = \mathbf{s} \\
-  C(g \in \N_G, \mathbf{o} \in \mathbb{Y} \cup \{\oog, \panic\}, (\mathbf{x}\in\mathbf{X}, \mathbf{y}\in\mathbf{X})) &\equiv \begin{cases}
-    \tup{
-      \mathbf{x}_\mathbf{u},
-      \mathbf{x}_\mathbf{t},
-      \mathbf{o},
-      g
-    } & \when \mathbf{o} \in \mathbb{H} \\
-    \tup{
-      \mathbf{x}_\mathbf{u},
-      \mathbf{x}_\mathbf{t},
-      [],
-      g
-    } & \when \mathbf{o} \in \mathbb{Y} \setminus \H \\
-    \tup{
-      \mathbf{y}_\mathbf{u},
-      \mathbf{y}_\mathbf{t},
-      [],
-      g
-    } & \when \mathbf{o} \in \{\oog, \panic\} \\
-  \end{cases}
+  G&\colon\left\{\begin{aligned}
+    ((\{\continue, \halt, \panic, \oog\}, \N_G, \regs, \ram, \mathbb{A}), (\mathbf{X}, \mathbf{X})) &\to (\{\continue, \halt, \panic, \oog\}, \N_G, \regs, \ram, (\mathbf{X}, \mathbf{X})) \\
+    ((\varepsilon, \gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\mapsto (\varepsilon, \gascounter, \registers, \memory, (\mathbf{x}^*, \mathbf{y})) \\
+    &\qquad \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[\mathbf{x}^*_s] = \mathbf{s}
+  \end{aligned}\right.\\
+  C&\colon\left\{\begin{aligned}
+    (\N_G, \mathbb{Y} \cup \{\oog, \panic\}, (\mathbf{X}, \mathbf{X})) &\to (\partialstate, \defxfers, \H\bm{?}, \N_G) \\
+    (g, \mathbf{o}, (\mathbf{x}, \mathbf{y})) &\mapsto \begin{cases}
+      \tup{
+        \mathbf{x}_\mathbf{u},
+        \mathbf{x}_\mathbf{t},
+        \mathbf{o},
+        g
+      } & \when \mathbf{o} \in \mathbb{H} \\
+      \tup{
+        \mathbf{x}_\mathbf{u},
+        \mathbf{x}_\mathbf{t},
+        \none,
+        g
+      } & \when \mathbf{o} \in \mathbb{Y} \setminus \H \\
+      \tup{
+        \mathbf{y}_\mathbf{u},
+        \mathbf{y}_\mathbf{t},
+        \none,
+        g
+      } & \when \mathbf{o} \in \{\oog, \panic\} \\
+    \end{cases}
+  \end{aligned}\right.
 \end{align}
 
 The mutator $F$ governs how this context will alter for any given parameterization, and the collapse function $C$ selects one of the two dimensions of context depending on whether the virtual machine's halt was regular or exceptional.
@@ -216,13 +218,13 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     \end{cases} \\
   \end{cases} \\
   \where \mathbf{s} &= \mathbf{d}[s]\exc\mathbf{s}_b = \mathbf{d}[s]_b + \sum_{r \in \mathbf{t}}{r_a} \\
-  F(n, \gascounter, \registers, \memory, \mathbf{s}) &\equiv \begin{cases}
+  F \in \Omega\ang{\mathbb{A}}\colon (n, \gascounter, \registers, \memory, \mathbf{s}) &\equiv \begin{cases}
     \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{lookup} \\
     \Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{read} \\
     \Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s) &\when n = \mathtt{write} \\
     \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
     \Omega_I(\gascounter, \registers, \memory, s, \mathbf{d}) &\when n = \mathtt{info} \\
-    (\gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{s}) &\otherwise
+    (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{s}) &\otherwise
   \end{cases}
 \end{align}
 
