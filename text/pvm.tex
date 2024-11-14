@@ -592,8 +592,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \unsigned{a \bmod b} &\otherwise \\[2pt]
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
-  177&\token{shlo\_l\_32}&0&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}$\\ \mrule
-  178&\token{shlo\_r\_32}&0&$\reg'_D = \floor{(\reg_A \bmod 2^{32}) \div 2^{\reg_B \bmod 32}}$\\ \mrule
+  177&\token{shlo\_l\_32}&0&$\reg'_D = \sext_4((\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
+  178&\token{shlo\_r\_32}&0&$\reg'_D = \sext_4(\floor{(\reg_A \bmod 2^{32}) \div 2^{\reg_B \bmod 32}})$\\ \mrule
   179&\token{shar\_r\_32}&0&$\reg'_D = \unsigned{\floor{\signedn{4}{\reg_A \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
 
   180&\token{add\_64}&0&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{64}$\\ \mrule
