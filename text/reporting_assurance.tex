@@ -53,13 +53,14 @@ A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the cont
 \end{equation}
 
 \subsubsection{Availability}
-We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tuple of the work-package's hash $h$, an auditable work bundle length $l$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $u$ and a segment-root $e$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
+We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tuple of the work-package's hash $h$, an auditable work bundle length $l$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $u$, a segment-root $e$ and segment-count $n$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
 \begin{align}
   \mathbb{S} &\equiv \tuple{
     \isa{h}{\H}\ts
     \isa{l}{\N_L}\ts
     \isa{u}{\H}\ts
-    \isa{e}{\H}
+    \isa{e}{\H}\ts
+    \isa{n}{\N}
   }
 \end{align}
 
@@ -116,9 +117,10 @@ The signature must be one whose public key is that of the validator assuring and
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
-A bit may only be set if the corresponding core has a report pending availability on it:
+A bit may only be set if the corresponding core has a report pending availability on it which has not timed out:
 \begin{align}
-  \forall a \in \xtassurances : \forall c \in \N_\mathsf{C} : a_f[c] \implies \rho^\dagger[c] \ne \none
+  &\forall a \in \xtassurances, c \in \N_\mathsf{C} :\\
+  &\quad a_f[c] \Rightarrow \rho^\dagger[c] \ne \none \wedge \mathbf{H}_t \le \rho^\dagger[c]_t + \mathsf{U}
 \end{align}
 
 \subsubsection{Available Reports}
@@ -284,7 +286,7 @@ We also require that we have a record of it; this is one of the few conditions w
 
 We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:
 \begin{align}
-  &\using \mathbf{q} = \{(w_x)_p \mid \mathbf{q} \in \ready, w \in \keys{\mathbf{q}}\} \\
+  &\using \mathbf{q} = \{(w_x)_p \mid \mathbf{q} \in \ready, (w, \mathbf{d}) \in \mathbf{q}\} \\
   &\using \mathbf{a} = \{((i_w)_x)_p \mid i \in \rho, i \ne \none\}\\
   &\forall p \in \mathbf{p}, p \not\in \bigcup_{x \in \beta}\keys{x_\mathbf{p}} \cup \bigcup_{x \in \accumulated}x \cup \mathbf{q} \cup \mathbf{a}
 \end{align}

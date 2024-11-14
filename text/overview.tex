@@ -21,10 +21,10 @@ The header is a collection of metadata primarily concerned with cryptographic re
 
 \begin{description}
   \item[tickets] Tickets, used for the mechanism which manages the selection of validators for the permissioning of block authoring. This component is denoted $\xttickets$.
-  \item[judgments] Votes, by validators, on dispute(s) arising between them presently taking place. This is denoted $\xtdisputes$.
   \item[preimages] Static data which is presently being requested to be available for workloads to be able to fetch on demand. This is denoted $\xtpreimages$.
-  \item[availability] Assurances by each validator concerning which of the input data of workloads they have correctly received and are storing locally. This is denoted $\xtassurances$.
   \item[reports] Reports of newly completed workloads whose accuracy is guaranteed by specific validators. This is denoted $\xtguarantees$.
+  \item[availability] Assurances by each validator concerning which of the input data of workloads they have correctly received and are storing locally. This is denoted $\xtassurances$.
+  \item[disputes] Information relating to disputes between validators over the validity of reports. This is denoted $\xtdisputes$.
 \end{description}
 
 \subsection{The State}
@@ -54,17 +54,17 @@ Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulatin
   \kappa' &\prec (\mathbf{H}, \tau, \kappa, \gamma) \\
   \lambda' &\prec (\mathbf{H}, \tau, \lambda, \kappa) \\
   \psi' &\prec (\xtdisputes, \psi) \\
-  \delta^\dagger &\prec (\xtpreimages, \delta, \tau') \label{eq:deltadagger} \\
   \rho^\dagger &\prec (\xtdisputes, \rho) \label{eq:rhodagger} \\
   \rho^\ddagger &\prec (\xtassurances, \rho^\dagger) \label{eq:rhoddagger} \\
   \rho' &\prec (\xtguarantees, \rho^\ddagger, \kappa, \tau') \\
   \mathbf{W}^* &\prec (\xtassurances, \rho') \\
-  (\ready', \accumulated', \delta', \chi', \iota', \varphi', \beefycommitmap) &\prec (\mathbf{W}^*, \ready, \accumulated, \delta^\dagger, \chi, \iota, \varphi) \\
+  (\ready', \accumulated', \accountspostxfer, \chi', \iota', \varphi', \beefycommitmap) &\prec (\mathbf{W}^*, \ready, \accumulated, \accountspre, \chi, \iota, \varphi) \\
+  \accountspostpreimage &\prec (\xtpreimages, \accountspostxfer, \tau') \label{eq:accountspostpreimage} \\
   \alpha' &\prec (\mathbf{H}, \xtguarantees, \varphi', \alpha) \\
-  \pi' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \tau, \kappa', \pi, \mathbf{H})\!\!\!\!
+  \pi' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \tau, \kappa', \pi, \mathbf{H})\!\!\!\!\!\!\!\!
 \end{align}
 
-The only synchronous entanglements are visible through the intermediate components superscripted with a dagger and defined in equations \ref{eq:betadagger}, \ref{eq:deltadagger} and \ref{eq:rhoddagger}. The latter two mark a merge and join in the dependency graph and, concretely, imply that the preimage lookup extrinsic must be folded into state before the availability extrinsic may be fully processed and accumulation of work happen.
+The only synchronous entanglements are visible through the intermediate components superscripted with a dagger and defined in equations \ref{eq:betadagger}, \ref{eq:accountspostpreimage} and \ref{eq:rhoddagger}. The latter two mark a merge and join in the dependency graph and, concretely, imply that the availability extrinsic may be fully processed and accumulation of work happen before the preimage lookup extrinsic is folded into state.
 
 \subsection{Which History?}
 
@@ -140,9 +140,9 @@ We further presume that a number of constant \emph{prices} stated in terms of to
 
 \subsection{The Virtual Machine and Gas}\label{sec:virtualmachineandgas}
 
-In the present work, we presume the definition of a \emph{Polka Virtual Machine} (\textsc{pvm}). This virtual machine is based around the \textsc{risc-v} instruction set architecture, specifically the \textsc{rv}\oldstylenums{32}\textsc{em} variant, and is the basis for introducing permissionless logic into our state-transition function.
+In the present work, we presume the definition of a \emph{Polka Virtual Machine} (\textsc{pvm}). This virtual machine is based around the \textsc{risc-v} instruction set architecture, specifically the \textsc{rv}\oldstylenums{64}\textsc{em} variant, and is the basis for introducing permissionless logic into our state-transition function.
 
-The \textsc{pvm} is comparable to the \textsc{evm} defined in the Yellow Paper, but somewhat simpler: the complex instructions for cryptographic operations are missing as are those which deal with environmental interactions. Overall it is far less opinionated since it alters a pre-existing general purpose design, \textsc{risc-v}, and optimizes it for our needs. This gives us excellent pre-existing tooling, since \textsc{pvm} remains essentially compatible with \textsc{risc-v}, including support from the compiler toolkit \textsc{llvm} and languages such as Rust and C++. Furthermore, the instruction set simplicity which \textsc{risc-v} and \textsc{pvm} share, together with the register size (32-bit), active number (13) and endianness (little) make it especially well-suited for creating efficient recompilers on to common hardware architectures.
+The \textsc{pvm} is comparable to the \textsc{evm} defined in the Yellow Paper, but somewhat simpler: the complex instructions for cryptographic operations are missing as are those which deal with environmental interactions. Overall it is far less opinionated since it alters a pre-existing general purpose design, \textsc{risc-v}, and optimizes it for our needs. This gives us excellent pre-existing tooling, since \textsc{pvm} remains essentially compatible with \textsc{risc-v}, including support from the compiler toolkit \textsc{llvm} and languages such as Rust and C++. Furthermore, the instruction set simplicity which \textsc{risc-v} and \textsc{pvm} share, together with the register size (64-bit), active number (13) and endianness (little) make it especially well-suited for creating efficient recompilers on to common hardware architectures.
 
 The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for contextualization we will briefly summarize the basic invocation function $\Psi$ which computes the resultant state of a \textsc{pvm} instance initialized with some registers ($\lseq\N_R\rseq_{13}$) and \textsc{ram} ($\mathbb{M}$) and has executed for up to some amount of gas ($\N_G$), a number of approximately time-proportional computational steps:
 \begin{equation}
@@ -166,20 +166,24 @@ We refer to the time-proportional computational steps as \emph{gas} (much like i
 \begin{equation}\label{eq:gasregentry}
   \Z_G \equiv \mathbb{Z}_{-2^{63}\dots2^{63}}\ ,\quad
   \N_G \equiv \mathbb{N}_{2^{64}}\ ,\quad
-  \N_R \equiv \N_{2^{32}}
+  \N_R \equiv \N_{2^{64}}
 \end{equation}
 
 It is left as a rather important implementation detail to ensure that the amount of time taken while computing the function $\Psi(\dots, \gascounter, \dots)$ has a maximum computation time approximately proportional to the value of $\gascounter$ regardless of other operands.
 
-The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 32-bit quantity, denoted as $\N_R$, a natural less than $2^{32}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\registers \in \seq{\N_R}_{13}$ is typically used to denote the registers.
-\begin{align}
-  \mathbb{M} &\equiv \ltuple\isa{\mathbf{V}}{\Y_{2^{32}}}\ts\isa{\mathbf{A}}{\lseq\{\text{W}, \text{R}, \none\}\rseq_{2^{32}}}\rtuple
+The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 64-bit quantity, denoted as $\N_R$, a natural less than $2^{64}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\registers \in \seq{\N_R}_{13}$ is typically used to denote the registers.
+\begin{align}\label{eq:pvmmemory}
+  \mathbb{M} &\equiv \tuple{
+    \isa{\mathbf{V}}{\Y_{2^{32}}},
+    \isa{\mathbf{A}}{\seq{\{\text{W}, \text{R}, \none\}}_p}
+  }\,,\ p = \frac{2^{32}}{\mathsf{Z}_P}\\
+  \mathsf{Z}_P &= 2^{12}
 \end{align}
 
-The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets where each octet may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\mathbb{M}$ includes two components: a value $\mathbf{V}$ and access $\mathbf{A}$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \mathbb{M}$ is typically used to denote \textsc{ram}.
+The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $2^p = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\mathbb{M}$ includes two components: a value $\mathbf{V}$ and access $\mathbf{A}$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \mathbb{M}$ is typically used to denote \textsc{ram}.
 \begin{align}
-  \mathbb{V}_{\memory} \equiv \{i \mid \memory_\mathbf{A}[i] \ne \none \} \qquad
-  \mathbb{V}^*_{\memory} \equiv \{i \mid \memory_\mathbf{A}[i] = \text{W} \}
+  \mathbb{V}_{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] \ne \none \} \\
+  \mathbb{V}^*_{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] = \text{W} \}
 \end{align}
 
 We define two sets of indices for the \textsc{ram} $\memory$: $\mathbb{V}_{\memory}$ is the set of indices which may be read from; and $\mathbb{V}^*_{\memory}$ is the set of indices which may be written to.
@@ -189,7 +193,7 @@ Invocation of the \textsc{pvm} has an exit-reason as the first item in the resul
   \item Regular program termination caused by an explicit halt instruction, $\halt$.
   \item Irregular program termination caused by some exceptional circumstance, $\panic$.
   \item Exhaustion of gas, $\oog$.
-  \item A page fault (attempt to access some address in \textsc{ram} which is not accessible), $\fault$. This includes the address at fault.
+  \item A page fault (attempt to access some address in \textsc{ram} which is not accessible), $\fault$. This includes the address of the page at fault.
   \item An attempt at progressing a host-call, $\host$. This allows for the progression and integration of a context-dependent state-machine beyond the regular \textsc{pvm}.
 \end{itemize}
 

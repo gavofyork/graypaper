@@ -5,33 +5,11 @@
 
 \section{Accumulation}\label{sec:accumulation}
 
-Accumulation may be defined as some function whose arguments are $\mathbf{W}$ and $\delta$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\delta'$ together with additional state elements $\iota'$, $\varphi'$ and $\chi'$.
+Accumulation may be defined as some function whose arguments are $\mathbf{W}$ and $\delta$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\accountspostpreimage$ together with additional state elements $\iota'$, $\varphi'$ and $\chi'$.
 
 The proposition of accumulation is in fact quite simple: we merely wish to execute the \emph{Accumulate} logic of the service code of each of the services which has at least one work output, passing to it the work outputs and useful contextual information. However, there are three main complications. Firstly, we must define the execution environment of this logic and in particular the host functions available to it. Secondly, we must define the amount of gas to be allowed for each service's execution. Finally, we must determine the nature of transfers within Accumulate which, as we will see, leads to the need for a second entry-point, \emph{on-transfer}.
 
 
-
-\subsection{Preimage Integration}
-
-Prior to accumulation, we must first integrate all preimages provided in the lookup extrinsic. The lookup extrinsic is a sequence of pairs of service indices and data. These pairs must be ordered and without duplicates (equation \ref{eq:preimagesareordered} requires this). The data must have been solicited by a service but not yet be provided. Formally:
-\begin{align}
-  \xtpreimages &\in \lseq \ltuple\N_S\ts\Y\rtuple \rseq \\
-  \label{eq:preimagesareordered}\xtpreimages &= \orderuniqby{i}{i \in \xtpreimages} \\
-  \forall \tup{s\ts\mathbf{p}} \in \xtpreimages &: \left\{\ 
-    \begin{aligned}
-      &\keys{\delta[s]_\mathbf{p}}\ \not\ni\ \mathcal{H}(\mathbf{p})\ ,\\
-      &\delta[s]_\mathbf{l}[\tup{\mathcal{H}(\mathbf{p}), |\mathbf{p}|}]\ =\ []
-    \end{aligned}
-  \right.
-\end{align}
-
-We define $\delta^\dagger$ as the state after the integration of the preimages:
-\begin{align}
-    \delta^\dagger = \delta \text{ ex. } \forall \tup{s\ts\mathbf{p}} \in \xtpreimages : \left\{\,\begin{aligned}
-      \quad\delta^\dagger[s]_\mathbf{p}[\mathcal{H}(\mathbf{p})] &= \mathbf{p} \\
-      \delta^\dagger[s]_\mathbf{l}[\mathcal{H}(\mathbf{p}), |\mathbf{p}|] &= [\tau']
-    \end{aligned}\right.\!\!
-\end{align}
 
 
 
@@ -115,7 +93,7 @@ We resolve this by defining a function $\Delta_+$ which accumulates work-reports
 
 Only once all such accumulation is executed do we integrate the results and thus define the relevant posterior state items. In doing so we also integrate the consequences of any \emph{deferred-transfers} implied by accumulation.
 
-Our formalisms begin by defining $\partialstate$ as a characterization (\ie values capable of representing) of state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\delta$), the upcoming validator keys $\iota$, the queue of work-reports $\varphi$ and the privileges state $\chi$. Formally:
+Our formalisms begin by defining $\partialstate$ as a characterization (\ie values capable of representing) of state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\accountspre$), the upcoming validator keys $\iota$, the queue of work-reports $\varphi$ and the privileges state $\chi$. Formally:
 \begin{equation}
   \label{eq:partialstate}
   \partialstate \equiv \left(\begin{aligned}
@@ -172,12 +150,14 @@ We come to define the parallelized accumulation function $\Delta_*$ which, with 
   \end{aligned}\right.
 \end{equation}
 
-We note that all newly added service indices, defined in the above context as $\bigcup_{s \in \mathbf{s}}\keys{(\Delta_1(\mathbf{o}, \mathbf{w}, s)_\mathbf{o})_\mathbf{d}} \setminus \mathbf{s}$, must not conflict with the indices of existing services $\keys{\delta}$ or other newly added services. This should never happen, since new indices are explicitly selected to avoid such conflicts, but in the unlikely event it happens, the block must be considered invalid.
+We note that all newly added service indices, defined in the above context as $\bigcup_{s \in \mathbf{s}}\keys{(\Delta_1(\mathbf{o}, \mathbf{w}, s)_\mathbf{o})_\mathbf{d}} \setminus \mathbf{s}$, must not conflict with the indices of existing services $\keys{\accountspre}$ or other newly added services. This should never happen, since new indices are explicitly selected to avoid such conflicts, but in the unlikely event it happens, the block must be considered invalid.
 
 The single-service accumulation function, $\Delta_1$, transforms an initial state-context, sequence of work-reports and a service index into an alterations state-context, a sequence of \emph{transfers}, a possible accumulation-output and the actual \textsc{pvm} gas used. This function wrangles the work-items of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
 \begin{align}
-  &\mathbb{O} \equiv \tuple{\isa{o}{\Y \cup \mathbb{J}}, \isa{l}{\H}, \isa{k}{\H}, \isa{a}{\Y}} \\
-  &\Delta_1 \colon \left\{\;\begin{aligned}
+  &\mathbb{O} \equiv \tuple{\isa{o}{\Y \cup \mathbb{J}}, \isa{l}{\H}, \isa{k}{\H}, \isa{a}{\Y}}
+\end{align}
+\begin{align}
+    &\Delta_1 \colon \left\{\;\begin{aligned}
     &\begin{aligned}
       (\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}, \N_S) &\to \tuple{
         \begin{aligned}
@@ -205,11 +185,11 @@ This introduces $\mathbb{O}$, the set of wrangled \emph{operand tuples}, used as
 
 \subsection{Deferred Transfers and State Integration}
 
-Given the result of the top-level $\Delta_+$, we may define the posterior state $\chi'$, $\varphi'$ and $\iota'$ as well as the second intermediate state of the service-accounts $\delta^\ddagger$ and the \textsc{Beefy} commitment map $\beefycommitmap$:
+Given the result of the top-level $\Delta_+$, we may define the posterior state $\chi'$, $\varphi'$ and $\iota'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the \textsc{Beefy} commitment map $\beefycommitmap$:
 \begin{align}
   \using g &= \max\left(\mathsf{G}_T, \mathsf{G}_A\cdot \mathsf{C} + \sum_{x \in \mathcal{V}(\chi_\mathbf{g})}(x)\right)\\
-  \using (n, \mathbf{o}, \mathbf{t}, \beefycommitmap) &= \Delta_+(g, \mathbf{W}^*, (\chi, \delta^\dagger, \iota, \varphi), \chi_\mathbf{g}) \\
-  (\chi', \delta^\ddagger, \iota', \varphi') &\equiv \mathbf{o}
+  \using (n, \mathbf{o}, \mathbf{t}, \beefycommitmap) &= \Delta_+(g, \mathbf{W}^*, (\chi, \accountspre, \iota, \varphi), \chi_\mathbf{g}) \\
+  (\chi', \accountspostacc, \iota', \varphi') &\equiv \mathbf{o}
 \end{align}
 
 Note that the accumulation commitment map $\beefycommitmap$ is set of pairs of indices of the output-yielding accumulated services to their accumulation result. This is utilized in equation \ref{eq:buildbeefymap}, when determining the accumulation-result tree root for the present block, useful for the \textsc{Beefy} protocol.
@@ -222,12 +202,12 @@ We have denoted the sequence of implied transfers as $\mathbf{t}$, ordered inter
   \end{aligned}\right.
 \end{align}
 
-The posterior state $\delta'$ may then be defined as the second intermediate state with all the deferred effects of the transfers applied:
+The second intermediate state $\accountspostxfer$ may then be defined with all the deferred effects of the transfers applied:
 \begin{equation}
-  \delta' = \{ s \mapsto \Psi_T(\delta^\ddagger, s, R(\mathbf{t}, s)) \mid (s \mapsto a) \in \delta^\ddagger \}
+  \accountspostxfer = \{ s \mapsto \Psi_T(\accountspostacc, s, R(\mathbf{t}, s)) \mid (s \mapsto a) \in \accountspostacc \}
 \end{equation}
 
-Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such that it results in $\delta^\ddagger[d]$, \ie no difference to the account's intermediate state, if $R(d) = []$, \ie said account received no transfers.
+Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such that it results in $\accountspostacc[d]$, \ie no difference to the account's intermediate state, if $R(d) = []$, \ie said account received no transfers.
 
 We define the final state of the ready queue and the accumulated map by integrating those work-reports which were accumulated in this block and shifting any from the prior state with the oldest such items being dropped entirely:
 \begin{align}
@@ -238,4 +218,36 @@ We define the final state of the ready queue and the accumulated map by integrat
     [] &\when 1 \le i < \tau' - \tau \\
     E(\ready^\circlearrowleft_{m - i}, \accumulated'_{\mathsf{E} - 1}) &\when i \ge \tau' - \tau
   \end{cases}
+\end{align}
+
+
+
+
+
+
+
+
+\subsection{Preimage Integration}
+
+After accumulation, we must integrate all preimages provided in the lookup extrinsic to arrive at the posterior account state. The lookup extrinsic is a sequence of pairs of service indices and data. These pairs must be ordered and without duplicates (equation \ref{eq:preimagesareordered} requires this). The data must have been solicited by a service but not yet provided in the \emph{prior} state. Formally:
+\begin{align}
+  \xtpreimages &\in \lseq \ltuple\N_S\ts\Y\rtuple \rseq \\
+  \label{eq:preimagesareordered}\xtpreimages &= \orderuniqby{i}{i \in \xtpreimages} \\
+  R(\mathbf{d}, s, h, l) &\equiv
+  h \not\in \mathbf{d}[s]_\mathbf{p} \wedge
+    \mathbf{d}[s]_\mathbf{l}[\tup{h, l}] = []\\
+  \forall \tup{s, \mathbf{p}} &\in \xtpreimages : R(\accountspre, s, \mathcal{H}(\mathbf{p}), |\mathbf{p}|)
+\end{align}
+
+We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
+\begin{align}
+  \using \mathbf{P} = \{
+    (s, \mathbf{p})
+    \mid
+      \tup{s, \mathbf{p}} \in \xtpreimages, R(\accountspostxfer, s, \mathcal{H}(\mathbf{p}), |\mathbf{p}|)
+    \}\\
+  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{s\ts\mathbf{p}} \in \mathbf{P} : \left\{\,\begin{aligned}
+      \quad\accountspostpreimage[s]_\mathbf{p}[\mathcal{H}(\mathbf{p})] &= \mathbf{p} \\
+      \accountspostpreimage[s]_\mathbf{l}[\mathcal{H}(\mathbf{p}), |\mathbf{p}|] &= [\tau']
+    \end{aligned}\right.\!\!\!\!
 \end{align}

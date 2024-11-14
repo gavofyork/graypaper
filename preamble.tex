@@ -30,6 +30,10 @@
 \usepackage{ifthen}
 \usepackage{hyperref}
 \usepackage{changepage}
+
+\numberwithin{equation}{section}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+
 \strictpagecheck
 \addbibresource{biblio.bib}
 
@@ -175,11 +179,16 @@
 \newcommand*{\defxfers}{\seq{\defxfer}}
 \newcommand*{\beefycommitmap}{\mathbf{C}}
 
+\newcommand*{\accountspre}{\delta}
+\newcommand*{\accountspostacc}{\delta^\dagger}
+\newcommand*{\accountspostxfer}{\delta^\ddagger}
+\newcommand*{\accountspostpreimage}{\delta'}
+
 \newcommand*{\gascounter}{\varrho}
 \newcommand*{\registers}{\omega}
 \newcommand*{\memory}{\mu}
 
-\newcommand*{\jamdraftversion}{\input{VERSION}\!\!\!\! Bangkok}
+\newcommand*{\jamdraftversion}{\input{VERSION}\!\!\!\!}
 \newcommand*{\jamdraftversionstring}{\jamdraftversion}
 
 \newcommand*{\makegpbackground}{
@@ -194,7 +203,7 @@
 }
 \input{context.tex}
 
-\title[JAM: Join-Accumulate Machine \\ {\smaller \textbf{Draft \jamdraftversionstring\ -\ \today}}]{Join-Accumulate Machine: A Semi-Coherent Scalable Trustless VM \\ {\smaller Draft \jamdraftversionstring\ -\ \today}}
+\title[JAM: Join-Accumulate Machine \\ {\smaller \textbf{Draft \jamdraftversionstring\ -\ \today}}]{Join-Accumulate Machine: A Mostly-Coherent Trustless Supercomputer \\ {\smaller Draft \jamdraftversionstring\ -\ \today}}
 \author{
   Dr. Gavin Wood\\
   Founder, Polkadot \& Ethereum\\%, Parity, Web3 Foundation, Fellowship\\
