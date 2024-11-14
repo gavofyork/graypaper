@@ -142,7 +142,7 @@ In addition to the entropy accumulator $\eta_0$, we retain three additional hist
   \eta &\in \lseq\H\rseq_4
 \end{align}
 
-$\eta_0$ defines the state of the randomness accumulator to which the provably random output of the \textsc{vrf}, the signature over some unbiasable input, is combined each block. $\eta_1$ and $\eta_2$ meanwhile retain the state of this accumulator at the end of the two most recently ended epochs in order.
+$\eta_0$ defines the state of the randomness accumulator to which the provably random output of the \textsc{vrf}, the signature over some unbiasable input, is combined each block. $\eta_1$, $\eta_2$ and $\eta_3$ meanwhile retain the state of this accumulator at the end of the three most recently ended epochs in order.
 \begin{align}
   \eta'_0 &\equiv \mathcal{H}(\eta_0 \frown \banderout{\mathbf{H}_v})
 \end{align}
@@ -211,10 +211,10 @@ Finally, $F$ is the fallback key sequence function which selects an epoch's wort
 
 The epoch and winning-tickets markers are information placed in the header in order to minimize data transfer necessary to determine the validator keys associated with any given epoch. They are particularly useful to nodes which do not synchronize the entire state for any given block since they facilitate the secure tracking of changes to the validator key sets using only the chain of headers.
 
-As mentioned earlier, the header's epoch marker $\mathbf{H}_e$ is either empty or, if the block is the first in a new epoch, then a tuple of the epoch randomness and a sequence of Bandersnatch keys defining the Bandersnatch validator keys ($k_b$) beginning in the next epoch. Formally:
+As mentioned earlier, the header's epoch marker $\mathbf{H}_e$ is either empty or, if the block is the first in a new epoch, then a tuple of the next and current epoch randomness, along with a sequence of Bandersnatch keys defining the Bandersnatch validator keys ($k_b$) beginning in the next epoch. Formally:
 \begin{align}\label{eq:epochmarker}
   \mathbf{H}_e &\equiv \begin{cases}
-    ( \eta'_1, [ k_b \mid k \orderedin \gamma'_\mathbf{k} ] )\qquad\qquad &\when e' > e \\
+    ( \eta'_1, \eta'_2, [ k_b \mid k \orderedin \gamma'_\mathbf{k} ] )\qquad\qquad &\when e' > e \\
     \none & \otherwise
   \end{cases}
 \end{align}
