@@ -264,8 +264,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{gas} = 0 \\
   $g = 10$} &
   $\begin{aligned}
-    \registers'_7 &\equiv \gascounter' \bmod 2^{32} \\
-    \registers'_8 &\equiv \left\lfloor \gascounter' \div 2^{32}\right\rfloor
+    \registers'_7 &\equiv \gascounter'
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
@@ -273,7 +272,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{lookup} = 1 \\
   $g = 10$} &
   $\begin{aligned}
-    \using \mathbf{a} &= \begin{cases} \mathbf{s} &\when \registers_7 \in \{ s, 2^{32} - 1 \} \\ \mathbf{d}[\registers_7] &\otherwise \end{cases} \\
+    \using \mathbf{a} &= \begin{cases} \mathbf{s} &\when \registers_7 \in \{ s, 2^{64} - 1 \} \\ \mathbf{d}[\registers_7] &\otherwise \end{cases} \\
     \using [h_o, b_o, b_z] &= \registers_{8..11} \\
     \using h &= \begin{cases}
       \mathcal{H}(\memory_{h_o\dots+32}) &\when \mathbb{Z}_{h_o \dots+ 32} \subset \mathbb{V}_{\memory} \\
@@ -303,7 +302,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   % gas cost for cold reads dependent on trie depth.
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s} &\when \registers_7 \in \{ s, 2^{32} - 1 \} \\
+      \mathbf{s} &\when \registers_7 \in \{ s, 2^{64} - 1 \} \\
       \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
@@ -364,7 +363,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{t} &= \begin{cases}
-      \mathbf{d}[s] &\when \registers_7 = 2^{32} - 1 \\
+      \mathbf{d}[s] &\when \registers_7 = 2^{64} - 1 \\
       \mathbf{d}[\registers_7] &\otherwise
     \end{cases} \\
     \using o &= \registers_8 \\
@@ -459,8 +458,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   $\begin{aligned}
     \mathbf{y'} &\equiv \mathbf{x} \\
-    \registers'_7 &\equiv \gascounter' \bmod 2^{32} \\
-    \registers'_8 &\equiv \left\lfloor \gascounter' \div 2^{32}\right\rfloor
+    \registers'_7 &\equiv \gascounter'
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
@@ -468,15 +466,13 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{new} = 9 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [o, l, g_l, g_h&, m_l, m_h] = \registers_{7..13} \\
+    \using [o, l, g&, m] = \registers_{7..11} \\
     \using c &= \begin{cases}
       \memory_{o\dots+32} &\when \N_{o\dots+32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases}\\
-    \using g &= 2^{32}\cdot g_h + g_l \\
-    \using m &= 2^{32}\cdot m_h + m_l \\
     \using \mathbf{a} \in \mathbb{A} \cup \{\error\} &= \begin{cases}
-      (c, \mathbf{s}: \{\}, \mathbf{l}: \{ (c, l) \mapsto [] \}, b: \mathbf{a}_t, g, m) &\when c \ne \error\\
+      \tup{c, \is{\mathbf{s}}{\{\}}, \is{\mathbf{l}}{\{ (c, l) \mapsto [] \}}, \is{b}{\mathbf{a}_t}, g, m} &\when c \ne \error\\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{s} &= \mathbf{x}_\mathbf{s} \exc \mathbf{s}_b = (\mathbf{x}_\mathbf{s})_b - \mathbf{a}_t \\
@@ -494,13 +490,11 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     $g = 10$
   } &
   $\begin{aligned}
-    \using [o, g_h, g_l, m_h, m_l] &= \registers_{7..12} \\
+    \using [o, g, m] &= \registers_{7..10} \\
     \using c &= \begin{cases}
       \memory_{o\dots+32} &\when \N_{o \dots+ 32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using g &= 2^{32}\cdot g_h + g_l \\
-    \using m &= 2^{32}\cdot m_h + m_l \\
     (\registers'_7, (\mathbf{x}'_\mathbf{s})_c, (\mathbf{x}'_\mathbf{s})_g, (\mathbf{x}'_\mathbf{s})_m) &\equiv \begin{cases}
       (\mathtt{OK}, c, g, m) &\when c \ne \error\\
       (\mathtt{OOB}, (\mathbf{x}_\mathbf{s})_c, (\mathbf{x}_\mathbf{s})_g, (\mathbf{x}_\mathbf{s})_m) &\otherwise
@@ -512,12 +506,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{transfer} = 11 \\
   $g = 10 + \registers_8 + 2^{32}\cdot\registers_9 $} &
   $\begin{aligned}
-    \using [d, a_l, a_h, g_l, g_h, o] &= \registers_{7..13},  \\
-    \using a &= 2^{32}\cdot a_h + a_l \\
-    \using g &= 2^{32}\cdot g_h + g_l \\
+    \using [d, a, g, o] &= \registers_{7..11},  \\
     \using \mathbf{d} &= \mathbf{x}_\mathbf{d} \cup (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
     \using \mathbf{t} \in \mathbb{T} \cup \{\error\} &= \begin{cases}
-      (\mathbf{x}_s, d, a, m, g): m = \memory_{o\dots+\mathsf{W}_T} &\when \N_{o\dots+\mathsf{W}_T} \subset \mathbb{V}_{\memory} \\
+      \tup{\is{s}{\mathbf{x}_s}, d, a, \is{m}{\memory_{o\dots+\mathsf{W}_T}}, g} &\when \N_{o\dots+\mathsf{W}_T} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using b &= (\mathbf{x}_\mathbf{s})_b - a \\
@@ -541,8 +533,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using g &= \gascounter \\
     \using \mathbf{d} &= \mathbf{x}_\mathbf{d} \cup (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
     \using \mathbf{t} \in \mathbb{T} \cup \{\error,\none\} &= \begin{cases}
-      \none &\when d \in \{ \mathbf{x}_s, 2^{32} - 1 \} \\
-      (\mathbf{x}_s, d, a, m, g): \se(m) = \memory_{o\dots+\mathsf{W}_T} &\otherwhen \N_{o\dots+\mathsf{W}_T} \subset \mathbb{V}_{\memory} \\
+      \none &\when d \in \{ \mathbf{x}_s, 2^{64} - 1 \} \\
+      \tup{\is{s}{\mathbf{x}_s}, d, a, \is{m}{\memory_{o\dots+\mathsf{W}_T}}, g} &\otherwhen \N_{o\dots+\mathsf{W}_T} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     (\varepsilon', \registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{d}, \mathbf{x}'_\mathbf{t}) &\equiv \begin{cases}
@@ -632,7 +624,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{d}[s] &\when \registers_7 = 2^{32} - 1 \wedge s \in \keys{\mathbf{d}} \\
+      \mathbf{d}[s] &\when \registers_7 = 2^{64} - 1 \wedge s \in \keys{\mathbf{d}} \\
       \mathbf{d}[\registers_7] &\when \registers_7 \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
@@ -716,16 +708,16 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{peek} = 19 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, o, s, l] &= \registers_{7 \dots 11} \\
+    \using [n, o, s, z] &= \registers_{7 \dots 11} \\
     \using \mathbf{s} &= \begin{cases}
       \none &\when n \not\in \keys{\mathbf{m}}\\
-      (\mathbf{m}[n]_\mathbf{u})_{s\dots+l} &\when \N_{s\dots+l} \subseteq \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \wedge \N_{o\dots+l} \subseteq \mathbb{V}^*_\memory \\
+      (\mathbf{m}[n]_\mathbf{u})_{s\dots+z} &\when \N_{s\dots+z} \subseteq \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \wedge \N_{o\dots+z} \subseteq \mathbb{V}^*_\memory \\
       \error &\otherwise
     \end{cases}\\
     (\registers'_7, \mem') &\equiv \begin{cases}
       (\mathtt{OOB}, \mem) &\when \mathbf{s} = \error \\
       (\mathtt{WHO}, \mem) &\when \mathbf{s} = \none \\
-      (\mathtt{OK}, \mem') \ \where \mem' = \mem \exc \memwr_{o\dots+l} = \mathbf{s} &\otherwise
+      (\mathtt{OK}, \mem') \ \where \mem' = \mem \exc \memwr_{o\dots+z} = \mathbf{s} &\otherwise
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -734,16 +726,16 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{poke} = 20 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, s, o, l] &= \registers_{7 \dots 11} \\
+    \using [n, s, o, z] &= \registers_{7 \dots 11} \\
     \using \mathbf{s} &= \begin{cases}
       \none &\when n \not\in \keys{\mathbf{m}} \\
-      \memr_{s\dots+l} &\when \N_{s\dots+l} \subseteq \mathbb{V}_\memory \wedge \N_{o\dots+l} \subseteq \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
+      \memr_{s\dots+z} &\when \N_{s\dots+z} \subseteq \mathbb{V}_\memory \wedge \N_{o\dots+z} \subseteq \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
       \error &\otherwise
     \end{cases}\\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
       (\mathtt{OOB}, \mathbf{m}) &\when \mathbf{s} = \error \\
       (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{s} = \none \\
-      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'[n]_\mathbf{u})_{o\dots+l} = \mathbf{s} &\otherwise \\
+      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'[n]_\mathbf{u})_{o\dots+z} = \mathbf{s} &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -784,7 +776,9 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \end{cases}\\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
       (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{u} = \error \\
-      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}' &\otherwise \\
+      (\mathtt{OOB}, \mathbf{m}) &\when p + c \ge 2^{32} \vee \exists i \in \N_{p\dots+c} : (\mathbf{u}_\mathbf{A})_i = \none \\
+      (\mathtt{OK}, \mathbf{m}')\,,\ &\otherwise \\
+      \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}'}
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
