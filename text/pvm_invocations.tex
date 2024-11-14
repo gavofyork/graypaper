@@ -8,16 +8,16 @@
 \subsection{Host-Call Result Constants}
 
 \begin{description}
-  \item[$\mathtt{NONE} = 2^{32} - 1$] The return value indicating an item does not exist.
-  \item[$\mathtt{WHAT} = 2^{32} - 2$] Name unknown.
-  \item[$\mathtt{OOB} = 2^{32} - 3$] The return value for when a memory index is provided for reading/writing which is not accessible.
-  \item[$\mathtt{WHO} = 2^{32} - 4$] Index unknown.
-  \item[$\mathtt{FULL} = 2^{32} - 5$] Storage full.
-  \item[$\mathtt{CORE} = 2^{32} - 6$] Core index unknown.
-  \item[$\mathtt{CASH} = 2^{32} - 7$] Insufficient funds.
-  \item[$\mathtt{LOW} = 2^{32} - 8$] Gas limit too low.
-  \item[$\mathtt{HIGH} = 2^{32} - 9$] Gas limit too high.
-  \item[$\mathtt{HUH} = 2^{32} - 10$] The item is already solicited or cannot be forgotten.
+  \item[$\mathtt{NONE} = 2^{64} - 1$] The return value indicating an item does not exist.
+  \item[$\mathtt{WHAT} = 2^{64} - 2$] Name unknown.
+  \item[$\mathtt{OOB} = 2^{64} - 3$] The return value for when a memory index is provided for reading/writing which is not accessible.
+  \item[$\mathtt{WHO} = 2^{64} - 4$] Index unknown.
+  \item[$\mathtt{FULL} = 2^{64} - 5$] Storage full.
+  \item[$\mathtt{CORE} = 2^{64} - 6$] Core index unknown.
+  \item[$\mathtt{CASH} = 2^{64} - 7$] Insufficient funds.
+  \item[$\mathtt{LOW} = 2^{64} - 8$] Gas limit too low.
+  \item[$\mathtt{HIGH} = 2^{64} - 9$] Gas limit too high.
+  \item[$\mathtt{HUH} = 2^{64} - 10$] The item is already solicited or cannot be forgotten.
   \item[$\mathtt{OK} = 0$] The return value indicating general success.
 \end{description}
 
@@ -30,7 +30,7 @@ Inner \textsc{pvm} invocations have their own set of result codes:
   \item[$\mathtt{OOG} = 4$] The invocation completed by running out of gas.
 \end{description}
 
-Note return codes for a host-call-request exit are any non-zero value less than $2^{32} - 13$.
+Note return codes for a host-call-request exit are any non-zero value less than $2^{64} - 13$.
 
 \subsection{Is-Authorized Invocation}\label{sec:isauthorizedinvocation}
 
