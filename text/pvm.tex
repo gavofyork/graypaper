@@ -175,7 +175,7 @@ We define signed/unsigned transitions for various octet widths:
 
 Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values. We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
 \begin{align}\label{eq:signedextension}
-  \sext_{n \in \{0, 1, 2, 3, 4\}}\colon\left\{\begin{aligned}
+  \sext_{n \in \{0, 1, 2, 3, 4, 5, 6, 7, 8\}}\colon\left\{\begin{aligned}
     \N_{2^{8n}} &\to \N_R\\
     x &\mapsto x + \ffrac{x}{2^{8n-1}}(2^{64}-2^{8n})
   \end{aligned}\right.
