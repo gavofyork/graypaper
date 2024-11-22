@@ -180,7 +180,7 @@ The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as s
   \mathsf{Z}_P &= 2^{12}
 \end{align}
 
-The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $2^p = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\mathbb{M}$ includes two components: a value $\mathbf{V}$ and access $\mathbf{A}$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \mathbb{M}$ is typically used to denote \textsc{ram}.
+The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\mathsf{Z}_P = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\mathbb{M}$ includes two components: a value $\mathbf{V}$ and access $\mathbf{A}$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \mathbb{M}$ is typically used to denote \textsc{ram}.
 \begin{align}
   \mathbb{V}_{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] \ne \none \} \\
   \mathbb{V}^*_{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] = \text{W} \}
