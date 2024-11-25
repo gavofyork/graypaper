@@ -11,7 +11,7 @@
 \newcommand*{\memwr}{{\mem'}^{\circlearrowleft}}
 \newcommand*{\ram}{\mathbb{M}}
 \newcommand*{\rnp}[1]{P(#1)}
-\newcommand*{\rnq}[1]{Q(#1)}
+\newcommand*{\rnq}[1]{Z(#1)}
 \newcommand*{\continue}{\blacktriangleright}
 \newcommand*{\gas}{\gascounter_\Delta}
 \newcommand*{\instrlen}{\ell}
@@ -420,7 +420,7 @@ We assume the skip length $\ell$ is well-defined:
 \bottomrule
 \end{longtable}
 
-Note, the term $h$ above refers to the beginning of the heap, the second major section of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_J + Q(|\mathbf{o}|)$. If $\token{sbrk}$ instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
+Note, the term $h$ above refers to the beginning of the heap, the second major section of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_Z + Q(|\mathbf{o}|)$. If $\token{sbrk}$ instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Immediate}
 \begin{equation}
@@ -683,7 +683,7 @@ However, when the exit reason to $\Psi$ is a host-call $\host$, then the resulta
 We use both values of instruction-counter for the definition of $\Psi_H$ since if the host-call results in a page fault we need to allow the outer environment to resolve the fault and re-try the host-call. Conversely, if we successfully transition state according to the host-call, then on resumption we wish to begin with the instruction directly following the host-call.
 
 \subsection{Standard Program Initialization}\label{sec:standardprograminit}
-The software programs which will run in each of the four instances where the \textsc{pvm} is utilized in the main document have a very typical setup pattern characteristic of an output of a compiler and linker. This means that \textsc{ram} has sections for program-specific read-only data, read-write (heap) data and the stack. An adjunct to this, very typical of our usage patterns is an extra read-only section via which invocation-specific data may be passed (\ie arguments). It thus makes sense to define this properly in a single initializer function. These sections are quantized into \emph{major zones}, and one major zone is always left unallocated between sections in order to reduce accidental overrun. Sections are padded with zeroes to ensure they align on the boundaries of the minor zones, which are themselves multiples of \textsc{pvm} memory packages.
+The software programs which will run in each of the four instances where the \textsc{pvm} is utilized in the main document have a very typical setup pattern characteristic of an output of a compiler and linker. This means that \textsc{ram} has sections for program-specific read-only data, read-write (heap) data and the stack. An adjunct to this, very typical of our usage patterns is an extra read-only section via which invocation-specific data may be passed (\ie arguments). It thus makes sense to define this properly in a single initializer function. These sections are quantized into \emph{major zones}, and one major zone is always left unallocated between sections in order to reduce accidental overrun. Sections are padded with zeroes to the nearest \textsc{pvm} memory page boundary.
 
 We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} at program start. Given some $\mathbf{p}$ which is appropriately encoded together with some argument data $\mathbf{a}$, we can define program code $\mathbf{c}$, registers $\registers$ and \textsc{ram} $\mem$ through the standard initialization decoder function $Y$:
 \begin{equation}
@@ -698,49 +698,49 @@ Y\colon\left\{\begin{aligned}
 With conditions:
 \begin{align}\label{eq:conditions}
   &\using \mathcal{E}_3(|\mathbf{o}|) \concat \mathcal{E}_3(|\mathbf{w}|) \concat \mathcal{E}_2(z) \concat \mathcal{E}_3(s) \concat \mathbf{o} \concat \mathbf{w} \concat \mathcal{E}_4(|\mathbf{c}|) \concat \mathbf{c} = \mathbf{p}\\
-  &\mathsf{Z}_N = 2^{14}\ ,\quad\mathsf{Z}_J = 2^{16}\ ,\quad\mathsf{Z}_I = 2^{24}\\
-  &\using \rnp{x \in \N} \equiv \mathsf{Z}_N\left\lceil \frac{x}{\mathsf{Z}_N} \right\rceil\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_J\left\lceil \frac{x}{\mathsf{Z}_J} \right\rceil\\
-  &5\mathsf{Z}_J + Q(|\mathbf{o}|) + Q(|\mathbf{w}| + z\mathsf{Z}_N) + Q(s) + \mathsf{Z}_I \leq 2^{32}
+  &\mathsf{Z}_Z = 2^{16}\ ,\quad\mathsf{Z}_I = 2^{24}\\
+  &\using \rnp{x \in \N} \equiv \mathsf{Z}_P\left\lceil \frac{x}{\mathsf{Z}_P} \right\rceil\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_Z\left\lceil \frac{x}{\mathsf{Z}_Z} \right\rceil\\
+  &5\mathsf{Z}_Z + Q(|\mathbf{o}|) + Q(|\mathbf{w}| + z\mathsf{Z}_P) + Q(s) + \mathsf{Z}_I \leq 2^{32}
 \end{align}
 Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\mathbf{c}$ as above and $\mem$, $\registers$ such that:
 \begin{equation}\label{eq:memlayout}
   \forall i \in \N_{2^{32}} : ((\mem_\mathbf{V})_i, (\mem_\mathbf{A})_{\floor{\nicefrac{i}{\mathsf{Z}_P}}}) = \left\{\begin{alignedat}{5}
-    &\tup{\is{\mathbf{V}}{\mathbf{o}_{i - \mathsf{Z}_J}}\ts\is{\mathbf{A}}{R}} &&\ \when
-        \mathsf{Z}_J
+    &\tup{\is{\mathbf{V}}{\mathbf{o}_{i - \mathsf{Z}_Z}}\ts\is{\mathbf{A}}{R}} &&\ \when
+        \mathsf{Z}_Z
             &\ \leq i < \ &&
-                \mathsf{Z}_J + |\mathbf{o}|\\
+                \mathsf{Z}_Z + |\mathbf{o}|\\
     &(0, R) &&\ \when
-        \mathsf{Z}_J + |\mathbf{o}|
+        \mathsf{Z}_Z + |\mathbf{o}|
             &\ \leq i < \ &&
-                \mathsf{Z}_J + \rnp{|\mathbf{o}|} \\
-    &(\mathbf{w}_{i - (2\mathsf{Z}_J + \rnq{|\mathbf{o}|})}, W) &&\ \when
-        2\mathsf{Z}_J + \rnq{|\mathbf{o}|}
+                \mathsf{Z}_Z + \rnp{|\mathbf{o}|} \\
+    &(\mathbf{w}_{i - (2\mathsf{Z}_Z + \rnq{|\mathbf{o}|})}, W) &&\ \when
+        2\mathsf{Z}_Z + \rnq{|\mathbf{o}|}
             &\ \leq i < \ &&
-                2\mathsf{Z}_J + \rnq{|\mathbf{o}|} + |\mathbf{w}|\\
+                2\mathsf{Z}_Z + \rnq{|\mathbf{o}|} + |\mathbf{w}|\\
     &(0, W) &&\ \when
-        2\mathsf{Z}_J + \rnq{|\mathbf{o}|} + |\mathbf{w}|
+        2\mathsf{Z}_Z + \rnq{|\mathbf{o}|} + |\mathbf{w}|
             &\ \leq i < \ &&
-                2\mathsf{Z}_J + \rnq{|\mathbf{o}|} + \rnp{|\mathbf{w}|} + z\mathsf{Z}_N\\
+                2\mathsf{Z}_Z + \rnq{|\mathbf{o}|} + \rnp{|\mathbf{w}|} + z\mathsf{Z}_P\\
     &(0, W) &&\ \when
-        2^{32} - 2\mathsf{Z}_J - \mathsf{Z}_I - \rnp{s}
+        2^{32} - 2\mathsf{Z}_Z - \mathsf{Z}_I - \rnp{s}
             &\ \leq i < \ &&
-                2^{32} - 2\mathsf{Z}_J - \mathsf{Z}_I\\
-    &(\mathbf{a}_{i - (2^{32} - \mathsf{Z}_J - \mathsf{Z}_I)}, R) &&\ \when
-        2^{32} - \mathsf{Z}_J - \mathsf{Z}_I
+                2^{32} - 2\mathsf{Z}_Z - \mathsf{Z}_I\\
+    &(\mathbf{a}_{i - (2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I)}, R) &&\ \when
+        2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I
             &\ \leq i < \ &&
-                2^{32} - \mathsf{Z}_J - \mathsf{Z}_I + |\mathbf{a}|\\
+                2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + |\mathbf{a}|\\
     &(0, R) &&\ \when
-        2^{32} - \mathsf{Z}_J - \mathsf{Z}_I + |\mathbf{a}|
+        2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + |\mathbf{a}|
             &\ \leq i < \ &&
-                2^{32} - \mathsf{Z}_J - \mathsf{Z}_I + \rnp{|\mathbf{a}|}\\
+                2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + \rnp{|\mathbf{a}|}\\
     &(0, \none) &&\otherwise&&&
   \end{alignedat}\right.\\
 \end{equation}
 \begin{equation}\label{eq:registers}
   \forall i \in \N_{13} : \registers_i = \begin{cases}
       2^{32} - 2^{16} &\when i = 0\\
-      2^{32} - 2\mathsf{Z}_J - \mathsf{Z}_I &\when i = 1\\
-      2^{32} - \mathsf{Z}_J - \mathsf{Z}_I &\when i = 7\\
+      2^{32} - 2\mathsf{Z}_Z - \mathsf{Z}_I &\when i = 1\\
+      2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I &\when i = 7\\
       |\mathbf{a}|&\when i = 8\\
       0 &\otherwise
     \end{cases}
