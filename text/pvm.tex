@@ -175,7 +175,7 @@ We define signed/unsigned transitions for various octet widths:
 
 Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values. We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
 \begin{align}\label{eq:signedextension}
-  \sext_{n \in \{0, 1, 2, 3, 4, 5, 6, 7, 8\}}\colon\left\{\begin{aligned}
+  \sext_{n \in \{0, 1, 2, 3, 4, 8\}}\colon\left\{\begin{aligned}
     \N_{2^{8n}} &\to \N_R\\
     x &\mapsto x + \ffrac{x}{2^{8n-1}}(2^{64}-2^{8n})
   \end{aligned}\right.
@@ -264,7 +264,7 @@ We assume the skip length $\ell$ is well-defined:
 \begin{aligned}
     \using l_X &= \min(4, \instructions_{\imath+1} \bmod 8) \,,\quad&
     \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
-    \using l_Y &= \min(8, \max(0, \ell - l_X - 1)) \,,\quad&
+    \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
     \immed_Y &\equiv \sext_{l_Y}(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
 \end{aligned}
 \end{equation}
@@ -341,7 +341,7 @@ We assume the skip length $\ell$ is well-defined:
     \reg'_A \equiv \reg'_{r_A} \\
     \using l_X &= \min(4, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
     \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
-    \using l_Y &= \min(8, \max(0, \ell - l_X - 1)) \,,\quad&
+    \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
     \immed_Y &= \sext_{l_Y}(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
 \end{aligned}
 \end{equation}
@@ -365,7 +365,7 @@ We assume the skip length $\ell$ is well-defined:
       \using r_A &= \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad&
       \reg_A &\equiv \reg_{r_A} \,,\quad
       \reg'_A \equiv \reg'_{r_A} \\
-      \using l_X &= \min(8, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
+      \using l_X &= \min(4, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
       \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X})) \\
       \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
       \immed_Y &= \imath + \signfunc{l_Y}(\de_{l_Y}(\instructions_{\imath+2+l_X\dots+l_Y}))
@@ -431,7 +431,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
   \reg_B &\equiv \reg_{r_B} \,,\quad
   \reg'_B \equiv \reg'_{r_B} \\
-  \using l_X &= \min(8, \max(0, \ell - 1)) \,,\quad&
+  \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
   \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions_{\imath+2\dots+l_X}))
 \end{aligned}
 \end{equation}
