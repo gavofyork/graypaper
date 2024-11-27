@@ -416,8 +416,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{x}) &= \begin{cases}
-      (\mathtt{OK}, \tuple{m, a, v, \mathbf{g}}) &\when \mathbf{g} \ne \error \\
-      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{x}) &\otherwise
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{x}) &\when \mathbf{g} = \error\\
+      (\mathtt{WHO}, (\mathbf{x}_\mathbf{u})_\mathbf{x}) &\otherwhen (m, a, v) \not\in (\N_S, \N_S, \N_S) \\
+      (\mathtt{OK}, \tuple{m, a, v, \mathbf{g}}) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -432,9 +433,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{q}[\registers_7]) &= \begin{cases}
-      (\mathtt{OK}, \mathbf{c}) &\when \registers_7 < \mathsf{C} \wedge \mathbf{c} \ne \error \\
       (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\when \mathbf{c} = \error \\
-      (\mathtt{CORE}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\otherwise \\
+      (\mathtt{CORE}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\otherwhen \registers_7 \ge \mathsf{C} \\
+      (\mathtt{OK}, \mathbf{c}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -449,8 +450,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{i}) &= \begin{cases}
-      (\mathtt{OK}, \mathbf{i}) &\when \mathbf{v} \ne \error \\
-      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{i}) &\otherwise
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{i}) &\when \mathbf{v} = \error\\
+      (\mathtt{OK}, \mathbf{i}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
