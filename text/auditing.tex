@@ -28,7 +28,7 @@ All items in the work-package specification field of the work-report should be r
 
 \subsection{Selection of Reports}
 
-Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\mathbf{B}$ with other terms corresponding to the state-transition implied by that block, so $\rho$ is said block's prior core-allocation, $\kappa'$ is its posterior validator set, $\mathbf{H}$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
+Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\mathbf{B}$ with other terms corresponding to the state-transition implied by that block, so $\rho$ is said block's prior core-allocation, $\kappa$ is its prior validator set, $\mathbf{H}$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
 
 We define the sequence of work-reports which we may be required to audit as $\mathbf{Q}$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
 \begin{align}\label{eq:auditselection}
@@ -41,7 +41,7 @@ We define the sequence of work-reports which we may be required to audit as $\ma
 
 We define our initial audit tranche in terms of a verifiable random quantity $s_0$ created specifically for it:
 \begin{align}
-  s_0 &\in \bandersig{\kappa'[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}}{[]} \\
+  s_0 &\in \bandersig{\kappa[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}}{[]} \\
   \mathsf{X}_U &= \token{\$jam\_audit}
 \end{align}
 
@@ -63,7 +63,7 @@ In all cases, we publish a signed statement of which of the cores we believe we 
 
 Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $s_n$ and all signed data. Validator's announcement statements must be in the set $S$:
 \begin{align}
-  S &\equiv \sig{\kappa'[v]_e}{\mathsf{X}_I \doubleplus n \concat \mathbf{x}_n \concat \mathcal{H}(\mathbf{H})} \\
+  S &\equiv \sig{\kappa[v]_e}{\mathsf{X}_I \doubleplus n \concat \mathbf{x}_n \concat \mathcal{H}(\mathbf{H})} \\
   \where \mathbf{x}_n &= \se([\se_2(c) \frown \mathcal{H}(w) \mid \tup{c, w} \in \mathbf{a}_n])\\
   \mathsf{X}_I &= \token{\$jam\_announce}
 \end{align}
@@ -84,7 +84,7 @@ We are able to define $\mathbf{a}_n$ for tranches beyond the first on the basis 
 We can thus define $\mathbf{a}_n$ beyond the initial tranche through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
 \begin{align}
   \nonumber\forall n > 0:&\\
-  \ s_n(w) &\in \bandersig{\kappa'[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}\concat\mathcal{H}(w)\doubleplus n}{[]} \\
+  \ s_n(w) &\in \bandersig{\kappa[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}\concat\mathcal{H}(w)\doubleplus n}{[]} \\
   \ \mathbf{a}_n &\equiv \{ \textstyle\frac{\mathsf{V}}{256\mathsf{F}}\banderout{s_n(w)}_0 < m_n \mid w \in \mathbf{Q}, w \ne \none \}\!\!\!\!\\
   \nonumber \where m_n &= |A_{n - 1}(w) \setminus J_\top(w)|
 \end{align}
@@ -118,7 +118,7 @@ Note that a failure to decode implies an invalid work-report.
 
 From this mapping the validator issues a set of judgments $\mathbf{j}_n$:
 \begin{align}
-  \mathbf{j}_n &= \{ \mathcal{S}_{\kappa'[v]_e}(\mathsf{X}_{e(w)} \concat \mathcal{H}(w)) \mid (c, w) \in \mathbf{a}_n \}
+  \mathbf{j}_n &= \{ \mathcal{S}_{\kappa[v]_e}(\mathsf{X}_{e(w)} \concat \mathcal{H}(w)) \mid (c, w) \in \mathbf{a}_n \}
 \end{align}
 
 %We denote the guarantors of a work-package $w$ as $\mathbf{G}(w)$ from a particular chain head, and this may be derived from the guarantees extrinsic $\xtguarantees$ of the ancestor block which introduced the work-report. Our restrictions on the guarantees extrinsic (described in section \ref{sec:accumulation}) ensures that this is unique.
