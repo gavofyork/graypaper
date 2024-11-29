@@ -156,6 +156,8 @@ Note: in the case that $|\mathbf{s}|$ is not a multiple of 64, then the term $\m
 
 \subsection{Computation of Work Results}\label{sec:computeworkresult}
 
+% TODO: Pass in entire Work Package and provide host-call to extract other Work Item payloads, imports and extrinsics.
+
 We now come to the work result computation function $\Xi$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $c$ and results in either an error $\error$ or the work result and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization.
 
 Formally:

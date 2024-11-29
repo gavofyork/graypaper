@@ -37,11 +37,9 @@ A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-packag
 \mathsf{W}_U &\equiv 128
 \end{align}
 
-% TODO: places where w \in \mathbb{W} : w_o should be replaced with w_\mathbf{o} and w_r with w_\mathbf{r}
-
-We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\mathsf{J} = 8$, and the total serialized size of a work-report may be no greater than $\mathsf{W}_R$ bytes:
+We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\mathsf{J} = 8$:
 \begin{equation}
-  \forall w \in \mathbb{W} : |w_\wr¬srlookup| + |(w_x)_\mathbf{p}| \le \mathsf{J}\ \wedge\ |\se(w)| \leq \mathsf{W}_R
+  \forall w \in \mathbb{W} : |w_\wr¬srlookup| + |(w_x)_\mathbf{p}| \le \mathsf{J}
 \end{equation}
 
 \subsubsection{Refinement Context}
@@ -72,21 +70,27 @@ The \emph{segment-root} ($e$) is the root of a constant-depth, left-biased and z
 \subsubsection{Work Result}
 We finally come to define a \emph{work result}, $\mathbb{L}$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
 
-%TODO: make o bold.
-\begin{align}\label{eq:workresult}
-  \mathbb{L} &\equiv (s \in \N_S, c \in \H, l \in \H, g \in \N_G, \mathbf{o} \in \Y \cup \mathbb{J})
-\end{align}
+\begin{equation}\label{eq:workresult}
+  \mathbb{L} \equiv (s \in \N_S, c \in \H, l \in \H, g \in \N_G, \mathbf{o} \in \Y \cup \mathbb{J})
+\end{equation}
 
 Work results are a tuple comprising several items. Firstly $s$, the index of the service whose state is to be altered and thus whose refine code was already executed. We include the hash of the code of the service at the time of being reported $c$, which must be accurately predicted within the work-report according to equation \ref{eq:reportcodesarecorrect};
 
 Next, the hash of the payload ($l$) within the work item which was executed in the refine stage to give this result. This has no immediate relevance, but is something provided to the accumulation logic of the service. We follow with the gas prioritization ratio $g$ used when determining how much gas should be allocated to execute of this item's accumulate.
 
 Finally, there is the output or error of the execution of the code $\mathbf{o}$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
-\begin{align}
+\begin{equation}
   \mathbb{J} \in \{ \oog, \panic, \token{BAD}, \token{BIG} \}
-\end{align}
+\end{equation}
 
 The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining two, the first indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The second indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
+
+In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful output blobs together with the authorizer output blob, effectively limiting their overall size:
+\begin{align}
+  &\forall w \in \mathbb{W}:
+    |w_\mathbf{o}| + \sum_{r \in w_\mathbf{r}, r_\mathbf{o} \in \Y} |r_\mathbf{o}| \le \mathsf{W}_R \\
+  &\mathsf{W}_R \equiv 48\cdot2^{10}
+\end{align}
 
 
 
