@@ -37,7 +37,7 @@ Work-packages have two other types of external data associated with them: A cryp
 
 \subsubsection{Segments, Imports and Exports}
 
-The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_G = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term \emph{Imports DA} during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the DA system.
+The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_G = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term \emph{Imports \textsc{da}} during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the \textsc{da} system.
 \begin{equation}\label{eq:segment}
   \G \equiv \Y_{\mathsf{W}_G}
 \end{equation}
@@ -54,7 +54,7 @@ It is the task of a guarantor to reconstitute all imported segments through fetc
 
 Justification data must be available to any node over the course of its segment's potential requirement. At around 350 bytes to justify a single segment, justification data is too voluminous to have all validators store all data. We therefore use the same overall availability framework for hosting justification metadata as the data itself.
 
-The guarantor is able to use this proof to justify to themselves that they are not wasting their time on incorrect behavior. We do not force auditors to go through the same process. Instead, guarantors build an \emph{Auditable Work Package}, and place this in the Audit DA system. This is the original work-package, its extrinsic data, its imported data and a concise proof of correctness of that imported data. This tactic routinely duplicates data between the Imports DA and the Audits DA, however it is acceptable in order to reduce the bandwidth cost for auditors who must justify the correctness as cheaply as possible as auditing happens on average 30 times for each work-package whereas guaranteeing happens only twice or thrice.
+The guarantor is able to use this proof to justify to themselves that they are not wasting their time on incorrect behavior. We do not force auditors to go through the same process. Instead, guarantors build an \emph{Auditable Work Package}, and place this in the Audit \textsc{da} system. This is the original work-package, its extrinsic data, its imported data and a concise proof of correctness of that imported data. This tactic routinely duplicates data between the Imports \textsc{da} and the Audits \textsc{da}, however it is acceptable in order to reduce the bandwidth cost for auditors who must justify the correctness as cheaply as possible as auditing happens on average 30 times for each work-package whereas guaranteeing happens only twice or thrice.
 
 \subsection{Packages and Items}\label{sec:packagesanditems}
 
@@ -117,7 +117,7 @@ Given the result $o$ of some work-item, we define the item-to-result function $\
 \begin{equation}
   \itemtoresult\colon\left\{\begin{aligned}
     (\mathbb{I}, \Y \cup \mathbb{J}) &\to \mathbb{L}\\
-    ((s, c, \mathbf{y}, a), o) &\mapsto (s, c, \mathcal{H}(\mathbf{y}), \is{g}{a}, o)
+    ((s, c, \mathbf{y}, a), \mathbf{o}) &\mapsto (s, c, \mathcal{H}(\mathbf{y}), \is{g}{a}, \mathbf{o})
   \end{aligned}\right.
 \end{equation}
 
@@ -135,9 +135,9 @@ We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the h
 \subsubsection{Exporting}
 Any of a work-package's work-items may \emph{export} segments and a \emph{segments-root} is placed in the work-report committing to these, ordered according to the work-item which is exporting. It is formed as the root of a constant-depth binary Merkle tree as defined in equation \ref{eq:constantdepthmerkleroot}.
 
-Guarantors are required to erasure-code and distribute two data sets: one blob, the auditable work-package containing the encoded work-package, extrinsic data and self-justifying imported segments which is placed in the short-term Audit DA store and a second set of exported-segments data together with the \emph{Paged-Proofs} metadata. Items in the first store are short-lived; assurers are expected to keep them only until finality of the block in which the availability of the work-result's work-package is assured. Items in the second, meanwhile, are long-lived and expected to be kept for a minimum of 28 days (672 complete epochs) following the reporting of the work-report.
+Guarantors are required to erasure-code and distribute two data sets: one blob, the auditable work-package containing the encoded work-package, extrinsic data and self-justifying imported segments which is placed in the short-term Audit \textsc{da} store and a second set of exported-segments data together with the \emph{Paged-Proofs} metadata. Items in the first store are short-lived; assurers are expected to keep them only until finality of the block in which the availability of the work-result's work-package is assured. Items in the second, meanwhile, are long-lived and expected to be kept for a minimum of 28 days (672 complete epochs) following the reporting of the work-report.
 
-We define the paged-proofs function $\pagedproofs$ which accepts a series of exported segments $\mathbf{s}$ and defines some series of additional segments placed into the Imports DA system via erasure-coding and distribution. The function evaluates to pages of hashes, together with subtree proofs, such that justifications of correctness based on a segments-root may be made from it:
+We define the paged-proofs function $\pagedproofs$ which accepts a series of exported segments $\mathbf{s}$ and defines some series of additional segments placed into the Imports \textsc{da} system via erasure-coding and distribution. The function evaluates to pages of hashes, together with subtree proofs, such that justifications of correctness based on a segments-root may be made from it:
 \begin{equation}\label{eq:pagedproofs}
   \!\!\pagedproofs\colon\left\{\begin{aligned}
     \seq{\G} \to \,&\seq{\G} \\
