@@ -36,9 +36,11 @@ Note return codes for a host-call-request exit are any non-zero value less than 
 
 The Is-Authorized invocation is the first and simplest of the four, being totally stateless. It provides only a single host-call function, $\Omega_G$ for determining the amount of gas remaining. It accepts as arguments the work-package as a whole, $\mathbf{p}$ and the core on which it should be executed, $c$. Formally, it is defined as $\Psi_I$:
 
+% TODO: Don't pass in the work-package as a whole - it's probably too big and will cost too much gas. Only pass in the authorization stuff and allow everything else to be fetched using host-calls.
+
 \begin{align}
   \Psi_I &\colon \left\{\begin{aligned}
-    (\mathbb{P}, \N_\mathsf{C}) &\to \Y_{\mathsf{W}_U} \cup \mathbb{J} \\
+    (\mathbb{P}, \N_\mathsf{C}) &\to \Y \cup \mathbb{J} \\
     (\mathbf{p}, c) &\mapsto \mathbf{r}\ \where (g, \mathbf{r}, \none) = \Psi_M(\mathbf{p}_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(\mathbf{p}, c), F, \none)
   \end{aligned}\right. \\
   \label{eq:isauthorizedmutator}F \in \Omega\ang{\{\}} &\colon
@@ -67,7 +69,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &\Psi_R \colon \left\{\begin{aligned}
     \left(\begin{aligned}
       &\H, \N_G, \N_S, \H, \Y, \mathbb{X},\\
-      &\H, \Y_{\mathsf{W}_U}, \seq{\G}, \seq{\Y}, \N
+      &\H, \Y, \seq{\G}, \seq{\Y}, \N
     \end{aligned}
     \right) &\to (\Y \cup \mathbb{J}, \seq{\Y}) \\
     (c, g, s, p, \mathbf{y}, \mathbf{c}, a, \mathbf{o}, \mathbf{i}, \overline{\mathbf{x}}, \segoff) &\mapsto \begin{cases}

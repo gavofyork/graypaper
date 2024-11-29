@@ -22,20 +22,19 @@ As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\
 
 \subsubsection{Work Report}\label{sec:workreport}
 A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification $s$, the refinement context $x$, and the core-index (\ie on which the work is done) as well as the authorizer hash $a$ and output $\mathbf{o}$, a segment-root lookup dictionary $\wr¬srlookup$, and finally the results of the evaluation of each of the items in the package $\mathbf{r}$, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
-\begin{align}\label{eq:workreport}
-\mathbb{W} &\equiv \tuple{
+\begin{equation}\label{eq:workreport}
+\mathbb{W} \equiv \tuple{
   \begin{aligned}
     &\isa{s}{\mathbb{S}},\ 
     \isa{x}{\mathbb{X}},\ 
     \isa{c}{\N_\mathsf{C}},\ 
     \isa{a}{\H},\\
-    &\isa{\mathbf{o}}{\Y_{\mathsf{W}_U}},\ 
+    &\isa{\mathbf{o}}{\Y},\ 
     \isa{\wr¬srlookup}{\dict{\H}{\H}},\ 
     \isa{\mathbf{r}}{\seq{\mathbb{L}}_{1:\mathsf{I}}}
   \end{aligned}
-}\\
-\mathsf{W}_U &\equiv 128
-\end{align}
+}
+\end{equation}
 
 We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\mathsf{J} = 8$:
 \begin{equation}
@@ -43,6 +42,9 @@ We limit the sum of the number of items in the segment-root lookup dictionary an
 \end{equation}
 
 \subsubsection{Refinement Context}
+
+% TODO: Move \mathbf{p} from here into the \mathbb{W} - it's really not part of the context.
+
 A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $a$ along with its associated posterior state-root $s$ and posterior \textsc{Beefy} root $b$; and the \emph{lookup-anchor}, header hash $l$ and of timeslot $t$. Finally, it identifies the hash of any prerequisite work-packages $\mathbf{p}$. Formally:
 \begin{equation}
   \mathbb{X} \equiv \ltuple\,\begin{alignedat}{7}
