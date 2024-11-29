@@ -70,13 +70,14 @@ We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constit
   }
 \end{equation}
 
-A work item includes: $s$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $c$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\mathbf{y}$, a gas limit $g$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportsegments$ the number of data segments exported by this work item.
+A work item includes: $s$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $c$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\mathbf{y}$, gas limits for Refinement and Accumulation $g$ \& $a$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportsegments$ the number of data segments exported by this work item.
 \begin{equation}\label{eq:workitem}
   \mathbb{I} \equiv \tuple{\begin{aligned}
     &\isa{s}{\N_S},
     \isa{c}{\H},
     \isa{\mathbf{y}}{\Y},
     \isa{g}{\N_G},
+    \isa{a}{\N_G},
     \isa{\wi¬exportsegments}{\N}, \\
     &\isa{\wi¬importsegments}{\seq{\tuple{\H \cup (\H^\boxplus),\N}}},
     \isa{\wi¬extrinsics}{\seq{(\H, \N)}}
@@ -102,13 +103,21 @@ We limit the encoded size of a work-package plus the total size of the implied i
   \mathsf{W}_B &= 12\cdot2^{20}
 \end{align}
 
+We limit the sums of each of the two gas limits to be at most the maximum gas allocated to a core for the corresponding operation:
+\begin{equation}
+  \forall \wpX \in \mathbb{P}:\ \;
+    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_a) < \mathsf{G}_A
+  \quad\wedge\ \;
+    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_r) < \mathsf{G}_R
+\end{equation}
+
 %The implication of equation \ref{eq:checkextractsize} is that we have access to the preimage of all extrinsic data. For guaranteeing, this implies the work-package author probably submits the preimages alongside the work-package itself. For auditing, the extrinsic preimages may be reconstructed in the same manner as the work-package. Both are described later.
 
 Given the result $o$ of some work-item, we define the item-to-result function $\itemtoresult$ as:
 \begin{equation}
   \itemtoresult\colon\left\{\begin{aligned}
     (\mathbb{I}, \Y \cup \mathbb{J}) &\to \mathbb{L}\\
-    ((s, c, \mathbf{y}, g), o) &\mapsto (s, c, \mathcal{H}(\mathbf{y}), g, o)
+    ((s, c, \mathbf{y}, a), o) &\mapsto (s, c, \mathcal{H}(\mathbf{y}), \is{g}{a}, o)
   \end{aligned}\right.
 \end{equation}
 
