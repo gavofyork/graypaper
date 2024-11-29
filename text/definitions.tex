@@ -40,7 +40,7 @@
     \item[$\bar{\mathbb{F}}$] The set of Bandersnatch Ring\textsc{vrf} proofs. See section \ref{sec:cryptography}.
     \item[$\bandersnatch{R}{C}{M}$] The set of Bandersnatch Ring\textsc{vrf} proofs of the root $R$, context $C$ and message $M$. A subset of $\bar{\mathbb{F}}$. See section \ref{sec:cryptography}.
   \end{description}
-  \item[$\mathbb{G}$] The set of data segments, equivalent to octet sequences of length $\mathsf{W}_S$. See equation \ref{eq:segment}.
+  \item[$\mathbb{G}$] The set of data segments, equivalent to octet sequences of length $\mathsf{W}_G$. See equation \ref{eq:segment}.
   \item[$\H$] The set of 32-octet cryptographic values. A subset of $\Y_{32}$. $\H$ without a subscript generally implies a hash function result. See section \ref{sec:cryptography}. \emph{NOTE: Not used as quaternions.}
   \begin{description}
     \item[$\H_B$] The set of Bandersnatch public keys. A subset of $\Y_{32}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
@@ -278,12 +278,13 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{S} = 1024$] The maximum number of entries in the accumulation queue.
   \item[$\mathsf{U} = 5$] The period in timeslots after which reported but unavailable work may be replaced.
   \item[$\mathsf{V} = 1023$] The total number of validators.
+  \item[$\mathsf{W}_B = 12\cdot2^{20}$] The maximum size of an encoded work-package together with its extrinsic data and import implications, in octets.
   \item[$\mathsf{W}_C = 4,000,000$] The maximum size of service code in octets.
   \item[$\mathsf{W}_E = 684$] The basic size of erasure-coded pieces in octets. See equation \ref{eq:erasurecoding}.
+  \item[$\mathsf{W}_G = \mathsf{W}_P\mathsf{W}_E = 4104$] The size of a segment in octets.
   \item[$\mathsf{W}_M = 2^{11}$] The maximum number of entries in a work-package manifest.
-  \item[$\mathsf{W}_P = 12\cdot2^{20}$] The maximum size of an encoded work-package together with its extrinsic data and import implications, in octets.
+  \item[$\mathsf{W}_P = 6$] The number of erasure-coded pieces in a segment.
   \item[$\mathsf{W}_R = 96\cdot2^{10}$] The maximum size of an encoded work-report in octets.
-  \item[$\mathsf{W}_S = 6$] The size of an exported segment in erasure-coded pieces in octets.
   \item[$\mathsf{W}_T = 128$] The size of a transfer memo in octets.
   \item[$\mathsf{X}$] Context strings, see below.
   \item[$\mathsf{Y} = 500$] The number of slots into an epoch at which ticket-submission ends.

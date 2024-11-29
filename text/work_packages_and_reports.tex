@@ -37,9 +37,9 @@ Work-packages have two other types of external data associated with them: A cryp
 
 \subsubsection{Segments, Imports and Exports}
 
-The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_S\mathsf{W}_E = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term \emph{Imports DA} during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the DA system.
+The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_G = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term \emph{Imports DA} during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the DA system.
 \begin{equation}\label{eq:segment}
-  \G \equiv \Y_{\mathsf{W}_S\mathsf{W}_E}
+  \G \equiv \Y_{\mathsf{W}_G}
 \end{equation}
 
 Exported segments are data which are \emph{generated} through the execution of the Refine logic and thus are a side effect of transforming the work-package into a work-report. Since their data is deterministic based on the execution of the Refine logic, we do not require any particular commitment to them in the work-package beyond knowing how many are associated with each Refine invocation in order that we can supply an exact index.
@@ -97,9 +97,9 @@ We make an assumption that the preimage to each extrinsic hash in each work-item
 We limit the encoded size of a work-package plus the total size of the implied import and extrinsic items to 12\textsc{mb} in order to allow for around 2\textsc{mb}/s/core data throughput:
 \begin{align}
   \label{eq:checkextractsize}
-  \forall \wpX &\in \mathbb{P}: \left(
-  \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments|\cdot\mathsf{W}_S\mathsf{W}_E + \sum_{\wiX \in \wpX_\wp¬workitems} \sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l\right) \le \mathsf{W}_P \\
-  \mathsf{W}_P &= 12\cdot2^{20}
+  \forall \wpX &\in \mathbb{P}: \Big(|\se(p)| + 
+  \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!\big(|\wiX_\wi¬importsegments|\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l\big)\Big) \le \mathsf{W}_B \\
+  \mathsf{W}_B &= 12\cdot2^{20}
 \end{align}
 
 %The implication of equation \ref{eq:checkextractsize} is that we have access to the preimage of all extrinsic data. For guaranteeing, this implies the work-package author probably submits the preimages alongside the work-package itself. For auditing, the extrinsic preimages may be reconstructed in the same manner as the work-package. Both are described later.
@@ -139,7 +139,7 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
       ))
       \mid i \orderedin 64\cdot\N_{\ceil{\nicefrac{|\mathbf{s}|}{64}}}
     } \\
-    & \where l = \mathsf{W}_S\mathsf{W}_E
+    & \where l = \mathsf{W}_G
   \end{aligned}\right.\!\!\!\!
 \end{equation}
 
