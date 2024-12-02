@@ -95,12 +95,15 @@ We limit both the total number of exported items and the total number of importe
 
 We make an assumption that the preimage to each extrinsic hash in each work-item is known by the guarantor. In general this data will be passed to the guarantor alongside the work-package.
 
-We limit the encoded size of a work-package plus the total size of the implied import and extrinsic items to 12\textsc{mb} in order to allow for around 2\textsc{mb}/s/core data throughput:
+We limit the total size of the implied import and extrinsic items, together with all payloads, the authorizer parameter and the authorization token to 12\textsc{mb} in order to allow for around 2\textsc{mb}/s/core data throughput:
 \begin{align}
   \label{eq:checkextractsize}
-  \forall \wpX &\in \mathbb{P}: \Big(|\se(p)| + 
-  \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!\big(|\wiX_\wi¬importsegments|\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l\big)\Big) \le \mathsf{W}_B \\
-  \mathsf{W}_B &= 12\cdot2^{20}
+  &\begin{aligned}
+    &\forall \wpX \in \mathbb{P}: \Big(|p_\mathbf{j}| + |p_\mathbf{p}| +
+    \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \mathsf{W}_B \\
+    &\where S(\wiX \in \mathbb{I}) \equiv |\wiX_\mathbf{y}| + |\wiX_\wi¬importsegments|\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l
+  \end{aligned}\\
+  &\mathsf{W}_B \equiv 12\cdot2^{20}
 \end{align}
 
 We limit the sums of each of the two gas limits to be at most the maximum gas allocated to a core for the corresponding operation:
