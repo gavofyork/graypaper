@@ -93,7 +93,7 @@ We resolve this by defining a function $\Delta_+$ which accumulates work-reports
 
 Only once all such accumulation is executed do we integrate the results and thus define the relevant posterior state items. In doing so we also integrate the consequences of any \emph{deferred-transfers} implied by accumulation.
 
-Our formalisms begin by defining $\partialstate$ as a characterization (\ie values capable of representing) of state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\accountspre$), the upcoming validator keys $\iota$, the queue of work-reports $\varphi$ and the privileges state $\chi$. Formally:
+Our formalisms begin by defining $\partialstate$ as a characterization of (\ie values capable of representing) state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\accountspre$), the upcoming validator keys $\iota$, the queue of authorizers $\varphi$ and the privileges state $\chi$. Formally:
 \begin{equation}
   \label{eq:partialstate}
   \partialstate \equiv \left(\begin{aligned}
@@ -154,7 +154,7 @@ We note that all newly added service indices, defined in the above context as $\
 
 The single-service accumulation function, $\Delta_1$, transforms an initial state-context, sequence of work-reports and a service index into an alterations state-context, a sequence of \emph{transfers}, a possible accumulation-output and the actual \textsc{pvm} gas used. This function wrangles the work-items of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
 \begin{align}
-  &\mathbb{O} \equiv \tuple{\isa{o}{\Y \cup \mathbb{J}}, \isa{l}{\H}, \isa{k}{\H}, \isa{a}{\Y}}
+  &\mathbb{O} \equiv \tuple{\isa{\mathbf{o}}{\Y \cup \mathbb{J}}, \isa{l}{\H}, \isa{k}{\H}, \isa{\mathbf{a}}{\Y}}
 \end{align}
 \begin{align}
     &\Delta_1 \colon \left\{\;\begin{aligned}
@@ -165,14 +165,14 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
           &\isa{b}{\H\bm{?}}, \isa{u}{\N_G}
         \end{aligned}
       } \\
-      (\mathbf{o}, \mathbf{w}, \mathbf{f}, s) &\mapsto \Psi_A(\mathbf{o}, s, g, \mathbf{p})
+      (\mathbf{o}, \mathbf{w}, \mathbf{f}, s) &\mapsto \Psi_A(\mathbf{o}, \tau', s, g, \mathbf{p})
     \end{aligned} \\
     &\text{where:} \\
     &\ \begin{aligned}
       g &= \subifnone(\mathbf{f}_s, 0) + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} , \mathbf{r}_s = s}\!\!\!\!(\mathbf{r}_g) \\
       \mathbf{p} &= \left[ \tup{\begin{alignedat}{3}
-        \is{o&}{\mathbf{r}_o}\ts\is{&l&}{\mathbf{r}_l}\ts\\
-        \is{a&}{w_o}\ts\is{&k&}{(w_s)_h}
+        \is{\mathbf{o}&}{\mathbf{r}_\mathbf{o}}\ts\is{&l&}{\mathbf{r}_l}\ts\\
+        \is{\mathbf{a}&}{w_\mathbf{o}}\ts\is{&k&}{(w_s)_h}
       \end{alignedat}}
       \,\middle\vert\ 
       w \orderedin \mathbf{w}, \mathbf{r} \orderedin w_\mathbf{r}, \mathbf{r}_s = s
@@ -204,7 +204,7 @@ We have denoted the sequence of implied transfers as $\mathbf{t}$, ordered inter
 
 The second intermediate state $\accountspostxfer$ may then be defined with all the deferred effects of the transfers applied:
 \begin{equation}
-  \accountspostxfer = \{ s \mapsto \Psi_T(\accountspostacc, s, R(\mathbf{t}, s)) \mid (s \mapsto a) \in \accountspostacc \}
+  \accountspostxfer = \{ s \mapsto \Psi_T(\accountspostacc, \tau', s, R(\mathbf{t}, s)) \mid (s \mapsto a) \in \accountspostacc \}
 \end{equation}
 
 Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such that it results in $\accountspostacc[d]$, \ie no difference to the account's intermediate state, if $R(d) = []$, \ie said account received no transfers.

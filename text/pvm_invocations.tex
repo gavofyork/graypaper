@@ -36,6 +36,8 @@ Note return codes for a host-call-request exit are any non-zero value less than 
 
 The Is-Authorized invocation is the first and simplest of the four, being totally stateless. It provides only a single host-call function, $\Omega_G$ for determining the amount of gas remaining. It accepts as arguments the work-package as a whole, $\mathbf{p}$ and the core on which it should be executed, $c$. Formally, it is defined as $\Psi_I$:
 
+% TODO: Don't pass in the work-package as a whole - it's probably too big and will cost too much gas. Only pass in the authorization stuff and allow everything else to be fetched using host-calls.
+
 \begin{align}
   \Psi_I &\colon \left\{\begin{aligned}
     (\mathbb{P}, \N_\mathsf{C}) &\to \Y \cup \mathbb{J} \\
@@ -60,7 +62,7 @@ The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated
   \pvm \equiv \tuple{\isa{\mathbf{p}}{\Y}, \isa{\mathbf{u}}{\ram}, \isa{i}{\N_R}}
 \end{equation}
 
-The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\mathsf{W}_S$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
+The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\mathsf{W}_G$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
 
 Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\delta$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work payload, $\mathbf{y}$, together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{c}$, the authorizer hash $a$ and its output $\mathbf{o}$, and an export segment offset $\segoff$, the import segments and extrinsic data blobs as dictated by the work-item, $\mathbf{i}$ and $\overline{\mathbf{x}}$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
@@ -74,7 +76,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       (\token{BAD}, []) &\when s \not\in \keys{\delta} \vee \Lambda(\delta[s], \mathbf{c}_t, c) = \none \\
       (\token{BIG}, []) &\otherwhen |\Lambda(\delta[s], \mathbf{c}_t, c)| > \mathsf{W}_C \\
       &\otherwise: \\
-      &\quad\using a = \se(s, \mathbf{y}, p, \mathbf{c}, a, \mathbf{o}, \var{\sq{\var{\mathbf{x}} \mid \mathbf{x} \orderedin \overline{\mathbf{x}}}})\ ,\\
+      &\quad\using a = \se(s, \mathbf{y}, p, \mathbf{c}, a, \var{\mathbf{o}}, \var{\sq{\var{\mathbf{x}} \mid \mathbf{x} \orderedin \overline{\mathbf{x}}}})\ ,\\
       &\quad\also (g, \mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[s], \mathbf{c}_t, c), 0, g, a, F, (\emptyset, []))\ \colon\\
       (\mathbf{r}, []) &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
       (\mathbf{r}, \mathbf{e}) &\quad\otherwise \\
@@ -123,13 +125,13 @@ We define $\Psi_A$, the Accumulation invocation function as:
 \begin{align}
   \Psi_A& \colon\left\{\begin{aligned}
     \tuple{
-      \partialstate, \N_S, \N_G, \seq{\mathbb{O}}
+      \partialstate, \N_T, \N_S, \N_G, \seq{\mathbb{O}}
     }
     &\to
     \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G} \\
-    (\mathbf{u}, s, g, \mathbf{o}) &\mapsto \begin{cases}
+    (\mathbf{u}, t, s, g, \mathbf{o}) &\mapsto \begin{cases}
       \tup{I(\mathbf{u}, s)_\mathbf{u}, [], \none, 0} &\when \mathbf{u}_\mathbf{d}[s]_\mathbf{c} = \none \\
-      C(\Psi_M(\mathbf{u}_\mathbf{d}[s]_\mathbf{c}, 5, g, \mathcal{E}(\var{\mathbf{o}}), F, \tup{I(\mathbf{u}, s), I(\mathbf{u}, s)})) &\otherwise
+      C(\Psi_M(\mathbf{u}_\mathbf{d}[s]_\mathbf{c}, 5, g, \se(t, s, \var{\mathbf{o}}), F, \tup{I(\mathbf{u}, s), I(\mathbf{u}, s)})) &\otherwise
     \end{cases} \\
   \end{aligned}\right.\\
   I&\colon\left\{\begin{aligned}
@@ -211,10 +213,10 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
 \begin{align}
   \Psi_T &: \begin{cases}
-    (\dict{\N_S}{\mathbb{A}}, \N_S, \seq{\mathbb{T}}) &\to \mathbb{A} \\
-    (\mathbf{d}, s, \mathbf{t}) &\mapsto \begin{cases}
+    (\dict{\N_S}{\mathbb{A}}, \N_T, \N_S, \seq{\mathbb{T}}) &\to \mathbb{A} \\
+    (\mathbf{d}, t, s, \mathbf{t}) &\mapsto \begin{cases}
     \mathbf{s} &\when \mathbf{s}_\mathbf{c} = \none \vee \mathbf{t} = [] \\
-    \Psi_M(\mathbf{s}_\mathbf{c}, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \mathcal{E}(\mathbf{t}), F, \mathbf{s}) &\otherwise
+    \Psi_M(\mathbf{s}_\mathbf{c}, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \se(t, s, \var{\mathbf{t}}), F, \mathbf{s}) &\otherwise
     \end{cases} \\
   \end{cases} \\
   \where \mathbf{s} &= \mathbf{d}[s]\exc\mathbf{s}_b = \mathbf{d}[s]_b + \sum_{r \in \mathbf{t}}{r_a} \\
@@ -416,8 +418,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{x}) &= \begin{cases}
-      (\mathtt{OK}, \tuple{m, a, v, \mathbf{g}}) &\when \mathbf{g} \ne \error \\
-      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{x}) &\otherwise
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{x}) &\when \mathbf{g} = \error\\
+      (\mathtt{WHO}, (\mathbf{x}_\mathbf{u})_\mathbf{x}) &\otherwhen (m, a, v) \not\in (\N_S, \N_S, \N_S) \\
+      (\mathtt{OK}, \tuple{m, a, v, \mathbf{g}}) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -432,9 +435,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{q}[\registers_7]) &= \begin{cases}
-      (\mathtt{OK}, \mathbf{c}) &\when \registers_7 < \mathsf{C} \wedge \mathbf{c} \ne \error \\
       (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\when \mathbf{c} = \error \\
-      (\mathtt{CORE}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\otherwise \\
+      (\mathtt{CORE}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\otherwhen \registers_7 \ge \mathsf{C} \\
+      (\mathtt{OK}, \mathbf{c}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -449,8 +452,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{i}) &= \begin{cases}
-      (\mathtt{OK}, \mathbf{i}) &\when \mathbf{v} \ne \error \\
-      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{i}) &\otherwise
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{i}) &\when \mathbf{v} = \error\\
+      (\mathtt{OK}, \mathbf{i}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -605,7 +608,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
 
 \subsection{Refine Functions}\label{sec:refinefunctions}
 
-These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\pvm}, \seq{\Y_{\mathsf{W}_S}})$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
+These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\pvm}, \seq{\mathbb{G}})$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
   \gascounter' &\equiv \gascounter - g\\
   (\varepsilon', \registers', \memory') &\equiv \begin{cases}
@@ -657,7 +660,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \none &\otherwise
     \end{cases} \\
     \using o &= \registers_8 \\
-    \using l &= \min(\registers_9, \mathsf{W}_E\mathsf{W}_S) \\
+    \using l &= \min(\registers_9, \mathsf{W}_G) \\
     \memory'_{o\dots+l} &\equiv \begin{cases}
       \mathbf{v} & \when \mathbf{v} \ne \none \wedge \mathbb{N}_{o \dots+ l} \subset \mathbb{V}^*_{\memory} \\
       \memory_{o\dots+l} & \otherwise
@@ -675,14 +678,14 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $g = 10$} &
   $\begin{aligned}
     \using p &= \registers_7 \\
-    \using z &= \min(\registers_8, \mathsf{W}_E\mathsf{W}_S) \\
+    \using z &= \min(\registers_8, \mathsf{W}_G) \\
     \using \mathbf{x} &= \begin{cases}
-      \mathcal{P}_{\mathsf{W}_E\mathsf{W}_S}(\memr_{p\dots+z}) &\when \N_{p\dots+z} \subseteq \mathbb{V}_\memory\\
+      \mathcal{P}_{\mathsf{W}_G}(\memr_{p\dots+z}) &\when \N_{p\dots+z} \subseteq \mathbb{V}_\memory\\
       \error &\otherwise
     \end{cases}\\
     (\registers'_7, \mathbf{e}') &\equiv \begin{cases}
       (\mathtt{OOB}, \mathbf{e}) &\when \mathbf{x} = \error \\
-      (\mathtt{FULL}, \mathbf{e}) &\otherwhen \segoff+|\mathbf{e}| \ge \mathsf{W}_X \\
+      (\mathtt{FULL}, \mathbf{e}) &\otherwhen \segoff+|\mathbf{e}| \ge \mathsf{W}_M \\
       (\segoff + |\mathbf{e}|, \mathbf{e} \doubleplus \mathbf{x}) &\otherwise
     \end{cases}
   \end{aligned}$\\
@@ -791,11 +794,12 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $\begin{aligned}
     \using [n, o] &= \registers_{7, 8} \\
     \using (g, \mathbf{w}) &= \begin{cases}
-      (\de_8(\memr_{o\dots+8}), [\de_4(\memr_{o+8+4x\dots+4}) \mid x \orderedin \N_{13}]) &\when \N_{o \dots+ 60} \subset \mathbb{V}^*_{\mem} \\
+      (g, \mathbf{w}): \se_8(g) \concat \joined{\se^\#_8(\mathbf{w})} = \mem_{o \dots+ 112} &\when \N_{o \dots+ 112} \subset \mathbb{V}^*_{\mem} \\
+      %(\de_8(\memr_{o\dots+8}), [\de_4(\memr_{o+8+8x\dots+8}) \mid x \orderedin \N_{13}]) &\when \N_{o \dots+ 60} \subset \mathbb{V}^*_{\mem} \\
       (\error, \error) &\otherwise
     \end{cases} \\
     \using (c, i', g', \mathbf{w}', \mathbf{u}') &= \Psi(\mathbf{m}[n]_\mathbf{p}, \mathbf{m}[n]_i, g, \mathbf{w}, \mathbf{m}[n]_\mathbf{u})\\
-    \using \mem^* &= \mem \exc \mem^*_{o\dots+60} = \se_8(g') \concat \joined{\se_4^\#(\mathbf{w}')}\\
+    \using \mem^* &= \mem \exc \mem^*_{o \dots+ 112} = \se_8(g') \concat \joined{\se_8^\#(\mathbf{w}')}\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*[n]_\mathbf{u} = \mathbf{u}'\\
       \mathbf{m}^*[n]_i = \begin{cases}

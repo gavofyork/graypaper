@@ -158,34 +158,37 @@ This is suitable for creating proofs on data which is not much greater than 32 o
 Note: In the case that no hash function argument $H$ is supplied, we may assume the Blake 2b hash function, $\mathcal{H}$.
 
 \subsubsection{Constant-Depth Tree}
-We define the constant-depth binary Merkle function as $\mathcal{M}$ and the corresponding justification generation function as $\mathcal{J}$, with the latter having an optional subscript $x$, which limits the justification to only those nodes required to justify inclusion of a well-aligned subtree of (maximum) size $2^x$:
-\begin{align}\label{eq:constantdepthmerkleroot}
+We define the constant-depth binary Merkle function as $\mathcal{M}$. We define two corresponding functions for working with subtree pages, $\mathcal{J}_x$ and $\mathcal{L}_x$. The latter provides a single page of leaves, themselves hashed, prefixed data. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices.
+\begin{align}
+  \label{eq:constantdepthmerkleroot}
   \mathcal{M}&\colon \left\{\begin{aligned}
     (\seq{\Y}, \Y \to \H) &\to \H\\
     (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}, H), H)
   \end{aligned}\right.\\
-  \mathcal{J}&\colon \left\{\begin{aligned}\label{eq:constantdepthmerklejust}
+  \label{eq:constantdepthsubtreemerklejust}
+  \mathcal{J}_x&\colon \left\{\begin{aligned}
     (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \seq{\H}\\
-    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), i, H)
+    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), 2^xi, H)_{\dots\max(0, \ceil{\log_2(\max(1, |\mathbf{v}|)) - x})}
   \end{aligned}\right.\\
-  \mathcal{J}_x&\colon \left\{\begin{aligned}\label{eq:constantdepthsubtreemerklejust}
+  \label{eq:constantdepthsubtreemerkleleafpage}
+  \mathcal{L}_x&\colon \left\{\begin{aligned}
     (\seq{\Y}, \N_{|\mathbf{v}|}, \Y \to \H) &\to \seq{\H}\\
-    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), i, H)_{\dots\max(0, \ceil{\log_2(\max(1, |\mathbf{v}|)) - x})}
+    (\mathbf{v}, i, H) &\mapsto [H(\token{\$leaf} \concat l) \mid l \orderedin \mathbf{s}_{2^xi \dots \min(2^xi+2^x, |\mathbf{s}|)}]
   \end{aligned}\right.
 \end{align}
 
-For the latter justification to be acceptable, we must assume the target observer knows not merely the value of the item at the given index, but also all other items within its $2^x$ size subtree.
+For the latter justification $\mathcal{J}_x$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\mathcal{L}_x$.
 
 As above, we may assume a default value for $H$ of the Blake 2b hash function, $\mathcal{H}$.
 
-In all cases, a constancy preprocessor function $C$ is applied which hashes all data items with a fixed prefix and then pads them to the next power of two with the zero hash $\mathbb{H}_0$:
+For justifications and Merkle root calculations, a constancy preprocessor function $C$ is applied which hashes all data items with a fixed prefix "leaf" and then pads the overall size to the next power of two with the zero hash $\mathbb{H}_0$:
 \begin{equation}
   C\colon\left\{\begin{aligned}
     (\seq{\Y}, \Y \to \H) &\to \seq{\H}\\
     (\mathbf{v}, H) &\mapsto \mathbf{v}' \ \where \left\{\; \begin{aligned}
       |\mathbf{v}'| &= 2^{\ceil{\log_2(\max(1, |\mathbf{v}|))}}\\
       \mathbf{v}'_i &= \begin{cases}
-        H(\token{\$leaf}\frown\mathbf{v}_i) &\when i < |\mathbf{v}|\\
+        H(\token{\$leaf} \concat \mathbf{v}_i) &\when i < |\mathbf{v}|\\
         \mathbb{H}_0 &\otherwise \\
       \end{cases}
     \end{aligned}\right.
@@ -230,6 +233,19 @@ We define the \textsc{mmr} encoding function as $\se_M$:
   \se_M\colon\deffunc{
     \seq{\H?} &\to \Y \\
     \mathbf{b} &\mapsto \se(\var{[\maybe{x}\mid x \orderedin \mathbf{b}]})
+  }
+\end{equation}
+
+We define the \textsc{mmr} super-peak function as $\mathcal{M}_R$:
+\begin{equation}
+  \mathcal{M}_R\colon\deffunc{
+    \seq{\H?} &\to \H \\
+    \mathbf{b} &\mapsto \begin{cases}
+      \H_0 &\when |\mathbf{h}| = 0\\
+      \mathbf{h}_0 &\when |\mathbf{h}| = 1\\
+      \mathcal{H}_K(\token{\$node} \concat \mathcal{M}_R(\mathbf{h}_{\dots|\mathbf{b}|-1}) \concat \mathbf{h}_{|\mathbf{b}|-1}) &\otherwise \\
+      \multicolumn{2}{l}{\where \mathbf{h} = \sq{h \mid h \orderedin \mathbf{b}, h \ne \none}}
+    \end{cases}
   }
 \end{equation}
 
