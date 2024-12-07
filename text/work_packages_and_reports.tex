@@ -179,27 +179,23 @@ Where:
   (\mathbf{r}, \overline{\mathbf{e}}) = \,&\transpose[
     (\itemtoresult(\wpX_\wp¬workitems[j], r), \mathbf{e})
     \mid
-    (r, \mathbf{e}) = \countupexports(\wpX, j),
+    (r, \mathbf{e}) = \countupexports(\wpX, j),\,
     j \orderedin \N_{|\wpX_\wp¬workitems|}
   ] \\
-  \countupexports(\wpX, j) \equiv \,&\Psi_R(
-    \wiX_c,
-    \wiX_g,
-    \wiX_s,
-    h,
-    \wiX_\mathbf{y},
-    \wpX_\wp¬context,
-    \wpX_\wp¬authorizer,
-    \mathbf{o},
-    \importsegmentdata(w, \mathbf{l}),
-    \extrinsicdata(w),
-    \ell
-  )\\
-  &\also h = \mathcal{H}(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments\\
-  \forall j &\in \N_{|\wpX_\wp¬workitems|} : |\mathbf{e}| = \wpX_\mathbf{w}[j]_e\ \where (r, \mathbf{e}) = \countupexports(\wpX, j)
+  \countupexports(\wpX, j) \equiv \,&\begin{cases}
+    (r, \mathbf{e}) &\when |\mathbf{e}| = w_e \\
+    (r, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen r \not\in \mathbb{Y} \\
+    (\badexports, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwise \\
+    \multicolumn{2}{l}{\where (r, \mathbf{e}) = \Psi_R\left(\,\begin{aligned}
+      &\wiX_c, \wiX_g, \wiX_s, h, \wiX_\mathbf{y}, \wpX_\wp¬context,\\[2pt]
+      &\wpX_\wp¬authorizer, \mathbf{o}, \importsegmentdata(w, \mathbf{l}), \extrinsicdata(w), \ell
+    \end{aligned}\,\right)
+    }\\
+    \multicolumn{2}{l}{\also h = \mathcal{H}(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments}
+  \end{cases}
 \end{align*}
 
-Note that we require the number of segments actually exported by each work-item's Refine execution to be correctly reported in the work-item's export segment count. This is to ensure that the export segment indices are correctly calculated during the Refine invocation.
+Note that we gracefully handle the case where number of segments actually exported by a work-item's Refine execution is incorrectly reported in the work-item's export segment count. In this case, the work-package continues to be valid as a whole, but the work item's exported segments are replaced by a sequence of zero-segments equal in size to the export segment count.
 
 Initially we constrain the segment-root dictionary $\mathbf{l}$: It should contain entries for all unique work-package hashes of imported segments not identified directly via a segment-root but rather through a work-package hash.
 
