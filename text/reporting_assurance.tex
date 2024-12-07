@@ -124,10 +124,10 @@ The signature must be one whose public key is that of the validator assuring and
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
-A bit may only be set if the corresponding core has a report pending availability on it which has not timed out:
+A bit may only be set if the corresponding core has a report pending availability on it:
 \begin{align}
   &\forall a \in \xtassurances, c \in \N_\mathsf{C} :\\
-  &\quad a_f[c] \Rightarrow \rho^\dagger[c] \ne \none \wedge \mathbf{H}_t \le \rho^\dagger[c]_t + \mathsf{U}
+  &\quad a_f[c] \Rightarrow \rho^\dagger[c] \ne \none
 \end{align}
 
 \subsubsection{Available Reports}
@@ -136,10 +136,10 @@ A work-report is said to become \emph{available} if and only if there are a clea
   \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \N_\mathsf{C},\;\sum_{a \in \xtassurances}\!a_f[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
 \end{align}
 
-This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are now available:
+This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are either now available or have timed out:
 \begin{align}
   \forall c \in \N_\mathsf{C}: \rho^\ddagger[c] \equiv \begin{cases}
-    \none &\when\rho[c]_w \in \mathbf{W}\\
+    \none &\when\rho[c]_w \in \mathbf{W} \vee \mathbf{H}_t \ge \rho^\dagger[c]_t + \mathsf{U}\\
     \rho^\dagger[c] &\otherwise
   \end{cases}
 \end{align}
