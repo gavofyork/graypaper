@@ -16,8 +16,7 @@
   \item[$\mathtt{CORE} = 2^{64} - 6$] Core index unknown.
   \item[$\mathtt{CASH} = 2^{64} - 7$] Insufficient funds.
   \item[$\mathtt{LOW} = 2^{64} - 8$] Gas limit too low.
-  \item[$\mathtt{HIGH} = 2^{64} - 9$] Gas limit too high.
-  \item[$\mathtt{HUH} = 2^{64} - 10$] The item is already solicited or cannot be forgotten.
+  \item[$\mathtt{HUH} = 2^{64} - 9$] The item is already solicited or cannot be forgotten.
   \item[$\mathtt{OK} = 0$] The return value indicating general success.
 \end{description}
 
@@ -97,7 +96,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_K(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{invoke}\\
       \Omega_X(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{expunge}\\
       (\continue, \gascounter - 10, \registers', \memory) &\otherwise\\
-      \multicolumn{2}{l}{\where \registers' = \registers \exc \registers_7 = \mathtt{WHAT}}
+      \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}}
     \end{cases}
 \end{align}
 
@@ -509,20 +508,19 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \makecell*[l]{
   $\Omega_T(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}))$ \\
   \texttt{transfer} = 11 \\
-  $g = 10 + \registers_8 + 2^{32}\cdot\registers_9 $} &
+  $g = 10 + \registers_9 $} &
   $\begin{aligned}
-    \using [d, a, g, o] &= \registers_{7..11},  \\
+    \using [d, a, l, o] &= \registers_{7..11},  \\
     \using \mathbf{d} &= \mathbf{x}_\mathbf{d} \cup (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
     \using \mathbf{t} \in \mathbb{T} \cup \{\error\} &= \begin{cases}
-      \tup{\is{s}{\mathbf{x}_s}, d, a, \is{m}{\memory_{o\dots+\mathsf{W}_T}}, g} &\when \N_{o\dots+\mathsf{W}_T} \subset \mathbb{V}_{\memory} \\
+      \tup{\is{s}{\mathbf{x}_s}, d, a, \is{m}{\memory_{o\dots+\mathsf{W}_T}}, \is{g}{l}} &\when \N_{o\dots+\mathsf{W}_T} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using b &= (\mathbf{x}_\mathbf{s})_b - a \\
     (\registers'_7, \mathbf{x}'_\mathbf{t}, (\mathbf{x}'_\mathbf{s})_b) &\equiv \begin{cases}
       (\mathtt{OOB}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\when \mathbf{t} = \error \\
       (\mathtt{WHO}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen d \not \in \keys{\mathbf{d}} \\
-      (\mathtt{LOW}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen g < \mathbf{d}[d]_m \\
-      (\mathtt{HIGH}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen \gascounter < g \\
+      (\mathtt{LOW}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen l < \mathbf{d}[d]_m \\
       (\mathtt{CASH}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen b < (\mathbf{x}_\mathbf{s})_t \\
       (\mathtt{OK}, \mathbf{x}_\mathbf{t} \doubleplus \mathbf{t}, b) &\otherwise
     \end{cases} \\

@@ -82,10 +82,10 @@ Next, the hash of the payload ($l$) within the work item which was executed in t
 
 Finally, there is the output or error of the execution of the code $\mathbf{o}$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
 \begin{equation}
-  \mathbb{J} \in \{ \oog, \panic, \token{BAD}, \token{BIG} \}
+  \mathbb{J} \in \{ \oog, \panic, \badexports, \token{BAD}, \token{BIG} \}
 \end{equation}
 
-The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining two, the first indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The second indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
+The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining three, the first indicates that the number of exports made was invalidly reported, the second indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The third indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
 
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful output blobs together with the authorizer output blob, effectively limiting their overall size:
 \begin{align}
@@ -124,11 +124,11 @@ The signature must be one whose public key is that of the validator assuring and
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
-A bit may only be set if the corresponding core has a report pending availability on it which has not timed out:
-\begin{align}
-  &\forall a \in \xtassurances, c \in \N_\mathsf{C} :\\
-  &\quad a_f[c] \Rightarrow \rho^\dagger[c] \ne \none \wedge \mathbf{H}_t \le \rho^\dagger[c]_t + \mathsf{U}
-\end{align}
+A bit may only be set if the corresponding core has a report pending availability on it:
+\begin{equation}
+  \forall a \in \xtassurances, c \in \N_\mathsf{C} :
+  \quad a_f[c] \Rightarrow \rho^\dagger[c] \ne \none
+\end{equation}
 
 \subsubsection{Available Reports}
 A work-report is said to become \emph{available} if and only if there are a clear \nicefrac{2}{3} super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\mathbf{W}$ as:
@@ -136,10 +136,10 @@ A work-report is said to become \emph{available} if and only if there are a clea
   \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \N_\mathsf{C},\;\sum_{a \in \xtassurances}\!a_f[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
 \end{align}
 
-This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are now available:
+This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are either now available or have timed out:
 \begin{align}
   \forall c \in \N_\mathsf{C}: \rho^\ddagger[c] \equiv \begin{cases}
-    \none &\when\rho[c]_w \in \mathbf{W}\\
+    \none &\when\rho[c]_w \in \mathbf{W} \vee \mathbf{H}_t \ge \rho^\dagger[c]_t + \mathsf{U}\\
     \rho^\dagger[c] &\otherwise
   \end{cases}
 \end{align}
@@ -237,12 +237,10 @@ We denote $\mathbf{w}$ to be the set of work-reports in the present extrinsic $\
   \text{let}\ \mathbf{w} = \{ g_w \mid g \in \xtguarantees \}
 \end{align}
 
-No reports may be placed on cores with a report pending availability on it unless it has timed out. In the latter case, $\mathsf{U} = 5$ slots must have elapsed after the report was made. A report is valid only if the authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
+No reports may be placed on cores with a report pending availability on it. A report is valid only if the authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
 \begin{equation}\label{eq:reportcoresareunusedortimedout}
-  \forall w \in \mathbf{w} :\left\{\;\begin{aligned}
-    &\rho^\ddagger[w_c] = \none \vee \mathbf{H}_t \ge \rho^\ddagger[w_c]_t + \mathsf{U}\ , \\
-    &w_a \in \alpha[w_c]
-  \end{aligned}\right.
+  \forall w \in \mathbf{w} :
+    \rho^\ddagger[w_c] = \none \wedge w_a \in \alpha[w_c]
 \end{equation}
 
 We require that the gas allotted for accumulation of each work item in each work-report respects its service's minimum gas requirements. We also require that all work-reports total allotted accumulation gas is no greater than the overall gas limit $\mathsf{G}_A$:
