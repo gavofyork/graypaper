@@ -150,7 +150,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     G(\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
     G(\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
     \Omega_G(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
-    \Omega_I(\gascounter, \registers, \memory, \mathbf{x}_s, \mathbf{d}, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
+    G(\Omega_I(\gascounter, \registers, \memory, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
     \Omega_B(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{bless}\\
     \Omega_A(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{assign}\\
     \Omega_D(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{designate}\\
@@ -216,7 +216,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     (\dict{\N_S}{\mathbb{A}}, \N_T, \N_S, \seq{\mathbb{T}}) &\to \mathbb{A} \\
     (\mathbf{d}, t, s, \mathbf{t}) &\mapsto \begin{cases}
     \mathbf{s} &\when \mathbf{s}_\mathbf{c} = \none \vee \mathbf{t} = [] \\
-    \Psi_M(\mathbf{s}_\mathbf{c}, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \se(t, s, \var{\mathbf{t}}), F, \mathbf{s}) &\otherwise
+    \mathbf{s}' \where (g, \mathbf{r}, \mathbf{s}') =\Psi_M(\mathbf{s}_\mathbf{c}, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \se(t, s, \var{\mathbf{t}}), F, \mathbf{s}) &\otherwise
     \end{cases} \\
   \end{cases} \\
   \where \mathbf{s} &= \mathbf{d}[s]\exc\mathbf{s}_b = \mathbf{d}[s]_b + \sum_{r \in \mathbf{t}}{r_a} \\
@@ -447,13 +447,13 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   $\begin{aligned}
     \using o &= \registers_7 \\
-    \using \mathbf{i} &= \begin{cases}
+    \using \mathbf{v} &= \begin{cases}
       \left[\memory_{o + 336i \dots+ 336} \mid i \orderedin \N_\mathsf{V}\right] &\when \mathbb{Z}_{o \dots+ 336\mathsf{V}} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{i}) &= \begin{cases}
       (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{i}) &\when \mathbf{v} = \error\\
-      (\mathtt{OK}, \mathbf{i}) &\otherwise \\
+      (\mathtt{OK}, \mathbf{v}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
