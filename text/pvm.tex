@@ -420,7 +420,7 @@ We assume the skip length $\ell$ is well-defined:
 \bottomrule
 \end{longtable}
 
-Note, the term $h$ above refers to the beginning of the heap, the second major section of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_Z + Q(|\mathbf{o}|)$. If $\token{sbrk}$ instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
+Note, the term $h$ above refers to the beginning of the heap, the second major section of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_Z + \rnq{|\mathbf{o}|}$. If $\token{sbrk}$ instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Immediate}
 \begin{equation}
@@ -700,7 +700,7 @@ With conditions:
   &\using \mathcal{E}_3(|\mathbf{o}|) \concat \mathcal{E}_3(|\mathbf{w}|) \concat \mathcal{E}_2(z) \concat \mathcal{E}_3(s) \concat \mathbf{o} \concat \mathbf{w} \concat \mathcal{E}_4(|\mathbf{c}|) \concat \mathbf{c} = \mathbf{p}\\
   &\mathsf{Z}_Z = 2^{16}\ ,\quad\mathsf{Z}_I = 2^{24}\\
   &\using \rnp{x \in \N} \equiv \mathsf{Z}_P\left\lceil \frac{x}{\mathsf{Z}_P} \right\rceil\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_Z\left\lceil \frac{x}{\mathsf{Z}_Z} \right\rceil\\
-  &5\mathsf{Z}_Z + Q(|\mathbf{o}|) + Q(|\mathbf{w}| + z\mathsf{Z}_P) + Q(s) + \mathsf{Z}_I \leq 2^{32}
+  &5\mathsf{Z}_Z + \rnq{|\mathbf{o}|} + \rnq{|\mathbf{w}| + z\mathsf{Z}_P} + \rnq{s} + \mathsf{Z}_I \leq 2^{32}
 \end{align}
 Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\mathbf{c}$ as above and $\mem$, $\registers$ such that:
 \begin{equation}\label{eq:memlayout}
