@@ -632,10 +632,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_\Aries(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}))$ \\
-  \texttt{yield} = \_ \\
+  \texttt{yield} = 16 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [o] &= \registers_7 \\
+    \using o &= \registers_7 \\
     \using h &= \begin{cases}
       \memory_{o\dots+32} &\when \mathbb{Z}_{o \dots+ 32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -667,7 +667,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \endhead
   \makecell*[l]{
   $\Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), s, \mathbf{d}, t)$ \\
-  \texttt{historical\_lookup} = 16 \\
+  \texttt{historical\_lookup} = 17 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -694,7 +694,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \mathbf{i})$ \\
-  \texttt{import} = 17 \\
+  \texttt{import} = 18 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{v} &= \begin{cases}
@@ -716,7 +716,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff)$ \\
-  \texttt{export} = 18 \\
+  \texttt{export} = 19 \\
   $g = 10$} &
   $\begin{aligned}
     \using p &= \registers_7 \\
@@ -734,7 +734,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{machine} = 19 \\
+  \texttt{machine} = 20 \\
   $g = 10$} &
   $\begin{aligned}
     \using [p_o, p_z, i] &= \registers_{7 \dots 10} \\
@@ -752,7 +752,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_P(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{peek} = 20 \\
+  \texttt{peek} = 21 \\
   $g = 10$} &
   $\begin{aligned}
     \using [n, o, s, z] &= \registers_{7 \dots 11} \\
@@ -770,7 +770,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_O(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{poke} = 21 \\
+  \texttt{poke} = 22 \\
   $g = 10$} &
   $\begin{aligned}
     \using [n, s, o, z] &= \registers_{7 \dots 11} \\
@@ -788,7 +788,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Z(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{zero} = 22 \\
+  \texttt{zero} = 23 \\
   $g = 10$} &
   $\begin{aligned}
     \using [n, p, c] &= \registers_{7 \dots 10} \\
@@ -809,7 +809,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_V(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{void} = 23 \\
+  \texttt{void} = 24 \\
   $g = 10$} &
   $\begin{aligned}
     \using [n, p, c] &= \registers_{7 \dots 10} \\
@@ -831,7 +831,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_K(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{invoke} = 24 \\
+  \texttt{invoke} = 25 \\
   $g = 10$} &
   $\begin{aligned}
     \using [n, o] &= \registers_{7, 8} \\
@@ -862,7 +862,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_X(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{expunge} = 25 \\
+  \texttt{expunge} = 26 \\
   $g = 10$} &
   $\begin{aligned}
     \using n &= \registers_7 \\
