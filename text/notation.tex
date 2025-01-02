@@ -138,6 +138,8 @@ We denote sequence subtraction with a slight modification of the set subtraction
 \subsubsection{Boolean values}
 $\mathbb{B}_s$ denotes the set of Boolean strings of length $s$, thus $\mathbb{B}_s = \seq{\{\bot, \top\}}_s$. When dealing with Boolean values we may assume an implicit equivalence mapping to a bit whereby $\top = 1$ and $\bot = 0$, thus $\mathbb{B}_\Box = \seq{\N_2}_\Box$. We use the function $\text{bits}(\Y) \in \mathbb{B}$ to denote the sequence of bits, ordered with the most significant first, which represent the octet sequence $\Y$, thus $\text{bits}([160, 0]) = [1, 0, 1, 0, 0, \dots]$.
 
+The unary-not operator applies to both boolean values and sequences of boolean values, thus $\neg \top = \bot$ and $\neg [ \top, \bot ] = [ \bot, \top ]$.
+
 \subsubsection{Octets and Blobs}
 
 $\Y$ denotes the set of octet strings (``blobs'') of arbitrary length. As might be expected, $\Y_x$ denotes the set of such sequences of length $x$. $\Y_\$$ denotes the subset of $\Y$ which are ASCII-encoded strings. Note that while an octet has an implicit and obvious bijective relationship with natural numbers less than 256, and we may implicitly coerce between octet form and natural number form, we do not treat them as exactly equivalent entities. In particular for the purpose of serialization, an octet is always serialized to itself, whereas a natural number may be serialized as a sequence of potentially several octets, depending on its magnitude and the encoding variant.

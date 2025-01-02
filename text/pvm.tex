@@ -15,6 +15,8 @@
 \newcommand*{\continue}{\blacktriangleright}
 \newcommand*{\gas}{\gascounter_\Delta}
 \newcommand*{\instrlen}{\ell}
+\newcommand*{\revbitsfunc}[1]{\overleftarrow{\mathcal{B}}_{#1}}
+\newcommand*{\revunbitsfunc}[1]{\revbitsfunc{#1}^{-1}}
 \newcommand*{\bitsfunc}[1]{\mathcal{B}_{#1}}
 \newcommand*{\unbitsfunc}[1]{\bitsfunc{#1}^{-1}}
 \newcommand*{\bits}[1]{\bitsn{8}{#1}}
@@ -168,6 +170,15 @@ We define signed/unsigned transitions for various octet widths:
   \unbitsfunc{n\in\N}&\colon\left\{\begin{aligned}
     \mathbb{B}_{8n} &\to \N_{2^{8n}}\\
     \mathbf{x} &\mapsto y: \sum_{i \in \N_{2^{8n}}} \mathbf{x}_i \cdot 2^i
+  \end{aligned}\right.\\
+  \label{eq:revbitsfunc}
+  \revbitsfunc{n\in\N}&\colon\left\{\begin{aligned}
+    \N_{2^{8n}} &\to \mathbb{B}_{8n}\\
+    x &\mapsto \mathbf{y}: \forall i \in \N_{2^{8n}} : \mathbf{y}[2^{8n} - 1 - i] \Leftrightarrow \ffrac{x}{2^i}\bmod 2
+  \end{aligned}\right.\\
+  \revunbitsfunc{n\in\N}&\colon\left\{\begin{aligned}
+    \mathbb{B}_{8n} &\to \N_{2^{8n}}\\
+    \mathbf{x} &\mapsto y: \sum_{i \in \N_{2^{8n}}} \mathbf{x}_{2^{8n} - 1 - i} \cdot 2^i
   \end{aligned}\right.
 \end{align}
 
@@ -405,7 +416,7 @@ We assume the skip length $\ell$ is well-defined:
 \end{equation}
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\begin{longtable}{p{8mm} p{32mm} p{5mm} p{100mm}}
   \toprule
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
@@ -416,7 +427,18 @@ We assume the skip length $\ell$ is well-defined:
     &x \ge h\\
     &\N_{x\dots+\reg_A} \not\subseteq \mathbb{V}_{\memory}\\
     &\N_{x\dots+\reg_A} \subseteq \mathbb{V}^*_{\memory'}
-  \end{aligned}$\\
+  \end{aligned}$\\ \mrule
+  102&\token{count\_set\_bits\_64}&0&$\displaystyle\reg'_D = \sum_{i = 0}^{63}\bitsfunc{8}(\reg_A)_i$\\ \mrule
+  103&\token{count\_set\_bits\_32}&0&$\displaystyle\reg'_D = \sum_{i = 0}^{31}\bitsfunc{4}(\reg_A \bmod 2^{32})_i$\\ \mrule
+  104&\token{leading\_zero\_bits\_64}&0&$\displaystyle\reg'_D = \max(n \in \N_{65})\ \where \sum_{i = 0}^{i < n} \bitsfunc{8}(\reg_A)_i = 0$\\ \mrule
+  105&\token{leading\_zero\_bits\_32}&0&$\displaystyle\reg'_D = \max(n \in \N_{33})\ \where \sum_{i = 0}^{i < n} \bitsfunc{4}(\reg_A \bmod 2^{32})_i = 0$\\ \mrule
+  106&\token{trailing\_zero\_bits\_64}&0&$\displaystyle\reg'_D = \max(n \in \N_{65})\ \where \sum_{i = 0}^{i < n} \bitsfunc{8}(\reg_A)_{63 - i} = 0$\\ \mrule
+  107&\token{trailing\_zero\_bits\_32}&0&$\displaystyle\reg'_D = \max(n \in \N_{33})\ \where \sum_{i = 0}^{i < n} \bitsfunc{4}(\reg_A \bmod 2^{32})_{31 - i} = 0$\\ \mrule
+  108&\token{sign\_extend\_8}&0&$\reg'_D = \unsigned{\signedn{1}{\reg_A \bmod 2^8}}$\\ \mrule
+  109&\token{sign\_extend\_16}&0&$\reg'_D = \unsigned{\signedn{2}{\reg_A \bmod 2^{16}}}$\\ \mrule
+  110&\token{zero\_extend\_16}&0&$\reg'_D = \reg_A \bmod 2^{16}$\\ \mrule
+  111&\token{reverse\_bytes}&0&$\forall i \in \N_8 : \se_8(\reg'_D)_i = \se_8(\reg_A)_{7-i}$\\
+%  10X&\token{}&0&$\reg'_D = ...$\\ \mrule
 \bottomrule
 \end{longtable}
 
@@ -437,55 +459,60 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \end{equation}
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\begin{longtable}{p{8mm} p{35mm} p{5mm} p{100mm}}
   \toprule
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  110&\token{store\_ind\_u8}&0&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
-  111&\token{store\_ind\_u16}&0&$\memwr_{\reg_B + \immed_X \dots+ 2} = \se_2(\reg_A \bmod 2^{16})$\\ \mrule
-  112&\token{store\_ind\_u32}&0&$\memwr_{\reg_B + \immed_X \dots+ 4} = \se_4(\reg_A \bmod 2^{32})$\\ \mrule
-  113&\token{store\_ind\_u64}&0&$\memwr_{\reg_B + \immed_X \dots+ 8} = \se_8(\reg_A)$\\ \mrule
-  114&\token{load\_ind\_u8}&0&$\reg'_A = \memr_{\reg_B + \immed_X}$\\ \mrule
-  115&\token{load\_ind\_i8}&0&$\reg'_A = \unsigned{\signedn{1}{\memr_{\reg_B + \immed_X}}}$\\ \mrule
-  116&\token{load\_ind\_u16}&0&$\reg'_A = \de_2(\memr_{\reg_B + \immed_X\dots+2})$\\ \mrule
-  117&\token{load\_ind\_i16}&0&$\reg'_A = \unsigned{\signedn{2}{\de_2(\memr_{\reg_B + \immed_X\dots+2})}}$\\ \mrule
-  118&\token{load\_ind\_u32}&0&$\reg'_A = \de_4(\memr_{\reg_B + \immed_X\dots+4})$\\ \mrule
-  119&\token{load\_ind\_i32}&0&$\reg'_A = \unsigned{\signedn{4}{\de_4(\memr_{\reg_B + \immed_X\dots+4})}}$\\ \mrule
-  120&\token{load\_ind\_u64}&0&$\reg'_A = \de_8(\memr_{\reg_B + \immed_X\dots+8})$\\ \mrule
-  121&\token{add\_imm\_32}&0&$\reg'_A = \sext_4((\reg_B + \immed_X) \bmod 2^{32})$\\ \mrule
-  122&\token{and\_imm}&0&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \wedge \bits{\immed_X}_i$\\ \mrule
-  123&\token{xor\_imm}&0&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \oplus \bits{\immed_X}_i$\\ \mrule
-  124&\token{or\_imm}&0&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \vee \bits{\immed_X}_i$\\ \mrule
-  125&\token{mul\_imm\_32}&0&$\reg'_A = \sext_4((\reg_B \cdot \immed_X) \bmod 2^{32})$\\ \mrule
-  126&\token{set\_lt\_u\_imm}&0&$\reg'_A = \reg_B < \immed_X$\\ \mrule
-  127&\token{set\_lt\_s\_imm}&0&$\reg'_A = \signed{\reg_B} < \signed{\immed_X}$\\ \mrule
-  128&\token{shlo\_l\_imm\_32}&0&$\reg'_A = \sext_4((\reg_B \cdot 2^{\immed_X \bmod 32}) \bmod 2^{32})$\\ \mrule
-  129&\token{shlo\_r\_imm\_32}&0&$\reg'_A = \sext_4(\floor{\reg_B \bmod 2^{32} \div 2^{\immed_X \bmod 32}})$\\ \mrule
-  130&\token{shar\_r\_imm\_32}&0&$\reg'_A = \unsigned{\floor{\signedn{4}{\reg_B \bmod 2^{32} } \div 2^{\immed_X \bmod 32}}}$\\ \mrule
-  131&\token{neg\_add\_imm\_32}&0&$\reg'_A = \sext_4((\immed_X + 2^{32} - \reg_B) \bmod 2^{32})$\\ \mrule
-  132&\token{set\_gt\_u\_imm}&0&$\reg'_A = \reg_B > \immed_X$\\ \mrule
-  133&\token{set\_gt\_s\_imm}&0&$\reg'_A = \signed{\reg_B} > \signed{\immed_X}$\\ \mrule
-  134&\token{shlo\_l\_imm\_alt\_32}&0&$\reg'_A = \sext_4((\immed_X \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
-  135&\token{shlo\_r\_imm\_alt\_32}&0&$\reg'_A = \sext_4(\floor{\immed_X \div 2^{\reg_B \bmod 32}})$\\ \mrule
-  136&\token{shar\_r\_imm\_alt\_32}&0&$\reg'_A = \unsigned{\floor{\signedn{4}{\immed_X} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
-  137&\token{cmov\_iz\_imm}&0&$\reg'_A = \begin{cases}
+  120&\token{store\_ind\_u8}&0&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
+  121&\token{store\_ind\_u16}&0&$\memwr_{\reg_B + \immed_X \dots+ 2} = \se_2(\reg_A \bmod 2^{16})$\\ \mrule
+  122&\token{store\_ind\_u32}&0&$\memwr_{\reg_B + \immed_X \dots+ 4} = \se_4(\reg_A \bmod 2^{32})$\\ \mrule
+  123&\token{store\_ind\_u64}&0&$\memwr_{\reg_B + \immed_X \dots+ 8} = \se_8(\reg_A)$\\ \mrule
+  124&\token{load\_ind\_u8}&0&$\reg'_A = \memr_{\reg_B + \immed_X}$\\ \mrule
+  125&\token{load\_ind\_i8}&0&$\reg'_A = \unsigned{\signedn{1}{\memr_{\reg_B + \immed_X}}}$\\ \mrule
+  126&\token{load\_ind\_u16}&0&$\reg'_A = \de_2(\memr_{\reg_B + \immed_X\dots+2})$\\ \mrule
+  127&\token{load\_ind\_i16}&0&$\reg'_A = \unsigned{\signedn{2}{\de_2(\memr_{\reg_B + \immed_X\dots+2})}}$\\ \mrule
+  128&\token{load\_ind\_u32}&0&$\reg'_A = \de_4(\memr_{\reg_B + \immed_X\dots+4})$\\ \mrule
+  129&\token{load\_ind\_i32}&0&$\reg'_A = \unsigned{\signedn{4}{\de_4(\memr_{\reg_B + \immed_X\dots+4})}}$\\ \mrule
+  130&\token{load\_ind\_u64}&0&$\reg'_A = \de_8(\memr_{\reg_B + \immed_X\dots+8})$\\ \mrule
+  131&\token{add\_imm\_32}&0&$\reg'_A = \sext_4((\reg_B + \immed_X) \bmod 2^{32})$\\ \mrule
+  132&\token{and\_imm}&0&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \wedge \bits{\immed_X}_i$\\ \mrule
+  133&\token{xor\_imm}&0&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \oplus \bits{\immed_X}_i$\\ \mrule
+  134&\token{or\_imm}&0&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \vee \bits{\immed_X}_i$\\ \mrule
+  135&\token{mul\_imm\_32}&0&$\reg'_A = \sext_4((\reg_B \cdot \immed_X) \bmod 2^{32})$\\ \mrule
+  136&\token{set\_lt\_u\_imm}&0&$\reg'_A = \reg_B < \immed_X$\\ \mrule
+  137&\token{set\_lt\_s\_imm}&0&$\reg'_A = \signed{\reg_B} < \signed{\immed_X}$\\ \mrule
+  138&\token{shlo\_l\_imm\_32}&0&$\reg'_A = \sext_4((\reg_B \cdot 2^{\immed_X \bmod 32}) \bmod 2^{32})$\\ \mrule
+  139&\token{shlo\_r\_imm\_32}&0&$\reg'_A = \sext_4(\floor{\reg_B \bmod 2^{32} \div 2^{\immed_X \bmod 32}})$\\ \mrule
+  140&\token{shar\_r\_imm\_32}&0&$\reg'_A = \unsigned{\floor{\signedn{4}{\reg_B \bmod 2^{32} } \div 2^{\immed_X \bmod 32}}}$\\ \mrule
+  141&\token{neg\_add\_imm\_32}&0&$\reg'_A = \sext_4((\immed_X + 2^{32} - \reg_B) \bmod 2^{32})$\\ \mrule
+  142&\token{set\_gt\_u\_imm}&0&$\reg'_A = \reg_B > \immed_X$\\ \mrule
+  143&\token{set\_gt\_s\_imm}&0&$\reg'_A = \signed{\reg_B} > \signed{\immed_X}$\\ \mrule
+  144&\token{shlo\_l\_imm\_alt\_32}&0&$\reg'_A = \sext_4((\immed_X \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
+  145&\token{shlo\_r\_imm\_alt\_32}&0&$\reg'_A = \sext_4(\floor{\immed_X \div 2^{\reg_B \bmod 32}})$\\ \mrule
+  146&\token{shar\_r\_imm\_alt\_32}&0&$\reg'_A = \unsigned{\floor{\signedn{4}{\immed_X} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  147&\token{cmov\_iz\_imm}&0&$\reg'_A = \begin{cases}
     \immed_X &\when \reg_B = 0\\
     \reg_A &\otherwise
   \end{cases}$\\ \mrule
-  138&\token{cmov\_nz\_imm}&0&$\reg'_A = \begin{cases}
+  148&\token{cmov\_nz\_imm}&0&$\reg'_A = \begin{cases}
     \immed_X &\when \reg_B \ne 0\\
     \reg_A &\otherwise
   \end{cases}$\\ \mrule
-  139&\token{add\_imm\_64}&0&$\reg'_A = (\reg_B + \immed_X) \bmod 2^{64}$\\ \mrule
-  140&\token{mul\_imm\_64}&0&$\reg'_A = (\reg_B \cdot \immed_X) \bmod 2^{64}$\\ \mrule
-  141&\token{shlo\_l\_imm\_64}&0&$\reg'_A = \sext_8((\reg_B \cdot 2^{\immed_X \bmod 64}) \bmod 2^{64})$\\ \mrule
-  142&\token{shlo\_r\_imm\_64}&0&$\reg'_A = \sext_8(\floor{\reg_B \div 2^{\immed_X \bmod 64}})$\\ \mrule
-  143&\token{shar\_r\_imm\_64}&0&$\reg'_A = \unsigned{\floor{\signed{\reg_B} \div 2^{\immed_X \bmod 64}}}$\\ \mrule
-  144&\token{neg\_add\_imm\_64}&0&$\reg'_A = (\immed_X + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
-  145&\token{shlo\_l\_imm\_alt\_64}&0&$\reg'_A = (\immed_X \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
-  146&\token{shlo\_r\_imm\_alt\_64}&0&$\reg'_A = \floor{\immed_X \div 2^{\reg_B \bmod 64}}$\\ \mrule
-  147&\token{shar\_r\_imm\_alt\_64}&0&$\reg'_A = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
+  149&\token{add\_imm\_64}&0&$\reg'_A = (\reg_B + \immed_X) \bmod 2^{64}$\\ \mrule
+  150&\token{mul\_imm\_64}&0&$\reg'_A = (\reg_B \cdot \immed_X) \bmod 2^{64}$\\ \mrule
+  % \sext_8 is a no-op - WTF is this doing here??
+  151&\token{shlo\_l\_imm\_64}&0&$\reg'_A = \sext_8((\reg_B \cdot 2^{\immed_X \bmod 64}) \bmod 2^{64})$\\ \mrule
+  152&\token{shlo\_r\_imm\_64}&0&$\reg'_A = \sext_8(\floor{\reg_B \div 2^{\immed_X \bmod 64}})$\\ \mrule
+  153&\token{shar\_r\_imm\_64}&0&$\reg'_A = \unsigned{\floor{\signed{\reg_B} \div 2^{\immed_X \bmod 64}}}$\\ \mrule
+  154&\token{neg\_add\_imm\_64}&0&$\reg'_A = (\immed_X + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
+  155&\token{shlo\_l\_imm\_alt\_64}&0&$\reg'_A = (\immed_X \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
+  156&\token{shlo\_r\_imm\_alt\_64}&0&$\reg'_A = \floor{\immed_X \div 2^{\reg_B \bmod 64}}$\\ \mrule
+  157&\token{shar\_r\_imm\_alt\_64}&0&$\reg'_A = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
+  158&\token{rot\_r\_64\_imm}&0&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_A)_i = \bitsfunc{8}(\reg_B)_{(i + \immed_X) \bmod 64}$\\ \mrule
+  159&\token{rot\_r\_64\_imm\_alt}&0&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_A)_i = \bitsfunc{8}(\immed_X)_{(i + \reg_B) \bmod 64}$\\ \mrule
+  160&\token{rot\_r\_32\_imm}&0&$\reg'_A = \sext_4(x) \ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_B)_{(i + \immed_X) \bmod 32}$\\ \mrule
+  161&\token{rot\_r\_32\_imm\_alt}&0&$\reg'_A = \sext_4(x) \ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\immed_X)_{(i + \reg_B) \bmod 32}$\\
   \bottomrule
 \end{longtable}
 
@@ -509,12 +536,12 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-150&\token{branch\_eq}&0&$\token{branch}(\immed_X, \reg_A = \reg_B)$\\ \mrule
-151&\token{branch\_ne}&0&$\token{branch}(\immed_X, \reg_A \ne \reg_B)$\\ \mrule
-152&\token{branch\_lt\_u}&0&$\token{branch}(\immed_X, \reg_A < \reg_B)$\\ \mrule
-153&\token{branch\_lt\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} < \signed{\reg_B})$\\ \mrule
-154&\token{branch\_ge\_u}&0&$\token{branch}(\immed_X, \reg_A \ge \reg_B)$\\ \mrule
-155&\token{branch\_ge\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} \ge \signed{\reg_B})$\\
+  170&\token{branch\_eq}&0&$\token{branch}(\immed_X, \reg_A = \reg_B)$\\ \mrule
+  171&\token{branch\_ne}&0&$\token{branch}(\immed_X, \reg_A \ne \reg_B)$\\ \mrule
+  172&\token{branch\_lt\_u}&0&$\token{branch}(\immed_X, \reg_A < \reg_B)$\\ \mrule
+  173&\token{branch\_lt\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} < \signed{\reg_B})$\\ \mrule
+  174&\token{branch\_ge\_u}&0&$\token{branch}(\immed_X, \reg_A \ge \reg_B)$\\ \mrule
+  175&\token{branch\_ge\_s}&0&$\token{branch}(\immed_X, \signed{\reg_A} \ge \signed{\reg_B})$\\
 \bottomrule
 \end{longtable}
 
@@ -541,7 +568,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  160&\token{load\_imm\_jump\_ind}&0&$
+  180&\token{load\_imm\_jump\_ind}&0&$
     \token{djump}((\reg_B + \immed_Y) \bmod 2^{32}) \ ,\qquad
     \reg_A' = \immed_X
   $\\
@@ -569,74 +596,85 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  170&\token{add\_32}&0&$\reg'_D = \sext_4((\reg_A + \reg_B) \bmod 2^{32})$\\ \mrule
-  171&\token{sub\_32}&0&$\reg'_D = \sext_4((\reg_A + 2^{32} - (\reg_B \bmod 2^{32})) \bmod 2^{32})$\\ \mrule
-  172&\token{mul\_32}&0&$\reg'_D = \sext_4((\reg_A \cdot \reg_B) \bmod 2^{32})$\\ \mrule
-  173&\token{div\_u\_32}&0&$\reg'_D = \begin{cases}
+  190&\token{add\_32}&0&$\reg'_D = \sext_4((\reg_A + \reg_B) \bmod 2^{32})$\\ \mrule
+  191&\token{sub\_32}&0&$\reg'_D = \sext_4((\reg_A + 2^{32} - (\reg_B \bmod 2^{32})) \bmod 2^{32})$\\ \mrule
+  192&\token{mul\_32}&0&$\reg'_D = \sext_4((\reg_A \cdot \reg_B) \bmod 2^{32})$\\ \mrule
+  193&\token{div\_u\_32}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B \bmod 2^{32} = 0\\
     \floor{(\reg_A \bmod 2^{32}) \div (\reg_B \bmod 2^{32})} &\otherwise
   \end{cases}$\\ \mrule
-  174&\token{div\_s\_32}&0&$\reg'_D = \begin{cases}
+  194&\token{div\_s\_32}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when b = 0\\
     a &\when a = -2^{31} \wedge b = -1\\
     \unsigned{\floor{a \div b}} &\otherwise \\[2pt]
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
-  175&\token{rem\_u\_32}&0&$\reg'_D = \begin{cases}
+  195&\token{rem\_u\_32}&0&$\reg'_D = \begin{cases}
     \sext_4(\reg_A) &\when \reg_B \bmod 2^{32} = 0\\
     \sext_4((\reg_A \bmod 2^{32}) \bmod (\reg_B \bmod 2^{32})) &\otherwise
   \end{cases}$\\ \mrule
-  176&\token{rem\_s\_32}&0&$\reg'_D = \begin{cases}
+  196&\token{rem\_s\_32}&0&$\reg'_D = \begin{cases}
     \unsigned{a} &\when b = 0 \\
     0 &\when a = -2^{31} \wedge b = -1 \\
     \unsigned{a \bmod b} &\otherwise \\[2pt]
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
-  177&\token{shlo\_l\_32}&0&$\reg'_D = \sext_4((\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
-  178&\token{shlo\_r\_32}&0&$\reg'_D = \sext_4(\floor{(\reg_A \bmod 2^{32}) \div 2^{\reg_B \bmod 32}})$\\ \mrule
-  179&\token{shar\_r\_32}&0&$\reg'_D = \unsigned{\floor{\signedn{4}{\reg_A \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  197&\token{shlo\_l\_32}&0&$\reg'_D = \sext_4((\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
+  198&\token{shlo\_r\_32}&0&$\reg'_D = \sext_4(\floor{(\reg_A \bmod 2^{32}) \div 2^{\reg_B \bmod 32}})$\\ \mrule
+  199&\token{shar\_r\_32}&0&$\reg'_D = \unsigned{\floor{\signedn{4}{\reg_A \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
 
-  180&\token{add\_64}&0&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{64}$\\ \mrule
-  181&\token{sub\_64}&0&$\reg'_D = (\reg_A + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
-  182&\token{mul\_64}&0&$\reg'_D = (\reg_A \cdot \reg_B) \bmod 2^{64}$\\ \mrule
-  183&\token{div\_u\_64}&0&$\reg'_D = \begin{cases}
+  200&\token{add\_64}&0&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{64}$\\ \mrule
+  201&\token{sub\_64}&0&$\reg'_D = (\reg_A + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
+  202&\token{mul\_64}&0&$\reg'_D = (\reg_A \cdot \reg_B) \bmod 2^{64}$\\ \mrule
+  203&\token{div\_u\_64}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B = 0\\
     \floor{\reg_A \div \reg_B} &\otherwise
   \end{cases}$\\ \mrule
-  184&\token{div\_s\_64}&0&$\reg'_D = \begin{cases}
+  204&\token{div\_s\_64}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B = 0\\
     \reg_A &\when \signed{\reg_A} = -2^{63} \wedge \signed{\reg_B} = -1\\
     \unsigned{\floor{\signed{\reg_A} \div \signed{\reg_B}}} &\otherwise
   \end{cases}$\\ \mrule
-  185&\token{rem\_u\_64}&0&$\reg'_D = \begin{cases}
+  205&\token{rem\_u\_64}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
     \reg_A \bmod \reg_B &\otherwise
   \end{cases}$\\ \mrule
-  186&\token{rem\_s\_64}&0&$\reg'_D = \begin{cases}
+  206&\token{rem\_s\_64}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
     0 &\when \signed{\reg_A} = -2^{63} \wedge \signed{\reg_B} = -1\\
     \unsigned{\signed{\reg_A} \bmod \signed{\reg_B}} &\otherwise
   \end{cases}$\\ \mrule
-  187&\token{shlo\_l\_64}&0&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
-  188&\token{shlo\_r\_64}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 64}}$\\ \mrule
-  189&\token{shar\_r\_64}&0&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
+  207&\token{shlo\_l\_64}&0&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
+  208&\token{shlo\_r\_64}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 64}}$\\ \mrule
+  209&\token{shar\_r\_64}&0&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
 
-  190&\token{and}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \bits{\reg_B}_i$\\ \mrule
-  191&\token{xor}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \oplus \bits{\reg_B}_i$\\ \mrule
-  192&\token{or}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \bits{\reg_B}_i$\\ \mrule
-  193&\token{mul\_upper\_s\_s}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \signed{\reg_B}) \div 2^{64}}}$\\ \mrule
-  194&\token{mul\_upper\_u\_u}&0&$\reg'_D = \floor{(\reg_A \cdot \reg_B) \div 2^{64}}$\\ \mrule
-  195&\token{mul\_upper\_s\_u}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \reg_B) \div 2^{64}}}$\\ \mrule
-  196&\token{set\_lt\_u}&0&$\reg'_D = \reg_A < \reg_B$\\ \mrule
-  197&\token{set\_lt\_s}&0&$\reg'_D = \signed{\reg_A} < \signed{\reg_B}$\\ \mrule
-  198&\token{cmov\_iz}&0&$\reg'_D = \begin{cases}
+  210&\token{and}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \bits{\reg_B}_i$\\ \mrule
+  211&\token{xor}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \oplus \bits{\reg_B}_i$\\ \mrule
+  212&\token{or}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \bits{\reg_B}_i$\\ \mrule
+  213&\token{mul\_upper\_s\_s}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \signed{\reg_B}) \div 2^{64}}}$\\ \mrule
+  214&\token{mul\_upper\_u\_u}&0&$\reg'_D = \floor{(\reg_A \cdot \reg_B) \div 2^{64}}$\\ \mrule
+  215&\token{mul\_upper\_s\_u}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \reg_B) \div 2^{64}}}$\\ \mrule
+  216&\token{set\_lt\_u}&0&$\reg'_D = \reg_A < \reg_B$\\ \mrule
+  217&\token{set\_lt\_s}&0&$\reg'_D = \signed{\reg_A} < \signed{\reg_B}$\\ \mrule
+  218&\token{cmov\_iz}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
     \reg_D &\otherwise
   \end{cases}$\\ \mrule
-  199&\token{cmov\_nz}&0&$\reg'_D = \begin{cases}
+  219&\token{cmov\_nz}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B \ne 0\\
     \reg_D &\otherwise
-  \end{cases}$\\
+  \end{cases}$\\ \mrule
+  220&\token{rot\_l\_64}&0&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_D)_i = \bitsfunc{8}(\reg_A)_{(i + \reg_B) \bmod 64}$\\ \mrule
+  221&\token{rot\_l\_32}&0&$\reg'_D = \sext_4(x)\ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_A)_{(i + \reg_A) \bmod 32}$\\ \mrule
+  222&\token{rot\_r\_64}&0&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_D)_{(i + \reg_B) \bmod 64} = \bitsfunc{8}(\reg_A)_i$\\ \mrule
+  223&\token{rot\_r\_32}&0&$\reg'_D = \sext_4(x)\ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_{(i + \reg_A) \bmod 32} = \bitsfunc{4}(\reg_A)_i$\\ \mrule
+  224&\token{and\_inv}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \lnot \bits{\reg_B}_i$\\ \mrule
+  225&\token{or\_inv}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \lnot \bits{\reg_B}_i$\\ \mrule
+  226&\token{xnor}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \lnot ( \bits{\reg_A}_i \oplus \bits{\reg_B}_i )$\\ \mrule
+  227&\token{max}&0&$\reg'_D = \max ( \signed{\reg_A}, \signed{\reg_B} )$\\ \mrule
+  228&\token{max\_u}&0&$\reg'_D = \max ( \reg_A, \reg_B )$\\ \mrule
+  229&\token{min}&0&$\reg'_D = \min ( \signed{\reg_A}, \signed{\reg_B} )$\\ \mrule
+  230&\token{min\_u}&0&$\reg'_D = \min ( \reg_A, \reg_B )$\\
 \bottomrule
 \end{longtable}
 
