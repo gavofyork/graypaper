@@ -111,7 +111,8 @@ Formally, we define our result context to be $\mathbf{X}$, and our invocation co
     \isa{s}{\N_S},
     \isa{\mathbf{u}}{\partialstate},
     \isa{i}{\N_S},
-    \isa{\mathbf{t}}{\seq{\mathbb{T}}}
+    \isa{\mathbf{t}}{\seq{\mathbb{T}}},
+    \isa{y}{\maybe{\H}}
   }\\
   \forall \mathbf{x} \in \mathbf{X} : \mathbf{x}_\mathbf{s} &\equiv (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]
 \end{align}
@@ -140,7 +141,8 @@ We define $\Psi_A$, the Accumulation invocation function as:
       s,
       \is{\mathbf{u}}{\tuple{\is{\mathbf{d}}{\{s \mapsto \mathbf{d}[s]\}}, \is{\mathbf{x}}{\mathbf{u}_\mathbf{x}}, \is{\mathbf{i}}{\mathbf{u}_\mathbf{i}}, \is{\mathbf{q}}{\mathbf{u}_\mathbf{q}}}},
       i,
-      \is{\mathbf{t}}{[]}
+      \is{\mathbf{t}}{[]},
+      \is{y}{\none}
     }\\
     &\qquad\where i = \text{check}((\de_4(\mathcal{H}(\se(s, \eta'_0, \mathbf{H}_t))) \bmod (2^{32}-2^9)) + 2^8) \\
   \end{aligned}\right.\\
@@ -161,6 +163,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_J(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{query} \\
     \Omega_S(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{solicit} \\
     \Omega_F(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{forget} \\
+    \Omega_\Taurus(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{yield} \\
     (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{x}) &\otherwise\\
     \quad \where \mathbf{d} = (\mathbf{x}_\mathbf{u})_\mathbf{d}\cup\mathbf{x}_\mathbf{d}\;,\ \mathbf{s} = (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!& \\
   \end{cases} \\
@@ -173,23 +176,23 @@ We define $\Psi_A$, the Accumulation invocation function as:
     (\N_G, \mathbb{Y} \cup \{\oog, \panic\}, (\mathbf{X}, \mathbf{X})) &\to (\partialstate, \defxfers, \H\bm{?}, \N_G) \\
     (g, \mathbf{o}, (\mathbf{x}, \mathbf{y})) &\mapsto \begin{cases}
       \tup{
+        \mathbf{y}_\mathbf{u},
+        \mathbf{y}_\mathbf{t},
+        \mathbf{y}_y,
+        g
+      } & \when \mathbf{o} \in \{\oog, \panic\} \\
+      \tup{
         \mathbf{x}_\mathbf{u},
         \mathbf{x}_\mathbf{t},
         \mathbf{o},
         g
-      } & \when \mathbf{o} \in \mathbb{H} \\
+      } & \otherwhen \mathbf{o} \in \H \\
       \tup{
         \mathbf{x}_\mathbf{u},
         \mathbf{x}_\mathbf{t},
-        \none,
+        \mathbf{x}_y,
         g
-      } & \when \mathbf{o} \in \mathbb{Y} \setminus \H \\
-      \tup{
-        \mathbf{y}_\mathbf{u},
-        \mathbf{y}_\mathbf{t},
-        \none,
-        g
-      } & \when \mathbf{o} \in \{\oog, \panic\} \\
+      } & \otherwise \\
     \end{cases}
   \end{aligned}\right.
 \end{align}
@@ -624,6 +627,22 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       (\mathtt{OOB}, \mathbf{x}_\mathbf{s}) &\when h = \error \\
       (\mathtt{HUH}, \mathbf{x}_\mathbf{s}) &\otherwhen \mathbf{a} = \error \\
       (\mathtt{OK}, \mathbf{a}) &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_\Aries(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}))$ \\
+  \texttt{yield} = \_ \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [o] &= \registers_7 \\
+    \using h &= \begin{cases}
+      \memory_{o\dots+32} &\when \mathbb{Z}_{o \dots+ 32} \subset \mathbb{V}_{\memory} \\
+      \error &\otherwise
+    \end{cases} \\
+    (\registers'_7, \mathbf{x}'_y) &\equiv \begin{cases}
+      (\mathtt{OOB}, \mathbf{x}_y) &\when h = \error \\
+      (\mathtt{OK}, h) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \bottomrule
