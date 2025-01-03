@@ -467,8 +467,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   132&\token{set\_gt\_u\_imm}&0&$\reg'_A = \reg_B > \immed_X$\\ \mrule
   133&\token{set\_gt\_s\_imm}&0&$\reg'_A = \signed{\reg_B} > \signed{\immed_X}$\\ \mrule
   134&\token{shlo\_l\_imm\_alt\_32}&0&$\reg'_A = \sext_4((\immed_X \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
-  135&\token{shlo\_r\_imm\_alt\_32}&0&$\reg'_A = \sext_4(\floor{\immed_X \div 2^{\reg_B \bmod 32}})$\\ \mrule
-  136&\token{shar\_r\_imm\_alt\_32}&0&$\reg'_A = \unsigned{\floor{\signedn{4}{\immed_X} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  135&\token{shlo\_r\_imm\_alt\_32}&0&$\reg'_A = \sext_4(\floor{\immed_X \bmod 2^{32} \div 2^{\reg_B \bmod 32}})$\\ \mrule
+  136&\token{shar\_r\_imm\_alt\_32}&0&$\reg'_A = \unsigned{\floor{\signedn{4}{\immed_X \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
   137&\token{cmov\_iz\_imm}&0&$\reg'_A = \begin{cases}
     \immed_X &\when \reg_B = 0\\
     \reg_A &\otherwise
