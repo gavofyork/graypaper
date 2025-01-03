@@ -541,12 +541,12 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using \mathbf{d} &= ((\mathbf{x}_\mathbf{u})_\mathbf{d})[d] \\
     \using l &= \max(81, \mathbf{d}_o) - 81 \\
     \using \mathbf{s}' &= ((\mathbf{x}_\mathbf{u})_\mathbf{d})[s] \exc \mathbf{s}'_b = ((\mathbf{x}_\mathbf{u})_\mathbf{d})[s]_b + \mathbf{d}_b \\
-    (\varepsilon', \registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{d}) &\equiv \begin{cases}
-      (\continue, \mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\when h = \error \\
-      (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen d = \mathbf{x}_s \vee \mathbf{d}_c \ne \se_{32}(\mathbf{x}_s) \\
-      (\continue, \mathtt{WHAT}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen \mathbf{d}_i \ne 2 \vee (h, l) \not\in \mathbf{d}_\mathbf{l} \\
-      (\halt, \mathtt{OK}, (\mathbf{x}_\mathbf{u})_\mathbf{d} \setminus \{d\} \cup \{ \mathbf{x}_s \mapsto \mathbf{s}' \}) &\otherwhen \mathbf{d}_\mathbf{l}[h, l] = [x, y], y < t - \mathsf{D} \\
-      (\continue, \mathtt{HUH}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwise \\
+    (\registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{d}) &\equiv \begin{cases}
+      (\mathtt{OOB}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\when h = \error \\
+      (\mathtt{WHO}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen d = \mathbf{x}_s \vee \mathbf{d}_c \ne \se_{32}(\mathbf{x}_s) \\
+      (\mathtt{WHAT}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen \mathbf{d}_i \ne 2 \vee (h, l) \not\in \mathbf{d}_\mathbf{l} \\
+      (\mathtt{OK}, (\mathbf{x}_\mathbf{u})_\mathbf{d} \setminus \{d\} \cup \{ \mathbf{x}_s \mapsto \mathbf{s}' \}) &\otherwhen \mathbf{d}_\mathbf{l}[h, l] = [x, y], y < t - \mathsf{D} \\
+      (\mathtt{HUH}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
