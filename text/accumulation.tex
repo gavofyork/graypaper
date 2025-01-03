@@ -134,23 +134,24 @@ We come to define the parallelized accumulation function $\Delta_*$ which, with 
 \begin{equation}
   \Delta_*\colon\left\{\;\begin{aligned}
     &(\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}) \to (\N_G, \partialstate, \defxfers, \servouts) \\
-    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto (u, (\mathbf{x}', \mathbf{d}', \mathbf{i}', \mathbf{q}'), \wideparen{\mathbf{t}}, \mathbf{b})\!\!\!\!\!\!\\
+    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto (u, ((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \mathbf{i}', \mathbf{q}', \mathbf{x}'), \wideparen{\mathbf{t}}, \mathbf{b})\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
       \mathbf{s} &= \{ \mathbf{r}_s \mid w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} \} \cup \keys{\mathbf{f}} \\
       u &= \sum_{s \in \mathbf{s}}(\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_u) \\
       \mathbf{b} &= \{ (s, b) \mid s \in \mathbf{s},\, b = \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_b,\, b \ne \none \} \\
       \mathbf{t} &= [\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{t} \mid s \orderedin \mathbf{s}] \\
-      &((m, a, v, \mathbf{z}), \mathbf{d}, \mathbf{i}, \mathbf{q}) = \mathbf{o} \\
+      &(\mathbf{d}, \mathbf{i}, \mathbf{q}, (m, a, v, \mathbf{z})) = \mathbf{o} \\
       \mathbf{x}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, m)_\mathbf{o})_\mathbf{x} \\
       \mathbf{i}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, a)_\mathbf{o})_\mathbf{i} \\
       \mathbf{q}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, v)_\mathbf{o})_\mathbf{q} \\
-      \mathbf{d}' &= \{ s \mapsto \mathbf{d}_s \mid s \in \keys{\mathbf{d}} \setminus \mathbf{s} \} \cup \bigcup_{s \in \mathbf{s}}((\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d})\!\!\!\!\!\!\!\!
+      \mathbf{n} &= \bigcup_{s \in \mathbf{s}}(\{ (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d} \setminus \keys{\mathbf{d} \setminus \{s\}} \}) \\
+      \mathbf{m} &= \bigcup_{s \in \mathbf{s}}(\keys{\mathbf{d}} \setminus \keys{(\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d}})
     \end{aligned}
   \end{aligned}\right.
 \end{equation}
 
-We note that all newly added service indices, defined in the above context as $\bigcup_{s \in \mathbf{s}}\keys{(\Delta_1(\mathbf{o}, \mathbf{w}, s)_\mathbf{o})_\mathbf{d}} \setminus \mathbf{s}$, must not conflict with the indices of existing services $\keys{\accountspre}$ or other newly added services. This should never happen, since new indices are explicitly selected to avoid such conflicts, but in the unlikely event it happens, the block must be considered invalid.
+We note that while forming the union of all altered, newly added service and newly removed indices, defined in the above context as $\keys{\mathbf{n}} \cup \mathbf{m}$, different services may not each contribute the same index for a new, altered or removed service. This cannot happen for the set of removed and altered services since the code hash of removable services has no known preimage and thus cannot execute itself to make an alteration. For new services this should also never happen since new indices are explicitly selected to avoid such conflicts. In the unlikely event it does happen, the block must be considered invalid.
 
 The single-service accumulation function, $\Delta_1$, transforms an initial state-context, sequence of work-reports and a service index into an alterations state-context, a sequence of \emph{transfers}, a possible accumulation-output and the actual \textsc{pvm} gas used. This function wrangles the work-items of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
 \begin{align}
@@ -159,11 +160,8 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
 \begin{align}
     &\Delta_1 \colon \left\{\;\begin{aligned}
     &\begin{aligned}
-      (\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}, \N_S) &\to \tuple{
-        \begin{aligned}
-          &\isa{\mathbf{o}}{\partialstate}, \isa{\mathbf{t}}{\defxfers},\\
-          &\isa{b}{\H\bm{?}}, \isa{u}{\N_G}
-        \end{aligned}
+      (\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}, \N_S) &\to \tup{
+        \partialstate, \defxfers, \H\bm{?}, \N_G
       } \\
       (\mathbf{o}, \mathbf{w}, \mathbf{f}, s) &\mapsto \Psi_A(\mathbf{o}, \tau', s, g, \mathbf{p})
     \end{aligned} \\
