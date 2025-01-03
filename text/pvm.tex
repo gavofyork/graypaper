@@ -664,10 +664,10 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \reg_A &\when \reg_B \ne 0\\
     \reg_D &\otherwise
   \end{cases}$\\ \mrule
-  220&\token{rot\_l\_64}&0&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_D)_i = \bitsfunc{8}(\reg_A)_{(i + \reg_B) \bmod 64}$\\ \mrule
-  221&\token{rot\_l\_32}&0&$\reg'_D = \sext_4(x)\ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_A)_{(i + \reg_A) \bmod 32}$\\ \mrule
-  222&\token{rot\_r\_64}&0&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_D)_{(i + \reg_B) \bmod 64} = \bitsfunc{8}(\reg_A)_i$\\ \mrule
-  223&\token{rot\_r\_32}&0&$\reg'_D = \sext_4(x)\ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_{(i + \reg_A) \bmod 32} = \bitsfunc{4}(\reg_A)_i$\\ \mrule
+  220&\token{rot\_l\_64}&0&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_D)_{(i + \reg_B) \bmod 64} = \bitsfunc{8}(\reg_A)_i$\\ \mrule
+  221&\token{rot\_l\_32}&0&$\reg'_D = \sext_4(x)\ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_{(i + \reg_A) \bmod 32} = \bitsfunc{4}(\reg_A)_i$\\ \mrule
+  222&\token{rot\_r\_64}&0&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_D)_i = \bitsfunc{8}(\reg_A)_{(i + \reg_B) \bmod 64}$\\ \mrule
+  223&\token{rot\_r\_32}&0&$\reg'_D = \sext_4(x)\ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_A)_{(i + \reg_A) \bmod 32}$\\ \mrule
   224&\token{and\_inv}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \lnot \bits{\reg_B}_i$\\ \mrule
   225&\token{or\_inv}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \lnot \bits{\reg_B}_i$\\ \mrule
   226&\token{xnor}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \lnot ( \bits{\reg_A}_i \oplus \bits{\reg_B}_i )$\\ \mrule
