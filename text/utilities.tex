@@ -14,7 +14,7 @@ The Fisher-Yates shuffle function is defined formally as:
 Since it is often useful to shuffle a sequence based on some random seed in the form of a hash, we provide a secondary form of the shuffle function $\mathcal{F}$ which accepts a 32-byte hash instead of the numeric sequence. We define $\mathcal{Q}$, the numeric-sequence-from-hash function, thus:
 \begin{align}
   \forall l \in \N:\ \mathcal{Q}_l&\colon\left\{\begin{aligned}
-    \H &\to \seq{\N_l}\\
+    \H &\to \seq{\N_{2^{32}}}_l\\
     h &\mapsto [\de_4(\mathcal{H}(h \frown \se_4(\lfloor \nicefrac{i}{8}\rfloor))_{4i \bmod 32 \dots+4}) \mid i \orderedin \N_l]
   \end{aligned}\right.\\
   \label{eq:sequencefromhash}
