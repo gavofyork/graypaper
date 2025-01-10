@@ -14,7 +14,7 @@ For the Import \textsc{da} system, we deal with an input size of 4,104 octets re
 \newcommand*{\unzip}{\text{unzip}}
 \newcommand*{\lace}{\text{lace}}
 
-We assume some data blob $\mathbf{d} \in \Y_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\Y_{684}} = \unzip_{684}(\mathbf{p})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $\mathcal{C}$ as above to give 1,023 octet pairs per piece.
+We assume some data blob $\mathbf{d} \in \Y_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\Y_{684}} = \unzip_{684}(\mathbf{d})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $\mathcal{C}$ as above to give 1,023 octet pairs per piece.
 
 The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
