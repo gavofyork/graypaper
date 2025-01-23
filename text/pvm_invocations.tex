@@ -63,29 +63,26 @@ The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated
 
 The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\mathsf{W}_G$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
 
-Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\delta$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work payload, $\mathbf{y}$, together with the service index which is the subject of refinement $s$, the prediction of the hash of that service's code $c$ at the time of reporting, the hash of the containing work-package $p$, the refinement context $\mathbf{c}$, the authorizer hash $a$ and its output $\mathbf{o}$, and an export segment offset $\segoff$, the import segments and extrinsic data blobs as dictated by the work-item, $\mathbf{i}$ and $\overline{\mathbf{x}}$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
+Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\delta$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work-package $p$ and the index of the work item to be refined, $i$. Additionally, the authorizer output $\mathbf{o}$ is provided, all work items' import segments $\overline{\mathbf{i}}$ and an export segment offset $\segoff$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   &\Psi_R \colon \left\{\begin{aligned}
-    \left(\begin{aligned}
-      &\H, \N_G, \N_S, \H, \Y, \mathbb{X},\\
-      &\H, \Y, \seq{\G}, \seq{\Y}, \N
-    \end{aligned}
-    \right) &\to (\Y \cup \mathbb{J}, \seq{\Y}) \\
-    (c, g, s, p, \mathbf{y}, \mathbf{c}, a, \mathbf{o}, \mathbf{i}, \overline{\mathbf{x}}, \segoff) &\mapsto \begin{cases}
-      (\token{BAD}, []) &\when s \not\in \keys{\delta} \vee \Lambda(\delta[s], \mathbf{c}_t, c) = \none \\
-      (\token{BIG}, []) &\otherwhen |\Lambda(\delta[s], \mathbf{c}_t, c)| > \mathsf{W}_C \\
+    (\N_G, \N, \mathbb{P}, \Y, \seq{\seq{\G}}, \N) &\to (\Y \cup \mathbb{J}, \seq{\Y}) \\
+    (g, i, p, \mathbf{o}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
+      (\token{BAD}, []) &\when w_s \not\in \keys{\delta} \vee \Lambda(\delta[w_s], (p_\mathbf{x})_t, w_c) = \none \\
+      (\token{BIG}, []) &\otherwhen |\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_c)| > \mathsf{W}_C \\
       &\otherwise: \\
-      &\quad\using a = \se(s, \mathbf{y}, p, \mathbf{c}, a, \var{\mathbf{o}}, \var{\sq{\var{\mathbf{x}} \mid \mathbf{x} \orderedin \overline{\mathbf{x}}}})\ ,\\
-      &\quad\also (g, \mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[s], \mathbf{c}_t, c), 0, g, a, F, (\emptyset, []))\ \colon\\
+      &\quad\using a = \se(w_s, w_\mathbf{y}, \mathcal{H}(p), p_\mathbf{x}, p_a)\ ,\\
+      &\quad\also (g, \mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_c), 0, g, a, F, (\emptyset, []))\ \colon\\
       (\mathbf{r}, []) &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
       (\mathbf{r}, \mathbf{e}) &\quad\otherwise \\
+      \multicolumn{2}{l}{\where w = p_\mathbf{w}[i]}
     \end{cases} \\
   \end{aligned}\right. \\
   \label{eq:refinemutator}
   &F \in \Omega\ang{(\dict{\N}{\pvm}, \seq{\Y})} \colon
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
-      \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), s, \delta, \mathbf{c}_t) &\when n = \mathtt{historical\_lookup}\\
-      \Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \mathbf{i}) &\when n = \mathtt{import}\\
+      \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), w_s, \delta, (p_\mathbf{x})_t) &\when n = \mathtt{historical\_lookup}\\
+      \Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), i, p, \overline{\mathbf{i}}) &\when n = \mathtt{fetch}\\
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
       \Omega_G(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas}\\
       \Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
@@ -694,21 +691,22 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \mathbf{i})$ \\
-  \texttt{import} = 18 \\
+  \texttt{fetch} = 18 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{v} &= \begin{cases}
-      \mathbf{i}_{\registers_7} &\when \registers_7 < |\mathbf{i}| \\
+      \mathbf{i}_{\registers_{10}} &\when \registers_9 = 33 \wedge \registers_{10} < |\mathbf{i}| \\
       \none &\otherwise
     \end{cases} \\
-    \using o &= \registers_8 \\
-    \using l &= \min(\registers_9, \mathsf{W}_G) \\
+    \using o &= \registers_7 \\
+    \using f &= \max(\registers_8 \div 2^{32}, |\mathbf{v}|) \\
+    \using l &= \min(\registers_8 \bmod 2^{32}, |\mathbf{v}| - f) \\
     \memory'_{o\dots+l} &\equiv \begin{cases}
-      \mathbf{v} & \when \mathbf{v} \ne \none \wedge \mathbb{N}_{o \dots+ l} \subset \mathbb{V}^*_{\memory} \\
+      \mathbf{v}_{f\dots+l} & \when \mathbf{v} \ne \none \wedge \mathbb{N}_{o \dots+ l} \subset \mathbb{V}^*_{\memory} \\
       \memory_{o\dots+l} & \otherwise
     \end{cases} \\
     \registers'_7 &\equiv \begin{cases}
-      \mathtt{OOB} &\when \mathbb{Z}_{o \dots+ l} \not\subset \mathbb{V}^*_{\memory} \\
+      \mathtt{OOB} &\when \mathbb{N}_{o \dots+ l} \not\subset \mathbb{V}^*_{\memory} \\
       \mathtt{NONE} & \otherwhen \mathbf{v} = \none \\
       \mathtt{OK} &\otherwise \\
     \end{cases}
