@@ -698,15 +698,14 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \se(p) &\when \registers_9 = 0 \\
       \mathbf{o} &\when \registers_9 = 1 \\
       p_\mathbf{w}[\registers_{10}]_\mathbf{y} &\when \registers_9 = 2 \wedge \registers_{10} < |p_\mathbf{w}| \\
-      p_\mathbf{w}[i]_\mathbf{y} &\when \registers_9 = 3 \\
-      \mathbf{x} &\when \registers_9 = 4 \wedge \registers_{10} < |p_\mathbf{w}| \wedge \registers_{11} < |p_\mathbf{w}[\registers_{10}]_\mathbf{x}| \wedge (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[\registers_{10}]_\mathbf{x}[\registers_{11}] \\
-      \mathbf{x} &\when \registers_9 = 5 \wedge \registers_{10} < |p_\mathbf{w}[i]_\mathbf{x}| \wedge (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[i]_\mathbf{x}[\registers_{10}] \\[2pt]
+      \mathbf{x} &\when \registers_9 = 3 \wedge \registers_{10} < |p_\mathbf{w}| \wedge \registers_{11} < |p_\mathbf{w}[\registers_{10}]_\mathbf{x}| \wedge (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[\registers_{10}]_\mathbf{x}[\registers_{11}] \\
+      \mathbf{x} &\when \registers_9 = 4 \wedge \registers_{10} < |p_\mathbf{w}[i]_\mathbf{x}| \wedge (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[i]_\mathbf{x}[\registers_{10}] \\[2pt]
       \mathbf{x} &\when \left\{\begin{aligned}
-        \registers_9 = 6 &\wedge \exists j, k : (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[j]_\mathbf{x}[k] \\[2pt]
+        \registers_9 = 5 &\wedge \exists j, k : (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[j]_\mathbf{x}[k] \\[2pt]
         &\wedge \mathbb{Z}_{\registers_{10} \dots+ 32} \subset \mathbb{V}_{\memory} \wedge \memory_{\registers_{10}\dots+32} = \mathcal{H}(\mathbf{x}) \\
       \end{aligned}\right.\\
-      \overline{\mathbf{i}}[\registers_{10}]_{\registers_{11}} &\when \registers_9 = 7 \wedge \registers_{10} < |\overline{\mathbf{i}}| \wedge \registers_{11} < |\overline{\mathbf{i}}[\registers_{10}]| \\
-      \overline{\mathbf{i}}[i]_{\registers_{10}} &\when \registers_9 = 8 \wedge \registers_{10} < |\overline{\mathbf{i}}[i]| \\
+      \overline{\mathbf{i}}[\registers_{10}]_{\registers_{11}} &\when \registers_9 = 6 \wedge \registers_{10} < |\overline{\mathbf{i}}| \wedge \registers_{11} < |\overline{\mathbf{i}}[\registers_{10}]| \\
+      \overline{\mathbf{i}}[i]_{\registers_{10}} &\when \registers_9 = 7 \wedge \registers_{10} < |\overline{\mathbf{i}}[i]| \\
       \none &\otherwise
     \end{cases} \\
     \using o &= \registers_7 \\
@@ -717,8 +716,8 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \memory_{o\dots+l} & \otherwise
     \end{cases} \\
     \registers'_7 &\equiv \begin{cases}
-      \mathtt{OOB} &\when \mathbb{N}_{o \dots+ l} \not\subset \mathbb{V}^*_{\memory} \\
-      \mathtt{NONE} & \otherwhen \mathbf{v} = \none \\
+      \mathtt{OOB} &\when \mathbb{N}_{o \dots+ l} \not\subset \mathbb{V}^*_{\memory}\ \vee\ (\registers_9 = 5 \wedge \mathbb{Z}_{\registers_{10} \dots+ 32} \not\subset \mathbb{V}_{\memory}) \\
+      \mathtt{NONE} &\otherwhen \mathbf{v} = \none \\
       \mathtt{OK} &\otherwise \\
     \end{cases}
   \end{aligned}$\\
