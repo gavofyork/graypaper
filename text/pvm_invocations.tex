@@ -10,13 +10,12 @@
 \begin{description}
   \item[$\mathtt{NONE} = 2^{64} - 1$] The return value indicating an item does not exist.
   \item[$\mathtt{WHAT} = 2^{64} - 2$] Name unknown.
-  \item[$\mathtt{OOB} = 2^{64} - 3$] The return value for when a memory index is provided for reading/writing which is not accessible.
-  \item[$\mathtt{WHO} = 2^{64} - 4$] Index unknown.
-  \item[$\mathtt{FULL} = 2^{64} - 5$] Storage full.
-  \item[$\mathtt{CORE} = 2^{64} - 6$] Core index unknown.
-  \item[$\mathtt{CASH} = 2^{64} - 7$] Insufficient funds.
-  \item[$\mathtt{LOW} = 2^{64} - 8$] Gas limit too low.
-  \item[$\mathtt{HUH} = 2^{64} - 9$] The item is already solicited or cannot be forgotten.
+  \item[$\mathtt{WHO} = 2^{64} - 3$] Index unknown.
+  \item[$\mathtt{FULL} = 2^{64} - 4$] Storage full.
+  \item[$\mathtt{CORE} = 2^{64} - 5$] Core index unknown.
+  \item[$\mathtt{CASH} = 2^{64} - 6$] Insufficient funds.
+  \item[$\mathtt{LOW} = 2^{64} - 7$] Gas limit too low.
+  \item[$\mathtt{HUH} = 2^{64} - 8$] The item is already solicited or cannot be forgotten.
   \item[$\mathtt{OK} = 0$] The return value indicating general success.
 \end{description}
 
@@ -288,12 +287,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \mathbf{v}_i & \when \mathbf{v} \ne \none \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\memory} \\
       \memory_{b_o + i} & \otherwise
     \end{cases} \\
-    \registers'_7 &\equiv \begin{cases}
-      \begin{rcases}
-        \mathtt{NONE} & \when \mathbf{v} = \none \\
-        |\mathbf{v}| &\otherwise \\
-      \end{rcases} &\when h \ne \error \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\memory} \\
-      \mathtt{OOB} &\otherwise
+    (\varepsilon', \registers'_7) &\equiv \begin{cases}
+      (\panic, \registers_7) &\when h = \error \vee \mathbb{Z}_{b_o \dots+ b_z} \not\subset \mathbb{V}^*_{\memory}\\
+      (\continue, \mathtt{NONE}) &\otherwhen \mathbf{v} = \none \\
+      (\continue, |\mathbf{v}|) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -321,12 +318,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \mathbf{v}_i & \when \mathbf{v} \ne \none \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\memory} \\
       \memory_{b_o + i} & \otherwise
     \end{cases} \\
-    \registers'_7 &\equiv \begin{cases}
-      \begin{rcases}
-        \mathtt{NONE} & \when \mathbf{v} = \none \\
-        |\mathbf{v}| &\otherwise \\
-      \end{rcases} &\when k \ne \error \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\memory} \\
-      \mathtt{OOB} &\otherwise
+    (\varepsilon', \registers'_7) &\equiv \begin{cases}
+      (\panic, \registers_7) &\when k = \error \vee \mathbb{Z}_{b_o \dots+ b_z} \not\subset \mathbb{V}^*_{\memory} \\
+      (\continue, \mathtt{NONE}) &\when \mathbf{v} = \none \\
+      (\continue, |\mathbf{v}|) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -352,10 +347,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       |\mathbf{s}_\mathbf{s}[k]| &\when k \in \keys{\mathbf{s}_\mathbf{s}} \\
       \mathtt{NONE} &\otherwise
     \end{cases} \\
-    (\registers'_7, \mathbf{s}') &\equiv \begin{cases}
-      (l, \mathbf{a}) &\when k \ne \error \wedge \mathbf{a} \ne \error \wedge \mathbf{a}_t \le \mathbf{a}_b\\
-      (\mathtt{FULL}, \mathbf{s}) &\when \mathbf{a}_t > \mathbf{a}_b \\
-      (\mathtt{OOB}, \mathbf{s}) &\otherwise
+    (\varepsilon', \registers'_7, \mathbf{s}') &\equiv \begin{cases}
+      (\panic, \registers_7, \mathbf{s}) &\when k = \error \vee \mathbf{a} = \error\\
+      (\continue, \mathtt{FULL}, \mathbf{s}) &\otherwhen \mathbf{a}_t > \mathbf{a}_b \\
+      (\continue, l, \mathbf{a}) &\otherwise\\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -377,10 +372,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \mathbf{m}_i & \when \mathbf{m} \ne \none \wedge \mathbb{Z}_{o \dots+ |\mathbf{m}|} \subset \mathbb{V}^*_{\memory} \\
       \memory_{o + i} & \otherwise
     \end{cases} \\
-    \registers'_7 &\equiv \begin{cases}
-      \mathtt{OK} & \when \mathbf{m} \ne \none \wedge \mathbb{Z}_{o \dots+ |\mathbf{m}|} \subset \mathbb{V}^*_{\memory} \\
-      \mathtt{NONE} & \when \mathbf{m} = \none \\
-      \mathtt{OOB} & \otherwise \\
+    (\varepsilon', \registers'_7) &\equiv \begin{cases}
+      (\panic, \registers_7) &\when \mathbb{Z}_{o \dots+ |\mathbf{m}|} \not\subset \mathbb{V}^*_{\memory}\\
+      (\continue, \mathtt{NONE}) &\otherwhen \mathbf{m} = \none \\
+      (\continue, \mathtt{OK}) &\otherwise \\
     \end{cases}
   \end{aligned}$ \\
   \bottomrule
