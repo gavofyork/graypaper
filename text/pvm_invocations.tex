@@ -63,7 +63,7 @@ The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated
 
 The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\mathsf{W}_G$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
 
-Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\delta$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work-package $p$ and the index of the work item to be refined, $i$. Additionally, the authorizer output $\mathbf{o}$ is provided, all work items' import segments $\overline{\mathbf{i}}$ and an export segment offset $\segoff$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
+Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\delta$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work-package $p$ and the index of the work item to be refined, $i$. Additionally, the authorizer output $\mathbf{o}$ is provided together with all work items' import segments $\overline{\mathbf{i}}$ and an export segment offset $\segoff$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   &\Psi_R \colon \left\{\begin{aligned}
     (\N_G, \N, \mathbb{P}, \Y, \seq{\seq{\G}}, \N) &\to (\Y \cup \mathbb{J}, \seq{\Y}) \\
@@ -82,7 +82,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &F \in \Omega\ang{(\dict{\N}{\pvm}, \seq{\Y})} \colon
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
       \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), w_s, \delta, (p_\mathbf{x})_t) &\when n = \mathtt{historical\_lookup}\\
-      \Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), i, p, \overline{\mathbf{i}}) &\when n = \mathtt{fetch}\\
+      \Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), i, p, \mathbf{o}, \overline{\mathbf{i}}) &\when n = \mathtt{fetch}\\
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
       \Omega_G(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas}\\
       \Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
@@ -656,7 +656,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \end{cases}
 \end{align}
 
-\begin{longtable}{p{3.5cm} p{12.5cm}}
+\begin{longtable}{p{4cm} p{12cm}}
   \toprule
   \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
   \thead{\textbf{Mutations}} \\
@@ -690,12 +690,23 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \mathbf{i})$ \\
+  $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), i, p, \mathbf{o}, \overline{\mathbf{i}})$ \\
   \texttt{fetch} = 18 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{v} &= \begin{cases}
-      \mathbf{i}_{\registers_{10}} &\when \registers_9 = 33 \wedge \registers_{10} < |\mathbf{i}| \\
+      \se(p) &\when \registers_9 = 0 \\
+      \mathbf{o} &\when \registers_9 = 1 \\
+      p_\mathbf{w}[\registers_{10}]_\mathbf{y} &\when \registers_9 = 2 \wedge \registers_{10} < |p_\mathbf{w}| \\
+      p_\mathbf{w}[i]_\mathbf{y} &\when \registers_9 = 3 \\
+      \mathbf{x} &\when \registers_9 = 4 \wedge \registers_{10} < |p_\mathbf{w}| \wedge \registers_{11} < |p_\mathbf{w}[\registers_{10}]_\mathbf{x}| \wedge (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[\registers_{10}]_\mathbf{x}[\registers_{11}] \\
+      \mathbf{x} &\when \registers_9 = 5 \wedge \registers_{10} < |p_\mathbf{w}[i]_\mathbf{x}| \wedge (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[i]_\mathbf{x}[\registers_{10}] \\[2pt]
+      \mathbf{x} &\when \left\{\begin{aligned}
+        \registers_9 = 6 &\wedge \exists j, k : (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[j]_\mathbf{x}[k] \\[2pt]
+        &\wedge \mathbb{Z}_{\registers_{10} \dots+ 32} \subset \mathbb{V}_{\memory} \wedge \memory_{\registers_{10}\dots+32} = \mathcal{H}(\mathbf{x}) \\
+      \end{aligned}\right.\\
+      \overline{\mathbf{i}}[\registers_{10}]_{\registers_{11}} &\when \registers_9 = 7 \wedge \registers_{10} < |\overline{\mathbf{i}}| \wedge \registers_{11} < |\overline{\mathbf{i}}[\registers_{10}]| \\
+      \overline{\mathbf{i}}[i]_{\registers_{10}} &\when \registers_9 = 8 \wedge \registers_{10} < |\overline{\mathbf{i}}[i]| \\
       \none &\otherwise
     \end{cases} \\
     \using o &= \registers_7 \\
