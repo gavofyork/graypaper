@@ -66,13 +66,13 @@ The Export host-call depends on two pieces of context; one sequence of segments 
 Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\delta$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work-package $p$ and the index of the work item to be refined, $i$. Additionally, the authorizer output $\mathbf{o}$ is provided together with all work items' import segments $\overline{\mathbf{i}}$ and an export segment offset $\segoff$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   &\Psi_R \colon \left\{\begin{aligned}
-    (\N_G, \N, \mathbb{P}, \Y, \seq{\seq{\G}}, \N) &\to (\Y \cup \mathbb{J}, \seq{\Y}) \\
-    (g, i, p, \mathbf{o}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
+    (\N, \mathbb{P}, \Y, \seq{\seq{\G}}, \N) &\to (\Y \cup \mathbb{J}, \seq{\Y}) \\
+    (i, p, \mathbf{o}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
       (\token{BAD}, []) &\when w_s \not\in \keys{\delta} \vee \Lambda(\delta[w_s], (p_\mathbf{x})_t, w_c) = \none \\
       (\token{BIG}, []) &\otherwhen |\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_c)| > \mathsf{W}_C \\
       &\otherwise: \\
       &\quad\using a = \se(w_s, w_\mathbf{y}, \mathcal{H}(p), p_\mathbf{x}, p_a)\ ,\\
-      &\quad\also (g, \mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_c), 0, g, a, F, (\emptyset, []))\ \colon\\
+      &\quad\also (g, \mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_c), 0, w_g, a, F, (\emptyset, []))\ \colon\\
       (\mathbf{r}, []) &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
       (\mathbf{r}, \mathbf{e}) &\quad\otherwise \\
       \multicolumn{2}{l}{\where w = p_\mathbf{w}[i]}
