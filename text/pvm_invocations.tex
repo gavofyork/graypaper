@@ -275,24 +275,23 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{lookup} = 1 \\
   $g = 10$} &
   $\begin{aligned}
-    \using \mathbf{a} &= \begin{cases} \mathbf{s} &\when \registers_7 \in \{ s, 2^{64} - 1 \} \\ \mathbf{d}[\registers_7] &\otherwise \end{cases} \\
-    \using [h_o, b_o, b_z] &= \registers_{8..11} \\
-    \using h &= \begin{cases}
-      \mathcal{H}(\memory_{h_o\dots+32}) &\when \mathbb{Z}_{h_o \dots+ 32} \subset \mathbb{V}_{\memory} \\
-      \error &\otherwise
-    \end{cases} \\
-    \using \mathbf{v} &= \begin{cases}
-      \mathbf{a}_\mathbf{p}[h] &\when \mathbf{a} \ne \none \wedge h \in \keys{\mathbf{a}_\mathbf{p}} \\
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{s} &\when \registers_7 \in \{ s, 2^{64} - 1 \} \\
+      \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
-    \forall i \in \N_{\min(b_z, |\mathbf{v}|)} : \memory'_{b_o + i} &\equiv \begin{cases}
-      \mathbf{v}_i & \when \mathbf{v} \ne \none \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\memory} \\
-      \memory_{b_o + i} & \otherwise
+    \using [h, o] &= \registers_{8\dots+2} \\
+    \using \mathbf{v} &= \begin{cases}
+      \error &\when \mathbb{N}_{h \dots+ 32} \not\subset \mathbb{V}_{\memory} \\
+      \none &\otherwhen \mathbf{a} = \none \vee \memory_{h\dots+32} \not\in \keys{\mathbf{a}_\mathbf{p}} \\
+      \mathbf{a}_\mathbf{p}[\memory_{h\dots+32}] &\otherwise \\
     \end{cases} \\
-    (\execst', \registers'_7) &\equiv \begin{cases}
-      (\panic, \registers_7) &\when h = \error \vee \mathbb{Z}_{b_o \dots+ b_z} \not\subset \mathbb{V}^*_{\memory}\\
-      (\continue, \mathtt{NONE}) &\otherwhen \mathbf{v} = \none \\
-      (\continue, |\mathbf{v}|) &\otherwise \\
+    \using f &= \min(\registers_{10}, |\mathbf{v}|) \\
+    \using l &= \min(\registers_{11}, |\mathbf{v}| - f) \\
+    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subset \mathbb{V}^*_{\memory}\\
+      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
+      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
