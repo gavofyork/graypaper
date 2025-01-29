@@ -11,12 +11,13 @@
 \begin{description}
   \item[$\mathtt{NONE} = 2^{64} - 1$] The return value indicating an item does not exist.
   \item[$\mathtt{WHAT} = 2^{64} - 2$] Name unknown.
-  \item[$\mathtt{WHO} = 2^{64} - 3$] Index unknown.
-  \item[$\mathtt{FULL} = 2^{64} - 4$] Storage full.
-  \item[$\mathtt{CORE} = 2^{64} - 5$] Core index unknown.
-  \item[$\mathtt{CASH} = 2^{64} - 6$] Insufficient funds.
-  \item[$\mathtt{LOW} = 2^{64} - 7$] Gas limit too low.
-  \item[$\mathtt{HUH} = 2^{64} - 8$] The item is already solicited or cannot be forgotten.
+  \item[$\mathtt{OOB} = 2^{64} - 3$] The inner \textsc{pvm} memory index provided for reading/writing is not accessible.
+  \item[$\mathtt{WHO} = 2^{64} - 4$] Index unknown.
+  \item[$\mathtt{FULL} = 2^{64} - 5$] Storage full.
+  \item[$\mathtt{CORE} = 2^{64} - 6$] Core index unknown.
+  \item[$\mathtt{CASH} = 2^{64} - 7$] Insufficient funds.
+  \item[$\mathtt{LOW} = 2^{64} - 8$] Gas limit too low.
+  \item[$\mathtt{HUH} = 2^{64} - 9$] The item is already solicited or cannot be forgotten.
   \item[$\mathtt{OK} = 0$] The return value indicating general success.
 \end{description}
 
@@ -760,15 +761,12 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $g = 10$} &
   $\begin{aligned}
     \using [n, o, s, z] &= \registers_{7 \dots 11} \\
-    \using \mathbf{s} &= \begin{cases}
-      \none &\when n \not\in \keys{\mathbf{m}}\\
-      (\mathbf{m}[n]_\mathbf{u})_{s\dots+z} &\when \N_{s\dots+z} \subseteq \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \wedge \N_{o\dots+z} \subseteq \mathbb{V}^*_\memory \\
-      \error &\otherwise
-    \end{cases}\\
     (\execst', \registers'_7, \mem') &\equiv \begin{cases}
-      (\panic, \registers_7, \mem) &\when \mathbf{s} = \error \\
-      (\continue, \mathtt{WHO}, \mem) &\when \mathbf{s} = \none \\
-      (\continue, \mathtt{OK}, \mem') \ \where \mem' = \mem \exc \memwr_{o\dots+z} = \mathbf{s} &\otherwise
+      (\panic, \registers_7, \mem) &\when \N_{o\dots+z} \not\subseteq \mathbb{V}^*_\memory \\
+      (\continue, \mathtt{WHO}, \mem) &\otherwhen n \not\in \keys{\mathbf{m}} \\
+      (\continue, \mathtt{OOB}, \mem) &\otherwhen \N_{s\dots+z} \not\subseteq \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \\
+      (\continue, \mathtt{OK}, \mem') &\otherwise \\
+      \multicolumn{2}{l}{\where \mem' = \mem \exc \memwr_{o\dots+z} = (\mathbf{m}[n]_\mathbf{u})_{s\dots+z}}
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -778,15 +776,12 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $g = 10$} &
   $\begin{aligned}
     \using [n, s, o, z] &= \registers_{7 \dots 11} \\
-    \using \mathbf{s} &= \begin{cases}
-      \none &\when n \not\in \keys{\mathbf{m}} \\
-      \memr_{s\dots+z} &\when \N_{s\dots+z} \subseteq \mathbb{V}_\memory \wedge \N_{o\dots+z} \subseteq \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
-      \error &\otherwise
-    \end{cases}\\
     (\execst', \registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\panic, \registers_7, \mathbf{m}) &\when \mathbf{s} = \error \\
-      (\continue, \mathtt{WHO}, \mathbf{m}) &\when \mathbf{s} = \none \\
-      (\continue, \mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'[n]_\mathbf{u})_{o\dots+z} = \mathbf{s} &\otherwise \\
+      (\panic, \registers_7, \mathbf{m}) &\when \N_{s\dots+z} \not\subseteq \mathbb{V}_\memory \\
+      (\continue, \mathtt{WHO}, \mathbf{m}) &\otherwhen n \not\in \keys{\mathbf{m}} \\
+      (\continue, \mathtt{OOB}, \mathbf{m}) &\otherwhen \N_{o\dots+z} \not\subseteq \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
+      (\continue, \mathtt{OK}, \mathbf{m}')  &\otherwise \\
+      \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'[n]_\mathbf{u})_{o\dots+z} = \memr_{s\dots+z}}
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
