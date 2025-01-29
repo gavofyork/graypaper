@@ -301,28 +301,27 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   % gas cost for cold reads dependent on trie depth.
   $\begin{aligned}
+    \using s^* &= \begin{cases}
+      s &\when \registers_7 = 2^{64} - 1 \\
+      \registers_7 &\otherwise
+    \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s} &\when \registers_7 \in \{ s, 2^{64} - 1 \} \\
-      \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \keys{\mathbf{d}} \\
+      \mathbf{s} &\when s^* = s \\
+      \mathbf{d}[s^*] &\otherwhen s^* \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
-    \using [k_o, k_z, b_o, b_z] &= \registers_{8..12} \\
-    \using k &= \begin{cases}
-      \mathcal{H}(\se_4(s) \concat \memory_{k_o\dots+k_z}) &\when \mathbb{Z}_{k_o \dots+ k_z} \subset \mathbb{V}_{\memory} \\
-      \error &\otherwise
-    \end{cases} \\
+    \using [k_o, k_z, o] &= \registers_{8\dots+3} \\
     \using \mathbf{v} &= \begin{cases}
-      \mathbf{a}_\mathbf{s}[k] &\when \mathbf{a} \ne \none \wedge k \in \keys{\mathbf{a}_\mathbf{s}} \\
+      \error &\when \mathbb{Z}_{k_o \dots+ k_z} \not\subset \mathbb{V}_{\memory} \\
+      \mathbf{a}_\mathbf{s}[k] &\otherwhen \mathbf{a} \ne \none \wedge k \in \keys{\mathbf{a}_\mathbf{s}}\,,\ \where k = \mathcal{H}(\se_4(s^*) \concat \memory_{k_o\dots+k_z}) \\
       \none &\otherwise
     \end{cases} \\
-    \forall i \in \N_{\min(b_z, |\mathbf{v}|)} : \memory'_{b_o + i} &\equiv \begin{cases}
-      \mathbf{v}_i & \when \mathbf{v} \ne \none \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\memory} \\
-      \memory_{b_o + i} & \otherwise
-    \end{cases} \\
-    (\execst', \registers'_7) &\equiv \begin{cases}
-      (\panic, \registers_7) &\when k = \error \vee \mathbb{Z}_{b_o \dots+ b_z} \not\subset \mathbb{V}^*_{\memory} \\
-      (\continue, \mathtt{NONE}) &\when \mathbf{v} = \none \\
-      (\continue, |\mathbf{v}|) &\otherwise \\
+    \using f &= \min(\registers_{11}, |\mathbf{v}|) \\
+    \using l &= \min(\registers_{12}, |\mathbf{v}| - f) \\
+    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subset \mathbb{V}^*_{\memory}\\
+      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
+      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -668,20 +667,18 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \mathbf{d}[\registers_7] &\when \registers_7 \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
-    \using [h_o, b_o, b_z] &= \registers_{8..11} \\
-    \using h &= \begin{cases}
-      \mathcal{H}(\memory_{h_o\dots+32}) &\when \mathbb{Z}_{h_o \dots+ 32} \subset \mathbb{V}_{\memory} \\
-      \error &\otherwise
+    \using [h, o] &= \registers_{8\dots+2} \\
+    \using \mathbf{v} &= \begin{cases}
+      \error &\when \mathbb{N}_{h \dots+ 32} \not\subset \mathbb{V}_{\memory} \\
+      \none &\otherwhen \mathbf{a} = \none \\
+      \Lambda(\mathbf{a}, t, \memory_{h\dots+32}) &\otherwise \\
     \end{cases} \\
-    \using \mathbf{v} &= \Lambda(\mathbf{a}, t, h) \\
-    \forall i \in \N_{\min(b_z, |\mathbf{v}|)} : \memory'_{b_o + i} &\equiv \begin{cases}
-      \mathbf{v}_i & \when \mathbf{v} \ne \none \wedge \mathbb{Z}_{b_o \dots+ b_z} \subset \mathbb{V}^*_{\memory} \\
-      \memory_{b_o + i} & \otherwise
-    \end{cases} \\
-    (\execst', \registers'_7) &\equiv \begin{cases}
-      (\panic, \registers_7) &\when h = \error \vee \mathbb{Z}_{b_o \dots+ b_z} \not\subset \mathbb{V}^*_{\memory} \\
-      (\continue, \mathtt{NONE}) &\otherwhen \mathbf{v} = \none \\
-      (\continue, |\mathbf{v}|) &\otherwise \\
+    \using f &= \min(\registers_{10}, |\mathbf{v}|) \\
+    \using l &= \min(\registers_{11}, |\mathbf{v}| - f) \\
+    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subset \mathbb{V}^*_{\memory}\\
+      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
+      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
