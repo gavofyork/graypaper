@@ -6,35 +6,10 @@ Build with xelatex.
 
 https://graypaper.com/
 
-## Remaining near-term
-
-### Finesse
-- [ ] Make all subscript names capitalized
-- [ ] Ensure all definitions are referenced
-- [ ] Link and integrate to Bandersnatch RingVRF references (Davide/Syed) IN-PROGRESS
-- [ ] Remove any "TODOs" in text
-- [ ] Macrofy everything
-- [ ] Limit number of extrinsics in a WP.
-
-### Final PVM
-- [ ] 64-bit PVM
-- [ ] Gas pricing
-  - [ ] Merkle reads in terms of nodes traversed.
-  - [ ] Non-linear gas for export/import host calls
-- [ ] No pages mappable in first 64 KB
-
-### Final DA
-- [ ] Migrate formalization & explanation:
-  - [ ] guaranteeing-specific stuff into relevant section
-  - [ ] assurance-specific stuff into relevant section
-  - [ ] auditing-specific stuff into relevant section
-
-### Guaranteeing & Auditing
-- [ ] Specify announcement signatures
-- [ ] Specify how to build perspective on other validators with announcements
-
-### Discussion and Conclusions/Further Work
-- [x] Security assumptions: redirect to ELVES paper
+## Out of Scope
+- [ ] Compare with danksharding v1
+- [ ] Deeper talk Cost & latency comparison with RISC0-VM and latest ZK stuff.
+- [ ] Include full calculations for bandwidth requirements.
 - [ ] Creating a parachains service: further work (RFC for upgrade perhaps)
   - [ ] Key differences
     - [ ] limited size of Work Output vs unlimited candidate receipt
@@ -43,44 +18,11 @@ https://graypaper.com/
   - [ ] Supporting liveness
   - [ ] Supporting *MP
   - [ ] No need for UMP/DMP
-- [ ] Compare with danksharding v1
-- [ ] Deeper talk Cost & latency comparison with RISC0-VM and latest ZK stuff.
-- [ ] Include full calculations for bandwidth requirements.
 
-## Stuff before 1.0
-
-### Final networking protocol
-- [ ] Consider a simple network protocol needed for M1/M2 and a production protocol for M3+
-- [ ] Block distribution via EC and proactive-chunk-redistribution
-- [ ] Guarantor-guarantor handover
-- [ ] Star-shaped Point-to-point extrinsic distribution
-- [ ] Mixnet for ticket submission
-
-## Bring together sub-protocols
-- [ ] Better integration to Grandpa paper
-- [ ] Better description of Beefy
-- [ ] Better integration to Bandersnatch RingVRF.
-
-## Ideas to consider
-
-### Work Packages
-At present all WorkItems can succeed or fail independently. Instead we should be able to specify co-dependency criteria, so that if one fails, both fail. This should be respected through to accumulation, whereby an accumulator can commit to accumulating the `WorkResult` iff there is a signal from the other accumulator that the result has been accumulated there.
-
-### Statistics/Bookkeeping
-- [ ] Consider integrating the subjective extrinsic and state:
-  - [ ] If so, have three items to allow for a whole epoch of opinion submission
-  - [ ] In which case allow for guaranteeing val keys from last epoch to gain points
-
-### General
-- [ ] Think about time and relationship between lookup-anchor block and import/export period.
-  - [ ] Lookup anchor: maybe it should be 48 hours since lookup anchor can already be up to 24 hours after reporting and we want something available up to 24 hours after that?
-- [ ] Refine arguments:
-  - [ ] Currently passing in the WP hash, some WP fields and all manifest preimages: Consider passing in the whole work-package and a work-item index.
-- [ ] Consider removal of the arrow-above notation in favour of subscript and ellipsis (this only works for the right-arrow).
-- Optional `on_report` entry point
-- Make memo bounded, rather than fixed.
 
 ## Done
+- [x] Specify announcement signatures
+- [x] Security assumptions: redirect to ELVES paper
 - Statistics/Bookkeeping
   - [x] Integrate into intro and definitions.
 - [x] All "where" and "let" lines are unnumbered/integrated
@@ -122,6 +64,8 @@ At present all WorkItems can succeed or fail independently. Instead we should be
 - [x] Link and integrate to Erasure-Coding references (work with Al)
 - [x] Grandpa/best-block: Disregard blocks which we believe are equivocated unless finalized.
 - [x] Other PVM work
+  - [x] 64-bit PVM
+  - [x] No pages mappable in first 64 KB
   - [x] Define `sbrk` properly:
   - [x] Update host functions to agreed API.
   - [x] Figure out what to do with the jump table.
@@ -176,6 +120,8 @@ At present all WorkItems can succeed or fail independently. Instead we should be
   - [x] gas prioritization - just from WP?
   - [x] Consider introducing a host-call for reading manifest data rather than always passing it in.
 - [x] Guarantees by validator indices
+- [x] Refine arguments:
+  - [x] Currently passing in the WP hash, some WP fields and all manifest preimages: Consider passing in the whole work-package and a work-item index.
 
 ### ELVES
 - [x] Don't immediately alter kappa mid-epoch as it affects off-chain judgments.
