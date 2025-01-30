@@ -144,9 +144,17 @@ In general, when transitioning machine state for an instruction a number of cond
   \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \gascounter' = \gascounter - \gas,\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
 \end{equation}
 
-Where \textsc{ram} must be inspected and yet access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest address to be read which is inaccessible. More formally, let $\mathbf{a}$ be the set of indices, modulo $2^{32}$, in to which $\mem$ must be subscripted in order to calculate the result of $\Psi_1$. If $\mathbf{a} \not\subset \mathbb{V}_\mem$ then let $\varepsilon=\fault \times \text{min}(\mathbf{a} \setminus \mathbb{V}_\mem)$.
+During the course of executing instructions, \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
 
-Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest address to be read which is inaccessible. More formally, let $\mathbf{a}$ be the set of indices in to which $\mem'$ must be subscripted in order to calculate the result of $\Psi_1$. If $\mathbf{a} \not\subset \mathbb{V}^*_\mem$ then let $\varepsilon=\fault \times \text{min}(\mathbf{a} \setminus \mathbb{V}^*_\mem)$.
+Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\mu$ which shall, if not $\continue$, singly effect the returned return of $\Psi_1$ as following:
+\begin{align}
+  \using \mathbf{x} &= \{ x :\ x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \mathbb{V}_\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \mathbb{V}^*_\mem \} \\
+  \varepsilon^\mu &= \begin{cases}
+    \continue &\when \mathbf{x} = \{\} \\
+    \panic &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
+    \fault \times \mathsf{Z}_P\floor{\min(\mathbf{x}) \bmod 2^{32} \div \mathsf{Z}_P} &\otherwise
+  \end{cases}
+\end{align}
 
 We define signed/unsigned transitions for various octet widths:
 \begin{align}
