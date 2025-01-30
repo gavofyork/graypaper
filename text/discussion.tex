@@ -11,7 +11,7 @@
 
 In total, with our stated target of 1,023 validators and three validators per core, along with requiring a mean of ten audits per validator per timeslot, and thus 30 audits per work-report, \Jam is capable of trustlessly processing and integrating 341 work-packages per timeslot.
 
-We assume node hardware is a modern 16 core \textsc{cpu} with 64\textsc{gb} \textsc{ram}, 1\textsc{tb} secondary storage and 0.5\textsc{g}be networking.
+We assume node hardware is a modern 16 core \textsc{cpu} with 64\textsc{gb} \textsc{ram}, 8\textsc{tb} secondary storage and 0.5\textsc{g}be networking.
 
 Our performance models assume a rough split of \textsc{cpu} time as follows:
 
@@ -36,15 +36,16 @@ Estimates for network bandwidth requirements are as follows:
 \begin{tabular}[h]{@{}lll@{}}
   \toprule
 %  & \multicolumn{2}{c}{\textbf{Compute} / GB6} & \multicolumn{2}{c}{\textbf{Bandwidth} / $\text{KBs}^{-1}$} \\
-  & \emph{Upload} & \emph{Download} \\
-  & \textsc{m}b/s & \textsc{m}b/s \\
+  Throughput, \textsc{mb}/slot & \emph{Tx} & \emph{Rx} \\
   \midrule
-  Guaranteeing & 30 & 40 \\
-  Assuring & 60 & 56 \\
-  Auditing & 200 & 200 \\
-  Block publication & 42 & 42 \\
+  Guaranteeing & 106 & 48 \\
+  Assuring & 144 & 13 \\
+  Auditing & 0 & 133 \\
+  Authoring & 53 & 87 \\
   \textsc{Grandpa} and \textsc{Beefy} & 4 & 4 \\
-  \textbf{Total} & \textbf{336} & \textbf{342} \\
+  \textbf{Total} & \textbf{304} & \textbf{281} \\
+  \midrule
+  \textbf{Implied bandwidth}, \textsc{m}b/s & \textbf{387} & \textbf{357} \\
   \bottomrule
 \end{tabular}
 \end{center}
