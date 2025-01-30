@@ -331,16 +331,14 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$
   } &
   $\begin{aligned}
-    \using [k_o, k_z, v_o, v_z] &= \registers_{7..11} \\
+    \using [k_o, k_z, v_o, v_z] &= \registers_{7\dots+4} \\
     \using k &= \begin{cases}
-      \mathcal{H}(\se_4(s) \concat \memory_{k_o\dots+k_z}) &\when \mathbb{Z}_{k_o \dots+ k_z} \subset \mathbb{V}_{\memory} \\
+      \mathcal{H}(\se_4(s) \concat \memory_{k_o\dots+k_z}) &\when \N_{k_o \dots+ k_z} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s} \exc \begin{rcases}
-        \keys{\mathbf{a}_\mathbf{s}} = \keys{\mathbf{a}_\mathbf{s}} \setminus \{k\} & \when v_z = 0 \\
-        \mathbf{a}_\mathbf{s}[k] = \memory_{v_o\dots+v_z} &\otherwise \\
-      \end{rcases} &\when \mathbb{Z}_{v_o \dots+ v_z} \subset \mathbb{V}_{\memory} \\
+      \mathbf{s}\,,\ \exc \keys{\mathbf{a}_\mathbf{s}} = \keys{\mathbf{a}_\mathbf{s}} \setminus \{k\} & \when v_z = 0 \\
+      \mathbf{s}\,,\ \exc \mathbf{a}_\mathbf{s}[k] = \memory_{v_o\dots+v_z} &\otherwhen \N_{v_o \dots+ v_z} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using l &= \begin{cases}
@@ -405,7 +403,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{bless} = 5 \\
   $g = 10$}&
   $\begin{aligned}
-    \using [m, a, v, o, n] &= \registers_{7 \dots 12} \\
+    \using [m, a, v, o, n] &= \registers_{7 \dots+ 5} \\
     \using \mathbf{g} &= \begin{cases}
       \left\{ (s \mapsto g) \ \where \se_4(s) \concat \se_8(g) = \memory_{o+12i\dots+12} \mid i \in \N_n \right\} &\when \mathbb{Z}_{o \dots+ 12n} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -464,8 +462,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{new} = 9 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [o, l, g&, m] = \registers_{7..11} \\
-    \using c &= \begin{cases}
+    \using [o, l, g&, m] = \registers_{7 \dots+ 4} \\
+    \using c &= \begin{cases} 
       \memory_{o\dots+32} &\when \N_{o\dots+32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases}\\
@@ -488,7 +486,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     $g = 10$
   } &
   $\begin{aligned}
-    \using [o, g, m] &= \registers_{7..10} \\
+    \using [o, g, m] &= \registers_{7 \dots+ 3} \\
     \using c &= \begin{cases}
       \memory_{o\dots+32} &\when \N_{o \dots+ 32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -504,7 +502,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{transfer} = 11 \\
   $g = 10 + \registers_9 $} &
   $\begin{aligned}
-    \using [d, a, l, o] &= \registers_{7..11},  \\
+    \using [d, a, l, o] &= \registers_{7 \dots+ 4},  \\
     \using \mathbf{d} &= (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
     \using \mathbf{t} \in \mathbb{T} \cup \{\error\} &= \begin{cases}
       \tup{\is{s}{\mathbf{x}_s}, d, a, \is{m}{\memory_{o\dots+\mathsf{W}_T}}, \is{g}{l}} &\when \N_{o\dots+\mathsf{W}_T} \subset \mathbb{V}_{\memory} \\
@@ -525,7 +523,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{eject} = 12 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [d, o] &= \registers_{7,8} \\
+    \using [d, o] &= \registers_{7, 8} \\
     \using h &= \begin{cases}
       \memory_{o\dots+32} &\when \mathbb{Z}_{o \dots+ 32} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -738,7 +736,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{machine} = 20 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [p_o, p_z, i] &= \registers_{7 \dots 10} \\
+    \using [p_o, p_z, i] &= \registers_{7 \dots+ 3} \\
     \using \mathbf{p} &= \begin{cases}
       \memory_{p_o\dots+p_z} &\when \mathbb{Z}_{p_o \dots+ p_z} \subset \mathbb{V}_{\memory} \\
       \error &\otherwise
@@ -756,7 +754,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{peek} = 21 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, o, s, z] &= \registers_{7 \dots 11} \\
+    \using [n, o, s, z] &= \registers_{7 \dots+ 4} \\
     (\execst', \registers'_7, \mem') &\equiv \begin{cases}
       (\panic, \registers_7, \mem) &\when \N_{o\dots+z} \not\subseteq \mathbb{V}^*_\memory \\
       (\continue, \mathtt{WHO}, \mem) &\otherwhen n \not\in \keys{\mathbf{m}} \\
@@ -771,7 +769,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{poke} = 22 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, s, o, z] &= \registers_{7 \dots 11} \\
+    \using [n, s, o, z] &= \registers_{7 \dots+ 4} \\
     (\execst', \registers'_7, \mathbf{m}') &\equiv \begin{cases}
       (\panic, \registers_7, \mathbf{m}) &\when \N_{s\dots+z} \not\subseteq \mathbb{V}_\memory \\
       (\continue, \mathtt{WHO}, \mathbf{m}) &\otherwhen n \not\in \keys{\mathbf{m}} \\
@@ -786,7 +784,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{zero} = 23 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, p, c] &= \registers_{7 \dots 10} \\
+    \using [n, p, c] &= \registers_{7 \dots+ 3} \\
     \using \mathbf{u} &= \begin{cases}
       \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
       \error &\otherwise\\
@@ -807,7 +805,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \texttt{void} = 24 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, p, c] &= \registers_{7 \dots 10} \\
+    \using [n, p, c] &= \registers_{7 \dots+ 3} \\
     \using \mathbf{u} &= \begin{cases}
       \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
       \error &\otherwise\\
