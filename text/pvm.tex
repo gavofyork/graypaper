@@ -609,7 +609,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   192&\token{mul\_32}&0&$\reg'_D = \sext_4((\reg_A \cdot \reg_B) \bmod 2^{32})$\\ \mrule
   193&\token{div\_u\_32}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B \bmod 2^{32} = 0\\
-    \floor{(\reg_A \bmod 2^{32}) \div (\reg_B \bmod 2^{32})} &\otherwise
+    \sext_4(\floor{(\reg_A \bmod 2^{32}) \div (\reg_B \bmod 2^{32})}) &\otherwise
   \end{cases}$\\ \mrule
   194&\token{div\_s\_32}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when b = 0\\
