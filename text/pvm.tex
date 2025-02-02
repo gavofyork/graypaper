@@ -41,10 +41,11 @@
 \newcommand*{\basicblocks}{\varpi}
 \newcommand*{\instructions}{\zeta}
 \newcommand*{\immed}{\nu}
+\newcommand*{\deblob}{\text{deblob}}
 
-We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition.
-\begin{equation}
-  \Psi\colon \left\{\begin{aligned}
+We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
+\begin{align}
+  \Psi&\colon \left\{\begin{aligned}
     (\Y, \N_R, \N_G, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault\} \times \N_R \cup \{\host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
     (\mathbf{p}, \imath, \gascounter, \registers, \mem) &\mapsto \begin{cases}
       \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
@@ -52,12 +53,19 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
       (\varepsilon, 0, \gascounter', \registers', \mem') &\when \varepsilon \in \{ \panic, \halt \}\\
       (\varepsilon, \imath', \gascounter', \registers', \mem') &\otherwise
     \end{cases} \\
-    \where (\varepsilon, \imath', \gascounter', \registers', \mem') &= \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem)\\
-    \also \mathbf{p} &= \se(|\mathbf{j}|) \frown \se_1(z) \frown \se(|\mathbf{c}|) \frown \se_z(\mathbf{j}) \frown \se(\mathbf{c}) \frown \se(\mathbf{k})\,,\ |\mathbf{k}| = |\mathbf{c}|
-    \end{aligned}\right.
-\end{equation}
-
-If the latter condition cannot be satisfied, then $(\panic, \imath, \gascounter, \registers, \mem)$ is the result.
+    \where (\varepsilon, \imath', \gascounter', \registers', \mem') &= \begin{cases}
+      \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\when \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} = \deblob(\mathbf{p}) \\
+      (\panic, \imath, \gascounter, \registers, \mem) &\otherwise
+    \end{cases}
+  \end{aligned}\right.\\
+  \deblob&\colon\left\{\begin{aligned}
+    \mathbb{Y} &\to \tuple{\mathbb{Y}, \mathbb{B}, \seq{\N_R}} \cup \error \\
+    \mathbf{p} &\mapsto \begin{cases}
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \se(|\mathbf{j}|) \frown \se_1(z) \frown \se(|\mathbf{c}|) \frown \se_z(\mathbf{j}) \frown \se(\mathbf{c}) \frown \se(\mathbf{k})\,,\ |\mathbf{k}| = |\mathbf{c}| \\
+      \error &\otherwise
+    \end{cases} \\
+  \end{aligned}\right.
+\end{align}
 
 The \textsc{pvm} exit reason $\varepsilon \in \{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R$ may be one of regular halt $\halt$, panic $\panic$ or out-of-gas $\oog$, or alternatively a host-call $\host$, in which the host-call identifier is associated, or page-fault $\fault$ in which case the address into \textsc{ram} is associated.
 
