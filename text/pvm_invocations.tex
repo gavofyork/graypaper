@@ -812,7 +812,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \end{cases}\\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
       (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{u} = \error \\
-      (\mathtt{HUH}, \mathbf{m}) &\otherwhen p + c \ge 2^{32} \vee \exists i \in \N_{p\dots+c} : (\mathbf{u}_\mathbf{A})_i = \none \\
+      (\mathtt{HUH}, \mathbf{m}) &\otherwhen p < 16 \vee p + c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \vee \exists i \in \N_{p\dots+c} : (\mathbf{u}_\mathbf{A})_i = \none \\
       (\mathtt{OK}, \mathbf{m}') &\otherwise \\
       \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}'}
     \end{cases} \\
