@@ -626,7 +626,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
   195&\token{rem\_u\_32}&0&$\reg'_D = \begin{cases}
-    \sext_4(\reg_A) &\when \reg_B \bmod 2^{32} = 0\\
+    \sext_4(\reg_A \bmod 2^{32}) &\when \reg_B \bmod 2^{32} = 0\\
     \sext_4((\reg_A \bmod 2^{32}) \bmod (\reg_B \bmod 2^{32})) &\otherwise
   \end{cases}$\\ \mrule
   196&\token{rem\_s\_32}&0&$\reg'_D = \begin{cases}
