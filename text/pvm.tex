@@ -42,6 +42,7 @@
 \newcommand*{\instructions}{\zeta}
 \newcommand*{\immed}{\nu}
 \newcommand*{\deblob}{\text{deblob}}
+\newcommand*{\smod}{\text{smod}}
 
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
@@ -630,9 +631,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \sext_4((\reg_A \bmod 2^{32}) \bmod (\reg_B \bmod 2^{32})) &\otherwise
   \end{cases}$\\ \mrule
   196&\token{rem\_s\_32}&0&$\reg'_D = \begin{cases}
-    \unsigned{a} &\when b = 0 \\
     0 &\when a = -2^{31} \wedge b = -1 \\
-    \unsigned{a \bmod b} &\otherwise \\[2pt]
+    \unsigned{\smod(a, b)} &\otherwise \\[2pt]
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
   197&\token{shlo\_l\_32}&0&$\reg'_D = \sext_4((\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
@@ -656,9 +656,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \reg_A \bmod \reg_B &\otherwise
   \end{cases}$\\ \mrule
   206&\token{rem\_s\_64}&0&$\reg'_D = \begin{cases}
-    \reg_A &\when \reg_B = 0\\
     0 &\when \signed{\reg_A} = -2^{63} \wedge \signed{\reg_B} = -1\\
-    \unsigned{\signed{\reg_A} \bmod \signed{\reg_B}} &\otherwise
+    \unsigned{\smod(\signed{\reg_A}, \signed{\reg_B})} &\otherwise
   \end{cases}$\\ \mrule
   207&\token{shlo\_l\_64}&0&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
   208&\token{shlo\_r\_64}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 64}}$\\ \mrule
@@ -693,6 +692,18 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   230&\token{min\_u}&0&$\reg'_D = \min ( \reg_A, \reg_B )$\\
 \bottomrule
 \end{longtable}
+
+Note that the two signed modulo operations have an idiosyncratic definition, operating as the modulo of the absolute values, but with the sign of the numerator. Formally:
+\begin{equation}
+  \smod\colon\left\{\begin{aligned}
+    (\mathbb{Z}, \mathbb{Z}) &\to \mathbb{Z}\\
+    (a, b) &\mapsto \begin{cases}
+      a &\when b = 0\\
+      \text{sgn}(a)(|a| \bmod |b|) &\otherwise \\
+    \end{cases}
+  \end{aligned}\right.
+\end{equation}
+
 
 \subsection{Host Call Definition}
 
