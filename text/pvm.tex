@@ -43,6 +43,7 @@
 \newcommand*{\immed}{\nu}
 \newcommand*{\deblob}{\text{deblob}}
 \newcommand*{\smod}{\text{smod}}
+\newcommand*{\rtz}{\text{rtz}}
 
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
@@ -501,13 +502,13 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   137&\token{set\_lt\_s\_imm}&0&$\reg'_A = \signed{\reg_B} < \signed{\immed_X}$\\ \mrule
   138&\token{shlo\_l\_imm\_32}&0&$\reg'_A = \sext_4((\reg_B \cdot 2^{\immed_X \bmod 32}) \bmod 2^{32})$\\ \mrule
   139&\token{shlo\_r\_imm\_32}&0&$\reg'_A = \sext_4(\floor{\reg_B \bmod 2^{32} \div 2^{\immed_X \bmod 32}})$\\ \mrule
-  140&\token{shar\_r\_imm\_32}&0&$\reg'_A = \unsigned{\floor{\signedn{4}{\reg_B \bmod 2^{32} } \div 2^{\immed_X \bmod 32}}}$\\ \mrule
+  140&\token{shar\_r\_imm\_32}&0&$\reg'_A = \unsigned{\rtz(\signedn{4}{\reg_B \bmod 2^{32} } \div 2^{\immed_X \bmod 32})}$\\ \mrule
   141&\token{neg\_add\_imm\_32}&0&$\reg'_A = \sext_4((\immed_X + 2^{32} - \reg_B) \bmod 2^{32})$\\ \mrule
   142&\token{set\_gt\_u\_imm}&0&$\reg'_A = \reg_B > \immed_X$\\ \mrule
   143&\token{set\_gt\_s\_imm}&0&$\reg'_A = \signed{\reg_B} > \signed{\immed_X}$\\ \mrule
   144&\token{shlo\_l\_imm\_alt\_32}&0&$\reg'_A = \sext_4((\immed_X \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
   145&\token{shlo\_r\_imm\_alt\_32}&0&$\reg'_A = \sext_4(\floor{\immed_X \bmod 2^{32} \div 2^{\reg_B \bmod 32}})$\\ \mrule
-  146&\token{shar\_r\_imm\_alt\_32}&0&$\reg'_A = \unsigned{\floor{\signedn{4}{\immed_X \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  146&\token{shar\_r\_imm\_alt\_32}&0&$\reg'_A = \unsigned{\rtz(\signedn{4}{\immed_X \bmod 2^{32}} \div 2^{\reg_B \bmod 32})}$\\ \mrule
   147&\token{cmov\_iz\_imm}&0&$\reg'_A = \begin{cases}
     \immed_X &\when \reg_B = 0\\
     \reg_A &\otherwise
@@ -521,11 +522,11 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   % \sext_8 is a no-op - WTF is this doing here??
   151&\token{shlo\_l\_imm\_64}&0&$\reg'_A = \sext_8((\reg_B \cdot 2^{\immed_X \bmod 64}) \bmod 2^{64})$\\ \mrule
   152&\token{shlo\_r\_imm\_64}&0&$\reg'_A = \sext_8(\floor{\reg_B \div 2^{\immed_X \bmod 64}})$\\ \mrule
-  153&\token{shar\_r\_imm\_64}&0&$\reg'_A = \unsigned{\floor{\signed{\reg_B} \div 2^{\immed_X \bmod 64}}}$\\ \mrule
+  153&\token{shar\_r\_imm\_64}&0&$\reg'_A = \unsigned{\rtz(\signed{\reg_B} \div 2^{\immed_X \bmod 64})}$\\ \mrule
   154&\token{neg\_add\_imm\_64}&0&$\reg'_A = (\immed_X + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
   155&\token{shlo\_l\_imm\_alt\_64}&0&$\reg'_A = (\immed_X \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
   156&\token{shlo\_r\_imm\_alt\_64}&0&$\reg'_A = \floor{\immed_X \div 2^{\reg_B \bmod 64}}$\\ \mrule
-  157&\token{shar\_r\_imm\_alt\_64}&0&$\reg'_A = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
+  157&\token{shar\_r\_imm\_alt\_64}&0&$\reg'_A = \unsigned{\rtz(\signed{\immed_X} \div 2^{\reg_B \bmod 64})}$\\ \mrule
   158&\token{rot\_r\_64\_imm}&0&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_A)_i = \bitsfunc{8}(\reg_B)_{(i + \immed_X) \bmod 64}$\\ \mrule
   159&\token{rot\_r\_64\_imm\_alt}&0&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_A)_i = \bitsfunc{8}(\immed_X)_{(i + \reg_B) \bmod 64}$\\ \mrule
   160&\token{rot\_r\_32\_imm}&0&$\reg'_A = \sext_4(x) \ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_B)_{(i + \immed_X) \bmod 32}$\\ \mrule
@@ -623,7 +624,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   194&\token{div\_s\_32}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when b = 0\\
     a &\when a = -2^{31} \wedge b = -1\\
-    \unsigned{\floor{a \div b}} &\otherwise \\[2pt]
+    \unsigned{\rtz(a \div b)} &\otherwise \\[2pt]
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
   195&\token{rem\_u\_32}&0&$\reg'_D = \begin{cases}
@@ -637,7 +638,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \end{cases}$\\ \mrule
   197&\token{shlo\_l\_32}&0&$\reg'_D = \sext_4((\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
   198&\token{shlo\_r\_32}&0&$\reg'_D = \sext_4(\floor{(\reg_A \bmod 2^{32}) \div 2^{\reg_B \bmod 32}})$\\ \mrule
-  199&\token{shar\_r\_32}&0&$\reg'_D = \unsigned{\floor{\signedn{4}{\reg_A \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  199&\token{shar\_r\_32}&0&$\reg'_D = \unsigned{\rtz(\signedn{4}{\reg_A \bmod 2^{32}} \div 2^{\reg_B \bmod 32})}$\\ \mrule
 
   200&\token{add\_64}&0&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{64}$\\ \mrule
   201&\token{sub\_64}&0&$\reg'_D = (\reg_A + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
@@ -649,7 +650,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   204&\token{div\_s\_64}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B = 0\\
     \reg_A &\when \signed{\reg_A} = -2^{63} \wedge \signed{\reg_B} = -1\\
-    \unsigned{\floor{\signed{\reg_A} \div \signed{\reg_B}}} &\otherwise
+    \unsigned{\rtz(\signed{\reg_A} \div \signed{\reg_B})} &\otherwise
   \end{cases}$\\ \mrule
   205&\token{rem\_u\_64}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
@@ -661,14 +662,14 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \end{cases}$\\ \mrule
   207&\token{shlo\_l\_64}&0&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
   208&\token{shlo\_r\_64}&0&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 64}}$\\ \mrule
-  209&\token{shar\_r\_64}&0&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
+  209&\token{shar\_r\_64}&0&$\reg'_D = \unsigned{\rtz(\signed{\reg_A} \div 2^{\reg_B \bmod 64})}$\\ \mrule
 
   210&\token{and}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \bits{\reg_B}_i$\\ \mrule
   211&\token{xor}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \oplus \bits{\reg_B}_i$\\ \mrule
   212&\token{or}&0&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \bits{\reg_B}_i$\\ \mrule
-  213&\token{mul\_upper\_s\_s}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \signed{\reg_B}) \div 2^{64}}}$\\ \mrule
+  213&\token{mul\_upper\_s\_s}&0&$\reg'_D = \unsigned{\rtz((\signed{\reg_A} \cdot \signed{\reg_B}) \div 2^{64})}$\\ \mrule
   214&\token{mul\_upper\_u\_u}&0&$\reg'_D = \floor{(\reg_A \cdot \reg_B) \div 2^{64}}$\\ \mrule
-  215&\token{mul\_upper\_s\_u}&0&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \reg_B) \div 2^{64}}}$\\ \mrule
+  215&\token{mul\_upper\_s\_u}&0&$\reg'_D = \unsigned{\rtz((\signed{\reg_A} \cdot \reg_B) \div 2^{64})}$\\ \mrule
   216&\token{set\_lt\_u}&0&$\reg'_D = \reg_A < \reg_B$\\ \mrule
   217&\token{set\_lt\_s}&0&$\reg'_D = \signed{\reg_A} < \signed{\reg_B}$\\ \mrule
   218&\token{cmov\_iz}&0&$\reg'_D = \begin{cases}
@@ -704,6 +705,16 @@ Note that the two signed modulo operations have an idiosyncratic definition, ope
   \end{aligned}\right.
 \end{equation}
 
+Some of the operations always round their result towards zero. Formally:
+\begin{equation}
+  \rtz\colon\left\{\begin{aligned}
+    \mathbb{Z} &\to \mathbb{Z}\\
+    x &\mapsto \begin{cases}
+      \ceil{x} &\when x < 0\\
+      \floor{x} &\otherwise \\
+    \end{cases}
+  \end{aligned}\right.
+\end{equation}
 
 \subsection{Host Call Definition}
 
