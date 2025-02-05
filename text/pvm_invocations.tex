@@ -698,14 +698,10 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using o &= \registers_7 \\
     \using f &= \min(\registers_8, |\mathbf{v}|) \\
     \using l &= \min(\registers_9, |\mathbf{v}| - f) \\
-    \memory'_{o\dots+l} &\equiv \begin{cases}
-      \mathbf{v}_{f\dots+l} & \when \mathbf{v} \ne \none \wedge \mathbb{N}_{o \dots+ l} \subset \mathbb{V}^*_{\memory} \\
-      \memory_{o\dots+l} & \otherwise
-    \end{cases} \\
-    (\execst', \registers'_7) &\equiv \begin{cases}
-      (\panic, \registers_7) &\when \mathbb{N}_{o \dots+ l} \not\subset \mathbb{V}^*_{\memory} \\
-      (\continue, \mathtt{NONE}) &\otherwhen \mathbf{v} = \none \\
-      (\continue, |\mathbf{v}|) &\otherwise \\
+    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subset \mathbb{V}^*_{\memory} \\
+      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
+      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
