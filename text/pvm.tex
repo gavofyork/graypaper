@@ -43,6 +43,7 @@
 \newcommand*{\immed}{\nu}
 \newcommand*{\deblob}{\text{deblob}}
 \newcommand*{\smod}{\text{smod}}
+\newcommand*{\rtz}{\text{rtz}}
 
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
@@ -623,7 +624,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   194&\token{div\_s\_32}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when b = 0\\
     a &\when a = -2^{31} \wedge b = -1\\
-    \unsigned{\floor{a \div b}} &\otherwise \\[2pt]
+    \unsigned{\rtz(a \div b)} &\otherwise \\[2pt]
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
   195&\token{rem\_u\_32}&0&$\reg'_D = \begin{cases}
@@ -649,7 +650,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   204&\token{div\_s\_64}&0&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B = 0\\
     \reg_A &\when \signed{\reg_A} = -2^{63} \wedge \signed{\reg_B} = -1\\
-    \unsigned{\floor{\signed{\reg_A} \div \signed{\reg_B}}} &\otherwise
+    \unsigned{\rtz(\signed{\reg_A} \div \signed{\reg_B})} &\otherwise
   \end{cases}$\\ \mrule
   205&\token{rem\_u\_64}&0&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
@@ -704,6 +705,16 @@ Note that the two signed modulo operations have an idiosyncratic definition, ope
   \end{aligned}\right.
 \end{equation}
 
+Division operations always round their result towards zero. Formally:
+\begin{equation}
+  \rtz\colon\left\{\begin{aligned}
+    \mathbb{Z} &\to \mathbb{Z}\\
+    x &\mapsto \begin{cases}
+      \ceil{x} &\when x < 0\\
+      \floor{x} &\otherwise \\
+    \end{cases}
+  \end{aligned}\right.
+\end{equation}
 
 \subsection{Host Call Definition}
 
