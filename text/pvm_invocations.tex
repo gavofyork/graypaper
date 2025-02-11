@@ -72,8 +72,8 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       (\token{BAD}, []) &\when w_s \not\in \keys{\delta} \vee \Lambda(\delta[w_s], (p_\mathbf{x})_t, w_c) = \none \\
       (\token{BIG}, []) &\otherwhen |\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_c)| > \mathsf{W}_C \\
       &\otherwise: \\
-      &\quad\using a = \se(w_s, w_\mathbf{y}, \mathcal{H}(p), p_\mathbf{x}, p_a)\ ,\\
-      &\quad\also (g, \mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_c), 0, w_g, a, F, (\emptyset, []))\ \colon\\
+      &\quad\using a = \se(w_s, w_\mathbf{y}, \mathcal{H}(p), p_\wp¬context, p_\wp¬authcodehash)\ ,\\
+      &\quad\also (g, \mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\Lambda(\delta[w_s], (p_\wp¬context)_t, w_c), 0, w_g, a, F, (\emptyset, []))\ \colon\\
       (\mathbf{r}, []) &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
       (\mathbf{r}, \mathbf{e}) &\quad\otherwise \\
       \multicolumn{2}{l}{\where w = p_\mathbf{w}[i]}
@@ -693,6 +693,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \mathbf{x} &\when \registers_{10} = 4 \wedge \registers_{11} < |p_\mathbf{w}[i]_\mathbf{x}| \wedge (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[i]_\mathbf{x}[\registers_{11}] \\[2pt]
       \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when \registers_{10} = 5 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
       \overline{\mathbf{i}}[i]_{\registers_{11}} &\when \registers_{10} = 6 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
+      p_\wp¬authparam &\when \registers_{10} = 7 \\
       \none &\otherwise
     \end{cases} \\
     \using o &= \registers_7 \\
