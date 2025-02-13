@@ -124,10 +124,10 @@ Given the result $o$ of some work-item, we define the item-to-result function $\
   \end{aligned}\right.
 \end{equation}
 
-We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the hash of the concatenation of the authorization code and the parameterization. We define the authorization code as $\wpX_\wp¬authcode$ and require that it be available at the time of the lookup anchor block from the historical lookup of service $\wpX_\wp¬authcodehost$. Formally:
+We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the hash of the concatenation of the authorization code hash and the parameterization. We define the authorization code as $\wpX_\wp¬authcode$ and require that it be available at the time of the lookup anchor block from the historical lookup of service $\wpX_\wp¬authcodehost$. Formally:
 \begin{equation}
   \forall \wpX \in \mathbb{P}: \left\{\,\begin{aligned}
-    \wpX_\wp¬authorizer &\equiv \mathcal{H}(\wpX_\wp¬authcode \concat \wpX_\wp¬authparam) \\
+    \wpX_\wp¬authorizer &\equiv \mathcal{H}(\wpX_\wp¬authcodehash \concat \wpX_\wp¬authparam) \\
     \wpX_\wp¬authcode &\equiv \Lambda(\delta[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_t, \wpX_\wp¬authcodehash) \\
     \wpX_\wp¬authcode &\in \Y
   \end{aligned}\right.
