@@ -174,8 +174,8 @@ Formally:
 
 Where:
 \begin{align*}
-  \keys{\mathbf{l}} \equiv \,&\{ h \mid w \in p_\mathbf{w}, (h^\boxplus, n) \in w_\mathbf{i} \} \ ,\quad |\mathbf{l}| \le 8\\
-  \mathbf{o} = \,&\Psi_I(\wpX, c) \ ,\quad \overline{\mathbf{i}} = [\importsegmentdata(w, \mathbf{l}) \mid w \orderedin \wpX_\wp¬workitems] \\
+  \keys{\mathbf{l}} \equiv \,&\{ h \mid w \in p_\mathbf{w}, (h^\boxplus, n) \in w_\mathbf{i} \} \ ,\quad|\mathbf{l}| \le 8\\
+  \mathbf{o} = \,&\Psi_I(\wpX, c) \\
   (\mathbf{r}, \overline{\mathbf{e}}) = \,&\transpose[
     (\itemtoresult(\wpX_\wp¬workitems[j], r), \mathbf{e})
     \mid
@@ -186,11 +186,12 @@ Where:
     (r, \mathbf{e}) &\when |\mathbf{e}| = w_e \\
     (r, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen r \not\in \mathbb{Y} \\
     (\badexports, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwise \\
-    \multicolumn{2}{l}{\where (r, \mathbf{e}) = \Psi_R(
-      j, \wpX, \mathbf{o}, \overline{\mathbf{i}}, \ell
-    )
+    \multicolumn{2}{l}{\where (r, \mathbf{e}) = \Psi_R\left(\,\begin{aligned}
+      &\wiX_c, \wiX_g, \wiX_s, h, \wiX_\mathbf{y}, \wpX_\wp¬context,\\[2pt]
+      &\wpX_\wp¬authorizer, \mathbf{o}, \importsegmentdata(w, \mathbf{l}), \extrinsicdata(w), \ell
+    \end{aligned}\,\right)
     }\\
-    \multicolumn{2}{l}{\also \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments}
+    \multicolumn{2}{l}{\also h = \mathcal{H}(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments}
   \end{cases}
 \end{align*}
 
@@ -215,7 +216,7 @@ As long as the guarantor is unable to satisfy the above constraints, then it sho
 
 The next term to be introduced, $\mathbf{o}$, is the authorization output, the result of the Is-Authorized function. The second term, $(\mathbf{r}, \overline{\mathbf{e}})$ is the sequence of results for each of the work-items in the work-package together with all segments exported by each work-item. The third definition $\countupexports$ performs an ordered accumulation (\ie counter) in order to ensure that the Refine function has access to the total number of exports made from the work-package up to the current work-item.
 
-The above relies on the function $\importsegmentdata$ which defines the import segment data for some work-item argument $w$. We also define $\extrinsicdata$ and $J$, which compiles the extrinsic data and the justifications of segment data:
+The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $w$. We also define $J$, which compiles justifications of segment data:
 \begin{equation}
   \begin{aligned}
     \extrinsicdata(\wiX \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\mathcal{H}(\mathbf{d}), |\mathbf{d}|) \orderedin \wiX_\wi¬extrinsics] \\
