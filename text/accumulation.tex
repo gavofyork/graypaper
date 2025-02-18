@@ -39,7 +39,7 @@ The newly available work-reports, $\mathbf{W}$, are partitioned into two sequenc
   D(w) &\equiv (w, \{(w_x)_\mathbf{p}\} \cup \keys{w_\wr¬srlookup})
 \end{align}
 
-We define the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by sets of now-accumulated work-package hashes (those in $\accumulated$). It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the parameter's keys, removes any dependencies which appear in said set and, crucially, removes any entries whose segment-root correspondences diverge from those in the dictionary. Formally:
+We define the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by sets of now-accumulated work-package hashes (those in $\accumulated$). It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the set provided as a parameter, and removes any dependencies which appear in said set. Formally:
 \begin{equation}
   E\colon\left\{\begin{aligned}
       &(\seq{(\mathbb{W}, \{\H\})}, \{\H\}) \to \seq{(\mathbb{W}, \{\H\})} \\
