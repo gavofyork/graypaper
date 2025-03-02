@@ -538,7 +538,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\when h = \error \\
       (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen \mathbf{d} = \error \vee \mathbf{d}_c \ne \se_{32}(\mathbf{x}_s) \\
       (\continue, \mathtt{HUH}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen \mathbf{d}_i \ne 2 \vee (h, l) \not\in \mathbf{d}_\mathbf{l} \\
-      (\continue, \mathtt{OK}, (\mathbf{x}_\mathbf{u})_\mathbf{d} \setminus \{d\} \cup \{ \mathbf{x}_s \mapsto \mathbf{s}' \}) &\otherwhen \mathbf{d}_\mathbf{l}[h, l] = [x, y], y < t - \mathsf{D} \\
+      (\continue, \mathtt{OK}, (\mathbf{x}_\mathbf{u})_\mathbf{d} \setminus \{d\} \cup \{ \mathbf{x}_s \mapsto \mathbf{s}' \}) &\otherwhen \mathbf{d}_\mathbf{l}[\tup{h, l}] = [x, y], y < t - \mathsf{D} \\
       (\continue, \mathtt{HUH}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
@@ -554,7 +554,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] &\when (h, z) \in \keys{(\mathbf{x}_\mathbf{s})_\mathbf{l}}\\
+      (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] &\when (h, z) \in \keys{(\mathbf{x}_\mathbf{s})_\mathbf{l}}\\
       \error &\otherwise\\
     \end{cases} \\
     (\execst', \registers'_7, \registers'_8) &\equiv \begin{cases}
@@ -608,9 +608,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
           \keys{\mathbf{a}_\mathbf{l}} &= \keys{(\mathbf{x}_\mathbf{s})_\mathbf{l}} \setminus \{\tup{h, z}\}\ ,\\[2pt]
           \keys{\mathbf{a}_\mathbf{p}} &= \keys{(\mathbf{x}_\mathbf{s})_\mathbf{p}} \setminus \{h\}
         \end{aligned}
-      \ \right\} &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] \in \{[], [x, y]\},\ y < t - \mathsf{D} \\
-      \quad \mathbf{a}_\mathbf{l}[h, z] = [x, t] &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] = [x] \\
-      \quad \mathbf{a}_\mathbf{l}[h, z] = [w, t] &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] = [x, y, w],\ y < t - \mathsf{D} \\
+      \ \right\} &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] \in \{[], [x, y]\},\ y < t - \mathsf{D} \\
+      \quad \mathbf{a}_\mathbf{l}[\tup{h, z}] = [x, t] &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] = [x] \\
+      \quad \mathbf{a}_\mathbf{l}[\tup{h, z}] = [w, t] &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] = [x, y, w],\ y < t - \mathsf{D} \\
       \error &\otherwise\\
     \end{cases} \\
     (\execst', \registers'_7, \mathbf{x}'_\mathbf{s}) &\equiv \begin{cases}
