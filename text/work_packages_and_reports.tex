@@ -88,12 +88,16 @@ A work item includes: $s$ the identifier of the service to which it relates, the
 
 Note that an imported data segment's work-package is identified through the union of sets $\H$ and a tagged variant $\H^\boxplus$. A value drawn from the regular $\H$ implies the hash value is of the segment-root containing the export, whereas a value drawn from $\H^\boxplus$ implies the hash value is the hash of the exporting work-package. In the latter case it must be converted into a segment-root by the guarantor and this conversion reported in the work-report for on-chain validation.
 
-We limit both the total number of exported items and the total number of imported items to $\mathsf{W}_M = 2^{11}$:
+We limit both the total number of exported items and the total number of imported items to $\mathsf{W}_M = 3072$, and the total number of extrinsics to $\mathsf{T} = 128$:
 \begin{equation}
-  \forall \wpX \in \mathbb{P}:
-  \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportsegments \le \mathsf{W}_M \ \wedge\ 
-  \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments| \le \mathsf{W}_M
+  \!\!\!\!\begin{aligned}
+    &\forall \wpX \in \mathbb{P}: \\
+    &\ \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportsegments \le \mathsf{W}_M \ \wedge\ 
+    \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments| \le \mathsf{W}_M \ \wedge\ 
+    \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬extrinsics| \le \mathsf{T}
+  \end{aligned}
 \end{equation}
+
 
 We make an assumption that the preimage to each extrinsic hash in each work-item is known by the guarantor. In general this data will be passed to the guarantor alongside the work-package.
 
