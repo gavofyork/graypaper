@@ -70,11 +70,11 @@ We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constit
   }
 \end{equation}
 
-A work item includes: $s$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $c$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\mathbf{y}$, gas limits for Refinement and Accumulation $g$ \& $a$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportsegments$ the number of data segments exported by this work item.
+A work item includes: $s$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $\wi¬codehash$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\mathbf{y}$, gas limits for Refinement and Accumulation $g$ \& $a$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportsegments$ the number of data segments exported by this work item.
 \begin{equation}\label{eq:workitem}
   \mathbb{I} \equiv \tuple{\begin{aligned}
     &\isa{s}{\N_S},
-    \isa{c}{\H},
+    \isa{\wi¬codehash}{\H},
     \isa{\mathbf{y}}{\Y},
     \isa{g}{\N_G},
     \isa{a}{\N_G},
@@ -128,8 +128,8 @@ We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the h
 \begin{equation}
   \forall \wpX \in \mathbb{P}: \left\{\,\begin{aligned}
     \wpX_\wp¬authorizer &\equiv \mathcal{H}(\wpX_\wp¬authcodehash \concat \wpX_\wp¬authparam) \\
-    \wpX_\wp¬authcode &\equiv \Lambda(\delta[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_t, \wpX_\wp¬authcodehash) \\
-    \wpX_\wp¬authcode &\in \Y
+    \se(\var{\wpX_\wp¬metadata}, \wpX_\wp¬authcode) &\equiv \Lambda(\delta[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_t, \wpX_\wp¬authcodehash) \\
+    (\wpX_\wp¬metadata, \wpX_\wp¬authcode) &\in (\Y, \Y)
   \end{aligned}\right.
 \end{equation}
 

@@ -28,9 +28,9 @@ Thus, the balance of the service of index $s$ would be denoted $\delta[s]_b$ and
 
 \subsection{Code and Gas}
 
-The code $c$ of a service account is represented by a hash which, if the service is to be functional, must be present within its preimage lookup (see section \ref{sec:lookups}). We thus define the actual code $\mathbf{c}$:
+The code and associated metadata of a service account is identified by a hash which, if the service is to be functional, must be present within its preimage lookup (see section \ref{sec:lookups}). We thus define the actual code $\mathbf{c}$ and metadata $\mathbf{m}$:
 \begin{align}
-  \forall \mathbf{a} \in \mathbb{A} : \mathbf{a}_\mathbf{c} \equiv \begin{cases}
+  \forall \mathbf{a} \in \mathbb{A} : \se(\var{\mathbf{a}_\mathbf{m}}, \mathbf{a}_\mathbf{c}) \equiv \begin{cases}
     \mathbf{a}_\mathbf{p}[\mathbf{a}_c] &\when \mathbf{a}_c \in \mathbf{a}_\mathbf{p} \\
     \none &\otherwise
   \end{cases}
