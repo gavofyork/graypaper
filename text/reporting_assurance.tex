@@ -21,7 +21,7 @@ The state of the reporting and availability portion of the protocol is largely c
 As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\rho'$) are held under the same constraints as the prior value.
 
 \subsubsection{Work Report}\label{sec:workreport}
-A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification $s$, the refinement context $x$, and the core-index (\ie on which the work is done) as well as the authorizer hash $a$ and output $\mathbf{o}$, a segment-root lookup dictionary $\wr¬srlookup$, and finally the results of the evaluation of each of the items in the package $\mathbf{r}$, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
+A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification $s$, the refinement context $x$, and the core-index (\ie on which the work is done) as well as the authorizer hash $a$ and output $\wr¬authoutput$, a segment-root lookup dictionary $\wr¬srlookup$, and finally the results of the evaluation of each of the items in the package $\wr¬results$, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
 \begin{equation}\label{eq:workreport}
 \mathbb{W} \equiv \tuple{
   \begin{aligned}
@@ -29,9 +29,9 @@ A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-packag
     \isa{x}{\mathbb{X}},\ 
     \isa{c}{\N_\mathsf{C}},\ 
     \isa{a}{\H},\\
-    &\isa{\mathbf{o}}{\Y},\ 
+    &\isa{\wr¬authoutput}{\Y},\ 
     \isa{\wr¬srlookup}{\dict{\H}{\H}},\ 
-    \isa{\mathbf{r}}{\seq{\mathbb{L}}_{1:\mathsf{I}}}
+    \isa{\wr¬results}{\seq{\mathbb{L}}_{1:\mathsf{I}}}
   \end{aligned}
 }
 \end{equation}
@@ -73,14 +73,14 @@ The \emph{segment-root} ($e$) is the root of a constant-depth, left-biased and z
 We finally come to define a \emph{work result}, $\mathbb{L}$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
 
 \begin{equation}\label{eq:workresult}
-  \mathbb{L} \equiv (s \in \N_S, c \in \H, l \in \H, g \in \N_G, \mathbf{o} \in \Y \cup \mathbb{J})
+  \mathbb{L} \equiv (s \in \N_S, c \in \H, y \in \H, g \in \N_G, \wl¬data \in \Y \cup \mathbb{J})
 \end{equation}
 
 Work results are a tuple comprising several items. Firstly $s$, the index of the service whose state is to be altered and thus whose refine code was already executed. We include the hash of the code of the service at the time of being reported $c$, which must be accurately predicted within the work-report according to equation \ref{eq:reportcodesarecorrect};
 
-Next, the hash of the payload ($l$) within the work item which was executed in the refine stage to give this result. This has no immediate relevance, but is something provided to the accumulation logic of the service. We follow with the gas prioritization ratio $g$ used when determining how much gas should be allocated to execute of this item's accumulate.
+Next, the hash of the payload ($y$) within the work item which was executed in the refine stage to give this result. This has no immediate relevance, but is something provided to the accumulation logic of the service. We follow with the gas prioritization ratio $g$ used when determining how much gas should be allocated to execute of this item's accumulate.
 
-Finally, there is the output or error of the execution of the code $\mathbf{o}$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
+Finally, there is the actual output datum or error of the execution of the code $\wl¬data$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
 \begin{equation}
   \mathbb{J} \in \{ \oog, \panic, \badexports, \token{BAD}, \token{BIG} \}
 \end{equation}
@@ -90,7 +90,7 @@ The first two are special values concerning execution of the virtual machine, $\
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful output blobs together with the authorizer output blob, effectively limiting their overall size:
 \begin{align}
   &\forall w \in \mathbb{W}:
-    |w_\mathbf{o}| + \sum_{r \in w_\mathbf{r}, r_\mathbf{o} \in \Y} |r_\mathbf{o}| \le \mathsf{W}_R \\
+    |w_\wr¬authoutput| + \sum_{r \in w_\wr¬results} |r_\wl¬data| \le \mathsf{W}_R \\
   &\mathsf{W}_R \equiv 48\cdot2^{10}
 \end{align}
 

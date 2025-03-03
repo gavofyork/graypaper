@@ -84,6 +84,8 @@ A work item includes: $s$ the identifier of the service to which it relates, the
   \end{aligned}}
 \end{equation}
 
+%TODO: use r instead of g for refinement gas limit.
+
 Note that an imported data segment's work-package is identified through the union of sets $\H$ and a tagged variant $\H^\boxplus$. A value drawn from the regular $\H$ implies the hash value is of the segment-root containing the export, whereas a value drawn from $\H^\boxplus$ implies the hash value is the hash of the exporting work-package. In the latter case it must be converted into a segment-root by the guarantor and this conversion reported in the work-report for on-chain validation.
 
 We limit both the total number of exported items and the total number of imported items to $\mathsf{W}_M = 2^{11}$:
@@ -116,11 +118,11 @@ We limit the sums of each of the two gas limits to be at most the maximum gas al
 
 %The implication of equation \ref{eq:checkextractsize} is that we have access to the preimage of all extrinsic data. For guaranteeing, this implies the work-package author probably submits the preimages alongside the work-package itself. For auditing, the extrinsic preimages may be reconstructed in the same manner as the work-package. Both are described later.
 
-Given the result $o$ of some work-item, we define the item-to-result function $\itemtoresult$ as:
+Given the resultant datum $d$ of some work-item, we define the item-to-result function $\itemtoresult$ as:
 \begin{equation}
   \itemtoresult\colon\left\{\begin{aligned}
     (\mathbb{I}, \Y \cup \mathbb{J}) &\to \mathbb{L}\\
-    ((s, c, \mathbf{y}, a), \mathbf{o}) &\mapsto (s, c, \mathcal{H}(\mathbf{y}), \is{g}{a}, \mathbf{o})
+    (\tup{s, c, \mathbf{y}, a}, \wl¬data) &\mapsto \tup{s, c, \is{\wl¬payloadhash}{\mathcal{H}(\mathbf{y})}, \is{g}{a}, \wl¬data}
   \end{aligned}\right.
 \end{equation}
 
@@ -157,11 +159,10 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
 
 \subsection{Computation of Work Results}\label{sec:computeworkresult}
 
-% TODO: Pass in entire Work Package and provide host-call to extract other Work Item payloads, imports and extrinsics.
-
 We now come to the work result computation function $\Xi$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $c$ and results in either an error $\error$ or the work result and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization.
 
 Formally:
+% TODO: Decide on whether context is bold or not.
 \begin{equation}\label{eq:workresultfunction}
   \!\!\Xi \colon \left\{\begin{aligned}
     (\mathbb{P}, \N_\mathsf{C}) &\to \mathbb{W} \\
