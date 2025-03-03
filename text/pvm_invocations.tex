@@ -714,7 +714,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using p &= \registers_7 \\
     \using z &= \min(\registers_8, \mathsf{W}_G) \\
     \using \mathbf{x} &= \begin{cases}
-      \mathcal{P}_{\mathsf{W}_G}(\memr_{p\dots+z}) &\when \N_{p\dots+z} \subseteq \mathbb{V}_\memory\\
+      \mathcal{P}_{\mathsf{W}_G}(\memr_{p\dots+z}) &\when (\N_{p\dots+z} \bmod 2^{32}) \subseteq \mathbb{V}_\memory\\
       \error &\otherwise
     \end{cases}\\
     (\execst', \registers'_7, \mathbf{e}') &\equiv \begin{cases}
@@ -750,7 +750,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $\begin{aligned}
     \using [n, o, s, z] &= \registers_{7 \dots+ 4} \\
     (\execst', \registers'_7, \mem') &\equiv \begin{cases}
-      (\panic, \registers_7, \mem) &\when \N_{o\dots+z} \not\subseteq \mathbb{V}^*_\memory \\
+      (\panic, \registers_7, \mem) &\when (\N_{o\dots+z} \bmod 2^{32}) \not\subseteq \mathbb{V}^*_\memory \\
       (\continue, \mathtt{WHO}, \mem) &\otherwhen n \not\in \keys{\mathbf{m}} \\
       (\continue, \mathtt{OOB}, \mem) &\otherwhen \N_{s\dots+z} \not\subseteq \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \\
       (\continue, \mathtt{OK}, \mem') &\otherwise \\
@@ -765,7 +765,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $\begin{aligned}
     \using [n, s, o, z] &= \registers_{7 \dots+ 4} \\
     (\execst', \registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\panic, \registers_7, \mathbf{m}) &\when \N_{s\dots+z} \not\subseteq \mathbb{V}_\memory \\
+      (\panic, \registers_7, \mathbf{m}) &\when (\N_{s\dots+z} \bmod 2^{32}) \not\subseteq \mathbb{V}_\memory \\
       (\continue, \mathtt{WHO}, \mathbf{m}) &\otherwhen n \not\in \keys{\mathbf{m}} \\
       (\continue, \mathtt{OOB}, \mathbf{m}) &\otherwhen \N_{o\dots+z} \not\subseteq \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
       (\continue, \mathtt{OK}, \mathbf{m}')  &\otherwise \\
