@@ -211,10 +211,10 @@ Finally, $F$ is the fallback key sequence function which selects an epoch's wort
 
 The epoch and winning-tickets markers are information placed in the header in order to minimize data transfer necessary to determine the validator keys associated with any given epoch. They are particularly useful to nodes which do not synchronize the entire state for any given block since they facilitate the secure tracking of changes to the validator key sets using only the chain of headers.
 
-As mentioned earlier, the header's epoch marker $\mathbf{H}_e$ is either empty or, if the block is the first in a new epoch, then a tuple of the next and current epoch randomness, along with a sequence of Bandersnatch keys defining the Bandersnatch validator keys ($k_b$) beginning in the next epoch. Formally:
+As mentioned earlier, the header's epoch marker $\mathbf{H}_e$ is either empty or, if the block is the first in a new epoch, then a tuple of the next and current epoch randomness, along with a sequence of tuples containing both Bandersnatch keys and Ed25519 keys for each validator defining the validator keys beginning in the next epoch. Formally:
 \begin{align}\label{eq:epochmarker}
   \mathbf{H}_e &\equiv \begin{cases}
-    ( \eta_0, \eta_1, [ k_b \mid k \orderedin \gamma'_\mathbf{k} ] )\qquad\qquad &\when e' > e \\
+    ( \eta_0, \eta_1, [ \tup{k_b, k_e} \mid k \orderedin \gamma'_\mathbf{k} ] )\qquad\qquad &\when e' > e \\
     \none & \otherwise
   \end{cases}
 \end{align}
