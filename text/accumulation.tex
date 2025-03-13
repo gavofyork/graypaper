@@ -209,21 +209,20 @@ Given the result of the top-level $\Delta_+$, we may define the posterior state 
 
 We compose $\mathbf{I}$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-reports accumulated. Formally:
 \begin{align}
-  \mathbf{I} &\in \dict{\N_S}{\tuple{\N_G, \N}} \\
-  \mathbf{I} &\equiv \{ s \mapsto (u, i) \mid \exists (s, x) \in \mathbf{u} \} \\
-  \where i &= |\sq{r \mid w \orderedin \mathbf{W}^* , r \orderedin w_\mathbf{r} , r_s = s }| \\
-  \also u &= \sum_{(s, x) \in \mathbf{u}}x
+  &\mathbf{I} \in \dict{\N_S}{\tuple{\N_G, \N}} \\
+  &\textstyle \mathbf{I} \equiv \left\{ s \mapsto \tup{\sum_{(s, u) \in \mathbf{u}}(u), \len{N(s)}} \;\middle\mid\; N(s) \ne [] \right\} \\
+  \where &N(s) \equiv \sq{r \mid w \orderedin \mathbf{W}^*_{\dots n} , r \orderedin w_\mathbf{r} , r_s = s }
 \end{align}
 
 Note that the accumulation commitment map $\beefycommitmap$ is a set of pairs of indices of the output-yielding accumulated services to their accumulation result. This is utilized in equation \ref{eq:buildbeefymap}, when determining the accumulation-result tree root for the present block, useful for the \textsc{Beefy} protocol.
 
 We have denoted the sequence of implied transfers as $\mathbf{t}$, ordered internally according to the source service's execution. We define a selection function $R$, which maps a sequence of deferred transfers and a desired destination service index into the sequence of transfers targeting said service, ordered primarily according to the source service index and secondarily their order within $\mathbf{t}$. Formally:
-\begin{align}
+\begin{equation}
   R\colon \left\{\;\begin{aligned}
     (\defxfers, \N_S) &\to \defxfers \\
     (\mathbf{t}, d) &\mapsto \left[\,t \mid s \orderedin \N_S,\ t \orderedin \mathbf{t},\ t_s = s,\ t_d = d\,\right]
-  \end{aligned}\right.
-\end{align}
+  \end{aligned}\right.\!\!\!\!
+\end{equation}
 
 The second intermediate state $\accountspostxfer$ may then be defined with all the deferred effects of the transfers applied:
 \begin{equation}
