@@ -97,7 +97,7 @@ The core statistics are updated using several intermediate values from across th
       \is{&x&}{R(c)_x}\,,\;
       \is{&z&}{R(c)_z}\,,\\
       \is{e&}{R(c)_e}\,,\;
-      \is{&u&}{R(c)_u}\,,\;
+      \is{&y&}{R(c)_u}\,,\;
       \is{&b&}{R(c)_b}\,,\\
       \is{d&}{D(c)}\,,\;
       \is{&p&}{\span\span \textstyle \sum_{a \in \mathbf{E}_A} a_f[c]\qquad}
@@ -107,4 +107,24 @@ The core statistics are updated using several intermediate values from across th
   \!\!\!\!\!\!\!\!\!\!\!(r_i, r_x, r_z, r_e, r_u, \is{b}{(w_s)_l})\\
   \also D(c \in \N_C) &\equiv \!\!\!\!\!\!\sum_{w \in \mathbf{W}, w_c = c}
   \!\!\!\!\!\!(w_s)_l + \mathsf{W}_G\ceil{(w_s)_n\nicefrac{65}{64}}
+\end{align}
+
+Finally, the service statistics are updated using the same intermediate values as the core statistics, but with a different set of calculations:
+\begin{align}
+  \forall s \in \mathbf{s} : \pi'_S[s] &\equiv \tup{
+    \begin{alignedat}{5}
+      \is{i&}{R(s)_i}\,,\;
+      \is{&x&}{R(s)_x}\,,\;
+      \is{&z&}{R(s)_z}\,,\\
+      \is{e&}{R(s)_e}\,,\;
+      \is{&r&}{\span\span\tup{R(s)_n, R(s)_u}}\,,\;\\
+      \is{p&}{\span\span \textstyle \sum_{\tup{s, \mathbf{p}} \in \mathbf{E}_P} \tup{1, |\mathbf{p}|}}
+    \end{alignedat}
+  }\!\!\!\!\\
+  \where \mathbf{s} &= \mathbf{r} \cup \mathbf{p} \cup \mathbf{a} \cup \mathbf{t}\\
+  \also \mathbf{r} &= \{r_s: r \in w_\mathbf{r}, w \in \mathbf{w} \}\\
+  \also R(s \in \N_S) &\equiv \!\!\!\!\!\!\!\!\!\!\!
+    \sum_{r \in w_\mathbf{r}, w \in \mathbf{w}, r_s = s}\!\!\!\!\!\!\!\!\!\!\!
+    \tup{\is{n}{1}, r_u, r_i, r_x, r_z, r_e}\\
+  \also 
 \end{align}
