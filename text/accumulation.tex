@@ -1,6 +1,7 @@
 \newcommand*{\srmap}{P}
 \newcommand*{\opers}{O}
 \newcommand*{\servouts}{B}
+\newcommand*{\gasused}{U}
 \newcommand*{\accumulatedcup}{\overbrace{\accumulated}}
 
 \section{Accumulation}\label{sec:accumulation}
@@ -111,34 +112,34 @@ We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, notin
 
 Finally, we denote the set of service/hash pairs, utilized as a service-indexed commitment to the accumulation output, as $\servouts$:
 \begin{equation}
-  \servouts \equiv \{(\N_S, \H)\}
+  \servouts \equiv \{(\N_S, \H)\} \qquad \gasused \equiv \seq{\tup{\N_S, \N_G}}
 \end{equation}
 
 We define the outer accumulation function $\Delta_+$ which transforms a gas-limit, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the number of work-results accumulated, a posterior state-context, the resultant deferred-transfers and accumulation-output pairings:
 \begin{equation}
   \Delta_+\colon\left\{\begin{aligned}
-    &(\N_G, \seq{\mathbb{W}}, \partialstate, \dict{\N_S}{\N_G}) \to (\N, \partialstate, \defxfers, \servouts) \\
+    &(\N_G, \seq{\mathbb{W}}, \partialstate, \dict{\N_S}{\N_G}) \to (\N, \partialstate, \defxfers, \servouts, \gasused) \\
     &(g, \mathbf{w}, \mathbf{o}, \mathbf{f}) \!\mapsto\! \begin{cases}
       (0, \mathbf{o}, [], \{\}) &
         \when i = 0 \\
-      (i + j, \mathbf{o}', \mathbf{t}^* \!\!\concat \mathbf{t}, \mathbf{b}^* \!\cup \mathbf{b})\!\!\!\! &
-        \otherwise\!\!\!\!\!\!\!\! \\
+      (i + j, \mathbf{o}', \mathbf{t}^* \!\!\concat \mathbf{t}, \mathbf{b}^* \!\cup \mathbf{b}, \mathbf{u}^* \!\!\concat \mathbf{u})\!\!\!\! &
+        \text{o/w}\!\!\!\!\!\!\!\! \\
     \end{cases} \\
     &\quad\where i = \max(\N_{|\mathbf{w}| + 1}): \sum_{w \in \mathbf{w}_{\dots i}}\sum_{r \in w_\mathbf{r}}(r_g) \le g \\
-    &\quad\also (g^*, \mathbf{o}^*, \mathbf{t}^*, \mathbf{b}^*) = \Delta_*(\mathbf{o}, \mathbf{w}_{\dots i}, \mathbf{f}) \\
-    &\quad\also (j, \mathbf{o}', \mathbf{t}, \mathbf{b}) = \Delta_+(g - g^*, \mathbf{w}_{i\dots}, \mathbf{o}^*, \{\})
+    &\quad\also (\mathbf{u}^*, \mathbf{o}^*, \mathbf{t}^*, \mathbf{b}^*) = \Delta_*(\mathbf{o}, \mathbf{w}_{\dots i}, \mathbf{f}) \\
+    &\quad\also (j, \mathbf{o}', \mathbf{t}, \mathbf{b}, \mathbf{u}) = \Delta_+(g - \!\!\!\!\sum_{(s, u) \in \mathbf{u}^*}\!\!\!\!u, \mathbf{w}_{i\dots}, \mathbf{o}^*, \{\})
   \end{aligned}\right.
 \end{equation}
 
 We come to define the parallelized accumulation function $\Delta_*$ which, with the help of the single-service accumulation function $\Delta_1$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution $u$, a posterior state-context $(\mathbf{x}', \mathbf{d}', \mathbf{i}', \mathbf{q}')$ and the resultant accumulation-output pairings $\mathbf{b}$ and deferred-transfers $\wideparen{\mathbf{t}}$:
 \begin{equation}
   \Delta_*\colon\left\{\;\begin{aligned}
-    &(\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}) \to (\N_G, \partialstate, \defxfers, \servouts) \\
-    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto (u, ((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \mathbf{i}', \mathbf{q}', \mathbf{x}'), \wideparen{\mathbf{t}}, \mathbf{b})\!\!\!\!\!\!\\
+    &(\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}) \to (\partialstate, \defxfers, \servouts, \gasused) \\
+    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto (((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \mathbf{i}', \mathbf{q}', \mathbf{x}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u})\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
       \mathbf{s} &= \{ \mathbf{r}_s \mid w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} \} \cup \keys{\mathbf{f}} \\
-      u &= \sum_{s \in \mathbf{s}}(\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_u) \\
+      \mathbf{u} &= [(s, \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_u) \mid s \orderedin \mathbf{s}] \\
       \mathbf{b} &= \{ (s, b) \mid s \in \mathbf{s},\, b = \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_b,\, b \ne \none \} \\
       \mathbf{t} &= [\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{t} \mid s \orderedin \mathbf{s}] \\
       &(\mathbf{d}, \mathbf{i}, \mathbf{q}, (m, a, v, \mathbf{z})) = \mathbf{o} \\
@@ -168,7 +169,10 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
     &\Delta_1 \colon \left\{\;\begin{aligned}
     &\begin{aligned}
       (\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}, \N_S) &\to \tup{
-        \partialstate, \defxfers, \H\bm{?}, \N_G
+        \begin{alignedat}{3}
+          \isa{\mathbf{o}&}{\partialstate}\,,\;\isa{&\mathbf{t}&}{\defxfers}\,,\\
+          \isa{b&}{\H\bm{?}}\,,\;\isa{&u&}{\N_G}
+        \end{alignedat}
       } \\
       (\mathbf{o}, \mathbf{w}, \mathbf{f}, s) &\mapsto \Psi_A(\mathbf{o}, \tau', s, g, \mathbf{p})
     \end{aligned} \\
@@ -199,8 +203,16 @@ This introduces $\mathbb{O}$, the set of wrangled \emph{operand tuples}, used as
 Given the result of the top-level $\Delta_+$, we may define the posterior state $\chi'$, $\varphi'$ and $\iota'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the \textsc{Beefy} commitment map $\beefycommitmap$:
 \begin{align}
   \using g &= \max\left(\mathsf{G}_T, \mathsf{G}_A\cdot \mathsf{C} + \sum_{x \in \mathcal{V}(\chi_\mathbf{g})}(x)\right)\\
-  \using (n, \mathbf{o}, \mathbf{t}, \beefycommitmap) &= \Delta_+(g, \mathbf{W}^*, (\chi, \accountspre, \iota, \varphi), \chi_\mathbf{g}) \\
+  \using (n, \mathbf{o}, \mathbf{t}, \beefycommitmap, \mathbf{u}) &= \Delta_+(g, \mathbf{W}^*, (\chi, \accountspre, \iota, \varphi), \chi_\mathbf{g}) \\
   (\chi', \accountspostacc, \iota', \varphi') &\equiv \mathbf{o}
+\end{align}
+
+We compose $\mathbf{I}$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-reports accumulated. Formally:
+\begin{align}
+  \mathbf{I} &\in \dict{\N_S}{\tuple{\N_G, \N}} \\
+  \mathbf{I} &\equiv \{ s \mapsto (u, i) \mid \exists (s, x) \in \mathbf{u} \} \\
+  \where i &= |\sq{r \mid w \orderedin \mathbf{W}^* , r \orderedin w_\mathbf{r} , r_s = s }| \\
+  \also u &= \sum_{(s, x) \in \mathbf{u}}x
 \end{align}
 
 Note that the accumulation commitment map $\beefycommitmap$ is a set of pairs of indices of the output-yielding accumulated services to their accumulation result. This is utilized in equation \ref{eq:buildbeefymap}, when determining the accumulation-result tree root for the present block, useful for the \textsc{Beefy} protocol.
