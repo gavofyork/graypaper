@@ -128,7 +128,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G} \\
     (\mathbf{u}, t, s, g, \mathbf{o}) &\mapsto \begin{cases}
       \tup{I(\mathbf{u}, s)_\mathbf{u}, [], \none, 0} &\when \mathbf{u}_\mathbf{d}[s]_\mathbf{c} = \none \\
-      C(\Psi_M(\mathbf{u}_\mathbf{d}[s]_\mathbf{c}, 5, g, \se(t, s, \var{\mathbf{o}}), F, \tup{I(\mathbf{u}, s), I(\mathbf{u}, s)})) &\otherwise
+      C(g, \Psi_M(\mathbf{u}_\mathbf{d}[s]_\mathbf{c}, 5, g, \se(t, s, \var{\mathbf{o}}), F, \tup{I(\mathbf{u}, s), I(\mathbf{u}, s)})) &\otherwise
     \end{cases} \\
   \end{aligned}\right.\\
   I&\colon\left\{\begin{aligned}
@@ -169,25 +169,25 @@ We define $\Psi_A$, the Accumulation invocation function as:
     &\qquad \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[\mathbf{x}^*_s] = \mathbf{s}
   \end{aligned}\right.\\
   C&\colon\left\{\begin{aligned}
-    (\N_G, \mathbb{Y} \cup \{\oog, \panic\}, (\mathbf{X}, \mathbf{X})) &\to (\partialstate, \defxfers, \H\bm{?}, \N_G) \\
-    (g, \mathbf{o}, (\mathbf{x}, \mathbf{y})) &\mapsto \begin{cases}
+    (\N_G, \Z_G, \mathbb{Y} \cup \{\oog, \panic\}, (\mathbf{X}, \mathbf{X})) &\to (\partialstate, \defxfers, \H\bm{?}, \N_G) \\
+    (g, r, \mathbf{o}, (\mathbf{x}, \mathbf{y})) &\mapsto \begin{cases}
       \tup{
         \mathbf{y}_\mathbf{u},
         \mathbf{y}_\mathbf{t},
         \mathbf{y}_y,
-        g
+        g - r
       } & \when \mathbf{o} \in \{\oog, \panic\} \\
       \tup{
         \mathbf{x}_\mathbf{u},
         \mathbf{x}_\mathbf{t},
         \mathbf{o},
-        g
+        g - r
       } & \otherwhen \mathbf{o} \in \H \\
       \tup{
         \mathbf{x}_\mathbf{u},
         \mathbf{x}_\mathbf{t},
         \mathbf{x}_y,
-        g
+        g - r
       } & \otherwise \\
     \end{cases}
   \end{aligned}\right.
