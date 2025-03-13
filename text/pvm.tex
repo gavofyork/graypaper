@@ -825,19 +825,29 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
 \subsection{Argument Invocation Definition}
 
 The four instances where the \textsc{pvm} is utilized each expect to be able to pass argument data in and receive some return data back. We thus define the common \textsc{pvm} program-argument invocation function $\Psi_M$:
-\begin{align}
-  \Psi_M&\colon \left\{\begin{aligned}
-    (\Y, \N_R, \N_G, \Y_{:\mathsf{Z}_I}, \Omega\langle X \rangle, X) &\to (\N_G, \Y \cup \{\panic, \oog\}, X)\\
+\begin{equation}
+  \Psi_M\colon \left\{\begin{aligned}
+    \left(
+      \Y, \N_R, \N_G, \Y_{:\mathsf{Z}_I}, \Omega\langle X \rangle, X
+    \right) &\to (\N_G, \Y \cup \{\panic, \oog\}, X)\\
     (\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}) &\mapsto \begin{cases}
       (0, \panic, \mathbf{x}) &\when Y(\mathbf{p}) = \none\\
-      R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}) = (\mathbf{c}, \registers, \mem)
+      R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}) = (\mathbf{c}, \registers, \mem)\\
+      \multicolumn{2}{l}{
+        \quad \where R \colon (\gascounter, \tup{\begin{alignedat}{5}
+          &\varepsilon,\, &&\imath',\, &&\gascounter',\\
+          &\registers',\, &&\mem',\, &&\mathbf{x}'
+        \end{alignedat}
+        }) \mapsto \begin{cases}
+          (u, \oog, \mathbf{x}') &\when \varepsilon = \oog \\
+          (u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \subset \mathbb{V}_{\mem'} \\
+          (u, [], \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \not\subset \mathbb{V}_{\mem'} \\
+          (u, \panic, \mathbf{x}') &\otherwise \\
+          \multicolumn{2}{l}{\quad \where u = \gascounter - \max(\gascounter', 0)}
+        \end{cases}
+      }\!\!\!\!\!\!\!\!
     \end{cases}
-  \end{aligned}\right.\\
-  \where R&\colon (\gascounter, \tup{\varepsilon, \imath', \gascounter', \registers', \mem', \mathbf{x}'}) \mapsto \begin{cases}
-    (u, \oog, \mathbf{x}') &\when \varepsilon = \oog \\
-    (u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \subset \mathbb{V}_{\mem'} \\
-    (u, [], \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \not\subset \mathbb{V}_{\mem'} \\
-    (u, \panic, \mathbf{x}') &\otherwise \\
-    \multicolumn{2}{l}{\quad \where u = \gascounter - \max(\gascounter', 0)}
-  \end{cases}
-\end{align}
+  \end{aligned}\right.
+\end{equation}
+
+Note that the first tuple item is the amount of gas consumed by the operation, but never greater than the amount of gas provided for the operation.
