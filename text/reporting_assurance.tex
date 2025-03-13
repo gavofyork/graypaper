@@ -31,7 +31,8 @@ A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-packag
     \isa{a}{\H},\\
     &\isa{\wr¬authoutput}{\Y},\ 
     \isa{\wr¬srlookup}{\dict{\H}{\H}},\ 
-    \isa{\wr¬results}{\seq{\mathbb{L}}_{1:\mathsf{I}}}
+    \isa{\wr¬results}{\seq{\mathbb{L}}_{1:\mathsf{I}}},\ 
+    \isa{\wr¬authgasused}{\N_G},\ 
   \end{aligned}
 }
 \end{equation}
@@ -47,9 +48,9 @@ We limit the sum of the number of items in the segment-root lookup dictionary an
 
 A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $a$ along with its associated posterior state-root $s$ and posterior \textsc{Beefy} root $b$; and the \emph{lookup-anchor}, header hash $l$ and of timeslot $t$. Finally, it identifies the hash of any prerequisite work-packages $\mathbf{p}$. Formally:
 \begin{equation}
-  \mathbb{X} \equiv \ltuple\,\begin{alignedat}{7}
-    \isa{a&}{\H}\ts\quad \isa{&s&}{\H}\ts\quad \isa{&b}{\H}\ts\\
-    \isa{l&}{\H}\ts\quad \isa{&t&}{\N_T}\ts\quad \isa{&\mathbf{p}}{\{\H\}}
+  \mathbb{X} \equiv \ltuple\,\begin{alignedat}{5}
+    \isa{a&}{\H}\,,\; \isa{&s&}{\H}\,,\; \isa{&b&}{\H}\,,\;\\
+    \isa{l&}{\H}\,,\; \isa{&t&}{\N_T}\,,\; \isa{&\mathbf{p}&}{\{\H\}}
   \end{alignedat}\rtuple
 \end{equation}
 
@@ -57,10 +58,10 @@ A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the cont
 We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tuple of the work-package's hash $h$, an auditable work bundle length $l$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $u$, a segment-root $e$ and segment-count $n$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
 \begin{align}
   \mathbb{S} &\equiv \tuple{
-    \isa{h}{\H}\ts
-    \isa{l}{\N_L}\ts
-    \isa{u}{\H}\ts
-    \isa{e}{\H}\ts
+    \isa{h}{\H}\,,\;
+    \isa{l}{\N_L}\,,\;
+    \isa{u}{\H}\,,\;
+    \isa{e}{\H}\,,\;
     \isa{n}{\N}
   }
 \end{align}
@@ -71,19 +72,33 @@ The \emph{segment-root} ($e$) is the root of a constant-depth, left-biased and z
 
 \subsubsection{Work Result}
 We finally come to define a \emph{work result}, $\mathbb{L}$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
-
 \begin{equation}\label{eq:workresult}
-  \mathbb{L} \equiv (s \in \N_S, c \in \H, y \in \H, g \in \N_G, \wl¬data \in \Y \cup \mathbb{J})
+  \mathbb{L} \equiv \tuple{
+    \begin{alignedat}{9}
+      \isa{s&}{\N_S}\,,\;
+      \isa{&c&}{\H}\,,\;
+      \isa{&y&}{\H}\,,\;
+      \isa{&g&}{\N_G}\,,\;
+      \isa{&\wl¬data&}{\Y \cup \mathbb{J}}\,,\;\\
+      \isa{u&}{\N_G}\,,\; % gas_used: UnsignedGas,
+      \isa{&i&}{\N}\,,\; % imports: u16,
+      \isa{&x&}{\N}\,,\; % extrinsic_count: u16,
+      \isa{&z&}{\N}\,,\; % extrinsic_size: u32,
+      \isa{&e&}{\N} % exports: u16,
+    \end{alignedat}
+  }
 \end{equation}
 
 Work results are a tuple comprising several items. Firstly $s$, the index of the service whose state is to be altered and thus whose refine code was already executed. We include the hash of the code of the service at the time of being reported $c$, which must be accurately predicted within the work-report according to equation \ref{eq:reportcodesarecorrect};
 
 Next, the hash of the payload ($y$) within the work item which was executed in the refine stage to give this result. This has no immediate relevance, but is something provided to the accumulation logic of the service. We follow with the gas prioritization ratio $g$ used when determining how much gas should be allocated to execute of this item's accumulate.
 
-Finally, there is the actual output datum or error of the execution of the code $\wl¬data$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
+There is the actual output datum or error of the execution of the code $\wl¬data$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
 \begin{equation}
   \mathbb{J} \in \{ \oog, \panic, \badexports, \token{BAD}, \token{BIG} \}
 \end{equation}
+
+Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the output datum to bear. We include $u$ the actual amount of gas used during refinement; $i$ and $e$ the number of segments imported from, and exported into, the Segments DA respectively; and $x$ and $z$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
 
 The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining three, the first indicates that the number of exports made was invalidly reported, the second indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The third indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
 
@@ -135,6 +150,8 @@ A work-report is said to become \emph{available} if and only if there are a clea
 \begin{align}\label{eq:availableworkreports}
   \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \N_\mathsf{C},\;\sum_{a \in \xtassurances}\!a_f[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
 \end{align}
+
+% TODO: Rename $\mathbf{W}$ to \mathbf{V} or whatever and `\mathbf{w}` becomes `\mathbf{R}` and `\mathbf{R}` becomes `\mathbf{G}`. `\mathbf{G}` would become something else.
 
 This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are either now available or have timed out:
 \begin{align}
@@ -233,7 +250,7 @@ The signature must be one whose public key is that of the validator identified i
 We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\mathbf{R}$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
 
 We denote $\mathbf{w}$ to be the set of work-reports in the present extrinsic $\mathbf{E}$:
-\begin{align}
+\begin{align}\label{eq:incomingworkreports}
   \text{let}\ \mathbf{w} = \{ g_w \mid g \in \xtguarantees \}
 \end{align}
 
