@@ -53,7 +53,11 @@ Note for the Is-Authorized host-call dispatch function $F$ in equation \ref{eq:i
 
 We define the Refine service-account invocation function as $\Psi_R$. It has no general access to the state of the \Jam chain, with the slight exception being the ability to make a historical lookup. Beyond this it is able to create inner instances of the \textsc{pvm} and dictate pieces of data to export.
 
-The historical-lookup host-call function, $\Omega_H$, is designed to give the same result regardless of the state of the chain for any time when auditing may occur (which we bound to be less than two epochs from being accumulated). The lookup anchor may be up to $\mathsf{L}$ timeslots before the recent history and therefore adds to the potential age at the time of audit. We therefore set $\mathsf{D} = 4,800$, a safe amount of eight hours.
+The historical-lookup host-call function, $\Omega_H$, is designed to give the same result regardless of the state of the chain for any time when auditing may occur (which we bound to be less than two epochs from being accumulated). The lookup anchor may be up to $\mathsf{L}$ timeslots before the recent history and therefore adds to the potential age at the time of audit. We therefore set $\mathsf{D}$ to have a safety margin of eight hours:
+\begin{equation}
+  \mathsf{D} \equiv \mathsf{L} + 4,800 = 19,200
+\end{equation}
+
 
 The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvm$. It holds some program code, instruction counter and \textsc{ram}:
 \begin{equation}
