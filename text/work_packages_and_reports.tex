@@ -98,7 +98,6 @@ We limit both the total number of exported items and the total number of importe
   \end{aligned}
 \end{equation}
 
-
 We make an assumption that the preimage to each extrinsic hash in each work-item is known by the guarantor. In general this data will be passed to the guarantor alongside the work-package.
 
 We limit the total size of the implied import and extrinsic items, together with all payloads, the authorizer parameter and the authorization token to 12\textsc{mb} in order to allow for around 2\textsc{mb}/s/core data throughput:
@@ -125,8 +124,16 @@ We limit the sums of each of the two gas limits to be at most the maximum gas al
 Given the resultant datum $d$ of some work-item, we define the item-to-result function $\itemtoresult$ as:
 \begin{equation}
   \itemtoresult\colon\left\{\begin{aligned}
-    (\mathbb{I}, \Y \cup \mathbb{J}) &\to \mathbb{L}\\
-    (\tup{s, c, \mathbf{y}, a}, \wl¬data) &\mapsto \tup{s, c, \is{\wl¬payloadhash}{\mathcal{H}(\mathbf{y})}, \is{g}{a}, \wl¬data}
+    (\mathbb{I}, \Y \cup \mathbb{J}, \N_G) &\to \mathbb{L}\\
+    \tup{\tup{\begin{aligned}
+      &s, c, \mathbf{y},\\
+      &a, e, \mathbf{i}, \mathbf{x}
+    \end{aligned}
+    }, \wl¬data, u} &\mapsto \tup{\begin{aligned}
+      s, c, \is{\wl¬payloadhash}{\mathcal{H}(\mathbf{y})}, \is{g}{a}, \wl¬data, u,\\
+      \is{i}{|\mathbf{i}|}, e, \is{x}{|\mathbf{x}|}, \is{z}{\sum_{(h, z) \in \mathbf{x}} z}
+    \end{aligned}
+    }
   \end{aligned}\right.
 \end{equation}
 
@@ -163,35 +170,33 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
 
 \subsection{Computation of Work Results}\label{sec:computeworkresult}
 
-We now come to the work result computation function $\Xi$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $c$ and results in either an error $\error$ or the work result and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization.
-
-Formally:
-% TODO: Decide on whether context is bold or not.
+We now come to the work result computation function $\Xi$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $c$ and results in either an error $\error$ or the work result and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization. Formally:
 \begin{equation}\label{eq:workresultfunction}
-  \!\!\Xi \colon \left\{\begin{aligned}
+  \Xi \colon \left\{\begin{aligned}
     (\mathbb{P}, \N_\mathsf{C}) &\to \mathbb{W} \\
     (\wpX, c) &\mapsto \begin{cases}
         \error &\when \mathbf{o} \not\in \Y \\
-        \tup{s, \is{x}{\wpX_\wp¬context}, c, \is{a}{\wpX_\wp¬authorizer}, \mathbf{o}, \mathbf{l}, \mathbf{r}} \!\!\!\!\!&\otherwise
+        \tup{s, \is{x}{\wpX_\wp¬context}, c, \is{a}{\wpX_\wp¬authorizer}, \mathbf{o}, \mathbf{l}, \mathbf{r}, g} &\otherwise
     \end{cases}
-  \end{aligned}\right.\!\!\!\!\!\!\!
+  \end{aligned}\right.
 \end{equation}
+% TODO: Decide on whether context is bold or not.
 
 Where:
 \begin{align*}
   \keys{\mathbf{l}} \equiv \,&\{ h \mid w \in p_\mathbf{w}, (h^\boxplus, n) \in w_\mathbf{i} \} \ ,\quad|\mathbf{l}| \le 8\\
-  \mathbf{o} = \,&\Psi_I(\wpX, c) \\
+  (\mathbf{o}, g) = \,&\Psi_I(\wpX, c) \\
   (\mathbf{r}, \overline{\mathbf{e}}) = \,&\transpose[
-    (\itemtoresult(\wpX_\wp¬workitems[j], r), \mathbf{e})
+    (\itemtoresult(\wpX_\wp¬workitems[j], r, u), \mathbf{e})
     \mid
-    (r, \mathbf{e}) = \countupexports(\wpX, j),\,
+    (r, u, \mathbf{e}) = \countupexports(\wpX, j),\,
     j \orderedin \N_{|\wpX_\wp¬workitems|}
   ] \\
   \countupexports(\wpX, j) \equiv \,&\begin{cases}
-    (r, \mathbf{e}) &\when |\mathbf{e}| = w_e \\
-    (r, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen r \not\in \mathbb{Y} \\
-    (\badexports, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwise \\
-    \multicolumn{2}{l}{\where (r, \mathbf{e}) = \Psi_R(
+    (r, u, \mathbf{e}) &\when |\mathbf{e}| = w_e \\
+    (r, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen r \not\in \mathbb{Y} \\
+    (\badexports, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwise \\
+    \multicolumn{2}{l}{\where (r, \mathbf{e}, u) = \Psi_R(
       j, \wpX, \mathbf{o}, \importsegmentdata(w, \mathbf{l}), \ell
     )}\\
     \multicolumn{2}{l}{\also h = \mathcal{H}(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments}
