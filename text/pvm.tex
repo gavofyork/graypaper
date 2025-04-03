@@ -48,7 +48,7 @@
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
   \Psi&\colon \left\{\begin{aligned}
-    (\Y, \N_R, \N_G, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault\} \times \N_R \cup \{\host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
+    (\Y, \N_R, \N_G, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R$, \N_R, \Z_G, \regs, \ram)\\
     (\mathbf{p}, \imath, \gascounter, \registers, \mem) &\mapsto \begin{cases}
       \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
       (\oog, \imath', \gascounter', \registers', \mem') &\when \gascounter' < 0\\
