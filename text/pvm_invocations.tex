@@ -308,13 +308,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   % gas cost for cold reads dependent on trie depth.
   $\begin{aligned}
-    \using s^* &= \begin{cases}
-      s &\when \registers_7 = 2^{64} - 1 \\
-      \registers_7 &\otherwise
-    \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s} &\when s^* = s \\
-      \mathbf{d}[s^*] &\otherwhen s^* \in \keys{\mathbf{d}} \\
+      \mathbf{s} &\when \registers_7 \in \{ s, 2^{64} - 1 \} \\
+      \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
     \using [k_o, k_z, o] &= \registers_{8\dots+3} \\
