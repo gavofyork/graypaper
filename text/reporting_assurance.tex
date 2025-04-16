@@ -98,9 +98,9 @@ There is the actual output datum or error of the execution of the code $\wl¬dat
   \mathbb{J} \in \{ \oog, \panic, \badexports, \token{BAD}, \token{BIG} \}
 \end{equation}
 
-Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the output datum to bear. We include $u$ the actual amount of gas used during refinement; $i$ and $e$ the number of segments imported from, and exported into, the Segments DA respectively; and $x$ and $z$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
-
 The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining three, the first indicates that the number of exports made was invalidly reported, the second indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The third indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
+
+Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the output datum to bear. We include $u$ the actual amount of gas used during refinement; $i$ and $e$ the number of segments imported from, and exported into, the Segments DA respectively; and $x$ and $z$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
 
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful output blobs together with the authorizer output blob, effectively limiting their overall size:
 \begin{align}
