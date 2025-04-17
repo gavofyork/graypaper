@@ -61,26 +61,26 @@ The guarantor is able to use this proof to justify to themselves that they are n
 
 \subsection{Packages and Items}\label{sec:packagesanditems}
 
-We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constituent \emph{work item}s, of set $\mathbb{I}$. A work-package includes a simple blob acting as an authorization token $\wp¬authtoken$, the index of the service which hosts the authorization code $\wp¬authcodehost$, an authorization code hash $\wp¬authcodehash$ and a parameterization blob $\wp¬authparam$, a context $\wp¬context$ and a sequence of work items $\wp¬workitems$:
+We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constituent \emph{work-item}s, of set $\mathbb{I}$. A work-package includes a simple blob acting as an authorization token $\wp¬authtoken$, the index of the service which hosts the authorization code $\wp¬authcodehost$, an authorization code hash $\wp¬authcodehash$ and a configuration blob $\wp¬authconfig$, a context $\wp¬context$ and a sequence of work items $\wp¬workitems$:
 \begin{equation}\label{eq:workpackage}
   \mathbb{P} \equiv \tuple{
     \isa{\wp¬authtoken}{\Y},\ 
     \isa{\wp¬authcodehost}{\N_S},\ 
     \isa{\wp¬authcodehash}{\H},\ 
-    \isa{\wp¬authparam}{\Y},\ 
+    \isa{\wp¬authconfig}{\Y},\ 
     \isa{\wp¬context}{\mathbb{X}},\ 
     \isa{\wp¬workitems}{\seq{\mathbb{I}}_{1:\mathsf{I}}}
   }
 \end{equation}
 
-A work item includes: $s$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $\wi¬codehash$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\mathbf{y}$, gas limits for Refinement and Accumulation $g$ \& $a$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportsegments$ the number of data segments exported by this work item.
+A work item includes: $\wi¬service$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $\wi¬codehash$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\wi¬payload$, gas limits for Refinement and Accumulation $\wi¬refgaslimit$ \& $\wi¬accgaslimit$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportsegments$ the number of data segments exported by this work item.
 \begin{equation}\label{eq:workitem}
   \mathbb{I} \equiv \tuple{\begin{aligned}
-    &\isa{s}{\N_S},
+    &\isa{\wi¬service}{\N_S},
     \isa{\wi¬codehash}{\H},
-    \isa{\mathbf{y}}{\Y},
-    \isa{g}{\N_G},
-    \isa{a}{\N_G},
+    \isa{\wi¬payload}{\Y},
+    \isa{\wi¬refgaslimit}{\N_G},
+    \isa{\wi¬accgaslimit}{\N_G},
     \isa{\wi¬exportsegments}{\N}, \\
     &\isa{\wi¬importsegments}{\seq{\tuple{\H \cup (\H^\boxplus),\N}}},
     \isa{\wi¬extrinsics}{\seq{(\H, \N)}}
@@ -103,7 +103,7 @@ We limit both the total number of exported items and the total number of importe
 
 We make an assumption that the preimage to each extrinsic hash in each work-item is known by the guarantor. In general this data will be passed to the guarantor alongside the work-package.
 
-We limit the total size of the implied import and extrinsic items, together with all payloads, the authorizer parameter and the authorization token to 12\textsc{mb} in order to allow for around 2\textsc{mb}/s/core data throughput:
+We limit the total size of the implied import and extrinsic items, together with all payloads, the authorizer configuration and the authorization token to 12\textsc{mb} in order to allow for around 2\textsc{mb}/s/core data throughput:
 \begin{align}
   \label{eq:checkextractsize}
   &\begin{aligned}
@@ -133,17 +133,17 @@ Given the resultant datum $\wl¬result$ of some work-item, we define the item-to
       &a, e, \mathbf{i}, \mathbf{x}
     \end{aligned}
     }, \wl¬result, u} &\mapsto \tup{\begin{aligned}
-      s, c, \is{\wl¬payloadhash}{\mathcal{H}(\mathbf{y})}, \is{g}{a}, \wl¬result, u,\\
+      s, c, \is{\wl¬payloadhash}{\hash(\mathbf{y})}, \is{g}{a}, \wl¬result, u,\\
       \is{i}{|\mathbf{i}|}, e, \is{x}{|\mathbf{x}|}, \is{z}{\sum_{(h, z) \in \mathbf{x}} z}
     \end{aligned}
     }
   \end{aligned}\right.
 \end{equation}
 
-We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the hash of the concatenation of the authorization code hash and the parameterization. We define the authorization code as $\wpX_\wp¬authcode$ and require that it be available at the time of the lookup anchor block from the historical lookup of service $\wpX_\wp¬authcodehost$. Formally:
+We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the hash of the authorization code hash concatenated with the configuration. We define the authorization code as $\wpX_\wp¬authcode$ and require that it be available at the time of the lookup anchor block from the historical lookup of service $\wpX_\wp¬authcodehost$. Formally:
 \begin{equation}
   \forall \wpX \in \mathbb{P}: \left\{\,\begin{aligned}
-    \wpX_\wp¬authorizer &\equiv \mathcal{H}(\wpX_\wp¬authcodehash \concat \wpX_\wp¬authparam) \\
+    \wpX_\wp¬authorizer &\equiv \hash(\wpX_\wp¬authcodehash \concat \wpX_\wp¬authconfig) \\
     \se(\var{\wpX_\wp¬metadata}, \wpX_\wp¬authcode) &\equiv \Lambda(\delta[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_t, \wpX_\wp¬authcodehash) \\
     (\wpX_\wp¬metadata, \wpX_\wp¬authcode) &\in (\Y, \Y)
   \end{aligned}\right.
@@ -202,7 +202,7 @@ Where:
     \multicolumn{2}{l}{\where (r, \mathbf{e}, u) = \Psi_R(
       j, \wpX, \mathbf{o}, \importsegmentdata(w), \ell
     )}\\
-    \multicolumn{2}{l}{\also h = \mathcal{H}(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments}
+    \multicolumn{2}{l}{\also h = \hash(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments}
   \end{cases}
 \end{align*}
 
@@ -222,7 +222,7 @@ We immediately define the segment-root lookup function $\segrootlookup$, depende
 
 In order to expect to be compensated for a work-report they are building, guarantors must compose a value for $\wr¬srlookup$ to ensure not only the above but also a further constraint that all pairs of work-package hashes and segment-roots do properly correspond:
 \begin{equation}
-  \forall (h \mapsto e) \in \wr¬srlookup : \exists \wpX, \¬core \in \mathbb{P}, \N_\mathsf{C} : \mathcal{H}(\wpX) = h \wedge (\Xi(\wpX, \¬core)_s)_e = e\!\!\!\!
+  \forall (h \mapsto e) \in \wr¬srlookup : \exists \wpX, \¬core \in \mathbb{P}, \N_\mathsf{C} : \hash(\wpX) = h \wedge (\Xi(\wpX, \¬core)_s)_e = e\!\!\!\!
 \end{equation}
 
 As long as the guarantor is unable to satisfy the above constraints, then it should consider the work-package unable to be guaranteed. Auditors are not expected to populate this but rather to reuse the value in the work-report they are auditing.
@@ -232,7 +232,7 @@ The next term to be introduced, $\tup{\wr¬authtrace, \wr¬authgasused}$, is the
 The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $\wiX$. We also define $\justifysegmentdata$, which compiles justifications of segment data:
 \begin{equation}
   \begin{aligned}
-    \extrinsicdata(\wiX \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\mathcal{H}(\mathbf{d}), |\mathbf{d}|) \orderedin \wiX_\wi¬extrinsics] \\
+    \extrinsicdata(\wiX \in \mathbb{I}) &\equiv [\mathbf{d} \mid (\hash(\mathbf{d}), |\mathbf{d}|) \orderedin \wiX_\wi¬extrinsics] \\
     \importsegmentdata(\wiX \in \mathbb{I}) &\equiv [\segsX[n] \mid \mathcal{M}(\segsX) = \segrootlookup(r), (r, n) \orderedin \wiX_\wi¬importsegments] \\
     \justifysegmentdata(\wiX \in \mathbb{I}) &\equiv [\var{\mathcal{J}_0(\segsX, n)} \mid \mathcal{M}(\segsX) = \segrootlookup(r), (r, n) \orderedin \wiX_\wi¬importsegments]
   \end{aligned}
@@ -241,7 +241,7 @@ The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ whi
 We may then define $\wr¬avspec$ as the data availability specification of the package using these two functions together with the yet to be defined \emph{Availability Specifier} function $\newavailabilityspecifier$ (see section \ref{sec:availabiltyspecifier}):
 \begin{equation}
   \wr¬avspec = \newavailabilityspecifier(
-    \mathcal{H}(\wpX),
+    \hash(\wpX),
     \se(
       \wpX,
       \extrinsicdata^\#(\wpX_\wp¬workitems),
@@ -282,7 +282,7 @@ We define the availability specifier function $\newavailabilityspecifier$, which
   \where u &= \mathcal{M}_B(
     [\wideparen{\mathbf{x}} \mid \mathbf{x} \orderedin \transpose[\mathbf{b}^\clubsuit, \mathbf{s}^\clubsuit]]
   )\\
-  \also \mathbf{b}^\clubsuit &= \mathcal{H}^\#(\mathcal{C}_{\ceil{\nicefrac{|\mathbf{b}|}{\mathsf{W}_E}}}(\mathcal{P}_{\mathsf{W}_E}(\mathbf{b})))\\
+  \also \mathbf{b}^\clubsuit &= \hash^\#(\mathcal{C}_{\ceil{\nicefrac{|\mathbf{b}|}{\mathsf{W}_E}}}(\mathcal{P}_{\mathsf{W}_E}(\mathbf{b})))\\
   \also \mathbf{s}^\clubsuit &= \mathcal{M}_B^\#(\transpose\mathcal{C}^\#_6(\mathbf{s} \concat \pagedproofs(\mathbf{s})))
 \end{align*}
 

@@ -274,7 +274,7 @@ After accumulation, we must integrate all preimages provided in the lookup extri
   R(\mathbf{d}, s, h, l) &\Leftrightarrow
   h \not\in \mathbf{d}[s]_\mathbf{p} \wedge
     \mathbf{d}[s]_\mathbf{l}[\tup{h, l}] = []\\
-  \forall \tup{s, \mathbf{p}} &\in \xtpreimages : R(\accountspre, s, \mathcal{H}(\mathbf{p}), |\mathbf{p}|)
+  \forall \tup{s, \mathbf{p}} &\in \xtpreimages : R(\accountspre, s, \hash(\mathbf{p}), |\mathbf{p}|)
 \end{align}
 
 We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
@@ -282,10 +282,10 @@ We disregard, without prejudice, any preimages which due to the effects of accum
   \using \mathbf{P} = \{
     (s, \mathbf{p})
     \mid
-      \tup{s, \mathbf{p}} \in \xtpreimages, R(\accountspostxfer, s, \mathcal{H}(\mathbf{p}), |\mathbf{p}|)
+      \tup{s, \mathbf{p}} \in \xtpreimages, R(\accountspostxfer, s, \hash(\mathbf{p}), |\mathbf{p}|)
     \}\\
   \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{s\ts\mathbf{p}} \in \mathbf{P} : \left\{\,\begin{aligned}
-      \quad\accountspostpreimage[s]_\mathbf{p}[\mathcal{H}(\mathbf{p})] &= \mathbf{p} \\
-      \accountspostpreimage[s]_\mathbf{l}[\mathcal{H}(\mathbf{p}), |\mathbf{p}|] &= [\tau']
+      \quad\accountspostpreimage[s]_\mathbf{p}[\hash(\mathbf{p})] &= \mathbf{p} \\
+      \accountspostpreimage[s]_\mathbf{l}[\hash(\mathbf{p}), |\mathbf{p}|] &= [\tau']
     \end{aligned}\right.\!\!\!\!
 \end{align}

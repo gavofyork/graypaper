@@ -135,7 +135,7 @@ The assurances must all be anchored on the parent and ordered by validator index
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\mathbf{H}_p$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \xtassurances : a_s \in \sig{\kappa[a_v]_e}{\mathsf{X}_A\frown \mathcal{H}(\se(\mathbf{H}_p, a_f))} \\
+  &\forall a \in \xtassurances : a_s \in \sig{\kappa[a_v]_e}{\mathsf{X}_A\frown \hash(\se(\mathbf{H}_p, a_f))} \\
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
@@ -235,7 +235,7 @@ The signature must be one whose public key is that of the validator identified i
       \forall (v, s) &\in a
     \end{aligned}
       : \left\{\,\begin{aligned}
-        &s \in \sig{(\mathbf{k}_v)_e}{\mathsf{X}_G\frown\mathcal{H}(w)}\\
+        &s \in \sig{(\mathbf{k}_v)_e}{\mathsf{X}_G\frown\hash(w)}\\
         &\mathbf{c}_v = w_c \wedge \mathsf{R}(\floor{\nicefrac{\tau'}{\mathsf{R}}} - 1) \le t \le \tau'\\
       \end{aligned}\right.\\
       &k \in \mathbf{R} \Leftrightarrow \exists (w, t, a) \in \xtguarantees, \exists (v, s) \in a: k = (\mathbf{k}_v)_e\\
@@ -303,7 +303,7 @@ We require that each lookup-anchor block be within the last $\mathsf{L}$ timeslo
 
 We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\mathsf{L}$ headers as the ancestor set $\mathbf{A}$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
 \begin{align}
-  \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \mathcal{H}(h) = x_l
+  \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \hash(h) = x_l
 \end{align}
 
 We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:

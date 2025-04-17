@@ -144,7 +144,7 @@ In addition to the entropy accumulator $\eta_0$, we retain three additional hist
 
 $\eta_0$ defines the state of the randomness accumulator to which the provably random output of the \textsc{vrf}, the signature over some unbiasable input, is combined each block. $\eta_1$, $\eta_2$ and $\eta_3$ meanwhile retain the state of this accumulator at the end of the three most recently ended epochs in order.
 \begin{align}
-  \eta'_0 &\equiv \mathcal{H}(\eta_0 \frown \banderout{\mathbf{H}_v})
+  \eta'_0 &\equiv \hash(\eta_0 \frown \banderout{\mathbf{H}_v})
 \end{align}
 
 On an epoch transition (identified as the condition $e' > e$), we therefore rotate the accumulator value into the history $\eta_1$, $\eta_2$ and $\eta_3$:
@@ -190,7 +190,7 @@ Finally, $F$ is the fallback key sequence function which selects an epoch's wort
   F\colon \left\{\ \begin{aligned}
     \tuple{\H \ts \seq{\mathbb{K}}} &\to \seq{\mathbb{H}_B}_{\mathsf{E}}\\
     \tup{r \ts \mathbf{k}} &\mapsto \left[
-    \mathbf{k}[\de(\mathcal{H}_4(r \frown \mathcal{E}_4(i)))]^\circlearrowleft_b
+    \mathbf{k}[\de(\hash_4(r \frown \mathcal{E}_4(i)))]^\circlearrowleft_b
     \middle\vert\; i \in \N_\mathsf{E}
     \right]
   \end{aligned} \right.\!\!\!

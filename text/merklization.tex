@@ -42,7 +42,7 @@ The state serialization is then defined as the dictionary built from the amalgam
     \forall (s \mapsto \mathbf{a}) \in \delta: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_o) \concat \se_4(\mathbf{a}_i) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (k \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \frown k_{0\dots 28}) &\mapsto \mathbf{v} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \se_4(2^{32}-2) \frown h_{1\dots 29}) &\mapsto \mathbf{p} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat \mathcal{H}(h)_{2\dots 30}) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
+    \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat \hash(h)_{2\dots 30}) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
   \end{aligned}\right.
 \end{equation}
 
@@ -77,7 +77,7 @@ Formally, we define the encoding functions $B$ and $L$:
     (\H, \Y) &\to \mathbb{B}_{512}\\
     (k, v) &\mapsto \begin{cases}
       [1, 0] \frown \text{bits}(\se_1(|v|))_{2\dots} \frown \text{bits}(k)_{\dots248} \frown \text{bits}(v) \frown [0, 0, \dots] &\when |v| \le 32\\
-      [1, 1, 0, 0, 0, 0, 0, 0] \frown \text{bits}(k)_{\dots248} \frown \text{bits}(\mathcal{H}(v)) &\otherwise
+      [1, 1, 0, 0, 0, 0, 0, 0] \frown \text{bits}(k)_{\dots248} \frown \text{bits}(\hash(v)) &\otherwise
     \end{cases}
   \end{aligned}\right.
 \end{align}
@@ -87,8 +87,8 @@ We may then define the basic Merklization function $\mathcal{M}_\sigma$ as:
   \mathcal{M}_\sigma(\sigma) &\equiv M(\{ (\text{bits}(k) \mapsto \tup{k, v}) \mid (k \mapsto v) \in T(\sigma) \})\\
   M(d: \dict{\mathbb{B}}{(\H, \Y)}) &\equiv \begin{cases}
     \H^0 &\when |d| = 0\\
-    \mathcal{H}(\text{bits}^{-1}(L(k, v))) &\when \mathcal{V}(d) = \{ (k, v) \}\\
-    \mathcal{H}(\text{bits}^{-1}(B(M(l), M(r)))) &\otherwise\\
+    \hash(\text{bits}^{-1}(L(k, v))) &\when \mathcal{V}(d) = \{ (k, v) \}\\
+    \hash(\text{bits}^{-1}(B(M(l), M(r)))) &\otherwise\\
     \multicolumn{2}{l}{\quad\where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b_{1\dots} \mapsto p) \in \begin{cases}
       l &\when b_0 = 0 \\
       r &\when b_0 = 1
@@ -155,7 +155,7 @@ We define the well-balanced binary Merkle function as $\mathcal{M}_B$:
 
 This is suitable for creating proofs on data which is not much greater than 32 octets in length since it avoids hashing each item in the sequence. For sequences with larger data items, it is better to hash them beforehand to ensure proof-size is minimal since each proof will generally contain a data item.
 
-Note: In the case that no hash function argument $H$ is supplied, we may assume the Blake 2b hash function, $\mathcal{H}$.
+Note: In the case that no hash function argument $H$ is supplied, we may assume the Blake 2b hash function, $\hash$.
 
 \subsubsection{Constant-Depth Tree}
 We define the constant-depth binary Merkle function as $\mathcal{M}$. We define two corresponding functions for working with subtree pages, $\mathcal{J}_x$ and $\mathcal{L}_x$. The latter provides a single page of leaves, themselves hashed, prefixed data. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices.
@@ -179,7 +179,7 @@ We define the constant-depth binary Merkle function as $\mathcal{M}$. We define 
 
 For the latter justification $\mathcal{J}_x$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\mathcal{L}_x$.
 
-As above, we may assume a default value for $H$ of the Blake 2b hash function, $\mathcal{H}$.
+As above, we may assume a default value for $H$ of the Blake 2b hash function, $\hash$.
 
 For justifications and Merkle root calculations, a constancy preprocessor function $C$ is applied which hashes all data items with a fixed prefix "leaf" and then pads the overall size to the next power of two with the zero hash $\mathbb{H}_0$:
 \begin{equation}
@@ -243,7 +243,7 @@ We define the \textsc{mmr} super-peak function as $\mathcal{M}_R$:
     \mathbf{b} &\mapsto \begin{cases}
       \H^0 &\when |\mathbf{h}| = 0\\
       \mathbf{h}_0 &\when |\mathbf{h}| = 1\\
-      \mathcal{H}_K(\token{\$peak} \concat \mathcal{M}_R(\mathbf{h}_{\dots|\mathbf{h}|-1}) \concat \mathbf{h}_{|\mathbf{h}|-1}) &\otherwise \\
+      \hash_K(\token{\$peak} \concat \mathcal{M}_R(\mathbf{h}_{\dots|\mathbf{h}|-1}) \concat \mathbf{h}_{|\mathbf{h}|-1}) &\otherwise \\
       \multicolumn{2}{l}{\where \mathbf{h} = \sq{h \mid h \orderedin \mathbf{b}, h \ne \none}}
     \end{cases}
   }

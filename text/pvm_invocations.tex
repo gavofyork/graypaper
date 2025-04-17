@@ -74,7 +74,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       (\token{BAD}, [], 0) &\when w_s \not\in \keys{\delta} \vee \Lambda(\delta[w_s], (p_\mathbf{x})_t, w_\wi¬codehash) = \none \\
       (\token{BIG}, [], 0) &\otherwhen |\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_\wi¬codehash)| > \mathsf{W}_C \\
       &\otherwise: \\
-      &\quad\using a = \se(w_s, w_\mathbf{y}, \mathcal{H}(p), p_\wp¬context, p_\wp¬authcodehash)\ , \se(\var{\mathbf{m}}, \mathbf{c}) = \Lambda(\delta[w_s], (p_\wp¬context)_t, w_\wi¬codehash)\\
+      &\quad\using a = \se(w_s, w_\mathbf{y}, \hash(p), p_\wp¬context, p_\wp¬authcodehash)\ , \se(\var{\mathbf{m}}, \mathbf{c}) = \Lambda(\delta[w_s], (p_\wp¬context)_t, w_\wi¬codehash)\\
       &\quad\also (u, \mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\mathbf{c}, 0, w_g, a, F, (\emptyset, []))\ \colon\\
       (\mathbf{r}, [], u) &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
       (\mathbf{r}, \mathbf{e}, u) &\quad\otherwise \\
@@ -142,7 +142,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
       \is{\mathbf{t}}{[]},
       \is{y}{\none}
     }\\
-    &\qquad\where i = \text{check}((\de_4(\mathcal{H}(\se(s, \eta'_0, \mathbf{H}_t))) \bmod (2^{32}-2^9)) + 2^8) \\
+    &\qquad\where i = \text{check}((\de_4(\hash(\se(s, \eta'_0, \mathbf{H}_t))) \bmod (2^{32}-2^9)) + 2^8) \\
   \end{aligned}\right.\\
   F \in \Omega\ang{(\mathbf{X}, \mathbf{X})} &\colon (n, \gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) \mapsto \begin{cases}
     G(\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
@@ -320,7 +320,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using [k_o, k_z, o] &= \registers_{8\dots+3} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \mathbb{N}_{k_o \dots+ k_z} \not\subseteq \mathbb{V}_{\memory} \\
-      \mathbf{a}_\mathbf{s}[k] &\otherwhen \mathbf{a} \ne \none \wedge k \in \keys{\mathbf{a}_\mathbf{s}}\,,\ \where k = \mathcal{H}(\se_4(s^*) \concat \memory_{k_o\dots+k_z}) \\
+      \mathbf{a}_\mathbf{s}[k] &\otherwhen \mathbf{a} \ne \none \wedge k \in \keys{\mathbf{a}_\mathbf{s}}\,,\ \where k = \hash(\se_4(s^*) \concat \memory_{k_o\dots+k_z}) \\
       \none &\otherwise
     \end{cases} \\
     \using f &= \min(\registers_{11}, |\mathbf{v}|) \\
@@ -340,7 +340,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using [k_o, k_z, v_o, v_z] &= \registers_{7\dots+4} \\
     \using k &= \begin{cases}
-      \mathcal{H}(\se_4(s) \concat \memory_{k_o\dots+k_z}) &\when \N_{k_o \dots+ k_z} \subseteq \mathbb{V}_{\memory} \\
+      \hash(\se_4(s) \concat \memory_{k_o\dots+k_z}) &\when \N_{k_o \dots+ k_z} \subseteq \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
@@ -696,11 +696,11 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \se(p) &\when \registers_{10} = 0 \\
       \mathbf{o} &\when \registers_{10} = 1 \\
       p_\mathbf{w}[\registers_{11}]_\mathbf{y} &\when \registers_{10} = 2 \wedge \registers_{11} < |p_\mathbf{w}| \\
-      \mathbf{x} &\when \registers_{10} = 3 \wedge \registers_{11} < |p_\mathbf{w}| \wedge \registers_{12} < |p_\mathbf{w}[\registers_{11}]_\mathbf{x}| \wedge (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[\registers_{11}]_\mathbf{x}[\registers_{12}] \\
-      \mathbf{x} &\when \registers_{10} = 4 \wedge \registers_{11} < |p_\mathbf{w}[i]_\mathbf{x}| \wedge (\mathcal{H}(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[i]_\mathbf{x}[\registers_{11}] \\[2pt]
+      \mathbf{x} &\when \registers_{10} = 3 \wedge \registers_{11} < |p_\mathbf{w}| \wedge \registers_{12} < |p_\mathbf{w}[\registers_{11}]_\mathbf{x}| \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[\registers_{11}]_\mathbf{x}[\registers_{12}] \\
+      \mathbf{x} &\when \registers_{10} = 4 \wedge \registers_{11} < |p_\mathbf{w}[i]_\mathbf{x}| \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[i]_\mathbf{x}[\registers_{11}] \\[2pt]
       \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when \registers_{10} = 5 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
       \overline{\mathbf{i}}[i]_{\registers_{11}} &\when \registers_{10} = 6 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
-      p_\wp¬authparam &\when \registers_{10} = 7 \\
+      p_\wp¬authconfig &\when \registers_{10} = 7 \\
       \none &\otherwise
     \end{cases} \\
     \using o &= \registers_7 \\

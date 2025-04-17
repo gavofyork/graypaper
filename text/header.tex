@@ -9,7 +9,7 @@ The blockchain is a sequence of blocks, each cryptographically referencing some 
 
 Excepting the Genesis header, all block headers $\mathbf{H}$ have an associated parent header, whose hash is $\mathbf{H}_p$. We denote the parent header $\mathbf{H}^- = P(\mathbf{H})$:
 \begin{equation}
-  \mathbf{H}_p \in \H \,,\quad \mathbf{H}_p \equiv \mathcal{H}(\se(P(\mathbf{H})))
+  \mathbf{H}_p \in \H \,,\quad \mathbf{H}_p \equiv \hash(\se(P(\mathbf{H})))
 \end{equation}
 
 $P$ is thus defined as being the mapping from one block header to its parent block header. With $P$, we are able to define the set of ancestor headers $\mathbf{A}$:
@@ -22,9 +22,9 @@ We only require implementations to store headers of ancestors which were authore
 The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports to individually have their inclusion proven. Given any block $\mathbf{B} = (\mathbf{H}, \mathbf{E})$, then formally:
 \begin{align}
   \mathbf{H}_x &\in \H \ ,\quad
-  \mathbf{H}_x \equiv \mathcal{H}(\se(\mathcal{H}^\#(\mathbf{a}))) \\
+  \mathbf{H}_x \equiv \hash(\se(\hash^\#(\mathbf{a}))) \\
   \where \mathbf{a} &= [\se_T(\xttickets), \se_P(\xtpreimages), \mathbf{g}, \se_A(\xtassurances), \se_D(\xtdisputes)] \\
-  \also \mathbf{g} &= \se(\var{[(\mathcal{H}(w), \se_4(t), \var{a}) \mid (w, t, a) \orderedin \xtguarantees]})
+  \also \mathbf{g} &= \se(\var{[(\hash(w), \se_4(t), \var{a}) \mid (w, t, a) \orderedin \xtguarantees]})
 \end{align}
 
 A block may only be regarded as valid once the time-slot index $\mathbf{H}_t$ is in the past. It is always strictly greater than that of its parent. Formally:
