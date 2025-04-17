@@ -1,6 +1,6 @@
 \section{Reporting and Assurance}\label{sec:reporting}
 
-Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make its way into the service state singleton, $\delta$. A \emph{work-package}, which comprises several \emph{work items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work outputs} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After enough assurances the work-report is considered \emph{available}, and the work outputs transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}. The report may also be \emph{timed-out}, implying it may be replaced by another report without accumulation.
+Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make their way into the service state singleton, $\delta$. A \emph{work-package}, which comprises several \emph{work items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work-digests} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After enough assurances the work-report is considered \emph{available}, and the work-digests transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}. The report may also be \emph{timed-out}, implying it may be replaced by another report without accumulation.
 
 From the perspective of the work-report, therefore, the guarantee happens first and the assurance afterwards. However, from the perspective of a block's state-transition, the assurances are best processed first since each core may only have a single work-report pending its package becoming available at a time. Thus, we will first cover the transition arising from processing the availability assurances followed by the work-report guarantees. This synchroneity can be seen formally through the requirement of an intermediate state $\rho^\ddagger$, utilized later in equation \ref{eq:reportcoresareunusedortimedout}.
 
@@ -21,17 +21,17 @@ The state of the reporting and availability portion of the protocol is largely c
 As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\rho'$) are held under the same constraints as the prior value.
 
 \subsubsection{Work Report}\label{sec:workreport}
-A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification $s$, the refinement context $x$, and the core-index (\ie on which the work is done) as well as the authorizer hash $a$ and output $\wr¬authoutput$, a segment-root lookup dictionary $\wr¬srlookup$, the results of the evaluation of each of the items in the package $\wr¬results$, and finally the gas consumed during the is-authorized invocation. Formally:
+A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification, $\wr¬avspec$; the refinement context, $\wr¬context$; the core-index (\ie on which the work is done), $\wr¬core$; as well as the authorizer hash $\wr¬authorizer$ and trace $\wr¬authtrace$; a segment-root lookup dictionary $\wr¬srlookup$; the gas consumed during the Is-Authorized invocation, $\wr¬authgasused$; and finally the work-digests $\wr¬digests$ which comprise the results of the evaluation of each of the items in the package together with some associated data. Formally:
 \begin{equation}\label{eq:workreport}
 \mathbb{W} \equiv \tuple{
   \begin{aligned}
-    &\isa{s}{\mathbb{S}},\ 
-    \isa{x}{\mathbb{X}},\ 
-    \isa{c}{\N_\mathsf{C}},\ 
-    \isa{a}{\H},\\
-    &\isa{\wr¬authoutput}{\Y},\ 
+    &\isa{\wr¬avspec}{\avspec},\ 
+    \isa{\wr¬context}{\mathbb{X}},\ 
+    \isa{\wr¬core}{\N_\mathsf{C}},\ 
+    \isa{\wr¬authorizer}{\H},\\
+    &\isa{\wr¬authtrace}{\Y},\ 
     \isa{\wr¬srlookup}{\dict{\H}{\H}},\ 
-    \isa{\wr¬results}{\seq{\mathbb{L}}_{1:\mathsf{I}}},\ 
+    \isa{\wr¬digests}{\seq{\mathbb{L}}_{1:\mathsf{I}}},\ 
     \isa{\wr¬authgasused}{\N_G},\ 
   \end{aligned}
 }
@@ -55,9 +55,9 @@ A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the cont
 \end{equation}
 
 \subsubsection{Availability}
-We define the set of \emph{availability specifications}, $\mathbb{S}$, as the tuple of the work-package's hash $h$, an auditable work bundle length $l$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $u$, a segment-root $e$ and segment-count $n$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
+We define the set of \emph{availability specifications}, $\avspec$, as the tuple of the work-package's hash $h$, an auditable work bundle length $l$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $u$, a segment-root $e$ and segment-count $n$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
 \begin{align}
-  \mathbb{S} &\equiv \tuple{
+  \avspec &\equiv \tuple{
     \isa{h}{\H}\,,\;
     \isa{l}{\N_L}\,,\;
     \isa{u}{\H}\,,\;
@@ -70,42 +70,42 @@ The \emph{erasure-root} ($u$) is the root of a binary Merkle tree which function
 
 The \emph{segment-root} ($e$) is the root of a constant-depth, left-biased and zero-hash-padded binary Merkle tree committing to the hashes of each of the exported segments of each work-item. These are used by guarantors to verify the correctness of any reconstructed segments they are called upon to import for evaluation of some later work-package. It is also discussed in section \ref{sec:workpackagesandworkreports}.
 
-\subsubsection{Work Result}
-We finally come to define a \emph{work result}, $\mathbb{L}$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
-\begin{equation}\label{eq:workresult}
+\subsubsection{Work Digest}
+We finally come to define a \emph{work-digest}, $\mathbb{L}$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
+\begin{equation}\label{eq:workdigest}
   \mathbb{L} \equiv \tuple{
     \begin{alignedat}{9}
-      \isa{s&}{\N_S}\,,\;
-      \isa{&c&}{\H}\,,\;
-      \isa{&y&}{\H}\,,\;
-      \isa{&g&}{\N_G}\,,\;
-      \isa{&\wl¬data&}{\Y \cup \mathbb{J}}\,,\;\\
-      \isa{u&}{\N_G}\,,\; % gas_used: UnsignedGas,
-      \isa{&i&}{\N}\,,\; % imports: u16,
-      \isa{&x&}{\N}\,,\; % extrinsic_count: u16,
-      \isa{&z&}{\N}\,,\; % extrinsic_size: u32,
-      \isa{&e&}{\N} % exports: u16,
+      \isa{\wl¬service&}{\N_S}\,,\;
+      \isa{&\wl¬codehash&}{\H}\,,\;
+      \isa{&\wl¬payloadhash&}{\H}\,,\;
+      \isa{&\wl¬gaslimit&}{\N_G}\,,\;
+      \isa{&\wl¬result&}{\Y \cup \mathbb{J}}\,,\;\\
+      \isa{\wl¬gasused&}{\N_G}\,,\; % gas_used: UnsignedGas,
+      \isa{&\wl¬imports&}{\N}\,,\; % imports: u16,
+      \isa{&\wl¬xtcount&}{\N}\,,\; % extrinsic_count: u16,
+      \isa{&\wl¬xtsize&}{\N}\,,\; % extrinsic_size: u32,
+      \isa{&\wl¬exports&}{\N} % exports: u16,
     \end{alignedat}
   }
 \end{equation}
 
-Work results are a tuple comprising several items. Firstly $s$, the index of the service whose state is to be altered and thus whose refine code was already executed. We include the hash of the code of the service at the time of being reported $c$, which must be accurately predicted within the work-report according to equation \ref{eq:reportcodesarecorrect};
+Work-digests are a tuple comprising several items. Firstly $\wl¬service$, the index of the service whose state is to be altered and thus whose refine code was already executed. We include the hash of the code of the service at the time of being reported $\wl¬codehash$, which must be accurately predicted within the work-report according to equation \ref{eq:reportcodesarecorrect}.
 
-Next, the hash of the payload ($y$) within the work item which was executed in the refine stage to give this result. This has no immediate relevance, but is something provided to the accumulation logic of the service. We follow with the gas limit $g$ for executing this item's accumulate.
+Next, the hash of the payload ($\wl¬payloadhash$) within the work item which was executed in the refine stage to give this result. This has no immediate relevance, but is something provided to the accumulation logic of the service. We follow with the gas limit $\wl¬gaslimit$ for executing this item's accumulate.
 
-There is the actual output datum or error of the execution of the code $\wl¬data$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
+There is the work \emph{result}, the output blob or error of the execution of the code, $\wl¬result$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
 \begin{equation}
   \mathbb{J} \in \{ \oog, \panic, \badexports, \token{BAD}, \token{BIG} \}
 \end{equation}
 
 The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining three, the first indicates that the number of exports made was invalidly reported, the second indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The third indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
 
-Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the output datum to bear. We include $u$ the actual amount of gas used during refinement; $i$ and $e$ the number of segments imported from, and exported into, the Segments DA respectively; and $x$ and $z$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
+Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the result to bear. We include $\wl¬gasused$ the actual amount of gas used during refinement; $\wl¬imports$ and $\wl¬exports$ the number of segments imported from, and exported into, the Segments DA respectively; and $\wl¬xtcount$ and $\wl¬xtsize$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
 
-In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful output blobs together with the authorizer output blob, effectively limiting their overall size:
+In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful refinement output blobs together with the authorizer trace, effectively limiting their overall size:
 \begin{align}
   &\forall w \in \mathbb{W}:
-    |w_\wr¬authoutput| + \sum_{r \in w_\wr¬results} |r_\wl¬data| \le \mathsf{W}_R \\
+    |w_\wr¬authtrace| + \sum_{r \in w_\wr¬digests \cap \Y} |r_\wl¬result| \le \mathsf{W}_R \\
   &\mathsf{W}_R \equiv 48\cdot2^{10}
 \end{align}
 
@@ -135,7 +135,7 @@ The assurances must all be anchored on the parent and ordered by validator index
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\mathbf{H}_p$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \xtassurances : a_s \in \sig{\kappa[a_v]_e}{\mathsf{X}_A\frown \mathcal{H}(\se(\mathbf{H}_p, a_f))} \\
+  &\forall a \in \xtassurances : a_s \in \sig{\kappa[a_v]_e}{\mathsf{X}_A\frown \hash(\se(\mathbf{H}_p, a_f))} \\
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
@@ -235,7 +235,7 @@ The signature must be one whose public key is that of the validator identified i
       \forall (v, s) &\in a
     \end{aligned}
       : \left\{\,\begin{aligned}
-        &s \in \sig{(\mathbf{k}_v)_e}{\mathsf{X}_G\frown\mathcal{H}(w)}\\
+        &s \in \sig{(\mathbf{k}_v)_e}{\mathsf{X}_G\frown\hash(w)}\\
         &\mathbf{c}_v = w_c \wedge \mathsf{R}(\floor{\nicefrac{\tau'}{\mathsf{R}}} - 1) \le t \le \tau'\\
       \end{aligned}\right.\\
       &k \in \mathbf{R} \Leftrightarrow \exists (w, t, a) \in \xtguarantees, \exists (v, s) \in a: k = (\mathbf{k}_v)_e\\
@@ -260,7 +260,7 @@ No reports may be placed on cores with a report pending availability on it. A re
     \rho^\ddagger[w_c] = \none \wedge w_a \in \alpha[w_c]
 \end{equation}
 
-We require that the gas allotted for accumulation of each work result in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\mathsf{G}_A$:
+We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\mathsf{G}_A$:
 \begin{equation}
   \forall w \in \mathbf{w}:
     \sum_{r \in w_\mathbf{r}}\!(r_g) \le \mathsf{G}_A \ \wedge \ 
@@ -303,7 +303,7 @@ We require that each lookup-anchor block be within the last $\mathsf{L}$ timeslo
 
 We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\mathsf{L}$ headers as the ancestor set $\mathbf{A}$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
 \begin{align}
-  \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \mathcal{H}(h) = x_l
+  \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \hash(h) = x_l
 \end{align}
 
 We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:
@@ -329,7 +329,7 @@ We require that any segment roots mentioned in the segment-root lookup be verifi
 
 (Note that these checks leave open the possibility of accepting work-reports in apparent dependency loops. We do not consider this a problem: the pre-accumulation stage effectively guarantees that accumulation never happens in these cases and the reports are simply ignored.)
 
-Finally, we require that all work results within the extrinsic predicted the correct code hash for their corresponding service:
+Finally, we require that all work-digests within the extrinsic predicted the correct code hash for their corresponding service:
 \begin{align}\label{eq:reportcodesarecorrect}
   \forall w \in \mathbf{w}, \forall r \in w_r : r_c = \delta[r_s]_c
 \end{align}

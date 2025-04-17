@@ -6,13 +6,13 @@ On a principle of flexibility, we would wish \Jam capable of supporting a range 
 
 \subsection{Authorizers and Authorizations}
 
-The authorization system involves two key concepts: \emph{authorizers} and \emph{authorizations}. An authorization is simply a piece of opaque data to be included with a work-package. An authorizer meanwhile, is a piece of pre-parameterized logic which accepts as an additional parameter an authorization and, when executed within a \textsc{vm} of prespecified computational limits, provides a Boolean output denoting the veracity of said authorization.
+The authorization system involves three key concepts: \emph{Authorizers}, \emph{Tokens} and \emph{Traces}. A Token is simply a piece of opaque data to be included with a work-package to help make an argument that the work-package should be authorized. Similarly, a Trace is a piece of opaque data which helps characterize or describe some successful authorization. An Authorizer meanwhile, is a piece of logic which executes within some pre-specified and well-known computational limits and determines whether a work-package---including its Token---is authorized for execution on some particular core and yields a Trace on success.
 
-Authorizers are identified as the hash of their logic (specified as the \textsc{vm} code) and their pre-parameterization. The process by which work-packages are determined to be authorized (or not) is not the competence of on-chain logic and happens entirely in-core and as such is discussed in section \ref{sec:packagesanditems}. However, on-chain logic must identify each set of authorizers assigned to each core in order to verify that a work-package is legitimately able to utilize that resource. It is this subsystem we will now define.
+Authorizers are identified as the hash of their \textsc{pvm} code concatenated with their Configuration blob, the latter being, like Tokens and Traces, opaque data meaningful to the \textsc{pvm} code. The process by which work-packages are determined to be authorized (or not) is not the competence of on-chain logic and happens entirely in-core and as such is discussed in section \ref{sec:packagesanditems}. However, on-chain logic must identify each set of authorizers assigned to each core in order to verify that a work-package is legitimately able to utilize that resource. It is this subsystem we will now define.
 
 \subsection{Pool and Queue}
 
-We define the set of authorizers allowable for a particular core $c$ as the \emph{authorizer pool} $\alpha[c]$. To maintain this value, a further portion of state is tracked for each core: the core's current \emph{authorizer queue} $\varphi[c]$, from which we draw values to fill the pool. Formally:
+We define the set of authorizers allowable for a particular core $\¬core$ as the \emph{authorizer pool} $\alpha[\¬core]$. To maintain this value, a further portion of state is tracked for each core: the core's current \emph{authorizer queue} $\varphi[\¬core]$, from which we draw values to fill the pool. Formally:
 \begin{equation}\label{eq:authstatecomposition}
   \alpha \in \seq{\seq{\H}_{:\mathsf{O}}}_\mathsf{C}\ , \qquad
   \varphi \in \seq{\seq{\H}_{\mathsf{Q}}}_\mathsf{C}
@@ -22,8 +22,8 @@ Note: The portion of state $\varphi$ may be altered only through an exogenous ca
 
 The state transition of a block involves placing a new authorization into the pool from the queue:
 \begin{align}
-  &\forall c \in \N_\mathsf{C} : \alpha'[c] \equiv {\overleftarrow{F(c) \doubleplus \varphi'[c] [ \mathbf{H}_t ]^{\circlearrowleft}}}^{\mathsf{O}} \\
-  &F(c) \equiv \begin{cases} \alpha[c] \seqminusl \{(g_w)_a\} &\when \exists g \in \xtguarantees : (g_w)_c = c \\ \alpha[c] & \otherwise \end{cases}
+  &\forall \¬core \in \N_\mathsf{C} : \alpha'[\¬core] \equiv {\overleftarrow{F(\¬core) \doubleplus \varphi'[\¬core] [ \mathbf{H}_t ]^{\circlearrowleft}}}^{\mathsf{O}} \\
+  &F(\¬core) \equiv \begin{cases} \alpha[\¬core] \seqminusl \{(g_w)_a\} &\when \exists g \in \xtguarantees : (g_w)_\¬core = \¬core \\ \alpha[\¬core] & \otherwise \end{cases}
 \end{align}
 
 Since $\alpha'$ is dependent on $\varphi'$, practically speaking, this step must be computed after accumulation, the stage in which $\varphi'$ is defined. Note that we utilize the guarantees extrinsic $\xtguarantees$ to remove the oldest authorizer which has been used to justify a guaranteed work-package in the current block. This is further defined in equation \ref{eq:guaranteesextrinsic}.
