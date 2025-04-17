@@ -21,7 +21,7 @@ The state of the reporting and availability portion of the protocol is largely c
 As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\rho'$) are held under the same constraints as the prior value.
 
 \subsubsection{Work Report}\label{sec:workreport}
-A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification $s$, the refinement context $x$, and the core-index (\ie on which the work is done) as well as the authorizer hash $a$ and output $\wr¬authoutput$, a segment-root lookup dictionary $\wr¬srlookup$, and finally the results of the evaluation of each of the items in the package $\wr¬results$, which is always at least one item and may be no more than $\mathsf{I}$ items. Formally:
+A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification $s$, the refinement context $x$, and the core-index (\ie on which the work is done) as well as the authorizer hash $a$ and output $\wr¬authoutput$, a segment-root lookup dictionary $\wr¬srlookup$, the results of the evaluation of each of the items in the package $\wr¬results$, and finally the gas consumed during the is-authorized invocation. Formally:
 \begin{equation}\label{eq:workreport}
 \mathbb{W} \equiv \tuple{
   \begin{aligned}
@@ -91,16 +91,16 @@ We finally come to define a \emph{work result}, $\mathbb{L}$, which is the data 
 
 Work results are a tuple comprising several items. Firstly $s$, the index of the service whose state is to be altered and thus whose refine code was already executed. We include the hash of the code of the service at the time of being reported $c$, which must be accurately predicted within the work-report according to equation \ref{eq:reportcodesarecorrect};
 
-Next, the hash of the payload ($y$) within the work item which was executed in the refine stage to give this result. This has no immediate relevance, but is something provided to the accumulation logic of the service. We follow with the gas prioritization ratio $g$ used when determining how much gas should be allocated to execute of this item's accumulate.
+Next, the hash of the payload ($y$) within the work item which was executed in the refine stage to give this result. This has no immediate relevance, but is something provided to the accumulation logic of the service. We follow with the gas limit $g$ for executing this item's accumulate.
 
 There is the actual output datum or error of the execution of the code $\wl¬data$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
 \begin{equation}
   \mathbb{J} \in \{ \oog, \panic, \badexports, \token{BAD}, \token{BIG} \}
 \end{equation}
 
-Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the output datum to bear. We include $u$ the actual amount of gas used during refinement; $i$ and $e$ the number of segments imported from, and exported into, the Segments DA respectively; and $x$ and $z$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
-
 The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining three, the first indicates that the number of exports made was invalidly reported, the second indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The third indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
+
+Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the output datum to bear. We include $u$ the actual amount of gas used during refinement; $i$ and $e$ the number of segments imported from, and exported into, the Segments DA respectively; and $x$ and $z$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
 
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful output blobs together with the authorizer output blob, effectively limiting their overall size:
 \begin{align}
@@ -235,7 +235,7 @@ The signature must be one whose public key is that of the validator identified i
       \forall (v, s) &\in a
     \end{aligned}
       : \left\{\,\begin{aligned}
-        &s \in \sig{(\mathbf{k}_v)_e}{\mathsf{X}_G\frown\mathcal{H}(\se(w))}\\
+        &s \in \sig{(\mathbf{k}_v)_e}{\mathsf{X}_G\frown\mathcal{H}(w)}\\
         &\mathbf{c}_v = w_c \wedge \mathsf{R}(\floor{\nicefrac{\tau'}{\mathsf{R}}} - 1) \le t \le \tau'\\
       \end{aligned}\right.\\
       &k \in \mathbf{R} \Leftrightarrow \exists (w, t, a) \in \xtguarantees, \exists (v, s) \in a: k = (\mathbf{k}_v)_e\\
