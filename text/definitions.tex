@@ -54,7 +54,7 @@
   \item[$\mathbb{M}$] The set of \textsc{pvm} \textsc{ram} states. See equation \ref{eq:pvmmemory}.
   \item[$\operandtuple$] The accumulation operand element, corresponding to a single work result.
   \item[$\mathbb{P}$] The set of work-packages. See equation \ref{eq:workpackage}.
-  \item[$\mathbb{S}$] The set of availability specifications.
+  \item[$\avspec$] The set of availability specifications.
   \item[$\mathbb{T}$] The set of deferred transfers.
   \item[$\mathbb{U}$] The set of partial state, used during accumulation. See equation \ref{eq:partialstate}.  \item[$\mathbb{V}_{\memory}$] The set of validly readable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
   \item[$\mathbb{V}^*_{\memory}$] The set of validly writable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
@@ -80,7 +80,7 @@
 %  \item[$\gascounter$] Unused. %	Θ
 %  \item[$\Pi$] Unused. %	Π
   \item[$\Lambda$] The historical lookup function. See equation \ref{eq:historicallookup}. % Λ
-  \item[$\Xi$] The work result computation function. See equation \ref{eq:workresultfunction}. %	Ξ
+  \item[$\Xi$] The work result computation function. See equation \ref{eq:workdigestfunction}. %	Ξ
   \item[$\Upsilon$] The general state transition function. See equations \ref{eq:statetransition}, \ref{eq:transitionfunctioncomposition}. %	ϒ
 %  \item[$\Sigma$] Unused. %	Σ
   \item[$\Phi$] The key-nullifier function. See equation \ref{eq:blacklistfilter}. %	Φ
@@ -290,7 +290,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{W}_G = \mathsf{W}_P\mathsf{W}_E = 4104$] The size of a segment in octets.
   \item[$\mathsf{W}_M = 3,072$] The maximum number of imports and exports in a work-package.
   \item[$\mathsf{W}_P = 6$] The number of erasure-coded pieces in a segment.
-  \item[$\mathsf{W}_R = 48\cdot2^{10}$] The maximum total size of all output blobs in a work-report, in octets.
+  \item[$\mathsf{W}_R = 48\cdot2^{10}$] The maximum total size of all unbounded blobs in a work-report, in octets.
   \item[$\mathsf{W}_T = 128$] The size of a transfer memo in octets.
   \item[$\mathsf{X}$] Context strings, see below.
   \item[$\mathsf{Y} = 500$] The number of slots into an epoch at which ticket-submission ends.

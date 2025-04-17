@@ -158,6 +158,15 @@
 \newcommand*{\xtassurances}{\mathbf{E}_A}
 \newcommand*{\xtpreimages}{\mathbf{E}_P}
 
+% TODO: Use non-prefixed items for common fields:
+\newcommand*{\¬gaslimit}{g}
+\newcommand*{\¬service}{s}
+\newcommand*{\¬payloadhash}{y}
+\newcommand*{\¬result}{\mathbf{d}}
+\newcommand*{\¬authtrace}{\mathbf{o}}
+\newcommand*{\¬core}{c}
+\newcommand*{\¬authorizer}{a}
+
 \newcommand*{\wp¬authtoken}{\mathbf{j}}
 \newcommand*{\wp¬authcodehost}{h}
 \newcommand*{\wp¬authcodehash}{u}
@@ -165,7 +174,7 @@
 \newcommand*{\wp¬context}{\mathbf{x}} % Consider rename to \mathbf{c}
 \newcommand*{\wp¬workitems}{\mathbf{w}}
 
-\newcommand*{\wp¬authorizer}{a}
+\newcommand*{\wp¬authorizer}{\¬authorizer}
 \newcommand*{\wp¬authcode}{\mathbf{c}}
 \newcommand*{\wp¬metadata}{\mathbf{m}}
 
@@ -174,11 +183,14 @@
 \newcommand*{\wi¬exportsegments}{e}
 \newcommand*{\wi¬codehash}{c}
 
+\newcommand*{\wr¬avspec}{s}
+\newcommand*{\wr¬context}{x} % TODO: Consider renaming to \mathbf{c} and/or making bold, like package
+\newcommand*{\wr¬core}{\¬core}
+\newcommand*{\wr¬authorizer}{\¬authorizer}
 \newcommand*{\wr¬srlookup}{\mathbf{l}}
-\newcommand*{\wr¬authoutput}{\mathbf{o}} % TODO: Consider renaming to \mathbf{u} to free up \mathbf{o}
-\newcommand*{\wr¬results}{\mathbf{r}} % TODO: Consider renaming to avoid overloading \mathbf{r} reports vs results; maybe \mathbf{t} for results
+\newcommand*{\wr¬authtrace}{\¬authtrace} % TODO: Consider renaming to \mathbf{u} to free up \mathbf{o}
+\newcommand*{\wr¬digests}{\mathbf{r}} % TODO: Consider renaming to avoid overloading \mathbf{r} reports vs results; maybe \mathbf{t} for results
 \newcommand*{\wr¬authgasused}{g}
-
 % TODO: Standardize and fully check this:
 % p P: work Packages
 % w I: work Items
@@ -187,21 +199,29 @@
 % d: work output data (digest)
 % y: work payload
 
-\newcommand*{\wl¬data}{\mathbf{d}}
-\newcommand*{\wl¬gaslimit}{g}
-\newcommand*{\wl¬payloadhash}{y}
+\newcommand*{\wl¬service}{\¬service}
+\newcommand*{\wl¬codehash}{c}
+\newcommand*{\wl¬payloadhash}{\¬payloadhash}
+\newcommand*{\wl¬gaslimit}{\¬gaslimit}
+\newcommand*{\wl¬result}{\¬result}
+\newcommand*{\wl¬gasused}{u}
+\newcommand*{\wl¬imports}{i}
+\newcommand*{\wl¬xtcount}{x}
+\newcommand*{\wl¬xtsize}{z}
+\newcommand*{\wl¬exports}{e}
 
 \newcommand*{\ot¬packagehash}{h}
 \newcommand*{\ot¬segroot}{e}
-\newcommand*{\ot¬authorizer}{a}
-\newcommand*{\ot¬authoutput}{\mathbf{o}}
-\newcommand*{\ot¬payloadhash}{y}
-\newcommand*{\ot¬gaslimit}{g}
-\newcommand*{\ot¬data}{\mathbf{d}}
+\newcommand*{\ot¬authorizer}{\¬authorizer}
+\newcommand*{\ot¬authtrace}{\¬authtrace}
+\newcommand*{\ot¬payloadhash}{\¬payloadhash}
+\newcommand*{\ot¬gaslimit}{\¬gaslimit}
+\newcommand*{\ot¬result}{\¬result}
 
 \newcommand*{\accumulated}{\xi}
 \newcommand*{\ready}{\vartheta}
 
+\newcommand*{\avspec}{\mathbb{S}}
 \newcommand*{\operandtuple}{\mathbb{O}}
 \newcommand*{\partialstate}{\mathbb{U}}
 \newcommand*{\defxfer}{\mathbb{T}}
