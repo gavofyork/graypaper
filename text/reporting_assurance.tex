@@ -81,10 +81,10 @@ We finally come to define a \emph{work-digest}, $\mathbb{L}$, which is the data 
       \isa{&\wl¬gaslimit&}{\N_G}\,,\;
       \isa{&\wl¬result&}{\Y \cup \mathbb{J}}\,,\;\\
       \isa{\wl¬gasused&}{\N_G}\,,\; % gas_used: UnsignedGas,
-      \isa{&\wl¬imports&}{\N}\,,\; % imports: u16,
+      \isa{&\wl¬importcount&}{\N}\,,\; % imports: u16,
       \isa{&\wl¬xtcount&}{\N}\,,\; % extrinsic_count: u16,
       \isa{&\wl¬xtsize&}{\N}\,,\; % extrinsic_size: u32,
-      \isa{&\wl¬exports&}{\N} % exports: u16,
+      \isa{&\wl¬exportcount&}{\N} % exports: u16,
     \end{alignedat}
   }
 \end{equation}
@@ -100,7 +100,7 @@ There is the work \emph{result}, the output blob or error of the execution of th
 
 The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining three, the first indicates that the number of exports made was invalidly reported, the second indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The third indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
 
-Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the result to bear. We include $\wl¬gasused$ the actual amount of gas used during refinement; $\wl¬imports$ and $\wl¬exports$ the number of segments imported from, and exported into, the Segments DA respectively; and $\wl¬xtcount$ and $\wl¬xtsize$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
+Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the result to bear. We include $\wl¬gasused$ the actual amount of gas used during refinement; $\wl¬importcount$ and $\wl¬exportcount$ the number of segments imported from, and exported into, the D$^3$L respectively; and $\wl¬xtcount$ and $\wl¬xtsize$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
 
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful refinement output blobs together with the authorizer trace, effectively limiting their overall size:
 \begin{align}

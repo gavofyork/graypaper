@@ -76,7 +76,7 @@ As a rough guide, each parachain has an average footprint of around 2\textsc{mb}
 
 What might be called the ``virtual hardware'' of a \Jam core is essentially a regular \textsc{cpu} core executing at somewhere between 25\% and 50\% of regular speed for the whole six-second portion and which may draw and provide 2\textsc{mb}/s average in general-purpose \textsc{i/o} and utilize up to 2\textsc{gb} in \textsc{ram}. The \textsc{i/o} includes any trustless reads from the \Jam chain state, albeit in the recent past. This virtual hardware also provides unlimited reads from a semi-static preimage-lookup database.
 
-Each work-package may occupy this hardware and execute arbitrary code on it in six-second segments to create some result of at most 48\textsc{kb}. This work result is then entitled to 10ms on the same machine, this time with no ``external'' \textsc{i/o} beyond said result, but instead with full and immediate access to the \Jam chain state and may alter the service(s) to which the results belong.
+Each work-package may occupy this hardware and execute arbitrary code on it in six-second segments to create some result of at most 48\textsc{kb}. This work-result is then entitled to 10ms on the same machine, this time with no ``external'' \textsc{i/o}, but instead with full and immediate access to the \Jam chain state and may alter the service(s) to which the results belong.
 
 \subsection{Illustrating Performance}
 
@@ -112,7 +112,7 @@ If we allow for preprocessing to take up to the same component within execution 
 
 \Jam cores are each capable of 2\textsc{mb}/s bandwidth, which must include any state \textsc{i/o} and data which must be newly introduced (\eg transactions). While writes come at comparatively little cost to the core, only requiring hashing to determine an eventual updated Merkle root, reads must be witnessed, with each one costing around 640 bytes of witness conservatively assuming a one-million entry binary Merkle trie. This would result in a maximum of a little over 3k reads/second/core, with the exact amount dependent upon how much of the bandwidth is used for newly introduced input data.
 
-Aggregating everything across \Jam, excepting accumulation which could add further throughput, numbers can be multiplied by 341 (with the caveat that each one's computation cannot interfere with any of the others' except through state oraclization and accumulation). Unlike for \emph{roll-up chain} designs such as Polkadot and Ethereum, there is no need to have persistently fragmented state. Smart-contract state may be held in a coherent format on the \Jam chain so long as any updates are made through the 8\textsc{kb}/core/sec work results, which would need to contain only the hashes of the altered contracts' state roots.
+Aggregating everything across \Jam, excepting accumulation which could add further throughput, numbers can be multiplied by 341 (with the caveat that each one's computation cannot interfere with any of the others' except through state oraclization and accumulation). Unlike for \emph{roll-up chain} designs such as Polkadot and Ethereum, there is no need to have persistently fragmented state. Smart-contract state may be held in a coherent format on the \Jam chain so long as any updates are made through the 8\textsc{kb}/core/sec work-results, which would need to contain only the hashes of the altered contracts' state roots.
 
 Under our modelling assumptions, we can therefore summarize:
 \begin{center}
