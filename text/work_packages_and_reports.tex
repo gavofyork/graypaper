@@ -1,7 +1,7 @@
 \section{Work Packages and Work Reports}\label{sec:workpackagesandworkreports}
 
 \newcommand*{\newavailabilityspecifier}{A}
-\newcommand*{\itemtoresult}{C}
+\newcommand*{\itemtodigest}{C}
 \newcommand*{\countupexports}{I}
 \newcommand*{\importsegmentdata}{S}
 \newcommand*{\justifysegmentdata}{J}
@@ -40,7 +40,7 @@ Work-packages have two other types of external data associated with them: A cryp
 
 \subsubsection{Segments, Imports and Exports}
 
-The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_G = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term \emph{Imports \textsc{da}} during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the \textsc{da} system.
+The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_G = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term D$^3$L during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the D$^3$L system.
 \begin{equation}\label{eq:segment}
   \G \equiv \Y_{\mathsf{W}_G}
 \end{equation}
@@ -57,7 +57,7 @@ It is the task of a guarantor to reconstitute all imported segments through fetc
 
 Justification data must be available to any node over the course of its segment's potential requirement. At around 350 bytes to justify a single segment, justification data is too voluminous to have all validators store all data. We therefore use the same overall availability framework for hosting justification metadata as the data itself.
 
-The guarantor is able to use this proof to justify to themselves that they are not wasting their time on incorrect behavior. We do not force auditors to go through the same process. Instead, guarantors build an \emph{Auditable Work Package}, and place this in the Audit \textsc{da} system. This is the original work-package, its extrinsic data, its imported data and a concise proof of correctness of that imported data. This tactic routinely duplicates data between the Imports \textsc{da} and the Audits \textsc{da}, however it is acceptable in order to reduce the bandwidth cost for auditors who must justify the correctness as cheaply as possible as auditing happens on average 30 times for each work-package whereas guaranteeing happens only twice or thrice.
+The guarantor is able to use this proof to justify to themselves that they are not wasting their time on incorrect behavior. We do not force auditors to go through the same process. Instead, guarantors build an \emph{Auditable Work Package}, and place this in the Audit \textsc{da} system. This is the original work-package, its extrinsic data, its imported data and a concise proof of correctness of that imported data. This tactic routinely duplicates data between the D$^3$L and the Audit \textsc{da}, however it is acceptable in order to reduce the bandwidth cost for auditors who must justify the correctness as cheaply as possible as auditing happens on average 30 times for each work-package whereas guaranteeing happens only twice or thrice.
 
 \subsection{Packages and Items}\label{sec:packagesanditems}
 
@@ -73,7 +73,7 @@ We begin by defining a \emph{work-package}, of set $\mathbb{P}$, and its constit
   }
 \end{equation}
 
-A work item includes: $\wi¬service$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $\wi¬codehash$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\wi¬payload$, gas limits for Refinement and Accumulation $\wi¬refgaslimit$ \& $\wi¬accgaslimit$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportsegments$ the number of data segments exported by this work item.
+A work item includes: $\wi¬service$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $\wi¬codehash$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\wi¬payload$, gas limits for Refinement and Accumulation $\wi¬refgaslimit$ \& $\wi¬accgaslimit$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportcount$ the number of data segments exported by this work item.
 \begin{equation}\label{eq:workitem}
   \mathbb{I} \equiv \tuple{\begin{aligned}
     &\isa{\wi¬service}{\N_S},
@@ -81,21 +81,19 @@ A work item includes: $\wi¬service$ the identifier of the service to which it r
     \isa{\wi¬payload}{\Y},
     \isa{\wi¬refgaslimit}{\N_G},
     \isa{\wi¬accgaslimit}{\N_G},
-    \isa{\wi¬exportsegments}{\N}, \\
+    \isa{\wi¬exportcount}{\N}, \\
     &\isa{\wi¬importsegments}{\seq{\tuple{\H \cup (\H^\boxplus),\N}}},
     \isa{\wi¬extrinsics}{\seq{(\H, \N)}}
   \end{aligned}}
 \end{equation}
 
-%TODO: use r instead of g for refinement gas limit.
-
 Note that an imported data segment's work-package is identified through the union of sets $\H$ and a tagged variant $\H^\boxplus$. A value drawn from the regular $\H$ implies the hash value is of the segment-root containing the export, whereas a value drawn from $\H^\boxplus$ implies the hash value is the hash of the exporting work-package. In the latter case it must be converted into a segment-root by the guarantor and this conversion reported in the work-report for on-chain validation.
 
-We limit both the total number of exported items and the total number of imported items to $\mathsf{W}_M = 3072$, and the total number of extrinsics to $\mathsf{T} = 128$:
+We limit the total number of exported items to $\mathsf{W}_X = 3072$, the total number of imported items to $\mathsf{W}_M = 3072$, and the total number of extrinsics to $\mathsf{T} = 128$:
 \begin{equation}
   \!\!\!\!\begin{aligned}
     &\forall \wpX \in \mathbb{P}: \\
-    &\ \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportsegments \le \mathsf{W}_M \ \wedge\ 
+    &\ \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportcount \le \mathsf{W}_X \ \wedge\ 
     \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments| \le \mathsf{W}_M \ \wedge\ 
     \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬extrinsics| \le \mathsf{T}
   \end{aligned}
@@ -107,9 +105,9 @@ We limit the total size of the implied import and extrinsic items, together with
 \begin{align}
   \label{eq:checkextractsize}
   &\begin{aligned}
-    &\forall \wpX \in \mathbb{P}: \Big(|p_\mathbf{j}| + |p_\mathbf{p}| +
+    &\forall \wpX \in \mathbb{P}: \Big(|\wpX_\wp¬authtoken| + |\wp¬authconfig| +
     \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \mathsf{W}_B \\
-    &\where S(\wiX \in \mathbb{I}) \equiv |\wiX_\mathbf{y}| + |\wiX_\wi¬importsegments|\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l
+    &\where S(\wiX \in \mathbb{I}) \equiv |\wiX_\wi¬payload| + |\wiX_\wi¬importsegments|\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l
   \end{aligned}\\
   &\mathsf{W}_B \equiv 12\cdot2^{20}
 \end{align}
@@ -124,19 +122,26 @@ We limit the sums of each of the two gas limits to be at most the maximum gas al
 
 %The implication of equation \ref{eq:checkextractsize} is that we have access to the preimage of all extrinsic data. For guaranteeing, this implies the work-package author probably submits the preimages alongside the work-package itself. For auditing, the extrinsic preimages may be reconstructed in the same manner as the work-package. Both are described later.
 
-Given the resultant datum $\wl¬result$ of some work-item, we define the item-to-result function $\itemtoresult$ as:
+Given the result $\wl¬result$ and gas used $\wl¬gasused$ of some work-item, we define the item-to-digest function $\itemtodigest$ as:
 \begin{equation}
-  \itemtoresult\colon\left\{\begin{aligned}
+  \itemtodigest\colon\left\{\begin{aligned}
     (\mathbb{I}, \Y \cup \mathbb{J}, \N_G) &\to \mathbb{L}\\
     \tup{\tup{\begin{aligned}
-      &s, c, \mathbf{y},\\
-      &a, e, \mathbf{i}, \mathbf{x}
+      &\¬service, \¬codehash, \¬payload,\\
+      &\wi¬accgaslimit, \¬exportcount, \wi¬importsegments, \wi¬extrinsics
     \end{aligned}
-    }, \wl¬result, u} &\mapsto \tup{\begin{aligned}
-      s, c, \is{\wl¬payloadhash}{\hash(\mathbf{y})}, \is{g}{a}, \wl¬result, u,\\
-      \is{i}{|\mathbf{i}|}, e, \is{x}{|\mathbf{x}|}, \is{z}{\sum_{(h, z) \in \mathbf{x}} z}
-    \end{aligned}
-    }
+    }, \wl¬result, \wl¬gasused} &\mapsto \tup{\begin{aligned}
+      &\wl¬service,\,
+      \wl¬codehash,\,
+      \is{\wl¬payloadhash}{\hash(\¬payload)},\,
+      \is{\wl¬gaslimit}{\wi¬accgaslimit},\,
+      \wl¬result,\,
+      \wl¬gasused,\\
+      &\is{\wl¬importcount}{|\wi¬importsegments|},\,
+      \wl¬exportcount,\,
+      \is{\wl¬xtcount}{|\wi¬extrinsics|},\,
+      \is{\wl¬xtsize}{\!\!\!\!\sum_{(h, z) \in \wi¬extrinsics}\!\!\!\!z}
+    \end{aligned}}\!\!\!\!
   \end{aligned}\right.
 \end{equation}
 
@@ -154,9 +159,9 @@ We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the h
 \subsubsection{Exporting}
 Any of a work-package's work-items may \emph{export} segments and a \emph{segments-root} is placed in the work-report committing to these, ordered according to the work-item which is exporting. It is formed as the root of a constant-depth binary Merkle tree as defined in equation \ref{eq:constantdepthmerkleroot}.
 
-Guarantors are required to erasure-code and distribute two data sets: one blob, the auditable work-package containing the encoded work-package, extrinsic data and self-justifying imported segments which is placed in the short-term Audit \textsc{da} store and a second set of exported-segments data together with the \emph{Paged-Proofs} metadata. Items in the first store are short-lived; assurers are expected to keep them only until finality of the block in which the availability of the work-result's work-package is assured. Items in the second, meanwhile, are long-lived and expected to be kept for a minimum of 28 days (672 complete epochs) following the reporting of the work-report.
+Guarantors are required to erasure-code and distribute two data sets: one blob, the auditable \emph{bundle} containing the encoded work-package, extrinsic data and self-justifying imported segments which is placed in the short-term Audit \textsc{da} store; and a second set of exported-segments data together with the \emph{Paged-Proofs} metadata. Items in the first store are short-lived; assurers are expected to keep them only until finality of the block in which the availability of the work-result's work-package is assured. Items in the second, meanwhile, are long-lived and expected to be kept for a minimum of 28 days (672 complete epochs) following the reporting of the work-report. This latter store is referred to as the \emph{Distributed, Decentralized, Data Lake} or D$^3$L owing to its large size.
 
-We define the paged-proofs function $\pagedproofs$ which accepts a series of exported segments $\mathbf{s}$ and defines some series of additional segments placed into the Imports \textsc{da} system via erasure-coding and distribution. The function evaluates to pages of hashes, together with subtree proofs, such that justifications of correctness based on a segments-root may be made from it:
+We define the paged-proofs function $\pagedproofs$ which accepts a series of exported segments $\mathbf{s}$ and defines some series of additional segments placed into the D$^3$L via erasure-coding and distribution. The function evaluates to pages of hashes, together with subtree proofs, such that justifications of correctness based on a segments-root may be made from it:
 \begin{equation}\label{eq:pagedproofs}
   \!\!\pagedproofs\colon\left\{\begin{aligned}
     \seq{\G} \to \,&\seq{\G} \\
@@ -190,7 +195,7 @@ Where:
   \keys{\wr¬srlookup} \equiv \,&\{ h \mid \wiX \in \wpX_\mathbf{w}, (h^\boxplus, n) \in \wiX_\mathbf{i} \} \ ,\quad|\wr¬srlookup| \le 8\\
   (\wr¬authtrace, \wr¬authgasused) = \,&\Psi_I(\wpX, \¬core) \\
   (\wr¬digests, \allexports) = \,&\transpose[
-    (\itemtoresult(\wpX_\wp¬workitems[j], r, u), \mathbf{e})
+    (\itemtodigest(\wpX_\wp¬workitems[j], r, u), \mathbf{e})
     \mid
     (r, u, \mathbf{e}) = \countupexports(\wpX, j),\,
     j \orderedin \N_{|\wpX_\wp¬workitems|}
@@ -202,7 +207,7 @@ Where:
     \multicolumn{2}{l}{\where (r, \mathbf{e}, u) = \Psi_R(
       j, \wpX, \mathbf{o}, \importsegmentdata(w), \ell
     )}\\
-    \multicolumn{2}{l}{\also h = \hash(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportsegments}
+    \multicolumn{2}{l}{\also h = \hash(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportcount}
   \end{cases}
 \end{align*}
 
@@ -305,7 +310,7 @@ Validators are incentivized to distribute each newly erasure-coded data chunk to
 We will see this function utilized in the next sections, for guaranteeing, auditing and judging.
 
 \undef{\newavailabilityspecifier}
-\undef{\itemtoresult}
+\undef{\itemtodigest}
 \undef{\countupexports}
 \undef{\importsegmentdata}
 \undef{\pagedproofs}
