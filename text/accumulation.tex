@@ -2,6 +2,7 @@
 \newcommand*{\opers}{O}
 \newcommand*{\servouts}{B}
 \newcommand*{\gasused}{U}
+\newcommand*{\fnprovide}{P}
 \newcommand*{\accumulatedcup}{\overbrace{\accumulated}}
 
 \section{Accumulation}\label{sec:accumulation}
@@ -135,13 +136,15 @@ We come to define the parallelized accumulation function $\Delta_*$ which, with 
 \begin{equation}
   \Delta_*\colon\left\{\;\begin{aligned}
     &(\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}) \to (\partialstate, \defxfers, \servouts, \gasused) \\
-    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto (((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \mathbf{i}', \mathbf{q}', \mathbf{x}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u})\!\!\!\!\!\!\\
+    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto ((\mathbf{d}', \mathbf{i}', \mathbf{q}', \mathbf{x}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u}, \mathbf{p}^*)\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
       \mathbf{s} &= \{ \mathbf{r}_s \mid w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} \} \cup \keys{\mathbf{f}} \\
       \mathbf{u} &= [(s, \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_u) \mid s \orderedin \mathbf{s}] \\
       \mathbf{b} &= \{ (s, b) \mid s \in \mathbf{s},\, b = \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_b,\, b \ne \none \} \\
       \mathbf{t} &= [\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{t} \mid s \orderedin \mathbf{s}] \\
+      \mathbf{p} &= \bigcup_{s \orderedin \mathbf{s}} \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{p}\\
+      \mathbf{d}' &= \fnprovide((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \mathbf{p}) \\
       &(\mathbf{d}, \mathbf{i}, \mathbf{q}, (m, a, v, \mathbf{z})) = \mathbf{o} \\
       \mathbf{x}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, m)_\mathbf{o})_\mathbf{x} \\
       \mathbf{i}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, v)_\mathbf{o})_\mathbf{i} \\
@@ -149,6 +152,28 @@ We come to define the parallelized accumulation function $\Delta_*$ which, with 
       \mathbf{n} &= \bigcup_{s \in \mathbf{s}}(\{ (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d} \setminus \keys{\mathbf{d} \setminus \{s\}} \}) \\
       \mathbf{m} &= \bigcup_{s \in \mathbf{s}}(\keys{\mathbf{d}} \setminus \keys{(\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d}})
     \end{aligned}
+  \end{aligned}\right.
+\end{equation}
+
+And $\fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/hash pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
+\begin{equation}
+  \fnprovide\colon\left\{\begin{aligned}
+    &(\dict{\N_S}{\mathbb{A}}, \{\tup{\N_S, \Y}\}) \to \dict{\N_S}{\mathbb{A}} \\
+    &(\mathbf{d}, \mathbf{p}) \mapsto \mathbf{d}'\;\where \mathbf{d}' = \mathbf{d}\;\text{except:} \\
+    &\quad\forall \tup{s, \mathbf{i}} \in \mathbf{p},\;
+      s \in \keys{\mathbf{d}},\;
+      \mathbf{d}[s]_\mathbf{l}[\hash(\mathbf{i}), |\mathbf{i}|] = \sq{}:\\
+    &\qquad \mathbf{d}'[s]_\mathbf{l}[\hash(\mathbf{i}), |\mathbf{i}|] = \tau'\\
+    &\qquad \mathbf{d}'[s]_\mathbf{p}[\hash{\mathbf{i}}] = \mathbf{i}
+    %\begin{aligned}
+    %  \tup{s, \mathbf{i}} \in \mathbf{p} \wedge
+    %  s \in \keys{\mathbf{d}}\;\wedge& \\
+    %  \mathbf{d}[s]_\mathbf{l}[\hash(\mathbf{i}), |\mathbf{i}|] = \sq{}&
+    %\end{aligned} &\Rightarrow
+    %\begin{aligned}
+    %  &\mathbf{d}'[s]_\mathbf{l}[\hash(\mathbf{i}), |\mathbf{i}|] = \tau' \wedge \\
+    %  &\mathbf{d}'[s]_\mathbf{p}[\hash{\mathbf{i}}] = \mathbf{i}
+    %\end{aligned} \\
   \end{aligned}\right.
 \end{equation}
 
@@ -169,32 +194,39 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
 \begin{align}
     &\Delta_1 \colon \left\{\;\begin{aligned}
     &\begin{aligned}
-      (\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}, \N_S) &\to \tup{
+      \tup{\begin{aligned}
+        &\partialstate, \seq{\mathbb{W}},\\
+        &\dict{\N_S}{\N_G}, \N_S
+      \end{aligned}}
+      &\to \tup{
         \begin{alignedat}{3}
-          \isa{\mathbf{o}&}{\partialstate}\,,\;\isa{&\mathbf{t}&}{\defxfers}\,,\\
-          \isa{b&}{\H\bm{?}}\,,\;\isa{&u&}{\N_G}
+          \isa{\mathbf{o}&}{\partialstate}\,,\;
+          \isa{&\mathbf{t}&}{\defxfers}\,,\;
+          \isa{b}{\H\bm{?}}\,,\\
+          \isa{u&}{\N_G}\,,\;
+          \isa{&\mathbf{p}&}{\{\tup{\N_S, \Y}\}}
         \end{alignedat}
       } \\
-      (\mathbf{o}, \mathbf{w}, \mathbf{f}, s) &\mapsto \Psi_A(\mathbf{o}, \tau', s, g, \mathbf{p})
+      (\mathbf{o}, \mathbf{w}, \mathbf{f}, s) &\mapsto \Psi_A(\mathbf{o}, \tau', s, g, \mathbf{i})
     \end{aligned} \\
     &\text{where:} \\
     &\ \begin{aligned}
-      g &= \subifnone(\mathbf{f}_s, 0) + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} , \mathbf{r}_s = s}\!\!\!\!(\mathbf{r}_g) \\
-      \mathbf{p} &= \left[ \tup{\begin{alignedat}{3}
+      g &= \subifnone(\mathbf{f}_s, 0) + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests , \mathbf{r}_\wl¬service = s}\!\!\!\!(\mathbf{r}_g) \\
+      \mathbf{i} &= \left[ \tup{\begin{alignedat}{3}
         % TODO: Rename \mathbf{o} to something else, to allow mathbf{a} to become \mathbf{o}.
         % TODO: Rename k to h. Then 5 of the 6 fields keep their names.
-        \is{\mathbf{d}}{\mathbf{r}_\wl¬result},\,
+        \is{\ot¬result}{\mathbf{r}_\wl¬result},\,
         \is{\ot¬gaslimit}{\mathbf{r}_\wl¬gaslimit},\,
-        \is{y}{\mathbf{r}_\wl¬payloadhash},\,
-        \is{&\mathbf{o}\;&}{w_\wr¬authtrace&},\\
-        \is{e}{(w_s)_e},\,
-        \is{h}{(w_s)_h},\,
-        \is{&a\;&}{w_a&}
+        \is{\ot¬payloadhash}{\mathbf{r}_\wl¬payloadhash},\,
+        \is{&\ot¬authtrace\;&}{w_\wr¬authtrace&},\\
+        \is{\ot¬segroot}{(w_\wr¬avspec)_e},\,
+        \is{\ot¬packagehash}{(w_\wr¬avspec)_h},\,
+        \is{&\ot¬authorizer\;&}{w_\wr¬authorizer&}
       \end{alignedat}}
       \,\middle\vert\ 
       \begin{alignedat}{2}
         w& \orderedin \mathbf{w},&\\
-        \mathbf{r}& \orderedin w_\mathbf{r},&\ \mathbf{r}_s = s
+        \mathbf{r}& \orderedin w_\wr¬digests,&\ \mathbf{r}_\wl¬service = s
       \end{alignedat}
     \,\right]
     \end{aligned}
