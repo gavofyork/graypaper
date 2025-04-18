@@ -91,11 +91,11 @@ A work item includes: $\wi¬service$ the identifier of the service to which it r
 
 Note that an imported data segment's work-package is identified through the union of sets $\H$ and a tagged variant $\H^\boxplus$. A value drawn from the regular $\H$ implies the hash value is of the segment-root containing the export, whereas a value drawn from $\H^\boxplus$ implies the hash value is the hash of the exporting work-package. In the latter case it must be converted into a segment-root by the guarantor and this conversion reported in the work-report for on-chain validation.
 
-We limit both the total number of exported items and the total number of imported items to $\mathsf{W}_M = 3072$, and the total number of extrinsics to $\mathsf{T} = 128$:
+We limit the total number of exported items to $\mathsf{W}_X = 3072$, the total number of imported items to $\mathsf{W}_M = 3072$, and the total number of extrinsics to $\mathsf{T} = 128$:
 \begin{equation}
   \!\!\!\!\begin{aligned}
     &\forall \wpX \in \mathbb{P}: \\
-    &\ \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportcount \le \mathsf{W}_M \ \wedge\ 
+    &\ \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportcount \le \mathsf{W}_X \ \wedge\ 
     \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments| \le \mathsf{W}_M \ \wedge\ 
     \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬extrinsics| \le \mathsf{T}
   \end{aligned}
@@ -124,7 +124,7 @@ We limit the sums of each of the two gas limits to be at most the maximum gas al
 
 %The implication of equation \ref{eq:checkextractsize} is that we have access to the preimage of all extrinsic data. For guaranteeing, this implies the work-package author probably submits the preimages alongside the work-package itself. For auditing, the extrinsic preimages may be reconstructed in the same manner as the work-package. Both are described later.
 
-Given the result $\wl¬result$ of some work-item, we define the item-to-digest function $\itemtodigest$ as:
+Given the result $\wl¬result$ and gas used $\wl¬gasused$ of some work-item, we define the item-to-digest function $\itemtodigest$ as:
 \begin{equation}
   \itemtodigest\colon\left\{\begin{aligned}
     (\mathbb{I}, \Y \cup \mathbb{J}, \N_G) &\to \mathbb{L}\\
@@ -133,17 +133,17 @@ Given the result $\wl¬result$ of some work-item, we define the item-to-digest f
       &\wi¬accgaslimit, \¬exportcount, \wi¬importsegments, \wi¬extrinsics
     \end{aligned}
     }, \wl¬result, \wl¬gasused} &\mapsto \tup{\begin{aligned}
-      \wl¬service,
-      \wl¬codehash,
-      \is{\wl¬payloadhash}{\hash(\¬payload)},
-      \is{\wl¬gaslimit}{\wi¬accgaslimit},
-      \wl¬result,
+      &\wl¬service,\,
+      \wl¬codehash,\,
+      \is{\wl¬payloadhash}{\hash(\¬payload)},\,
+      \is{\wl¬gaslimit}{\wi¬accgaslimit},\,
+      \wl¬result,\,
       \wl¬gasused,\\
-      \is{\wl¬importcount}{|\wi¬importsegments|},
-      \wl¬exportcount,
-      \is{\wl¬xtcount}{|\wi¬extrinsics|},
-      \is{\wl¬xtsize}{\sum_{(h, z) \in \wi¬extrinsics} z}
-    \end{aligned}}
+      &\is{\wl¬importcount}{|\wi¬importsegments|},\,
+      \wl¬exportcount,\,
+      \is{\wl¬xtcount}{|\wi¬extrinsics|},\,
+      \is{\wl¬xtsize}{\!\!\!\!\sum_{(h, z) \in \wi¬extrinsics}\!\!\!\!z}
+    \end{aligned}}\!\!\!\!
   \end{aligned}\right.
 \end{equation}
 
