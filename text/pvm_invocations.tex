@@ -112,7 +112,7 @@ Formally, we define our result context to be $\mathbf{X}$, and our invocation co
     \isa{i}{\N_S},
     \isa{\mathbf{t}}{\seq{\mathbb{T}}},
     \isa{y}{\H\bm{?}},
-    \isa{\mathbf{p}}{\seq{\tuple{\N_S, \Y}}}
+    \isa{\mathbf{p}}{\{\tuple{\N_S, \Y}\}}
   }\\
   \forall \mathbf{x} \in \mathbf{X} : \mathbf{x}_\mathbf{s} &\equiv (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]
 \end{align}
@@ -672,7 +672,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       (\continue, \mathtt{WHO}, \mathbf{x}_\mathbf{p}) &\otherwhen \mathbf{a} = \none \\
       (\continue, \mathtt{HUH}, \mathbf{x}_\mathbf{p}) &\otherwhen \mathbf{a}_\mathbf{l}[\tup{\hash(\mathbf{i}), z}] \ne \sq{} \\
       (\continue, \mathtt{HUH}, \mathbf{x}_\mathbf{p}) &\otherwhen \tup{s^*, \mathbf{i}} \in \mathbf{x}_\mathbf{p} \\
-      (\continue, \mathtt{OK}, \mathbf{x}_\mathbf{p} \doubleplus \tup{s^*, \mathbf{i}}) &\otherwise \\
+      (\continue, \mathtt{OK}, \mathbf{x}_\mathbf{p} \cup \{\tup{s^*, \mathbf{i}}\}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \bottomrule
