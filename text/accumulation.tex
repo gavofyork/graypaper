@@ -135,8 +135,8 @@ We define the outer accumulation function $\Delta_+$ which transforms a gas-limi
 We come to define the parallelized accumulation function $\Delta_*$ which, with the help of the single-service accumulation function $\Delta_1$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution $u$, a posterior state-context $(\mathbf{x}', \mathbf{d}', \mathbf{i}', \mathbf{q}')$ and the resultant accumulation-output pairings $\mathbf{b}$ and deferred-transfers $\wideparen{\mathbf{t}}$:
 \begin{equation}
   \Delta_*\colon\left\{\;\begin{aligned}
-    &(\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}) \to (\partialstate, \defxfers, \servouts, \gasused) \\
-    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto ((\mathbf{d}', \mathbf{i}', \mathbf{q}', \mathbf{x}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u}, \mathbf{p}^*)\!\!\!\!\!\!\\
+    &(\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}) \to (\partialstate, \defxfers, \servouts, \gasused,  \{\tup{\N_S, \Y}\}) \\
+    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto ((\mathbf{d}', \mathbf{i}', \mathbf{q}', \mathbf{x}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u}, \mathbf{p})\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
       \mathbf{s} &= \{ \mathbf{r}_s \mid w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} \} \cup \keys{\mathbf{f}} \\
