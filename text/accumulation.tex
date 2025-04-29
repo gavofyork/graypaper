@@ -136,15 +136,14 @@ We come to define the parallelized accumulation function $\Delta_*$ which, with 
 \begin{equation}
   \Delta_*\colon\left\{\;\begin{aligned}
     &(\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}) \to (\partialstate, \defxfers, \servouts, \gasused) \\
-    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto ((\mathbf{d}', \mathbf{i}', \mathbf{q}', \mathbf{x}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u}, \mathbf{p}^*)\!\!\!\!\!\!\\
+    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto ((\mathbf{d}', \mathbf{i}', \mathbf{q}', \mathbf{x}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u})\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
       \mathbf{s} &= \{ \mathbf{r}_s \mid w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} \} \cup \keys{\mathbf{f}} \\
       \mathbf{u} &= [(s, \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_u) \mid s \orderedin \mathbf{s}] \\
       \mathbf{b} &= \{ (s, b) \mid s \in \mathbf{s},\, b = \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_b,\, b \ne \none \} \\
       \mathbf{t} &= [\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{t} \mid s \orderedin \mathbf{s}] \\
-      \mathbf{p} &= \bigcup_{s \orderedin \mathbf{s}} \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{p}\\
-      \mathbf{d}' &= \fnprovide((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \mathbf{p}) \\
+      \mathbf{d}' &= \fnprovide((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \bigcup_{s \in \mathbf{s}} \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{p}) \\
       &(\mathbf{d}, \mathbf{i}, \mathbf{q}, (m, a, v, \mathbf{z})) = \mathbf{o} \\
       \mathbf{x}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, m)_\mathbf{o})_\mathbf{x} \\
       \mathbf{i}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, v)_\mathbf{o})_\mathbf{i} \\
@@ -164,7 +163,7 @@ And $\fnprovide$ is the preimage integration function, which transforms a dictio
       s \in \keys{\mathbf{d}},\;
       \mathbf{d}[s]_\mathbf{l}[\hash(\mathbf{i}), |\mathbf{i}|] = \sq{}:\\
     &\qquad \mathbf{d}'[s]_\mathbf{l}[\hash(\mathbf{i}), |\mathbf{i}|] = \tau'\\
-    &\qquad \mathbf{d}'[s]_\mathbf{p}[\hash{\mathbf{i}}] = \mathbf{i}
+    &\qquad \mathbf{d}'[s]_\mathbf{p}[\hash(\mathbf{i})] = \mathbf{i}
     %\begin{aligned}
     %  \tup{s, \mathbf{i}} \in \mathbf{p} \wedge
     %  s \in \keys{\mathbf{d}}\;\wedge& \\
