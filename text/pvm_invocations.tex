@@ -128,9 +128,9 @@ We define $\Psi_A$, the Accumulation invocation function as:
       \partialstate, \N_T, \N_S, \N_G, \seq{\operandtuple}
     }
     &\to
-    \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G} \\
+    \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G, \seq{\tuple{\N_S, \Y}}} \\
     (\mathbf{u}, t, s, g, \mathbf{o}) &\mapsto \begin{cases}
-      \tup{\mathbf{u}, [], \none, 0} &\when \mathbf{u}_\mathbf{d}[s]_\mathbf{c} = \none \\
+      \tup{\mathbf{u}, [], \none, 0, \sq{}} &\when \mathbf{u}_\mathbf{d}[s]_\mathbf{c} = \none \\
       C(\Psi_M(\mathbf{u}_\mathbf{d}[s]_\mathbf{c}, 5, g, \se(t, s, \var{\mathbf{o}}), F, \tup{I(\mathbf{u}, s), I(\mathbf{u}, s)})) &\otherwise
     \end{cases} \\
   \end{aligned}\right.\\
@@ -651,7 +651,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_\Aries(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), s)$ \\
-  \texttt{provide} = \_ \\
+  \texttt{provide} = 27 \\
   $g = 10$} &
   $\begin{aligned}
     \using [o, z] &= \registers_{8 \dots+ 3} \\
@@ -894,7 +894,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $\begin{aligned}
     \using n &= \registers_7 \\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\mathtt{WHO}, \mathbf{m}) &\when n \ne \keys{\mathbf{m}} \\
+      (\mathtt{WHO}, \mathbf{m}) &\when n \not\in \keys{\mathbf{m}} \\
       (\mathbf{m}[n]_i, \mathbf{m} \setminus n) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
