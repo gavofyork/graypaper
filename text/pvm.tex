@@ -448,10 +448,10 @@ We assume the skip length $\ell$ is well-defined:
   \end{aligned}$\\ \mrule
   102&\token{count\_set\_bits\_64}&0&$\displaystyle\reg'_D = \sum_{i = 0}^{63}\bitsfunc{8}(\reg_A)_i$\\ \mrule
   103&\token{count\_set\_bits\_32}&0&$\displaystyle\reg'_D = \sum_{i = 0}^{31}\bitsfunc{4}(\reg_A \bmod 2^{32})_i$\\ \mrule
-  104&\token{leading\_zero\_bits\_64}&0&$\displaystyle\reg'_D = \max(n \in \N_{65})\ \where \sum_{i = 0}^{i < n} \bitsfunc{8}(\reg_A)_i = 0$\\ \mrule
-  105&\token{leading\_zero\_bits\_32}&0&$\displaystyle\reg'_D = \max(n \in \N_{33})\ \where \sum_{i = 0}^{i < n} \bitsfunc{4}(\reg_A \bmod 2^{32})_i = 0$\\ \mrule
-  106&\token{trailing\_zero\_bits\_64}&0&$\displaystyle\reg'_D = \max(n \in \N_{65})\ \where \sum_{i = 0}^{i < n} \bitsfunc{8}(\reg_A)_{63 - i} = 0$\\ \mrule
-  107&\token{trailing\_zero\_bits\_32}&0&$\displaystyle\reg'_D = \max(n \in \N_{33})\ \where \sum_{i = 0}^{i < n} \bitsfunc{4}(\reg_A \bmod 2^{32})_{31 - i} = 0$\\ \mrule
+  104&\token{leading\_zero\_bits\_64}&0&$\displaystyle\reg'_D = \max(n \in \N_{65})\ \where \sum_{i = 0}^{i < n} \unbitsfunc{8}(\reg_A)_i = 0$\\ \mrule
+  105&\token{leading\_zero\_bits\_32}&0&$\displaystyle\reg'_D = \max(n \in \N_{33})\ \where \sum_{i = 0}^{i < n} \unbitsfunc{4}(\reg_A \bmod 2^{32})_i = 0$\\ \mrule
+  106&\token{trailing\_zero\_bits\_64}&0&$\displaystyle\reg'_D = \max(n \in \N_{65})\ \where \sum_{i = 0}^{i < n} \unbitsfunc{8}(\reg_A)_{63 - i} = 0$\\ \mrule
+  107&\token{trailing\_zero\_bits\_32}&0&$\displaystyle\reg'_D = \max(n \in \N_{33})\ \where \sum_{i = 0}^{i < n} \unbitsfunc{4}(\reg_A \bmod 2^{32})_{31 - i} = 0$\\ \mrule
   108&\token{sign\_extend\_8}&0&$\reg'_D = \unsigned{\signedn{1}{\reg_A \bmod 2^8}}$\\ \mrule
   109&\token{sign\_extend\_16}&0&$\reg'_D = \unsigned{\signedn{2}{\reg_A \bmod 2^{16}}}$\\ \mrule
   110&\token{zero\_extend\_16}&0&$\reg'_D = \reg_A \bmod 2^{16}$\\ \mrule
