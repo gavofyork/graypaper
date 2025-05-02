@@ -34,11 +34,18 @@ Note return codes for a host-call-request exit are any non-zero value less than 
 
 \subsection{Is-Authorized Invocation}\label{sec:isauthorizedinvocation}
 
+\newcommand*{\wpX}{p}
+
 The Is-Authorized invocation is the first and simplest of the four, being totally stateless. It provides only a single host-call function, $\Omega_G$ for determining the amount of gas remaining. It accepts as arguments the work-package as a whole, $\mathbf{p}$ and the core on which it should be executed, $c$. Formally, it is defined as $\Psi_I$:
 \begin{align}
   \Psi_I &\colon \left\{\begin{aligned}
     (\mathbb{P}, \N_\mathsf{C}) &\to \tuple{\Y \cup \mathbb{J}, \N_G} \\
-    (\mathbf{p}, c) &\mapsto \tup{\mathbf{r}, u}\ \where (u, \mathbf{r}, \none) = \Psi_M(\mathbf{p}_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(\mathbf{p}, c), F, \none)
+    (\wpX, c) &\mapsto \begin{cases}
+      \tup{\token{BAD}, 0} &\when |\wpX_\mathbf{c}| = \none \\
+      \tup{\token{BIG}, 0} &\otherwhen |\wpX_\mathbf{c}| > \mathsf{W}_A \\
+      \tup{\mathbf{r}, u} &\otherwise \\
+      \multicolumn{2}{l}{\where (u, \mathbf{r}, \none) = \Psi_M(\wpX_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(\wpX, c), F, \none)}\\
+    \end{cases}\\
   \end{aligned}\right. \\
   \label{eq:isauthorizedmutator}F \in \Omega\ang{\{\}} &\colon
     (n, \gascounter, \registers, \memory) \mapsto \begin{cases}
