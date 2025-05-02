@@ -1,18 +1,18 @@
 \section{State Merklization}\label{sec:statemerklization}
 
-The Merklization process defines a cryptographic commitment from which arbitrary information within state may be provided as being authentic in a concise and swift fashion. We describe this in two stages; the first defines a mapping from 32-octet sequences to (unlimited) octet sequences in a process called \emph{state serialization}. The second forms a 32-octet commitment from this mapping in a process called \emph{Merklization}.
+The Merklization process defines a cryptographic commitment from which arbitrary information within state may be provided as being authentic in a concise and swift fashion. We describe this in two stages; the first defines a mapping from 31-octet sequences to (unlimited) octet sequences in a process called \emph{state serialization}. The second forms a 32-octet commitment from this mapping in a process called \emph{Merklization}.
 
 \subsection{Serialization}
 
-The serialization of state primarily involves placing all the various components of $\sigma$ into a single mapping from 32-octet sequence \emph{state-keys} to octet sequences of indefinite length. The state-key is constructed from a hash component and a chapter component, equivalent to either the index of a state component or, in the case of the inner dictionaries of $\delta$, a service index.
+The serialization of state primarily involves placing all the various components of $\sigma$ into a single mapping from 31-octet sequence \emph{state-keys} to octet sequences of indefinite length. The state-key is constructed from a hash component and a chapter component, equivalent to either the index of a state component or, in the case of the inner dictionaries of $\delta$, a service index.
 
 We define the state-key constructor functions $C$ as:
 \begin{equation}
   C\colon\left\{\begin{aligned}
-    \N_{2^8} \cup (\N_{2^8}, \N_S) \cup \tup{\N_S, \Y} &\to \H \\
+    \N_{2^8} \cup (\N_{2^8}, \N_S) \cup \tup{\N_S, \Y_{27}} &\to \Y_{31} \\
     i \in \N_{2^8} &\mapsto [i, 0, 0, \dots] \\
     (i, s \in \N_S) &\mapsto [i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots]\ \where n = \se_4(s) \\
-    (s, h) &\mapsto [n_0, h_0, n_1, h_1, n_2, h_2, n_3, h_3, h_4, h_5, \dots, h_{27}]\ \where n = \se_4(s)
+    (s, h) &\mapsto [n_0, h_0, n_1, h_1, n_2, h_2, n_3, h_3, h_4, h_5, \dots, h_{26}]\ \where n = \se_4(s)
   \end{aligned}
   \right.
 \end{equation}
@@ -40,9 +40,9 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(14) &\mapsto \se([\var{(\mathbf{w}, \var{\mathbf{d}})} \mid (\mathbf{w}, \mathbf{d}) \orderedin \mathbf{i} \mid \mathbf{i} \orderedin \ready]) \;, \\
     &&C(15) &\mapsto \se([\var{\mathbf{i}} \mid \mathbf{i} \orderedin \accumulated]) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_o) \concat \se_4(\mathbf{a}_i) \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \delta, (k \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \frown k_{0\dots 28}) &\mapsto \mathbf{v} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \se_4(2^{32}-2) \frown h_{1\dots 29}) &\mapsto \mathbf{p} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat \hash(h)_{2\dots 30}) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
+    \forall (s \mapsto \mathbf{a}) \in \delta, (k \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \frown k_{0\dots 27}) &\mapsto \mathbf{v} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \se_4(2^{32}-2) \frown h_{1\dots 28}) &\mapsto \mathbf{p} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat \hash(h)_{2\dots 29}) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
   \end{aligned}\right.
 \end{equation}
 
@@ -63,9 +63,9 @@ In the case of a branch, the remaining 511 bits are split between the two child 
 
 Leaf nodes are further subdivided into embedded-value leaves and regular leaves. The second bit of the node discriminates between these.
 
-In the case of an embedded-value leaf, the remaining 6 bits of the first byte are used to store the embedded value size. The following 31 bytes are dedicated to the first 31 bytes of the key. The last 32 bytes are defined as the value, filling with zeroes if its length is less than 32 bytes.
+In the case of an embedded-value leaf, the remaining 6 bits of the first byte are used to store the embedded value size. The following 31 bytes are dedicated to the state key. The last 32 bytes are defined as the value, filling with zeroes if its length is less than 32 bytes.
 
-In the case of a regular leaf, the remaining 6 bits of the first byte are zeroed. The following 31 bytes store the first 31 bytes of the key. The last 32 bytes store the hash of the value.
+In the case of a regular leaf, the remaining 6 bits of the first byte are zeroed. The following 31 bytes store the state key. The last 32 bytes store the hash of the value.
 
 Formally, we define the encoding functions $B$ and $L$:
 \begin{align}
@@ -74,10 +74,10 @@ Formally, we define the encoding functions $B$ and $L$:
     (l, r) &\mapsto [0] \frown \text{bits}(l)_{1\dots} \frown \text{bits}(r)
   \end{aligned}\right.\\
   L&\colon\left\{\begin{aligned}
-    (\H, \Y) &\to \mathbb{B}_{512}\\
+    (\Y_{31}, \Y) &\to \mathbb{B}_{512}\\
     (k, v) &\mapsto \begin{cases}
-      [1, 0] \frown \text{bits}(\se_1(|v|))_{2\dots} \frown \text{bits}(k)_{\dots248} \frown \text{bits}(v) \frown [0, 0, \dots] &\when |v| \le 32\\
-      [1, 1, 0, 0, 0, 0, 0, 0] \frown \text{bits}(k)_{\dots248} \frown \text{bits}(\hash(v)) &\otherwise
+      [1, 0] \frown \text{bits}(\se_1(|v|))_{2\dots} \frown \text{bits}(k) \frown \text{bits}(v) \frown [0, 0, \dots] &\when |v| \le 32\\
+      [1, 1, 0, 0, 0, 0, 0, 0] \frown \text{bits}(k) \frown \text{bits}(\hash(v)) &\otherwise
     \end{cases}
   \end{aligned}\right.
 \end{align}
@@ -85,7 +85,7 @@ Formally, we define the encoding functions $B$ and $L$:
 We may then define the basic Merklization function $\mathcal{M}_\sigma$ as:
 \begin{align}
   \mathcal{M}_\sigma(\sigma) &\equiv M(\{ (\text{bits}(k) \mapsto \tup{k, v}) \mid (k \mapsto v) \in T(\sigma) \})\\
-  M(d: \dict{\mathbb{B}}{(\H, \Y)}) &\equiv \begin{cases}
+  M(d: \dict{\mathbb{B}}{(\Y_{31}, \Y)}) &\equiv \begin{cases}
     \H^0 &\when |d| = 0\\
     \hash(\text{bits}^{-1}(L(k, v))) &\when \mathcal{V}(d) = \{ (k, v) \}\\
     \hash(\text{bits}^{-1}(B(M(l), M(r)))) &\otherwise\\
