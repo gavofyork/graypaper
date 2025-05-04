@@ -183,7 +183,7 @@ We now come to the work-report computation function $\Xi$. This forms the basis 
   \Xi \colon \left\{\begin{aligned}
     (\mathbb{P}, \N_\mathsf{C}) &\to \mathbb{W} \\
     (\wpX, \¬core) &\mapsto \begin{cases}
-        \error &\when \wr¬authtrace \not\in \Y \\
+        \error &\when \wr¬authtrace \not\in \Y_{:\mathsf{W}_R} \\
         \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
     \end{cases}
   \end{aligned}\right.
@@ -201,19 +201,21 @@ Where:
     j \orderedin \N_{|\wpX_\wp¬workitems|}
   ] \\
   \countupexports(\wpX, j) \equiv \,&\begin{cases}
-    (r, u, \mathbf{e}) &\when |\mathbf{e}| = w_e \\
+    (\oversize, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\when |r| + z < \mathsf{W}_R\\
+    (\badexports, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen |\mathbf{e}| \ne w_e \\
     (r, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen r \not\in \mathbb{Y} \\
-    (\badexports, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwise \\
+    (r, u, \mathbf{e}) &\otherwise \\
     \multicolumn{2}{l}{\where (r, \mathbf{e}, u) = \Psi_R(
       j, \wpX, \mathbf{o}, \importsegmentdata(w), \ell
     )}\\
-    \multicolumn{2}{l}{\also h = \hash(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportcount}
+    \multicolumn{2}{l}{\also h = \hash(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportcount}\\
+    \multicolumn{2}{l}{\also z = |\mathbf{o}| + \sum_{k < j, (r \in \Y, \dots) = I(p, k)} |r|}
   \end{cases}
 \end{align*}
 
 % TODO: Handle case where there's an output size overrun gracefully too.
 
-Note that we gracefully handle the case where number of segments actually exported by a work-item's Refine execution is incorrectly reported in the work-item's export segment count. In this case, the work-package continues to be valid as a whole, but the work item's exported segments are replaced by a sequence of zero-segments equal in size to the export segment count.
+Note that we gracefully handle both the case where the output size of the work output would take the work-report beyond its acceptable size and where number of segments exported by a work-item's Refinement execution is incorrectly reported in the work-item's export segment count. In both cases, the work-package continues to be valid as a whole, but the work-item's exported segments are replaced by a sequence of zero-segments equal in size to the export segment count and its output is replaced by an error.
 
 Initially we constrain the segment-root dictionary $\wr¬srlookup$: It should contain entries for all unique work-package hashes of imported segments not identified directly via a segment-root but rather through a work-package hash.
 

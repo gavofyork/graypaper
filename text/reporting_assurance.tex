@@ -95,7 +95,7 @@ Next, the hash of the payload ($\wl¬payloadhash$) within the work item which wa
 
 There is the work \emph{result}, the output blob or error of the execution of the code, $\wl¬result$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
 \begin{equation}
-  \mathbb{J} \in \{ \oog, \panic, \badexports, \token{BAD}, \token{BIG} \}
+  \mathbb{J} \in \{ \oog, \panic, \badexports, \oversize, \token{BAD}, \token{BIG} \}
 \end{equation}
 
 The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining three, the first indicates that the number of exports made was invalidly reported, the second indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The third indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
