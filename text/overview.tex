@@ -140,7 +140,7 @@ We further presume that a number of constant \emph{prices} stated in terms of to
 
 \subsection{The Virtual Machine and Gas}\label{sec:virtualmachineandgas}
 
-In the present work, we presume the definition of a \emph{Polka Virtual Machine} (\textsc{pvm}). This virtual machine is based around the \textsc{risc-v} instruction set architecture, specifically the \textsc{rv}\oldstylenums{64}\textsc{em} variant, and is the basis for introducing permissionless logic into our state-transition function.
+In the present work, we presume the definition of a \emph{Polkadot Virtual Machine} (\textsc{pvm}). This virtual machine is based around the \textsc{risc-v} instruction set architecture, specifically the \textsc{rv}\oldstylenums{64}\textsc{em} variant, and is the basis for introducing permissionless logic into our state-transition function.
 
 The \textsc{pvm} is comparable to the \textsc{evm} defined in the Yellow Paper, but somewhat simpler: the complex instructions for cryptographic operations are missing as are those which deal with environmental interactions. Overall it is far less opinionated since it alters a pre-existing general purpose design, \textsc{risc-v}, and optimizes it for our needs. This gives us excellent pre-existing tooling, since \textsc{pvm} remains essentially compatible with \textsc{risc-v}, including support from the compiler toolkit \textsc{llvm} and languages such as Rust and C++. Furthermore, the instruction set simplicity which \textsc{risc-v} and \textsc{pvm} share, together with the register size (64-bit), active number (13) and endianness (little) make it especially well-suited for creating efficient recompilers on to common hardware architectures.
 
