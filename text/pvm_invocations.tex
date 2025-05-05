@@ -159,7 +159,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
   F \in \Omega\ang{(\mathbf{X}, \mathbf{X})} &\colon (n, \gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) \mapsto \begin{cases}
     \Omega_G(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
     \Omega_\Gemini(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{config} \\
-    \Omega_\Leo(\gascounter, \registers, \memory, \eta_0, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{entropy} \\
+    \Omega_\Leo(\gascounter, \registers, \memory, \eta'_0, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{entropy} \\
     G(\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
     G(\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
     G(\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
@@ -215,9 +215,9 @@ We define $\Psi_A$, the Accumulation invocation function as:
 
 The mutator $F$ governs how this context will alter for any given parameterization, and the collapse function $C$ selects one of the two dimensions of context depending on whether the virtual machine's halt was regular or exceptional.
 
-The initializer function $I$ maps some service account $\mathbf{s}$ along with its index $s$ to yield a mutator context such that no alterations to state are implied (beyond those already inherent in $\mathbf{s}$) in either exit scenario. Note that the component $a$ utilizes the random accumulator $\eta_0$ and the block's timeslot $\mathbf{H}_t$ to create a deterministic sequence of identifiers which are extremely likely to be unique.
+The initializer function $I$ maps some service account $\mathbf{s}$ along with its index $s$ to yield a mutator context such that no alterations to state are implied (beyond those already inherent in $\mathbf{s}$) in either exit scenario. Note that the component $a$ utilizes the random accumulator $\eta'_0$ and the block's timeslot $\mathbf{H}_t$ to create a deterministic sequence of identifiers which are extremely likely to be unique.
 
-Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\eta_0$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
+Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\eta'_0$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
 \begin{equation}
   \text{check}(i \in \N_S) \equiv \begin{cases}
     i &\when i \not\in \keys{\mathbf{u}_\mathbf{d}} \\
@@ -247,7 +247,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
   \also F &\in \Omega\ang{\mathbb{A}}\colon (n, \gascounter, \registers, \memory, \mathbf{s}) \equiv \begin{cases}
     \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
     \Omega_\Gemini(\gascounter, \registers, \memory) &\when n = \mathtt{config} \\
-    \Omega_\Leo(\gascounter, \registers, \memory, \eta_0) &\when n = \mathtt{entropy} \\
+    \Omega_\Leo(\gascounter, \registers, \memory, \eta'_0) &\when n = \mathtt{entropy} \\
     \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{lookup} \\
     \Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{read} \\
     \Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s) &\when n = \mathtt{write} \\
