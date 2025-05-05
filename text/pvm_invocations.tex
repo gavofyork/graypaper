@@ -1,6 +1,6 @@
 \section{Virtual Machine Invocations}\label{sec:virtualmachineinvocations}
 
-
+We now define the four practical instances where we wish to invoke a PVM instance as part of the protocol. In general we avoid introducing unbounded data as part of the basic invocation arguments in order to minimise the chance of an unexpectedly large RAM allocation, which could lead to gas inflation and unavoidable underflow. This makes for a more cumbersome interface, but one which is more predictable and easier to reason about.
 
 \newcommand*{\pvm}{\mathbf{M}}
 \newcommand*{\segoff}{\varsigma}
@@ -50,8 +50,7 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
   \label{eq:isauthorizedmutator}F \in \Omega\ang{\{\}} &\colon
     (n, \gascounter, \registers, \memory) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
-      \Omega_\Gemini(\gascounter, \registers, \memory) &\when n = \mathtt{config} \\
-      \Omega_\Scorpio(\gascounter, \registers, \memory, \wpX, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{inspect\_package} \\
+      \Omega_Y(\gascounter, \registers, \memory, \wpX, p, \none, \none, \none, \none, \none, \none, \none) &\when n = \mathtt{fetch} \\
       (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
     \end{cases}
 \end{align}
@@ -78,7 +77,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
 \begin{align}
   &\Psi_R \colon \left\{\begin{aligned}
     (\N, \mathbb{P}, \Y, \seq{\seq{\G}}, \N) &\to (\Y \cup \mathbb{J}, \seq{\G}, \N_G) \\
-    (i, p, \mathbf{o}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
+    (i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
       (\token{BAD}, [], 0) &\when w_s \not\in \keys{\delta} \vee \Lambda(\delta[w_s], (p_\mathbf{x})_t, w_\wi¬codehash) = \none \\
       (\token{BIG}, [], 0) &\otherwhen |\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_\wi¬codehash)| > \mathsf{W}_C \\
       &\otherwise: \\
@@ -93,10 +92,8 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &F \in \Omega\ang{(\dict{\N}{\pvm}, \seq{\G})} \colon
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas} \\
-      \Omega_\Gemini(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{config} \\
-      \Omega_\Scorpio(\gascounter, \registers, \memory, p, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{inspect\_package} \\
+      \Omega_Y(\gascounter, \registers, \memory, p, \H_0, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \none, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
       \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), w_s, \delta, (p_\mathbf{x})_t) &\when n = \mathtt{historical\_lookup}\\
-      \Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), i, p, \mathbf{o}, \overline{\mathbf{i}}) &\when n = \mathtt{fetch}\\
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
       \Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
       \Omega_P(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{peek}\\
@@ -106,7 +103,8 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_K(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{invoke}\\
       \Omega_X(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{expunge}\\
       (\continue, \gascounter - 10, \registers', \memory) &\otherwise\\
-      \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}}
+      \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
+      \multicolumn{2}{l}{\also \overline{\mathbf{x}} = \sq{\sq{\mathbf{x} \mid (\hash(\mathbf{x}), |\mathbf{x}|) \orderedin w_\mathbf{x}} \mid w \orderedin p_\wp¬workitems}}
     \end{cases}
 \end{align}
 
@@ -141,7 +139,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G, \seq{\tuple{\N_S, \Y}}} \\
     (\mathbf{u}, t, s, g, \mathbf{o}) &\mapsto \begin{cases}
       \tup{\mathbf{u}, [], \none, 0, \sq{}} &\when \mathbf{c} = \none \vee |\mathbf{c}| > \mathsf{W}_C \\
-      C(\Psi_M(\mathbf{c}, 5, g, \se(t, s, \var{\mathbf{o}}), F, I(\mathbf{u}, s)^2)) &\otherwise \\
+      C(\Psi_M(\mathbf{c}, 5, g, \se(t, s, |\mathbf{o}|), F, I(\mathbf{u}, s)^2)) &\otherwise \\
       \where \mathbf{c} = \mathbf{u}_\mathbf{d}[s]_\mathbf{c}&
     \end{cases} \\
   \end{aligned}\right.\\
@@ -159,8 +157,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
   \end{aligned}\right.\\
   F \in \Omega\ang{(\mathbf{X}, \mathbf{X})} &\colon (n, \gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) \mapsto \begin{cases}
     \Omega_G(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
-    \Omega_\Gemini(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{config} \\
-    \Omega_\Leo(\gascounter, \registers, \memory, \eta'_0, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{entropy} \\
+    \Omega_Y(\gascounter, \registers, \memory, \none, \eta'_0, \none, \none, \none, \none, \mathbf{o}, \none, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
     G(\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
     G(\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
     G(\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
@@ -238,17 +235,16 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     \tup{\mathbf{s}, 0} &\when \mathbf{s}_\mathbf{c} = \none \vee |\mathbf{s}_\mathbf{c}| > \mathsf{W}_C \vee \mathbf{t} = [] \\
     \tup{\mathbf{s}', u} &\otherwise \\
     \multicolumn{2}{l}{
-\begin{aligned}
-        \quad\where (u, \mathbf{r}, \mathbf{s}') &= \Psi_M(\mathbf{s}_\mathbf{c}, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \se(t, s, \var{\mathbf{t}}), F, \mathbf{s}) \\
+      \begin{aligned}
+        \quad\where (u, \mathbf{r}, \mathbf{s}') &= \Psi_M(\mathbf{s}_\mathbf{c}, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \se(t, s, |\mathbf{t}|), F, \mathbf{s}) \\
         \quad\also \mathbf{s} &= \mathbf{d}[s]\exc\mathbf{s}_b = \mathbf{d}[s]_b + \sum_{r \in \mathbf{t}}{r_a}
-\end{aligned}
+      \end{aligned}
     }
     \end{cases} \\
   \end{cases} \\
   \also F &\in \Omega\ang{\mathbb{A}}\colon (n, \gascounter, \registers, \memory, \mathbf{s}) \equiv \begin{cases}
     \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
-    \Omega_\Gemini(\gascounter, \registers, \memory) &\when n = \mathtt{config} \\
-    \Omega_\Leo(\gascounter, \registers, \memory, \eta'_0) &\when n = \mathtt{entropy} \\
+    \Omega_Y(\gascounter, \registers, \memory, \none, \eta'_0, \none, \none, \none, \none, \none, \mathbf{t}) &\when n = \mathtt{fetch}\\
     \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{lookup} \\
     \Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{read} \\
     \Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s) &\when n = \mathtt{write} \\
@@ -267,11 +263,9 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
 
 We come now to defining the host functions which are utilized by the \textsc{pvm} invocations. Generally, these map some \textsc{pvm} state, including invocation context, possibly together with some additional parameters, to a new \textsc{pvm} state.
 
-The general functions are all broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory', \mathbf{s}') = \Omega_\square(\gascounter \in \N_G, \registers \in \regs, \memory \in \ram, \mathbf{s} \in \mathbb{A}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+The general functions are all broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory' \in \ram) = \Omega_\square(\gascounter \in \N_G, \registers \in \regs, \memory \in \ram)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
-Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context, but merely a service account $\mathbf{s}$.
-
-The $\mathtt{gas}$ function, $\Omega_G$ has a parameter list suffixed with an ellipsis to denote that any additional parameters may be taken and are provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
+Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \mathbb{A}$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that any additional parameters may be taken and are provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
 Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
@@ -299,65 +293,76 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_\Gemini(\registers, \memory, \dots)$ \\
-  \texttt{config} = 28 \\
+  $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{o}, \mathbf{t})$ \\
+  \texttt{fetch} = 18 \\
   $g = 10$} &
   $\begin{aligned}
-    \using \mathbf{v} &= \se\left(
-      \begin{aligned}
-        &\se_8(\mathsf{B}_I),
-        \se_8(\mathsf{B}_L),
-        \se_8(\mathsf{B}_S),
-        \se_2(\mathsf{C}),
-        \se_4(\mathsf{D}),
-        \se_4(\mathsf{E}),
-        \se_8(\mathsf{G}_A),
-        \se_8(\mathsf{G}_I),
-        \se_8(\mathsf{G}_R),\\
-        &\se_8(\mathsf{G}_T),
-        \se_2(\mathsf{H}),
-        \se_2(\mathsf{I}),
-        \se_2(\mathsf{J}),
-        \se_4(\mathsf{L}),
-        \se_2(\mathsf{O}),
-        \se_2(\mathsf{P}),
-        \se_2(\mathsf{Q}),
-        \se_2(\mathsf{R}),\\
-        &\se_2(\mathsf{S}),
-        \se_2(\mathsf{T}),
-        \se_2(\mathsf{U}),
-        \se_2(\mathsf{V}),
-        \se_4(\mathsf{W}_A),
-        \se_4(\mathsf{W}_B),
-        \se_4(\mathsf{W}_C),
-        \se_4(\mathsf{W}_E),\\
-        &\se_4(\mathsf{W}_G),
-        \se_4(\mathsf{W}_M),
-        \se_4(\mathsf{W}_P),
-        \se_4(\mathsf{W}_R),
-        \se_4(\mathsf{W}_T),
-        \se_4(\mathsf{W}_X),
-        \se_4(\mathsf{Y})
-      \end{aligned}
-    \right)\\
+    \using \mathbf{v} &= \begin{cases}
+      \mathbf{c} &\when \registers_{10} = 0 \\
+      \multicolumn{2}{l}{\where \mathbf{c} = \se\left(
+        \begin{aligned}
+          &\se_8(\mathsf{B}_I),
+          \se_8(\mathsf{B}_L),
+          \se_8(\mathsf{B}_S),
+          \se_2(\mathsf{C}),
+          \se_4(\mathsf{D}),
+          \se_4(\mathsf{E}),
+          \se_8(\mathsf{G}_A),\\
+          &\se_8(\mathsf{G}_I),
+          \se_8(\mathsf{G}_R),
+          \se_8(\mathsf{G}_T),
+          \se_2(\mathsf{H}),
+          \se_2(\mathsf{I}),
+          \se_2(\mathsf{J}),
+          \se_4(\mathsf{L}),
+          \se_2(\mathsf{O}),\\
+          &\se_2(\mathsf{P}),
+          \se_2(\mathsf{Q}),
+          \se_2(\mathsf{R}),
+          \se_2(\mathsf{S}),
+          \se_2(\mathsf{T}),
+          \se_2(\mathsf{U}),
+          \se_2(\mathsf{V}),
+          \se_4(\mathsf{W}_A),\\
+          &\se_4(\mathsf{W}_B),
+          \se_4(\mathsf{W}_C),
+          \se_4(\mathsf{W}_E),
+          \se_4(\mathsf{W}_G),
+          \se_4(\mathsf{W}_M),
+          \se_4(\mathsf{W}_P),\\
+          &\se_4(\mathsf{W}_R),
+          \se_4(\mathsf{W}_T),
+          \se_4(\mathsf{W}_X),
+          \se_4(\mathsf{Y})
+        \end{aligned}
+      \right)}\\
+      n &\when n \ne \none \wedge \registers_{10} = 1 \\
+      \mathbf{r} &\when \mathbf{r} \ne \none \wedge \registers_{10} = 2 \\
+      \overline{\mathbf{x}}[\registers_{11}]_{\registers_{12}} &\when i \ne \none \wedge \registers_{10} = 3 \wedge \registers_{11} < |\overline{\mathbf{x}}| \wedge \registers_{12} < |\overline{\mathbf{x}}[\registers_{11}]| \\
+      \overline{\mathbf{x}}[i]_{\registers_{11}} &\when i \ne \none \wedge \registers_{10} = 4 \wedge \registers_{11} < |\overline{\mathbf{x}}[i]| \\
+      \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when i \ne \none \wedge \registers_{10} = 5 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
+      \overline{\mathbf{i}}[i]_{\registers_{11}} &\when i \ne \none \wedge \registers_{10} = 6 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
+      \se(p) &\when p \ne \none \wedge \registers_{10} = 7 \\
+      \se(p_\wp¬authcodehash, \var{p_\wp¬authconfig}) &\when p \ne \none \wedge \registers_{10} = 8 \\
+      p_\wp¬authtoken &\when p \ne \none \wedge \registers_{10} = 9 \\
+      p_\wp¬context &\when p \ne \none \wedge \registers_{10} = 10 \\
+      \se(\var{\sq{S(w) \mid w \orderedin p_\wp¬workitems}}) &\when p \ne \none \wedge \registers_{10} = 11 \\
+      S(p_\wp¬workitems[\registers_{11}]) &\when p \ne \none \wedge \registers_{10} = 12 \wedge \registers_{11} < |p_\wp¬workitems| \\
+      \multicolumn{2}{l}{\where S(w) \equiv \se(\se_4(w_\wi¬service), w_\wi¬codehash, \se_8(w_\wi¬refgaslimit, w_\wi¬accgaslimit), \se_2(w_\wi¬exportcount, |w_\wi¬importsegments|, |w_\wi¬extrinsics|), \se_4(|w_\wi¬payload|))} \\
+      p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when p \ne \none \wedge \registers_{10} = 13 \wedge \registers_{11} < |p_\wp¬workitems| \\
+      \se(\var{\mathbf{o}}) &\when \mathbf{o} \ne \none \wedge \registers_{10} = 14 \\
+      \se(\mathbf{o}[\registers_{11}]) &\when \mathbf{o} \ne \none \wedge \registers_{10} = 15 \wedge \registers_{11} < |\mathbf{o}| \\
+      \se(\var{\mathbf{t}}) &\when \mathbf{t} \ne \none \wedge \registers_{10} = 16 \\
+      \se(\mathbf{t}[\registers_{11}]) &\when \mathbf{t} \ne \none \wedge \registers_{10} = 17 \wedge \registers_{11} < |\mathbf{t}| \\
+      \none &\otherwise
+    \end{cases} \\
     \using o &= \registers_7 \\
-    \using f &= \min(\registers_{8}, |\mathbf{v}|) \\
-    \using l &= \min(\registers_{9}, |\mathbf{v}| - f) \\
+    \using f &= \min(\registers_8, |\mathbf{v}|) \\
+    \using l &= \min(\registers_9, |\mathbf{v}| - f) \\
     (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory}\\
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory} \\
+      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
       (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
-    \end{cases}
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_\Leo(\registers, \memory, n, \dots)$ \\
-  \texttt{entropy} = 29 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using o &= \registers_7 \\
-    (\execst', \registers'_7, \memory'_{o\dots+32}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+32}) &\when \mathbb{N}_{o \dots+ 32} \not\subseteq \mathbb{V}^*_{\memory}\\
-      (\continue, \mathtt{OK}, n) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -467,6 +472,203 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       (\continue, \mathtt{OK}) &\otherwise \\
     \end{cases}
   \end{aligned}$ \\
+  \bottomrule
+\end{longtable}
+
+\subsection{Refine Functions}\label{sec:refinefunctions}
+
+These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\pvm}, \seq{\mathbb{G}})$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
+\begin{align}
+  \gascounter' &\equiv \gascounter - g\\
+  (\execst', \registers', \memory') &\equiv \begin{cases}
+    (\oog, \registers, \memory) &\when \gascounter < g\\
+    (\continue, \registers, \memory) \text{ except as indicated below} &\otherwise
+  \end{cases}
+\end{align}
+
+\begin{longtable}{p{4cm} p{12cm}}
+  \toprule
+  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
+  \thead{\textbf{Mutations}} \\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \endhead
+  \makecell*[l]{
+  $\Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), s, \mathbf{d}, t)$ \\
+  \texttt{historical\_lookup} = 17 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{d}[s] &\when \registers_7 = 2^{64} - 1 \wedge s \in \keys{\mathbf{d}} \\
+      \mathbf{d}[\registers_7] &\when \registers_7 \in \keys{\mathbf{d}} \\
+      \none &\otherwise
+    \end{cases} \\
+    \using [h, o] &= \registers_{8\dots+2} \\
+    \using \mathbf{v} &= \begin{cases}
+      \error &\when \mathbb{N}_{h \dots+ 32} \not\subseteq \mathbb{V}_{\memory} \\
+      \none &\otherwhen \mathbf{a} = \none \\
+      \Lambda(\mathbf{a}, t, \memory_{h\dots+32}) &\otherwise \\
+    \end{cases} \\
+    \using f &= \min(\registers_{10}, |\mathbf{v}|) \\
+    \using l &= \min(\registers_{11}, |\mathbf{v}| - f) \\
+    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory}\\
+      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
+      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff)$ \\
+  \texttt{export} = 19 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using p &= \registers_7 \\
+    \using z &= \min(\registers_8, \mathsf{W}_G) \\
+    \using \mathbf{x} &= \begin{cases}
+      \mathcal{P}_{\mathsf{W}_G}(\mem_{p\dots+z}) &\when \N_{p\dots+z} \subseteq \mathbb{V}_\memory\\
+      \error &\otherwise
+    \end{cases}\\
+    (\execst', \registers'_7, \mathbf{e}') &\equiv \begin{cases}
+      (\panic, \registers_7, \mathbf{e}) &\when \mathbf{x} = \error \\
+      (\continue, \mathtt{FULL}, \mathbf{e}) &\otherwhen \segoff+|\mathbf{e}| \ge \mathsf{W}_X \\
+      (\continue, \segoff + |\mathbf{e}|, \mathbf{e} \doubleplus \mathbf{x}) &\otherwise
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{machine} = 20 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [p_o, p_z, i] &= \registers_{7 \dots+ 3} \\
+    \using \mathbf{p} &= \begin{cases}
+      \memory_{p_o\dots+p_z} &\when \mathbb{N}_{p_o \dots+ p_z} \subseteq \mathbb{V}_{\memory} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using n &= \min(n \in \N, n \not\in \keys{\mathbf{m}}) \\
+    \using \mathbf{u} &= \tup{\is{\mathbf{V}}{[0, 0, \dots]},\is{\mathbf{A}}{[\none, \none, \dots]}} \\
+    (\execst', \registers'_7, \mathbf{m}) &\equiv \begin{cases}
+      (\panic, \registers_7, \mathbf{m}) &\when \mathbf{p} = \error \\
+      (\continue, \mathtt{HUH}, \mathbf{m}) &\otherwhen \deblob(\mathbf{p}) = \error \\
+      (\continue, n, \mathbf{m} \cup \{ n \mapsto \tup{\mathbf{p}, \mathbf{u}, i} \} ) &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_P(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{peek} = 21 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [n, o, s, z] &= \registers_{7 \dots+ 4} \\
+    (\execst', \registers'_7, \mem') &\equiv \begin{cases}
+      (\panic, \registers_7, \mem) &\when \N_{o\dots+z} \not\subseteq \mathbb{V}^*_\memory \\
+      (\continue, \mathtt{WHO}, \mem) &\otherwhen n \not\in \keys{\mathbf{m}} \\
+      (\continue, \mathtt{OOB}, \mem) &\otherwhen \N_{s\dots+z} \not\subseteq \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \\
+      (\continue, \mathtt{OK}, \mem') &\otherwise \\
+      \multicolumn{2}{l}{\where \mem' = \mem \exc \mem_{o\dots+z} = (\mathbf{m}[n]_\mathbf{u})_{s\dots+z}}
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_O(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{poke} = 22 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [n, s, o, z] &= \registers_{7 \dots+ 4} \\
+    (\execst', \registers'_7, \mathbf{m}') &\equiv \begin{cases}
+      (\panic, \registers_7, \mathbf{m}) &\when \N_{s\dots+z} \not\subseteq \mathbb{V}_\memory \\
+      (\continue, \mathtt{WHO}, \mathbf{m}) &\otherwhen n \not\in \keys{\mathbf{m}} \\
+      (\continue, \mathtt{OOB}, \mathbf{m}) &\otherwhen \N_{o\dots+z} \not\subseteq \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
+      (\continue, \mathtt{OK}, \mathbf{m}')  &\otherwise \\
+      \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'[n]_\mathbf{u})_{o\dots+z} = \mem_{s\dots+z}}
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_Z(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{zero} = 23 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [n, p, c] &= \registers_{7 \dots+ 3} \\
+    \using \mathbf{u} &= \begin{cases}
+      \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
+      \error &\otherwise\\
+    \end{cases} \\
+    \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
+      (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = [0, 0, \dots] \\
+      (\mathbf{u}'_\mathbf{A})_{p\dots+c} = [\mathrm{W}, \mathrm{W}, \dots]
+    \end{cases}\\
+    (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
+      (\mathtt{HUH}, \mathbf{m}) &\when p < 16 \vee p+c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \\
+      (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{u} = \error \\
+      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}' &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_V(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{void} = 24 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [n, p, c] &= \registers_{7 \dots+ 3} \\
+    \using \mathbf{u} &= \begin{cases}
+      \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
+      \error &\otherwise\\
+    \end{cases} \\
+    \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
+      (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = [0, 0, \dots] \\
+      (\mathbf{u}'_\mathbf{A})_{p\dots+c} = [\none, \none, \dots]
+    \end{cases}\\
+    (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
+      (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{u} = \error \\
+      (\mathtt{HUH}, \mathbf{m}) &\otherwhen p < 16 \vee p + c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \vee \exists i \in \N_{p\dots+c} : (\mathbf{u}_\mathbf{A})_i = \none \\
+      (\mathtt{OK}, \mathbf{m}') &\otherwise \\
+      \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}'}
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_K(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{invoke} = 25 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using [n, o] &= \registers_{7, 8} \\
+    \using (g, \mathbf{w}) &= \begin{cases}
+      (g, \mathbf{w}): \se_8(g) \concat \joined{\se^\#_8(\mathbf{w})} = \mem_{o \dots+ 112} &\when \N_{o \dots+ 112} \subseteq \mathbb{V}^*_{\mem} \\
+      %(\de_8(\memr_{o\dots+8}), [\de_4(\memr_{o+8+8x\dots+8}) \mid x \orderedin \N_{13}]) &\when \N_{o \dots+ 60} \subset \mathbb{V}^*_{\mem} \\
+      (\error, \error) &\otherwise
+    \end{cases} \\
+    \using (c, i', g', \mathbf{w}', \mathbf{u}') &= \Psi(\mathbf{m}[n]_\mathbf{p}, \mathbf{m}[n]_i, g, \mathbf{w}, \mathbf{m}[n]_\mathbf{u})\\
+    \using \mem^* &= \mem \exc \mem^*_{o \dots+ 112} = \se_8(g') \concat \joined{\se_8^\#(\mathbf{w}')}\\
+    \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
+      \mathbf{m}^*[n]_\mathbf{u} = \mathbf{u}'\\
+      \mathbf{m}^*[n]_i = \begin{cases}
+        i' + 1 &\when c \in \{ \host \} \times \N_R\\
+        i' &\otherwise
+      \end{cases}
+    \end{cases}\\
+    (\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}') &\equiv \begin{cases}
+      (\panic, \registers_7, \registers_8, \mem, \mathbf{m}) &\when g = \error \\
+      (\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}) &\otherwhen n \not\in \mathbf{m} \\
+      (\continue, \mathtt{HOST}, h, \mem^*, \mathbf{m}^*) &\otherwhen c = \host \times h \\
+      (\continue, \mathtt{FAULT}, x, \mem^*, \mathbf{m}^*) &\otherwhen c = \fault \times x \\
+      (\continue, \mathtt{OOG}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \oog \\
+      (\continue, \mathtt{PANIC}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \panic \\
+      (\continue, \mathtt{HALT}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \halt \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_X(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
+  \texttt{expunge} = 26 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using n &= \registers_7 \\
+    (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
+      (\mathtt{WHO}, \mathbf{m}) &\when n \not\in \keys{\mathbf{m}} \\
+      (\mathbf{m}[n]_i, \mathbf{m} \setminus n) &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
   \bottomrule
 \end{longtable}
 
@@ -752,265 +954,6 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       (\continue, \mathtt{HUH}, \mathbf{x}_\mathbf{p}) &\otherwhen \mathbf{a}_\mathbf{l}[\tup{\hash(\mathbf{i}), z}] \ne \sq{} \\
       (\continue, \mathtt{HUH}, \mathbf{x}_\mathbf{p}) &\otherwhen \tup{s^*, \mathbf{i}} \in \mathbf{x}_\mathbf{p} \\
       (\continue, \mathtt{OK}, \mathbf{x}_\mathbf{p} \cup \{\tup{s^*, \mathbf{i}}\}) &\otherwise \\
-    \end{cases} \\
-  \end{aligned}$\\
-  \bottomrule
-\end{longtable}
-
-\subsection{In-Core Functions}\label{sec:isauthorizedfunctions}
-
-This makes no assumptions on context and operates as a pass-through for any additional parameters, accepting only the additional parameter $p$ which is the work-package currently in-core.
-
-\begin{longtable}{p{4cm} p{12cm}}
-  \toprule
-  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
-  \thead{\textbf{Mutations}} \\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_\Scorpio(\gascounter, \registers, \memory, p, \dots)$ \\
-  \texttt{inspect\_package} = 29 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using \mathbf{v} &= \begin{cases}
-      \se(p) &\when \registers_{10} = 0 \\
-      \se(p_\wp¬authcodehash, \var{p_\wp¬authconfig}) &\when \registers_{10} = 1 \\
-      p_\wp¬authtoken &\when \registers_{10} = 2 \\
-      p_\wp¬context &\when \registers_{10} = 3 \\
-      \se(\var{\sq{S(w) \mid w \orderedin p_\wp¬workitems}}) &\when \registers_{10} = 4 \\
-      S(p_\wp¬workitems[\registers_{11}]) &\when \registers_{10} = 5 \wedge \registers_{11} < |p_\wp¬workitems| \\
-      \multicolumn{2}{l}{\where S(w) \equiv \se(\se_4(w_\wi¬service), w_\wi¬codehash, \se_8(w_\wi¬refgaslimit, w_\wi¬accgaslimit), \se_2(w_\wi¬exportcount, |w_\wi¬importsegments|, |w_\wi¬extrinsics|), \se_4(|w_\wi¬payload|))} \\
-      p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when \registers_{10} = 6 \wedge \registers_{11} < |p_\wp¬workitems| \\
-      \none &\otherwise
-    \end{cases} \\
-    \using o &= \registers_7 \\
-    \using f &= \min(\registers_8, |\mathbf{v}|) \\
-    \using l &= \min(\registers_9, |\mathbf{v}| - f) \\
-    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory} \\
-      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
-      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
-    \end{cases}
-  \end{aligned}$\\
-  \bottomrule
-\end{longtable}
-
-
-\subsection{Refine Functions}\label{sec:refinefunctions}
-
-These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\pvm}, \seq{\mathbb{G}})$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
-\begin{align}
-  \gascounter' &\equiv \gascounter - g\\
-  (\execst', \registers', \memory') &\equiv \begin{cases}
-    (\oog, \registers, \memory) &\when \gascounter < g\\
-    (\continue, \registers, \memory) \text{ except as indicated below} &\otherwise
-  \end{cases}
-\end{align}
-
-\begin{longtable}{p{4cm} p{12cm}}
-  \toprule
-  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
-  \thead{\textbf{Mutations}} \\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \endhead
-  \makecell*[l]{
-  $\Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), s, \mathbf{d}, t)$ \\
-  \texttt{historical\_lookup} = 17 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using \mathbf{a} &= \begin{cases}
-      \mathbf{d}[s] &\when \registers_7 = 2^{64} - 1 \wedge s \in \keys{\mathbf{d}} \\
-      \mathbf{d}[\registers_7] &\when \registers_7 \in \keys{\mathbf{d}} \\
-      \none &\otherwise
-    \end{cases} \\
-    \using [h, o] &= \registers_{8\dots+2} \\
-    \using \mathbf{v} &= \begin{cases}
-      \error &\when \mathbb{N}_{h \dots+ 32} \not\subseteq \mathbb{V}_{\memory} \\
-      \none &\otherwhen \mathbf{a} = \none \\
-      \Lambda(\mathbf{a}, t, \memory_{h\dots+32}) &\otherwise \\
-    \end{cases} \\
-    \using f &= \min(\registers_{10}, |\mathbf{v}|) \\
-    \using l &= \min(\registers_{11}, |\mathbf{v}| - f) \\
-    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory}\\
-      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
-      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
-    \end{cases}
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), i, p, \mathbf{o}, \overline{\mathbf{i}})$ \\
-  \texttt{fetch} = 18 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using \mathbf{v} &= \begin{cases}
-      \mathbf{o} &\when \registers_{10} = 0 \\
-      \mathbf{x} &\when \registers_{10} = 1 \wedge \registers_{11} < |p_\wp¬workitems| \wedge \registers_{12} < |p_\wp¬workitems[\registers_{11}]_\mathbf{x}| \\
-      & \quad \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\wp¬workitems[\registers_{11}]_\wi¬extrinsics[\registers_{12}] \\
-      \mathbf{x} &\when \registers_{10} = 2 \wedge \registers_{11} < |p_\wp¬workitems[i]_\wi¬extrinsics| \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\wp¬workitems[i]_\mathbf{x}[\registers_{11}] \\[2pt]
-      \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when \registers_{10} = 3 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
-      \overline{\mathbf{i}}[i]_{\registers_{11}} &\when \registers_{10} = 4 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
-      \none &\otherwise
-    \end{cases} \\
-    \using o &= \registers_7 \\
-    \using f &= \min(\registers_8, |\mathbf{v}|) \\
-    \using l &= \min(\registers_9, |\mathbf{v}| - f) \\
-    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory} \\
-      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
-      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
-    \end{cases}
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff)$ \\
-  \texttt{export} = 19 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using p &= \registers_7 \\
-    \using z &= \min(\registers_8, \mathsf{W}_G) \\
-    \using \mathbf{x} &= \begin{cases}
-      \mathcal{P}_{\mathsf{W}_G}(\mem_{p\dots+z}) &\when \N_{p\dots+z} \subseteq \mathbb{V}_\memory\\
-      \error &\otherwise
-    \end{cases}\\
-    (\execst', \registers'_7, \mathbf{e}') &\equiv \begin{cases}
-      (\panic, \registers_7, \mathbf{e}) &\when \mathbf{x} = \error \\
-      (\continue, \mathtt{FULL}, \mathbf{e}) &\otherwhen \segoff+|\mathbf{e}| \ge \mathsf{W}_X \\
-      (\continue, \segoff + |\mathbf{e}|, \mathbf{e} \doubleplus \mathbf{x}) &\otherwise
-    \end{cases}
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{machine} = 20 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using [p_o, p_z, i] &= \registers_{7 \dots+ 3} \\
-    \using \mathbf{p} &= \begin{cases}
-      \memory_{p_o\dots+p_z} &\when \mathbb{N}_{p_o \dots+ p_z} \subseteq \mathbb{V}_{\memory} \\
-      \error &\otherwise
-    \end{cases} \\
-    \using n &= \min(n \in \N, n \not\in \keys{\mathbf{m}}) \\
-    \using \mathbf{u} &= \tup{\is{\mathbf{V}}{[0, 0, \dots]},\is{\mathbf{A}}{[\none, \none, \dots]}} \\
-    (\execst', \registers'_7, \mathbf{m}) &\equiv \begin{cases}
-      (\panic, \registers_7, \mathbf{m}) &\when \mathbf{p} = \error \\
-      (\continue, \mathtt{HUH}, \mathbf{m}) &\otherwhen \deblob(\mathbf{p}) = \error \\
-      (\continue, n, \mathbf{m} \cup \{ n \mapsto \tup{\mathbf{p}, \mathbf{u}, i} \} ) &\otherwise \\
-    \end{cases} \\
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_P(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{peek} = 21 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using [n, o, s, z] &= \registers_{7 \dots+ 4} \\
-    (\execst', \registers'_7, \mem') &\equiv \begin{cases}
-      (\panic, \registers_7, \mem) &\when \N_{o\dots+z} \not\subseteq \mathbb{V}^*_\memory \\
-      (\continue, \mathtt{WHO}, \mem) &\otherwhen n \not\in \keys{\mathbf{m}} \\
-      (\continue, \mathtt{OOB}, \mem) &\otherwhen \N_{s\dots+z} \not\subseteq \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \\
-      (\continue, \mathtt{OK}, \mem') &\otherwise \\
-      \multicolumn{2}{l}{\where \mem' = \mem \exc \mem_{o\dots+z} = (\mathbf{m}[n]_\mathbf{u})_{s\dots+z}}
-    \end{cases} \\
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_O(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{poke} = 22 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using [n, s, o, z] &= \registers_{7 \dots+ 4} \\
-    (\execst', \registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\panic, \registers_7, \mathbf{m}) &\when \N_{s\dots+z} \not\subseteq \mathbb{V}_\memory \\
-      (\continue, \mathtt{WHO}, \mathbf{m}) &\otherwhen n \not\in \keys{\mathbf{m}} \\
-      (\continue, \mathtt{OOB}, \mathbf{m}) &\otherwhen \N_{o\dots+z} \not\subseteq \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
-      (\continue, \mathtt{OK}, \mathbf{m}')  &\otherwise \\
-      \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'[n]_\mathbf{u})_{o\dots+z} = \mem_{s\dots+z}}
-    \end{cases} \\
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_Z(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{zero} = 23 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using [n, p, c] &= \registers_{7 \dots+ 3} \\
-    \using \mathbf{u} &= \begin{cases}
-      \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
-      \error &\otherwise\\
-    \end{cases} \\
-    \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
-      (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = [0, 0, \dots] \\
-      (\mathbf{u}'_\mathbf{A})_{p\dots+c} = [\mathrm{W}, \mathrm{W}, \dots]
-    \end{cases}\\
-    (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\mathtt{HUH}, \mathbf{m}) &\when p < 16 \vee p+c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \\
-      (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{u} = \error \\
-      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}' &\otherwise \\
-    \end{cases} \\
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_V(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{void} = 24 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using [n, p, c] &= \registers_{7 \dots+ 3} \\
-    \using \mathbf{u} &= \begin{cases}
-      \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
-      \error &\otherwise\\
-    \end{cases} \\
-    \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
-      (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = [0, 0, \dots] \\
-      (\mathbf{u}'_\mathbf{A})_{p\dots+c} = [\none, \none, \dots]
-    \end{cases}\\
-    (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{u} = \error \\
-      (\mathtt{HUH}, \mathbf{m}) &\otherwhen p < 16 \vee p + c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \vee \exists i \in \N_{p\dots+c} : (\mathbf{u}_\mathbf{A})_i = \none \\
-      (\mathtt{OK}, \mathbf{m}') &\otherwise \\
-      \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}'}
-    \end{cases} \\
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_K(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{invoke} = 25 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using [n, o] &= \registers_{7, 8} \\
-    \using (g, \mathbf{w}) &= \begin{cases}
-      (g, \mathbf{w}): \se_8(g) \concat \joined{\se^\#_8(\mathbf{w})} = \mem_{o \dots+ 112} &\when \N_{o \dots+ 112} \subseteq \mathbb{V}^*_{\mem} \\
-      %(\de_8(\memr_{o\dots+8}), [\de_4(\memr_{o+8+8x\dots+8}) \mid x \orderedin \N_{13}]) &\when \N_{o \dots+ 60} \subset \mathbb{V}^*_{\mem} \\
-      (\error, \error) &\otherwise
-    \end{cases} \\
-    \using (c, i', g', \mathbf{w}', \mathbf{u}') &= \Psi(\mathbf{m}[n]_\mathbf{p}, \mathbf{m}[n]_i, g, \mathbf{w}, \mathbf{m}[n]_\mathbf{u})\\
-    \using \mem^* &= \mem \exc \mem^*_{o \dots+ 112} = \se_8(g') \concat \joined{\se_8^\#(\mathbf{w}')}\\
-    \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
-      \mathbf{m}^*[n]_\mathbf{u} = \mathbf{u}'\\
-      \mathbf{m}^*[n]_i = \begin{cases}
-        i' + 1 &\when c \in \{ \host \} \times \N_R\\
-        i' &\otherwise
-      \end{cases}
-    \end{cases}\\
-    (\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}') &\equiv \begin{cases}
-      (\panic, \registers_7, \registers_8, \mem, \mathbf{m}) &\when g = \error \\
-      (\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}) &\otherwhen n \not\in \mathbf{m} \\
-      (\continue, \mathtt{HOST}, h, \mem^*, \mathbf{m}^*) &\otherwhen c = \host \times h \\
-      (\continue, \mathtt{FAULT}, x, \mem^*, \mathbf{m}^*) &\otherwhen c = \fault \times x \\
-      (\continue, \mathtt{OOG}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \oog \\
-      (\continue, \mathtt{PANIC}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \panic \\
-      (\continue, \mathtt{HALT}, \registers_8, \mem^*, \mathbf{m}^*) &\otherwhen c = \halt \\
-    \end{cases} \\
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_X(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{expunge} = 26 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using n &= \registers_7 \\
-    (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\mathtt{WHO}, \mathbf{m}) &\when n \not\in \keys{\mathbf{m}} \\
-      (\mathbf{m}[n]_i, \mathbf{m} \setminus n) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \bottomrule
