@@ -77,7 +77,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
 \begin{align}
   &\Psi_R \colon \left\{\begin{aligned}
     (\N, \mathbb{P}, \Y, \seq{\seq{\G}}, \N) &\to (\Y \cup \mathbb{J}, \seq{\G}, \N_G) \\
-    (i, p, \mathbf{k}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
+    (i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
       (\token{BAD}, [], 0) &\when w_s \not\in \keys{\delta} \vee \Lambda(\delta[w_s], (p_\mathbf{x})_t, w_\wi¬codehash) = \none \\
       (\token{BIG}, [], 0) &\otherwhen |\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_\wi¬codehash)| > \mathsf{W}_C \\
       &\otherwise: \\
@@ -92,7 +92,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &F \in \Omega\ang{(\dict{\N}{\pvm}, \seq{\G})} \colon
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas} \\
-      \Omega_Y(\gascounter, \registers, \memory, p, \H_0, \mathbf{k}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \none, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
+      \Omega_Y(\gascounter, \registers, \memory, p, \H_0, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \none, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
       \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), w_s, \delta, (p_\mathbf{x})_t) &\when n = \mathtt{historical\_lookup}\\
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
       \Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
@@ -293,7 +293,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), p, n, \mathbf{k}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{o}, \mathbf{t})$ \\
+  $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{o}, \mathbf{t})$ \\
   \texttt{fetch} = 18 \\
   $g = 10$} &
   $\begin{aligned}
@@ -337,7 +337,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
         \end{aligned}
       \right)}\\
       n &\when n \ne \none \wedge \registers_{10} = 1 \\
-      \mathbf{k} &\when \mathbf{k} \ne \none \wedge \registers_{10} = 2 \\
+      \mathbf{r} &\when \mathbf{r} \ne \none \wedge \registers_{10} = 2 \\
       \overline{\mathbf{x}}[\registers_{11}]_{\registers_{12}} &\when i \ne \none \wedge \registers_{10} = 3 \wedge \registers_{11} < |\overline{\mathbf{x}}| \wedge \registers_{12} < |\overline{\mathbf{x}}[\registers_{11}]| \\
       \overline{\mathbf{x}}[i]_{\registers_{11}} &\when i \ne \none \wedge \registers_{10} = 4 \wedge \registers_{11} < |\overline{\mathbf{x}}[i]| \\
       \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when i \ne \none \wedge \registers_{10} = 5 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
