@@ -50,6 +50,7 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
   \label{eq:isauthorizedmutator}F \in \Omega\ang{\{\}} &\colon
     (n, \gascounter, \registers, \memory) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
+      \Omega_\Gemini(\gascounter, \registers, \memory) &\when n = \mathtt{config} \\
       (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
     \end{cases}
 \end{align}
@@ -91,10 +92,11 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   \label{eq:refinemutator}
   &F \in \Omega\ang{(\dict{\N}{\pvm}, \seq{\G})} \colon
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
+      \Omega_G(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas} \\
+      \Omega_\Gemini(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{config} \\
       \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), w_s, \delta, (p_\mathbf{x})_t) &\when n = \mathtt{historical\_lookup}\\
       \Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), i, p, \mathbf{o}, \overline{\mathbf{i}}) &\when n = \mathtt{fetch}\\
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
-      \Omega_G(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas}\\
       \Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
       \Omega_P(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{peek}\\
       \Omega_Z(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{zero}\\
@@ -155,10 +157,12 @@ We define $\Psi_A$, the Accumulation invocation function as:
     &\qquad\where i = \text{check}((\de_4(\hash(\se(s, \eta'_0, \mathbf{H}_t))) \bmod (2^{32}-2^9)) + 2^8) \\
   \end{aligned}\right.\\
   F \in \Omega\ang{(\mathbf{X}, \mathbf{X})} &\colon (n, \gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) \mapsto \begin{cases}
+    \Omega_G(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
+    \Omega_\Gemini(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{config} \\
+    \Omega_\Leo(\gascounter, \registers, \memory, \eta_0, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{entropy} \\
     G(\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
     G(\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
     G(\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
-    \Omega_G(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
     G(\Omega_I(\gascounter, \registers, \memory, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
     \Omega_B(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{bless}\\
     \Omega_A(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{assign}\\
@@ -241,10 +245,12 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     \end{cases} \\
   \end{cases} \\
   \also F &\in \Omega\ang{\mathbb{A}}\colon (n, \gascounter, \registers, \memory, \mathbf{s}) \equiv \begin{cases}
+    \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
+    \Omega_\Gemini(\gascounter, \registers, \memory) &\when n = \mathtt{config} \\
+    \Omega_\Leo(\gascounter, \registers, \memory, \eta_0) &\when n = \mathtt{entropy} \\
     \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{lookup} \\
     \Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{read} \\
     \Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s) &\when n = \mathtt{write} \\
-    \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
     \Omega_I(\gascounter, \registers, \memory, s, \mathbf{d}) &\when n = \mathtt{info} \\
     (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{s}) &\otherwise
   \end{cases}
@@ -289,6 +295,69 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   $\begin{aligned}
     \registers'_7 &\equiv \gascounter'
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_\Gemini(\registers, \memory, \dots)$ \\
+  \texttt{config} = 28 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using \mathbf{v} &= \se\left(
+      \begin{aligned}
+        &\se_8(\mathsf{B}_I),
+        \se_8(\mathsf{B}_L),
+        \se_8(\mathsf{B}_S),
+        \se_2(\mathsf{C}),
+        \se_4(\mathsf{D}),
+        \se_4(\mathsf{E}),
+        \se_8(\mathsf{G}_A),
+        \se_8(\mathsf{G}_I),
+        \se_8(\mathsf{G}_R),\\
+        &\se_8(\mathsf{G}_T),
+        \se_2(\mathsf{H}),
+        \se_2(\mathsf{I}),
+        \se_2(\mathsf{J}),
+        \se_4(\mathsf{L}),
+        \se_2(\mathsf{O}),
+        \se_2(\mathsf{P}),
+        \se_2(\mathsf{Q}),
+        \se_2(\mathsf{R}),\\
+        &\se_2(\mathsf{S}),
+        \se_2(\mathsf{T}),
+        \se_2(\mathsf{U}),
+        \se_2(\mathsf{V}),
+        \se_4(\mathsf{W}_A),
+        \se_4(\mathsf{W}_B),
+        \se_4(\mathsf{W}_C),
+        \se_4(\mathsf{W}_E),\\
+        &\se_4(\mathsf{W}_G),
+        \se_4(\mathsf{W}_M),
+        \se_4(\mathsf{W}_P),
+        \se_4(\mathsf{W}_R),
+        \se_4(\mathsf{W}_T),
+        \se_4(\mathsf{W}_X),
+        \se_4(\mathsf{Y})
+      \end{aligned}
+    \right)\\
+    \using o &= \registers_7 \\
+    \using f &= \min(\registers_{8}, |\mathbf{v}|) \\
+    \using l &= \min(\registers_{9}, |\mathbf{v}| - f) \\
+    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory}\\
+      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_\Leo(\registers, \memory, n, \dots)$ \\
+  \texttt{entropy} = 29 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using o &= \registers_7 \\
+    (\execst', \registers'_7, \memory'_{o\dots+32}) &\equiv \begin{cases}
+      (\panic, \registers_7, \memory_{o\dots+32}) &\when \mathbb{N}_{o \dots+ 32} \not\subseteq \mathbb{V}^*_{\memory}\\
+      (\continue, \mathtt{OK}, n) &\otherwise \\
+    \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
