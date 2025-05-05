@@ -806,12 +806,15 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using \mathbf{v} &= \begin{cases}
       \se(p) &\when \registers_{10} = 0 \\
       \mathbf{o} &\when \registers_{10} = 1 \\
-      p_\mathbf{w}[\registers_{11}]_\mathbf{y} &\when \registers_{10} = 2 \wedge \registers_{11} < |p_\mathbf{w}| \\
-      \mathbf{x} &\when \registers_{10} = 3 \wedge \registers_{11} < |p_\mathbf{w}| \wedge \registers_{12} < |p_\mathbf{w}[\registers_{11}]_\mathbf{x}| \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[\registers_{11}]_\mathbf{x}[\registers_{12}] \\
-      \mathbf{x} &\when \registers_{10} = 4 \wedge \registers_{11} < |p_\mathbf{w}[i]_\mathbf{x}| \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\mathbf{w}[i]_\mathbf{x}[\registers_{11}] \\[2pt]
+      p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when \registers_{10} = 2 \wedge \registers_{11} < |p_\wp¬workitems| \\
+      \mathbf{x} &\when \registers_{10} = 3 \wedge \registers_{11} < |p_\wp¬workitems| \wedge \registers_{12} < |p_\wp¬workitems[\registers_{11}]_\mathbf{x}| \\
+      & \quad \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\wp¬workitems[\registers_{11}]_\wi¬extrinsics[\registers_{12}] \\
+      \mathbf{x} &\when \registers_{10} = 4 \wedge \registers_{11} < |p_\wp¬workitems[i]_\wi¬extrinsics| \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\wp¬workitems[i]_\mathbf{x}[\registers_{11}] \\[2pt]
       \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when \registers_{10} = 5 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
       \overline{\mathbf{i}}[i]_{\registers_{11}} &\when \registers_{10} = 6 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
       p_\wp¬authconfig &\when \registers_{10} = 7 \\
+      S(p_\wp¬workitems[\registers_{11}]) &\when \registers_{10} = 8 \wedge \registers_{11} < |p_\wp¬workitems| \\
+      \multicolumn{2}{l}{\where S(w) \equiv \se(\se_4(w_\wi¬service), w_\wi¬codehash, \se_8(w_\wi¬refgaslimit, w_\wi¬accgaslimit), \se_2(w_\wi¬exportcount, |w_\wi¬importsegments|, |w_\wi¬extrinsics|), \se_4(|w_\wi¬payload|))} \\
       \none &\otherwise
     \end{cases} \\
     \using o &= \registers_7 \\
