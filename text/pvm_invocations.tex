@@ -50,8 +50,7 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
   \label{eq:isauthorizedmutator}F \in \Omega\ang{\{\}} &\colon
     (n, \gascounter, \registers, \memory) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
-      \Omega_\Gemini(\gascounter, \registers, \memory) &\when n = \mathtt{config} \\
-      \Omega_\Scorpio(\gascounter, \registers, \memory, \wpX, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{inspect\_package} \\
+      \Omega_Y(\gascounter, \registers, \memory, \wpX, p, \none, \none, \none, \none, \none) &\when n = \mathtt{fetch} \\
       (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
     \end{cases}
 \end{align}
@@ -93,10 +92,8 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &F \in \Omega\ang{(\dict{\N}{\pvm}, \seq{\G})} \colon
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas} \\
-      \Omega_\Gemini(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{config} \\
-      \Omega_\Scorpio(\gascounter, \registers, \memory, p, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{inspect\_package} \\
+      \Omega_Y(\gascounter, \registers, \memory, p, \H_0, \mathbf{o}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
       \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), w_s, \delta, (p_\mathbf{x})_t) &\when n = \mathtt{historical\_lookup}\\
-      \Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), i, p, \mathbf{o}, \overline{\mathbf{i}}) &\when n = \mathtt{fetch}\\
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
       \Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
       \Omega_P(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{peek}\\
@@ -106,7 +103,8 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_K(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{invoke}\\
       \Omega_X(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{expunge}\\
       (\continue, \gascounter - 10, \registers', \memory) &\otherwise\\
-      \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}}
+      \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
+      \multicolumn{2}{l}{\also \overline{\mathbf{x}} = \sq{\sq{\mathbf{x} \mid (\hash(\mathbf{x}), |\mathbf{x}|) \orderedin w_\mathbf{x}} \mid w \orderedin p_\wp¬workitems}}
     \end{cases}
 \end{align}
 
@@ -165,6 +163,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     G(\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
     G(\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
     G(\Omega_I(\gascounter, \registers, \memory, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{info} \\
+    \Omega_Y(\gascounter, \registers, \memory, \none, \eta'_0, \mathbf{o}, \none, \none, \none, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
     \Omega_B(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{bless}\\
     \Omega_A(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{assign}\\
     \Omega_D(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{designate}\\
@@ -247,8 +246,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
   \end{cases} \\
   \also F &\in \Omega\ang{\mathbb{A}}\colon (n, \gascounter, \registers, \memory, \mathbf{s}) \equiv \begin{cases}
     \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
-    \Omega_\Gemini(\gascounter, \registers, \memory) &\when n = \mathtt{config} \\
-    \Omega_\Leo(\gascounter, \registers, \memory, \eta'_0) &\when n = \mathtt{entropy} \\
+    \Omega_Y(\gascounter, \registers, \memory, \none, \eta'_0, \none, \none, \none, \none) &\when n = \mathtt{fetch}\\
     \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{lookup} \\
     \Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{read} \\
     \Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s) &\when n = \mathtt{write} \\
@@ -299,65 +297,72 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_\Gemini(\registers, \memory, \dots)$ \\
-  \texttt{config} = 28 \\
+  $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), p, n, \mathbf{o}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}})$ \\
+  \texttt{fetch} = 18 \\
   $g = 10$} &
   $\begin{aligned}
-    \using \mathbf{v} &= \se\left(
-      \begin{aligned}
-        &\se_8(\mathsf{B}_I),
-        \se_8(\mathsf{B}_L),
-        \se_8(\mathsf{B}_S),
-        \se_2(\mathsf{C}),
-        \se_4(\mathsf{D}),
-        \se_4(\mathsf{E}),
-        \se_8(\mathsf{G}_A),
-        \se_8(\mathsf{G}_I),
-        \se_8(\mathsf{G}_R),\\
-        &\se_8(\mathsf{G}_T),
-        \se_2(\mathsf{H}),
-        \se_2(\mathsf{I}),
-        \se_2(\mathsf{J}),
-        \se_4(\mathsf{L}),
-        \se_2(\mathsf{O}),
-        \se_2(\mathsf{P}),
-        \se_2(\mathsf{Q}),
-        \se_2(\mathsf{R}),\\
-        &\se_2(\mathsf{S}),
-        \se_2(\mathsf{T}),
-        \se_2(\mathsf{U}),
-        \se_2(\mathsf{V}),
-        \se_4(\mathsf{W}_A),
-        \se_4(\mathsf{W}_B),
-        \se_4(\mathsf{W}_C),
-        \se_4(\mathsf{W}_E),\\
-        &\se_4(\mathsf{W}_G),
-        \se_4(\mathsf{W}_M),
-        \se_4(\mathsf{W}_P),
-        \se_4(\mathsf{W}_R),
-        \se_4(\mathsf{W}_T),
-        \se_4(\mathsf{W}_X),
-        \se_4(\mathsf{Y})
-      \end{aligned}
-    \right)\\
+    \using \mathbf{v} &= \begin{cases}
+      \mathbf{c} &\when \registers_{10} = 0 \\
+      \multicolumn{2}{l}{\where \mathbf{c} = \se\left(
+        \begin{aligned}
+          &\se_8(\mathsf{B}_I),
+          \se_8(\mathsf{B}_L),
+          \se_8(\mathsf{B}_S),
+          \se_2(\mathsf{C}),
+          \se_4(\mathsf{D}),
+          \se_4(\mathsf{E}),
+          \se_8(\mathsf{G}_A),\\
+          &\se_8(\mathsf{G}_I),
+          \se_8(\mathsf{G}_R),
+          \se_8(\mathsf{G}_T),
+          \se_2(\mathsf{H}),
+          \se_2(\mathsf{I}),
+          \se_2(\mathsf{J}),
+          \se_4(\mathsf{L}),
+          \se_2(\mathsf{O}),\\
+          &\se_2(\mathsf{P}),
+          \se_2(\mathsf{Q}),
+          \se_2(\mathsf{R}),
+          \se_2(\mathsf{S}),
+          \se_2(\mathsf{T}),
+          \se_2(\mathsf{U}),
+          \se_2(\mathsf{V}),
+          \se_4(\mathsf{W}_A),\\
+          &\se_4(\mathsf{W}_B),
+          \se_4(\mathsf{W}_C),
+          \se_4(\mathsf{W}_E),
+          \se_4(\mathsf{W}_G),
+          \se_4(\mathsf{W}_M),
+          \se_4(\mathsf{W}_P),\\
+          &\se_4(\mathsf{W}_R),
+          \se_4(\mathsf{W}_T),
+          \se_4(\mathsf{W}_X),
+          \se_4(\mathsf{Y})
+        \end{aligned}
+      \right)}\\
+      n &\when n \ne \none \wedge \registers_{10} = 1 \\
+      \mathbf{o} &\when \mathbf{o} \ne \none \wedge \registers_{10} = 2 \\
+      \overline{\mathbf{x}}[\registers_{11}]_{\registers_{12}} &\when i \ne \none \wedge \registers_{10} = 3 \wedge \registers_{11} < |\overline{\mathbf{x}}| \wedge \registers_{12} < |\overline{\mathbf{x}}[\registers_{11}]| \\
+      \overline{\mathbf{x}}[i]_{\registers_{11}} &\when i \ne \none \wedge \registers_{10} = 4 \wedge \registers_{11} < |\overline{\mathbf{x}}[i]| \\
+      \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when i \ne \none \wedge \registers_{10} = 5 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
+      \overline{\mathbf{i}}[i]_{\registers_{11}} &\when i \ne \none \wedge \registers_{10} = 6 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
+      \se(p) &\when p \ne \none \wedge \registers_{10} = 7 \\
+      \se(p_\wp¬authcodehash, \var{p_\wp¬authconfig}) &\when p \ne \none \wedge \registers_{10} = 8 \\
+      p_\wp¬authtoken &\when p \ne \none \wedge \registers_{10} = 9 \\
+      p_\wp¬context &\when p \ne \none \wedge \registers_{10} = 10 \\
+      \se(\var{\sq{S(w) \mid w \orderedin p_\wp¬workitems}}) &\when p \ne \none \wedge \registers_{10} = 11 \\
+      S(p_\wp¬workitems[\registers_{11}]) &\when p \ne \none \wedge \registers_{10} = 12 \wedge \registers_{11} < |p_\wp¬workitems| \\
+      \multicolumn{2}{l}{\where S(w) \equiv \se(\se_4(w_\wi¬service), w_\wi¬codehash, \se_8(w_\wi¬refgaslimit, w_\wi¬accgaslimit), \se_2(w_\wi¬exportcount, |w_\wi¬importsegments|, |w_\wi¬extrinsics|), \se_4(|w_\wi¬payload|))} \\
+      p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when p \ne \none \wedge \registers_{10} = 13 \wedge \registers_{11} < |p_\wp¬workitems| \\
+      \none &\otherwise
+    \end{cases} \\
     \using o &= \registers_7 \\
-    \using f &= \min(\registers_{8}, |\mathbf{v}|) \\
-    \using l &= \min(\registers_{9}, |\mathbf{v}| - f) \\
+    \using f &= \min(\registers_8, |\mathbf{v}|) \\
+    \using l &= \min(\registers_9, |\mathbf{v}| - f) \\
     (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory}\\
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory} \\
+      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
       (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
-    \end{cases}
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_\Leo(\registers, \memory, n, \dots)$ \\
-  \texttt{entropy} = 29 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using o &= \registers_7 \\
-    (\execst', \registers'_7, \memory'_{o\dots+32}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+32}) &\when \mathbb{N}_{o \dots+ 32} \not\subseteq \mathbb{V}^*_{\memory}\\
-      (\continue, \mathtt{OK}, n) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -757,44 +762,6 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \bottomrule
 \end{longtable}
 
-\subsection{In-Core Functions}\label{sec:isauthorizedfunctions}
-
-This makes no assumptions on context and operates as a pass-through for any additional parameters, accepting only the additional parameter $p$ which is the work-package currently in-core.
-
-\begin{longtable}{p{4cm} p{12cm}}
-  \toprule
-  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
-  \thead{\textbf{Mutations}} \\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_\Scorpio(\gascounter, \registers, \memory, p, \dots)$ \\
-  \texttt{inspect\_package} = 29 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using \mathbf{v} &= \begin{cases}
-      \se(p) &\when \registers_{10} = 0 \\
-      \se(p_\wp¬authcodehash, \var{p_\wp¬authconfig}) &\when \registers_{10} = 1 \\
-      p_\wp¬authtoken &\when \registers_{10} = 2 \\
-      p_\wp¬context &\when \registers_{10} = 3 \\
-      \se(\var{\sq{S(w) \mid w \orderedin p_\wp¬workitems}}) &\when \registers_{10} = 4 \\
-      S(p_\wp¬workitems[\registers_{11}]) &\when \registers_{10} = 5 \wedge \registers_{11} < |p_\wp¬workitems| \\
-      \multicolumn{2}{l}{\where S(w) \equiv \se(\se_4(w_\wi¬service), w_\wi¬codehash, \se_8(w_\wi¬refgaslimit, w_\wi¬accgaslimit), \se_2(w_\wi¬exportcount, |w_\wi¬importsegments|, |w_\wi¬extrinsics|), \se_4(|w_\wi¬payload|))} \\
-      p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when \registers_{10} = 6 \wedge \registers_{11} < |p_\wp¬workitems| \\
-      \none &\otherwise
-    \end{cases} \\
-    \using o &= \registers_7 \\
-    \using f &= \min(\registers_8, |\mathbf{v}|) \\
-    \using l &= \min(\registers_9, |\mathbf{v}| - f) \\
-    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory} \\
-      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
-      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
-    \end{cases}
-  \end{aligned}$\\
-  \bottomrule
-\end{longtable}
-
-
 \subsection{Refine Functions}\label{sec:refinefunctions}
 
 These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\pvm}, \seq{\mathbb{G}})$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
@@ -832,30 +799,6 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using l &= \min(\registers_{11}, |\mathbf{v}| - f) \\
     (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
       (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory}\\
-      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
-      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
-    \end{cases}
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), i, p, \mathbf{o}, \overline{\mathbf{i}})$ \\
-  \texttt{fetch} = 18 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using \mathbf{v} &= \begin{cases}
-      \mathbf{o} &\when \registers_{10} = 0 \\
-      \mathbf{x} &\when \registers_{10} = 1 \wedge \registers_{11} < |p_\wp¬workitems| \wedge \registers_{12} < |p_\wp¬workitems[\registers_{11}]_\mathbf{x}| \\
-      & \quad \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\wp¬workitems[\registers_{11}]_\wi¬extrinsics[\registers_{12}] \\
-      \mathbf{x} &\when \registers_{10} = 2 \wedge \registers_{11} < |p_\wp¬workitems[i]_\wi¬extrinsics| \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\wp¬workitems[i]_\mathbf{x}[\registers_{11}] \\[2pt]
-      \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when \registers_{10} = 3 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
-      \overline{\mathbf{i}}[i]_{\registers_{11}} &\when \registers_{10} = 4 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
-      \none &\otherwise
-    \end{cases} \\
-    \using o &= \registers_7 \\
-    \using f &= \min(\registers_8, |\mathbf{v}|) \\
-    \using l &= \min(\registers_9, |\mathbf{v}| - f) \\
-    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory} \\
       (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
       (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
