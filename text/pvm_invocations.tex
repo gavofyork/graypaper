@@ -36,7 +36,7 @@ Note return codes for a host-call-request exit are any non-zero value less than 
 
 \newcommand*{\wpX}{p}
 
-The Is-Authorized invocation is the first and simplest of the four, being totally stateless. It provides only a single host-call function, $\Omega_G$ for determining the amount of gas remaining. It accepts as arguments the work-package as a whole, $\mathbf{p}$ and the core on which it should be executed, $c$. Formally, it is defined as $\Psi_I$:
+The Is-Authorized invocation is the first and simplest of the four, being totally stateless. It provides only host-call functions for inspecting its environment and parameters. It accepts as arguments only the core on which it should be executed, $c$. Formally, it is defined as $\Psi_I$:
 \begin{align}
   \Psi_I &\colon \left\{\begin{aligned}
     (\mathbb{P}, \N_\mathsf{C}) &\to \tuple{\Y \cup \mathbb{J}, \N_G} \\
@@ -44,13 +44,14 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
       \tup{\token{BAD}, 0} &\when |\wpX_\mathbf{c}| = \none \\
       \tup{\token{BIG}, 0} &\otherwhen |\wpX_\mathbf{c}| > \mathsf{W}_A \\
       \tup{\mathbf{r}, u} &\otherwise \\
-      \multicolumn{2}{l}{\where (u, \mathbf{r}, \none) = \Psi_M(\wpX_\mathbf{c}, 0, \mathsf{G}_I, \mathcal{E}(\wpX, c), F, \none)}\\
+      \multicolumn{2}{l}{\where (u, \mathbf{r}, \none) = \Psi_M(\wpX_\mathbf{c}, 0, \mathsf{G}_I, \se_2(c), F, \none)}\\
     \end{cases}\\
   \end{aligned}\right. \\
   \label{eq:isauthorizedmutator}F \in \Omega\ang{\{\}} &\colon
     (n, \gascounter, \registers, \memory) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
       \Omega_\Gemini(\gascounter, \registers, \memory) &\when n = \mathtt{config} \\
+      \Omega_\Scorpio(\gascounter, \registers, \memory, \wpX, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{inspect\_package} \\
       (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory) &\otherwise
     \end{cases}
 \end{align}
@@ -65,7 +66,6 @@ The historical-lookup host-call function, $\Omega_H$, is designed to give the sa
 \begin{equation}
   \mathsf{D} \equiv \mathsf{L} + 4,800 = 19,200
 \end{equation}
-
 
 The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvm$. It holds some program code, instruction counter and \textsc{ram}:
 \begin{equation}
@@ -82,7 +82,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       (\token{BAD}, [], 0) &\when w_s \not\in \keys{\delta} \vee \Lambda(\delta[w_s], (p_\mathbf{x})_t, w_\wi¬codehash) = \none \\
       (\token{BIG}, [], 0) &\otherwhen |\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_\wi¬codehash)| > \mathsf{W}_C \\
       &\otherwise: \\
-      &\quad\using a = \se(w_s, w_\mathbf{y}, \hash(p), p_\wp¬context, p_\wp¬authcodehash)\ , \se(\var{\mathbf{m}}, \mathbf{c}) = \Lambda(\delta[w_s], (p_\wp¬context)_t, w_\wi¬codehash)\\
+      &\quad\using a = \se(i, w_s, \var{w_\mathbf{y}}, \hash(p))\;,\ \se(\var{\mathbf{z}}, \mathbf{c}) = \Lambda(\delta[w_s], (p_\wp¬context)_t, w_\wi¬codehash)\\
       &\quad\also (u, \mathbf{r}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\mathbf{c}, 0, w_g, a, F, (\emptyset, []))\ \colon\\
       (\mathbf{r}, [], u) &\quad\when \mathbf{r} \in \{ \oog, \panic \}  \\
       (\mathbf{r}, \mathbf{e}, u) &\quad\otherwise \\
@@ -94,6 +94,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas} \\
       \Omega_\Gemini(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{config} \\
+      \Omega_\Scorpio(\gascounter, \registers, \memory, p, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{inspect\_package} \\
       \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), w_s, \delta, (p_\mathbf{x})_t) &\when n = \mathtt{historical\_lookup}\\
       \Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), i, p, \mathbf{o}, \overline{\mathbf{i}}) &\when n = \mathtt{fetch}\\
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
@@ -756,6 +757,44 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \bottomrule
 \end{longtable}
 
+\subsection{In-Core Functions}\label{sec:isauthorizedfunctions}
+
+This makes no assumptions on context and operates as a pass-through for any additional parameters, accepting only the additional parameter $p$ which is the work-package currently in-core.
+
+\begin{longtable}{p{4cm} p{12cm}}
+  \toprule
+  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
+  \thead{\textbf{Mutations}} \\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_\Scorpio(\gascounter, \registers, \memory, p, \dots)$ \\
+  \texttt{inspect\_package} = 29 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using \mathbf{v} &= \begin{cases}
+      \se(p) &\when \registers_{10} = 0 \\
+      \se(p_\wp¬authcodehash, \var{p_\wp¬authconfig}) &\when \registers_{10} = 1 \\
+      p_\wp¬authtoken &\when \registers_{10} = 2 \\
+      p_\wp¬context &\when \registers_{10} = 3 \\
+      \se(\var{\sq{S(w) \mid w \orderedin p_\wp¬workitems}}) &\when \registers_{10} = 4 \\
+      S(p_\wp¬workitems[\registers_{11}]) &\when \registers_{10} = 5 \wedge \registers_{11} < |p_\wp¬workitems| \\
+      \multicolumn{2}{l}{\where S(w) \equiv \se(\se_4(w_\wi¬service), w_\wi¬codehash, \se_8(w_\wi¬refgaslimit, w_\wi¬accgaslimit), \se_2(w_\wi¬exportcount, |w_\wi¬importsegments|, |w_\wi¬extrinsics|), \se_4(|w_\wi¬payload|))} \\
+      p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when \registers_{10} = 6 \wedge \registers_{11} < |p_\wp¬workitems| \\
+      \none &\otherwise
+    \end{cases} \\
+    \using o &= \registers_7 \\
+    \using f &= \min(\registers_8, |\mathbf{v}|) \\
+    \using l &= \min(\registers_9, |\mathbf{v}| - f) \\
+    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory} \\
+      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
+      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
+    \end{cases}
+  \end{aligned}$\\
+  \bottomrule
+\end{longtable}
+
+
 \subsection{Refine Functions}\label{sec:refinefunctions}
 
 These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\pvm}, \seq{\mathbb{G}})$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
@@ -804,17 +843,12 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{v} &= \begin{cases}
-      \se(p) &\when \registers_{10} = 0 \\
-      \mathbf{o} &\when \registers_{10} = 1 \\
-      p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when \registers_{10} = 2 \wedge \registers_{11} < |p_\wp¬workitems| \\
-      \mathbf{x} &\when \registers_{10} = 3 \wedge \registers_{11} < |p_\wp¬workitems| \wedge \registers_{12} < |p_\wp¬workitems[\registers_{11}]_\mathbf{x}| \\
+      \mathbf{o} &\when \registers_{10} = 0 \\
+      \mathbf{x} &\when \registers_{10} = 1 \wedge \registers_{11} < |p_\wp¬workitems| \wedge \registers_{12} < |p_\wp¬workitems[\registers_{11}]_\mathbf{x}| \\
       & \quad \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\wp¬workitems[\registers_{11}]_\wi¬extrinsics[\registers_{12}] \\
-      \mathbf{x} &\when \registers_{10} = 4 \wedge \registers_{11} < |p_\wp¬workitems[i]_\wi¬extrinsics| \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\wp¬workitems[i]_\mathbf{x}[\registers_{11}] \\[2pt]
-      \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when \registers_{10} = 5 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
-      \overline{\mathbf{i}}[i]_{\registers_{11}} &\when \registers_{10} = 6 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
-      p_\wp¬authconfig &\when \registers_{10} = 7 \\
-      S(p_\wp¬workitems[\registers_{11}]) &\when \registers_{10} = 8 \wedge \registers_{11} < |p_\wp¬workitems| \\
-      \multicolumn{2}{l}{\where S(w) \equiv \se(\se_4(w_\wi¬service), w_\wi¬codehash, \se_8(w_\wi¬refgaslimit, w_\wi¬accgaslimit), \se_2(w_\wi¬exportcount, |w_\wi¬importsegments|, |w_\wi¬extrinsics|), \se_4(|w_\wi¬payload|))} \\
+      \mathbf{x} &\when \registers_{10} = 2 \wedge \registers_{11} < |p_\wp¬workitems[i]_\wi¬extrinsics| \wedge (\hash(\mathbf{x}), |\mathbf{x}|) = p_\wp¬workitems[i]_\mathbf{x}[\registers_{11}] \\[2pt]
+      \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when \registers_{10} = 3 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
+      \overline{\mathbf{i}}[i]_{\registers_{11}} &\when \registers_{10} = 4 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
       \none &\otherwise
     \end{cases} \\
     \using o &= \registers_7 \\
