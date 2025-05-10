@@ -77,7 +77,7 @@ The program blob $\mathbf{p}$ is split into a series of octets which make up the
 
 The latter, dynamic jump table, is a sequence of indices into the instruction data blob and is indexed into when dynamically-computed jumps are taken. It is encoded as a sequence of natural numbers (i.e. non-negative integers) each encoded with the same length in octets. This length, term $z$ above, is itself encoded prior.
 
-The \textsc{pvm} counts instructions in octet terms (rather than in terms of instructions) and it is thus convenient to define which octets represent the beginning of an instruction, \ie the opcode octet, and which do not. This is the purpose of $\mathbf{k}$, the instruction-opcode bitmask. We assert that the length of the bitmask is equal to the length of the instruction blob.
+The \textsc{pvm} counts instructions in octet terms (rather than in terms of instructions) and it is thus necessary to define which octets represent the beginning of an instruction, \ie the opcode octet, and which do not. This is the purpose of $\mathbf{k}$, the instruction-opcode bitmask. We assert that the length of the bitmask is equal to the length of the instruction blob.
 
 \newcommand{\Fskip}{\text{skip}}
 
@@ -126,9 +126,9 @@ Instructions of the following opcodes are considered basic-block termination ins
   , $\token{branch\_gt\_s\_imm}$
 \end{itemize}
 
-We denote this set, as opcode indices rather than names, as $T$. We define the instruction opcode indices denoting the beginning of basic-blocks as $\basicblocks$:
+We denote this set, as opcode indices rather than names, as $T$, which is a subset of all valid opcode indices $U$. We define the instruction opcode indices denoting the beginning of basic-blocks as $\basicblocks$:
 \begin{equation}
-  \basicblocks \equiv [0] \concat [n + 1 + \Fskip(n) \mid n \orderedin \N_{|\mathbf{c}|} \wedge \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in T]
+  \basicblocks \equiv \left(\{0\} \cup \{n + 1 + \Fskip(n) \mid n \in \N_{|\mathbf{c}|} \wedge \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in T\}\right) \cap \{n \mid \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in U\}
 \end{equation}
 
 \subsection{Single-Step State Transition}
@@ -232,7 +232,16 @@ As with other irregular alterations to the program counter, target code index mu
 
 \subsection{Instruction Tables}\label{sec:instructiontables}
 
-Note that in the case that the opcode is not defined in the following tables then the instruction is considered invalid, and it results in a panic; $\varepsilon=\panic$.
+Only instructions which are defined in the following tables and whose opcode has its corresponding bit set in the bitmask are considered valid, otherwise the instruction behaves as-if its opcode was equal to zero. Assuming $U$ denotes all valid opcode indices, formally:
+\begin{equation}
+  \text{opcode}\colon\left\{\begin{aligned}
+    \N &\to \N\\
+    n &\mapsto \begin{cases}
+    \mathbf{c}_n &\when \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in U \\
+    0 &\otherwise
+    \end{cases}
+  \end{aligned}\right.
+\end{equation}
 
 We assume the skip length $\ell$ is well-defined:
 \begin{equation}
