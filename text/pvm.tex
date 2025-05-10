@@ -126,9 +126,9 @@ Instructions of the following opcodes are considered basic-block termination ins
   , $\token{branch\_gt\_s\_imm}$
 \end{itemize}
 
-We denote this set, as opcode indices rather than names, as $T$. We define the instruction opcode indices denoting the beginning of basic-blocks as $\basicblocks$:
+We denote this set, as opcode indices rather than names, as $T$, which is a subset of all valid opcode indices $U$. We define the instruction opcode indices denoting the beginning of basic-blocks as $\basicblocks$:
 \begin{equation}
-  \basicblocks \equiv [0] \concat [n + 1 + \Fskip(n) \mid n \orderedin \N_{|\mathbf{c}|} \wedge \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in T]
+  \basicblocks \equiv \left(\{0\} \cup \{n + 1 + \Fskip(n) \mid n \in \N_{|\mathbf{c}|} \wedge \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in T\}\right) \cap \{n \mid \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in U\}
 \end{equation}
 
 \subsection{Single-Step State Transition}
