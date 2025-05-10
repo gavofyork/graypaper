@@ -139,7 +139,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G, \seq{\tuple{\N_S, \Y}}} \\
     (\mathbf{u}, t, s, g, \mathbf{o}) &\mapsto \begin{cases}
       \tup{\mathbf{u}, [], \none, 0, \sq{}} &\when \mathbf{c} = \none \vee |\mathbf{c}| > \mathsf{W}_C \\
-      C(\Psi_M(\mathbf{c}, 5, g, \se(t, s, |\mathbf{o}|), F, I(\mathbf{u}, s)^2)) &\otherwise \\
+      C(\Psi_M(\mathbf{c}, 5, g, \se(\se_4(t), \se_4(s), \var{\mathbf{o}}), F, I(\mathbf{u}, s)^2)) &\otherwise \\
       \where \mathbf{c} = \mathbf{u}_\mathbf{d}[s]_\mathbf{c}&
     \end{cases} \\
   \end{aligned}\right.\\
@@ -236,7 +236,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     \tup{\mathbf{s}', u} &\otherwise \\
     \multicolumn{2}{l}{
       \begin{aligned}
-        \quad\where (u, \mathbf{r}, \mathbf{s}') &= \Psi_M(\mathbf{s}_\mathbf{c}, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \se(t, s, |\mathbf{t}|), F, \mathbf{s}) \\
+        \quad\where (u, \mathbf{r}, \mathbf{s}') &= \Psi_M(\mathbf{s}_\mathbf{c}, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \se(\se_4(t), \se_4(s), \var{\mathbf{t}}), F, \mathbf{s}) \\
         \quad\also \mathbf{s} &= \mathbf{d}[s]\exc\mathbf{s}_b = \mathbf{d}[s]_b + \sum_{r \in \mathbf{t}}{r_a}
       \end{aligned}
     }
