@@ -92,7 +92,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &F \in \Omega\ang{(\dict{\N}{\pvm}, \seq{\G})} \colon
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas} \\
-      \Omega_Y(\gascounter, \registers, \memory, p, \H_0, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \none, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
+      \Omega_Y(\gascounter, \registers, \memory, p, \H_0, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \none) &\when n = \mathtt{fetch}\\
       \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), w_s, \delta, (p_\mathbf{x})_t) &\when n = \mathtt{historical\_lookup}\\
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
       \Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
@@ -157,7 +157,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
   \end{aligned}\right.\\
   F \in \Omega\ang{(\mathbf{X}, \mathbf{X})} &\colon (n, \gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) \mapsto \begin{cases}
     \Omega_G(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
-    \Omega_Y(\gascounter, \registers, \memory, \none, \eta'_0, \none, \none, \none, \none, \mathbf{o}, \none, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
+    \Omega_Y(\gascounter, \registers, \memory, \none, \eta'_0, \none, \none, \none, \none, \mathbf{o}, \none) &\when n = \mathtt{fetch}\\
     G(\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{read} \\
     G(\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{write} \\
     G(\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, \mathbf{x}_s, \mathbf{d}), (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{lookup} \\
@@ -293,7 +293,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{o}, \mathbf{t})$ \\
+  $\Omega_Y(\gascounter, \registers, \memory, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{o}, \mathbf{t})$ \\
   \texttt{fetch} = 18 \\
   $g = 10$} &
   $\begin{aligned}
@@ -338,14 +338,14 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \right)}\\
       n &\when n \ne \none \wedge \registers_{10} = 1 \\
       \mathbf{r} &\when \mathbf{r} \ne \none \wedge \registers_{10} = 2 \\
-      \overline{\mathbf{x}}[\registers_{11}]_{\registers_{12}} &\when i \ne \none \wedge \registers_{10} = 3 \wedge \registers_{11} < |\overline{\mathbf{x}}| \wedge \registers_{12} < |\overline{\mathbf{x}}[\registers_{11}]| \\
-      \overline{\mathbf{x}}[i]_{\registers_{11}} &\when i \ne \none \wedge \registers_{10} = 4 \wedge \registers_{11} < |\overline{\mathbf{x}}[i]| \\
-      \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when i \ne \none \wedge \registers_{10} = 5 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
-      \overline{\mathbf{i}}[i]_{\registers_{11}} &\when i \ne \none \wedge \registers_{10} = 6 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
+      \overline{\mathbf{x}}[\registers_{11}]_{\registers_{12}} &\when \overline{\mathbf{x}} \ne \none \wedge \registers_{10} = 3 \wedge \registers_{11} < |\overline{\mathbf{x}}| \wedge \registers_{12} < |\overline{\mathbf{x}}[\registers_{11}]| \\
+      \overline{\mathbf{x}}[i]_{\registers_{11}} &\when \overline{\mathbf{x}} \ne \none \wedge i \ne \none \wedge \registers_{10} = 4 \wedge \registers_{11} < |\overline{\mathbf{x}}[i]| \\
+      \overline{\mathbf{i}}[\registers_{11}]_{\registers_{12}} &\when \overline{\mathbf{i}} \ne \none \wedge \registers_{10} = 5 \wedge \registers_{11} < |\overline{\mathbf{i}}| \wedge \registers_{12} < |\overline{\mathbf{i}}[\registers_{11}]| \\
+      \overline{\mathbf{i}}[i]_{\registers_{11}} &\when \overline{\mathbf{i}} \ne \none \wedge i \ne \none \wedge \registers_{10} = 6 \wedge \registers_{11} < |\overline{\mathbf{i}}[i]| \\
       \se(p) &\when p \ne \none \wedge \registers_{10} = 7 \\
       \se(p_\wp¬authcodehash, \var{p_\wp¬authconfig}) &\when p \ne \none \wedge \registers_{10} = 8 \\
       p_\wp¬authtoken &\when p \ne \none \wedge \registers_{10} = 9 \\
-      p_\wp¬context &\when p \ne \none \wedge \registers_{10} = 10 \\
+      \se(p_\wp¬context) &\when p \ne \none \wedge \registers_{10} = 10 \\
       \se(\var{\sq{S(w) \mid w \orderedin p_\wp¬workitems}}) &\when p \ne \none \wedge \registers_{10} = 11 \\
       S(p_\wp¬workitems[\registers_{11}]) &\when p \ne \none \wedge \registers_{10} = 12 \wedge \registers_{11} < |p_\wp¬workitems| \\
       \multicolumn{2}{l}{\where S(w) \equiv \se(\se_4(w_\wi¬service), w_\wi¬codehash, \se_8(w_\wi¬refgaslimit, w_\wi¬accgaslimit), \se_2(w_\wi¬exportcount, |w_\wi¬importsegments|, |w_\wi¬extrinsics|), \se_4(|w_\wi¬payload|))} \\
