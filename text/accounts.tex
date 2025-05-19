@@ -8,11 +8,11 @@ Service accounts are held in state under $\delta$, a partial mapping from a serv
   \delta &\in \dict{\N_S}{\mathbb{A}}
 \end{align}
 
-The service account is defined as the tuple of storage dictionary $\mathbf{s}$, preimage lookup dictionaries $\mathbf{p}$ and $\mathbf{l}$, code hash $c$, and balance $b$ as well as the two code gas limits $g$ \& $m$. Formally:
+The service account is defined as the tuple of storage dictionary $\mathbf{s}$, preimage lookup dictionaries $\mathbf{p}$ and $\mathbf{l}$, code hash $c$, balance $b$ and gratis storage offset $f$, as well as the two code gas limits $g$ \& $m$. Formally:
 \begin{align}\label{eq:serviceaccount}
   \mathbb{A} \equiv \ltuple\ \begin{aligned}
   \mathbf{s} &\in \dict{\H}{\Y}\ ,\qquad \mathbf{p} \in \dict{\H}{\Y}\ ,\\
-  \mathbf{l} &\in \dict{\ltuple\H\ts\N_L\rtuple}{\seq{\N_T}_{:3}}\ ,\\
+  \mathbf{l} &\in \dict{\ltuple\H\ts\N_L\rtuple}{\seq{\N_T}_{:3}}\ ,\quad f \in \N_B\ ,\\
   c &\in \H\ ,\quad b \in \N_B\ ,\quad  g \in \N_G\ ,\quad m \in \N_G
 \end{aligned}\,\rtuple
 \end{align}
@@ -132,12 +132,12 @@ Furthermore, as we will see in the account serialization function in section \re
 
 We may then define a second dependent term $t$, the minimum, or \emph{threshold}, balance needed for any given service account in terms of its storage footprint.
 \begin{align}
-  \forall a \in \mathcal{V}(\delta):\ \begin{cases}
+  \forall a \in \mathcal{V}(\delta):\left\{\begin{aligned}
     a_i \in \N_{2^{32}} &\equiv 2\cdot|\,a_\mathbf{l}\,| + |\,a_\mathbf{s}\,| \\
-    a_o \in \N_{2^{64}} &\equiv \sum\limits_{\,(h, z) \in \keys{a_\mathbf{l}}\,} 81 + z \\
-    &\phantom{\equiv} + \sum\limits_{x \in \mathcal{V}(a_\mathbf{s})} 32 + |x| \\
-    a_t \in \N_B &\equiv \mathsf{B}_S + \mathsf{B}_I \cdot a_i + \mathsf{B}_L \cdot a_o
-  \end{cases}
+    a_o \in \N_{2^{64}} &\equiv \sum\limits_{\,(h, z) \in \keys{a_\mathbf{l}}\,} \!\!\!\!\!81 + z \\
+    &\phantom{\equiv\ } + \sum\limits_{x \in \mathcal{V}(a_\mathbf{s})} 32 + |x| \\
+    a_t \in \N_B &\equiv \max(0, \mathsf{B}_S + \mathsf{B}_I \cdot a_i + \mathsf{B}_L \cdot a_o - a_f)
+  \end{aligned}\right.
 \end{align}
 
 
