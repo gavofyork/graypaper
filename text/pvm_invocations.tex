@@ -697,14 +697,18 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$}&
   $\begin{aligned}
     \using [m, a, v, o, n] &= \registers_{7 \dots+ 5} \\
-    \using \mathbf{g} &= \begin{cases}
+    \using \mathbf{a} &= \begin{cases}
+      \de_4(\memory_{a\dots+4\mathsf{C}}) &\when \mathbb{N}_{a \dots+ 4\mathsf{C}} \subseteq \mathbb{V}_{\memory} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using \mathbf{z} &= \begin{cases}
       \left\{ (s \mapsto g) \ \where \se_4(s) \concat \se_8(g) = \memory_{o+12i\dots+12} \mid i \in \N_n \right\} &\when \mathbb{N}_{o \dots+ 12n} \subseteq \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{x}) &= \begin{cases}
-      (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_\mathbf{x}) &\when \mathbf{g} = \error\\
-      (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_\mathbf{x}) &\otherwhen (m, a, v) \not\in (\N_S, \N_S, \N_S) \\
-      (\continue, \mathtt{OK}, \tuple{m, a, v, \mathbf{g}}) &\otherwise \\
+    (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &= \begin{cases}
+      (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\when \{\mathbf{z}, \mathbf{a}\} \ni \error \\
+      (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\otherwhen (m, v) \not\in (\N_S, \N_S) \\
+      (\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, \mathbf{z}}) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
