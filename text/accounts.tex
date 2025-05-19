@@ -145,14 +145,14 @@ We may then define a second dependent term $t$, the minimum, or \emph{threshold}
 
 
 \subsection{Service Privileges}
-Up to three services may be recognized as privileged. The portion of state in which this is held is denoted $\chi$ and has three service index components together with a gas limit. The first, $\manager$, is the index of the \emph{manager} service which is the service able to effect an alteration of $\chi$ from block to block. The following, $\assigners$, are the service indices capable of altering the authorizer queue $\varphi$, one for each core. The next, $\delegater$, is able to set $\iota$.
+Up to three services may be recognized as privileged. The portion of state in which this is held is denoted $\chi$ and has three service index components together with a gas limit. The first, $\manager$, is the index of the \emph{manager} service which is the service able to effect an alteration of $\chi$ from block to block. The following, $\assigners$, are the service indices capable of altering the authorizer queue $\varphi$, one for each core. The next, $\delegator$, is able to set $\iota$.
 
 Finally, $\alwaysaccers$ is a small dictionary containing the indices of services which automatically accumulate in each block together with a basic amount of gas with which each accumulates. Formally:
 \begin{align}
   \chi \equiv \tuple{
     \isa{\manager}{\N_S} ,
     \isa{\assigners}{\seq{\N_S}_\mathsf{C}} ,
-    \isa{\delegater}{\N_S} ,
+    \isa{\delegator}{\N_S} ,
     \isa{\alwaysaccers}{\dict{\N_S}{\N_G}}
   }
 \end{align}
