@@ -102,13 +102,22 @@ Our formalisms begin by defining $\partialstate$ as a characterization of (\ie v
     &\isa{\mathbf{d}}{\dict{\N_S}{\mathbb{A}}} \,,\;
     \isa{\mathbf{i}}{\seq{\mathbb{K}}_\mathsf{V}} \,,\;
     \isa{\mathbf{q}}{\seq{\seq{\H}_\mathsf{Q}}_\mathsf{C}} \,,\\
-    &\isa{\mathbf{x}}{(\N_S,\N_S,\N_S,\dict{\N_S}{\N_G})}
+    &\isa{m}{\N_S} \,,\;
+    \isa{\mathbf{a}}{\seq{\N_S}_\mathsf{C}} \,,\;
+    \isa{v}{\N_S} \,,\;
+    \isa{\mathbf{z}}{\dict{\N_S}{\N_G}}
   \end{aligned}\right)
 \end{equation}
 
 We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $m$ of $\mathsf{W}_T = 128$ octets, together with the service index of the sender $s$, the service index of the receiver $d$, the balance to be transferred $a$ and the gas limit $g$ for the transfer. Formally:
 \begin{align}
-  \defxfer \equiv \ltuple\isa{s}{\N_S}\ts\isa{d}{\N_S}\ts\isa{a}{\N_B}\ts\isa{m}{\Y_{\mathsf{W}_T}}\ts\isa{g}{\N_G}\rtuple
+  \defxfer \equiv \tuple{
+    \isa{s}{\N_S} ,
+    \isa{d}{\N_S} ,
+    \isa{a}{\N_B} ,
+    \isa{m}{\Y_{\mathsf{W}_T}} ,
+    \isa{g}{\N_G}
+  }
 \end{align}
 
 Finally, we denote the set of service/hash pairs, utilized as a service-indexed commitment to the accumulation output, as $\servouts$:
@@ -132,11 +141,11 @@ We define the outer accumulation function $\Delta_+$ which transforms a gas-limi
   \end{aligned}\right.
 \end{equation}
 
-We come to define the parallelized accumulation function $\Delta_*$ which, with the help of the single-service accumulation function $\Delta_1$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution $u$, a posterior state-context $(\mathbf{x}', \mathbf{d}', \mathbf{i}', \mathbf{q}')$ and the resultant accumulation-output pairings $\mathbf{b}$ and deferred-transfers $\wideparen{\mathbf{t}}$:
+We come to define the parallelized accumulation function $\Delta_*$ which, with the help of the single-service accumulation function $\Delta_1$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution $u$, a posterior state-context $(\mathbf{d}', \mathbf{i}', \mathbf{q}', m', \mathbf{a}', v', \mathbf{x}')$ and the resultant accumulation-output pairings $\mathbf{b}$ and deferred-transfers $\wideparen{\mathbf{t}}$:
 \begin{equation}
   \Delta_*\colon\left\{\;\begin{aligned}
     &(\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}) \to (\partialstate, \defxfers, \servouts, \gasused) \\
-    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto ((\mathbf{d}', \mathbf{i}', \mathbf{q}', \mathbf{x}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u})\!\!\!\!\!\!\\
+    &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto ((\mathbf{d}', \mathbf{i}', \mathbf{q}', m', \mathbf{a}', v', \mathbf{z}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u})\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
       \mathbf{s} &= \{ \mathbf{r}_s \mid w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} \} \cup \keys{\mathbf{f}} \\
@@ -144,10 +153,12 @@ We come to define the parallelized accumulation function $\Delta_*$ which, with 
       \mathbf{b} &= \{ (s, b) \mid s \in \mathbf{s},\, b = \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_b,\, b \ne \none \} \\
       \mathbf{t} &= [\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{t} \mid s \orderedin \mathbf{s}] \\
       \mathbf{d}' &= \fnprovide((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \bigcup_{s \in \mathbf{s}} \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{p}) \\
-      &(\mathbf{d}, \mathbf{i}, \mathbf{q}, (m, a, v, \mathbf{z})) = \mathbf{o} \\
-      \mathbf{x}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, m)_\mathbf{o})_\mathbf{x} \\
+      &(\mathbf{d}, \mathbf{i}, \mathbf{q}, m, \mathbf{z}) = \mathbf{o} \\
+      (m', \mathbf{a}^*, v^*, \mathbf{z}') &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, m)_\mathbf{o})_{(m, \mathbf{a}, v, \mathbf{z})} \\
+      \forall c \in \N_\mathsf{C} : \mathbf{a}'_c &= ((\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, \mathbf{a}^*_c)_\mathbf{o})_\mathbf{a})_c \\
+      v' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, v^*)_\mathbf{o})_v \\
       \mathbf{i}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, v)_\mathbf{o})_\mathbf{i} \\
-      \mathbf{q}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, a)_\mathbf{o})_\mathbf{q} \\
+      \forall c \in \N_\mathsf{C} : \mathbf{q}'_c &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, \mathbf{a}_c)_\mathbf{o})_\mathbf{q} \\
       \mathbf{n} &= \bigcup_{s \in \mathbf{s}}(\{ (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d} \setminus \keys{\mathbf{d} \setminus \{s\}} \}) \\
       \mathbf{m} &= \bigcup_{s \in \mathbf{s}}(\keys{\mathbf{d}} \setminus \keys{(\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d}})
     \end{aligned}
@@ -238,8 +249,8 @@ This introduces $\operandtuple$, the set of wrangled \emph{operand tuples}, used
 
 Given the result of the top-level $\Delta_+$, we may define the posterior state $\chi'$, $\varphi'$ and $\iota'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the \textsc{Beefy} commitment map $\beefycommitmap$:
 \begin{align}
-  \using &g = \max\left(\mathsf{G}_T, \mathsf{G}_A\cdot \mathsf{C} + \textstyle \sum_{x \in \mathcal{V}(\chi_\mathbf{g})}(x)\right)\\
-  \using &(n, \mathbf{o}, \mathbf{t}, \beefycommitmap, \mathbf{u}) = \Delta_+(g, \mathbf{W}^*, (\chi, \accountspre, \iota, \varphi), \chi_\mathbf{g}) \\
+  \using &g = \max\left(\mathsf{G}_T, \mathsf{G}_A\cdot \mathsf{C} + \textstyle \sum_{x \in \mathcal{V}(\alwaysaccers)}(x)\right)\\
+  \using &(n, \mathbf{o}, \mathbf{t}, \beefycommitmap, \mathbf{u}) = \Delta_+(g, \mathbf{W}^*, (\chi, \accountspre, \iota, \varphi), \alwaysaccers) \\
   &(\chi', \accountspostacc, \iota', \varphi') \equiv \mathbf{o}
 \end{align}
 
