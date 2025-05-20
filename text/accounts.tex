@@ -8,13 +8,22 @@ Service accounts are held in state under $\delta$, a partial mapping from a serv
   \delta &\in \dict{\N_S}{\mathbb{A}}
 \end{align}
 
-The service account is defined as the tuple of storage dictionary $\mathbf{s}$, preimage lookup dictionaries $\mathbf{p}$ and $\mathbf{l}$, code hash $c$, balance $b$ and gratis storage offset $f$, as well as the two code gas limits $g$ \& $m$. Formally:
+The service account is defined as the tuple of storage dictionary $\mathbf{s}$, preimage lookup dictionaries $\mathbf{p}$ and $\mathbf{l}$, code hash $c$, balance $b$ and gratis storage offset $f$, as well as the two code gas limits $g$ \& $m$. We also record certain usage characteristics concerning the account: the time slot at creation $r$, the time slot at the most recent accumulation $a$ and the parent service $p$. Formally:
 \begin{align}\label{eq:serviceaccount}
-  \mathbb{A} \equiv \ltuple\ \begin{aligned}
-  \mathbf{s} &\in \dict{\H}{\Y}\ ,\qquad \mathbf{p} \in \dict{\H}{\Y}\ ,\\
-  \mathbf{l} &\in \dict{\ltuple\H\ts\N_L\rtuple}{\seq{\N_T}_{:3}}\ ,\quad f \in \N_B\ ,\\
-  c &\in \H\ ,\quad b \in \N_B\ ,\quad  g \in \N_G\ ,\quad m \in \N_G
-\end{aligned}\,\rtuple
+  \mathbb{A} \equiv \tuple{\ \begin{aligned}
+    \mathbf{s} &\in \dict{\H}{\Y}\ ,\qquad
+    \mathbf{p} \in \dict{\H}{\Y}\ ,\\
+    \mathbf{l} &\in \dict{\tuple{\H,\N_L}}{\seq{\N_T}_{:3}}\ ,\quad
+    f \in \N_B\ ,\\
+    c &\in \H\ ,\quad
+    b \in \N_B\ ,\quad
+    g \in \N_G\ ,\quad
+    m \in \N_G\ ,\\
+    r &\in \N_T\ ,\quad
+    a \in \N_T\ ,\quad
+    p \in \N_S\ ,\\
+    %i, o, f
+  \end{aligned}\,}
 \end{align}
 
 Thus, the balance of the service of index $s$ would be denoted $\delta[s]_b$ and the storage item of key $k \in \H$ for that service is written $\delta[s]_\mathbf{s}[k]$.

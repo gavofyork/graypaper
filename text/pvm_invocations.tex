@@ -166,7 +166,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_A(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{assign}\\
     \Omega_D(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{designate}\\
     \Omega_C(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{checkpoint} \\
-    \Omega_N(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{new} \\
+    \Omega_N(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{new} \\
     \Omega_U(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{upgrade} \\
     \Omega_T(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{transfer} \\
     \Omega_J(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{H}_t) &\when n = \mathtt{eject} \\
@@ -459,7 +459,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \using o &= \registers_8 \\
     \using \mathbf{m} &= \begin{cases}
-      \mathcal{E}(\mathbf{t}_c, \mathbf{t}_b, \mathbf{t}_t, \mathbf{t}_g, \mathbf{t}_m, \mathbf{t}_o, \mathbf{t}_i, \mathbf{t}_f) &\when \mathbf{t} \ne \none \\
+      \mathcal{E}(\mathbf{t}_c, \mathbf{t}_b, \mathbf{t}_t, \mathbf{t}_g, \mathbf{t}_m, \mathbf{t}_o, \mathbf{t}_i, \mathbf{t}_f, \mathbf{t}_r, \mathbf{t}_a, \mathbf{t}_p) &\when \mathbf{t} \ne \none \\
       \none &\otherwise
     \end{cases} \\
     \forall i \in \N_{|\mathbf{m}|} : \memory'_{o + i} &\equiv \begin{cases}
@@ -707,6 +707,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &= \begin{cases}
       (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\when \{\mathbf{z}, \mathbf{a}\} \ni \error \\
+      (\continue, \mathtt{HUH}, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\otherwhen \mathbf{x}_s \ne (\mathbf{x}_\mathbf{u})_m\\
       (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\otherwhen (m, v) \not\in (\N_S, \N_S) \\
       (\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, \mathbf{z}}) &\otherwise \\
     \end{cases}
@@ -717,15 +718,16 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{assign} = 6 \\
   $g = 10$} &
   $\begin{aligned}
-    \using o &= \registers_8 \\
-    \using \mathbf{c} &= \begin{cases}
+    \using [c, o, a] &= \registers_{7\dots+3} \\
+    \using \mathbf{q} &= \begin{cases}
       \left[\memory_{o + 32i \dots+ 32} \mid i \orderedin \N_\mathsf{Q}\right] &\when \mathbb{N}_{o \dots+ 32\mathsf{Q}} \subseteq \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{q}[\registers_7]) &= \begin{cases}
-      (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\when \mathbf{c} = \error \\
-      (\continue, \mathtt{CORE}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[\registers_7]) &\otherwhen \registers_7 \ge \mathsf{C} \\
-      (\continue, \mathtt{OK}, \mathbf{c}) &\otherwise \\
+    (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{q}[c], (\mathbf{x}'_\mathbf{u})_\mathbf{a}[c]) &= \begin{cases}
+      (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_\mathbf{q}[c], (\mathbf{x}_\mathbf{u})_\mathbf{a}[c]) &\when \mathbf{q} = \error \\
+      (\continue, \mathtt{HUH}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[c], (\mathbf{x}_\mathbf{u})_\mathbf{a}[c]) &\otherwhen \mathbf{x}_s \ne (\mathbf{x}_\mathbf{u})_\mathbf{a}[c]\\
+      (\continue, \mathtt{CORE}, (\mathbf{x}_\mathbf{u})_\mathbf{q}[c], (\mathbf{x}_\mathbf{u})_\mathbf{a}[c]) &\otherwhen c \ge \mathsf{C} \\
+      (\continue, \mathtt{OK}, \mathbf{q}, a) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -741,6 +743,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{i}) &= \begin{cases}
       (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_\mathbf{i}) &\when \mathbf{v} = \error\\
+      (\continue, \mathtt{HUH}, (\mathbf{x}_\mathbf{u})_\mathbf{i}) &\otherwhen \mathbf{x}_s \ne (\mathbf{x}_\mathbf{u})_v\\
       (\continue, \mathtt{OK}, \mathbf{v}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
@@ -755,17 +758,21 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_N(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}))$ \\
+  $\Omega_N(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), t)$ \\
   \texttt{new} = 9 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [o, l, g&, m] = \registers_{7 \dots+ 4} \\
+    \using [o, l, g&, m, f^*] = \registers_{7 \dots+ 5} \\
     \using c &= \begin{cases}
       \memory_{o\dots+32} &\when \N_{o\dots+32} \subseteq \mathbb{V}_{\memory} \wedge l \in \N_{2^{32}} \\
       \error &\otherwise
     \end{cases}\\
+    \using f &= \begin{cases}
+      f^* &\when \mathbf{x}_s = (\mathbf{x}_\mathbf{u})_m\\
+      0 &\otherwise\\
+    \end{cases}\\
     \using \mathbf{a} \in \mathbb{A} \cup \{\error\} &= \begin{cases}
-      \tup{c, \is{\mathbf{s}}{\{\}}, \is{\mathbf{l}}{\{ (c, l) \mapsto [] \}}, \is{b}{\mathbf{a}_t}, g, m, \is{\mathbf{p}}{\{\}}} &\when c \ne \error \\
+      \tup{c, \is{\mathbf{s}}{\{\}}, \is{\mathbf{l}}{\{ (c, l) \mapsto [] \}}, \is{b}{\mathbf{a}_t}, g, m, \is{\mathbf{p}}{\{\}}, \is{r}{t}, f, \is{a}{0}, \is{p}{\mathbf{x}_s}} &\when c \ne \error \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{s} &= \mathbf{x}_\mathbf{s} \exc \mathbf{s}_b = (\mathbf{x}_\mathbf{s})_b - \mathbf{a}_t \\
