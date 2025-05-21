@@ -271,17 +271,14 @@ We have denoted the sequence of implied transfers as $\mathbf{t}$, ordered inter
   \end{aligned}\right.\!\!\!\!
 \end{equation}
 
-The second intermediate state $\accountspostxfer$ may then be defined with all the deferred effects of the transfers applied:
+The second intermediate state $\accountspostxfer$ may then be defined with all the deferred effects of the transfers applied followed by the last-accumulation record being updated for all accumulated services:
 \begin{align}
   \mathbf{x} &= \{ s \mapsto \Psi_T(\accountspostacc, \tau', s, R(\mathbf{t}, s)) \mid (s \mapsto a) \in \accountspostacc \} \\
-  \accountspostxfer &\equiv \left\{ s \mapsto a' \;\middle\mid\; \begin{aligned}
-    &(s \mapsto \tup{a, u}) \in \mathbf{x} \text{ where } a' = a \text{ except:} \\
-    &\qquad a'_a = \begin{cases}
-      a_a &\when N(s) = []\\
-      \tau' &\when N(s) \ne []\\
-    \end{cases}
-  \end{aligned}
-   \right\}
+  \accountspostxfer &\equiv \left\{ s \mapsto a' \;\middle\mid\; (s \mapsto \tup{a, u}) \in \mathbf{x} \right\} \\
+  &\where a' = \begin{cases}
+    a \exc a'_a = \tau' &\when s \in \keys{\mathbf{I}} \\
+    a &\otherwise
+  \end{cases}
 \end{align}
 
 Furthermore we build the deferred transfers statistics value $\mathbf{X}$ as the number of transfers and the total gas used in transfer processing for each \emph{destination} service index. Formally:

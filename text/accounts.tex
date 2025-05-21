@@ -11,17 +11,17 @@ Service accounts are held in state under $\delta$, a partial mapping from a serv
 The service account is defined as the tuple of storage dictionary $\mathbf{s}$, preimage lookup dictionaries $\mathbf{p}$ and $\mathbf{l}$, code hash $c$, balance $b$ and gratis storage offset $f$, as well as the two code gas limits $g$ \& $m$. We also record certain usage characteristics concerning the account: the time slot at creation $r$, the time slot at the most recent accumulation $a$ and the parent service $p$. Formally:
 \begin{align}\label{eq:serviceaccount}
   \mathbb{A} \equiv \tuple{\ \begin{aligned}
-    \mathbf{s} &\in \dict{\H}{\Y}\ ,\qquad
-    \mathbf{p} \in \dict{\H}{\Y}\ ,\\
-    \mathbf{l} &\in \dict{\tuple{\H,\N_L}}{\seq{\N_T}_{:3}}\ ,\quad
-    f \in \N_B\ ,\\
-    c &\in \H\ ,\quad
-    b \in \N_B\ ,\quad
-    g \in \N_G\ ,\quad
-    m \in \N_G\ ,\\
-    r &\in \N_T\ ,\quad
-    a \in \N_T\ ,\quad
-    p \in \N_S\ ,\\
+    \mathbf{s} &\in \dict{\H}{\Y}\,,\ 
+    \mathbf{p} \in \dict{\H}{\Y}\,,\\
+    \mathbf{l} &\in \dict{\tuple{\H,\N_L}}{\seq{\N_T}_{:3}}\,,\\
+    f &\in \N_B\,,\ 
+    c \in \H\,,\ 
+    b \in \N_B\,,\ 
+    g \in \N_G\,,\\
+    m &\in \N_G\,,\ 
+    r \in \N_T\,,\ 
+    a \in \N_T\,,\ 
+    p \in \N_S\\
     %i, o, f
   \end{aligned}\,}
 \end{align}
@@ -37,11 +37,11 @@ Thus, the balance of the service of index $s$ would be denoted $\delta[s]_b$ and
 
 \subsection{Code and Gas}
 
-The code and associated metadata of a service account is identified by a hash which, if the service is to be functional, must be present within its preimage lookup (see section \ref{sec:lookups}). We thus define the actual code $\mathbf{c}$ and metadata $\mathbf{m}$:
+The code and associated metadata of a service account is identified by a hash which, if the service is to be functional, must be present within its preimage lookup (see section \ref{sec:lookups}) and have a preimage which is a proper encoding of the two blobs. We thus define the actual code $\mathbf{c}$ and metadata $\mathbf{m}$:
 \begin{align}
-  \forall \mathbf{a} \in \mathbb{A} : \se(\var{\mathbf{a}_\mathbf{m}}, \mathbf{a}_\mathbf{c}) \equiv \begin{cases}
-    \mathbf{a}_\mathbf{p}[\mathbf{a}_c] &\when \mathbf{a}_c \in \mathbf{a}_\mathbf{p} \\
-    \none &\otherwise
+  \forall \mathbf{a} \in \mathbb{A} : \tup{\mathbf{a}_\mathbf{m}, \mathbf{a}_\mathbf{c}} \equiv \begin{cases}
+    \tup{\mathbf{m}, \mathbf{c}} &\when \se(\var{\mathbf{m}}, \mathbf{c}) = \mathbf{a}_\mathbf{p}[\mathbf{a}_c] \\
+    \tup{\none, \none} &\otherwise
   \end{cases}
 \end{align}
 
@@ -154,7 +154,7 @@ We may then define a second dependent term $t$, the minimum, or \emph{threshold}
 
 
 \subsection{Service Privileges}
-Up to three services may be recognized as privileged. The portion of state in which this is held is denoted $\chi$ and has three service index components together with a gas limit. The first, $\manager$, is the index of the \emph{manager} service which is the service able to effect an alteration of $\chi$ from block to block. The following, $\assigners$, are the service indices capable of altering the authorizer queue $\varphi$, one for each core. The next, $\delegator$, is able to set $\iota$.
+\Jam includes the ability to bestow privileges on a number of services. The portion of state in which this is held is denoted $\chi$ and includes four kinds of privilege. The first, $\manager$, is the index of the \emph{manager} service which is the service able to effect an alteration of $\chi$ from block to block as well as bestow services with storage deposit credits. The following, $\assigners$, are the service indices capable of altering the authorizer queue $\varphi$, one for each core. The next, $\delegator$, is able to set $\iota$.
 
 Finally, $\alwaysaccers$ is a small dictionary containing the indices of services which automatically accumulate in each block together with a basic amount of gas with which each accumulates. Formally:
 \begin{align}

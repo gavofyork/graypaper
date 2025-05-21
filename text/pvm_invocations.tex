@@ -762,14 +762,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{new} = 9 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [o, l, g&, m, f^*] = \registers_{7 \dots+ 5} \\
+    \using [o, l, g&, m, f] = \registers_{7 \dots+ 5} \\
     \using c &= \begin{cases}
       \memory_{o\dots+32} &\when \N_{o\dots+32} \subseteq \mathbb{V}_{\memory} \wedge l \in \N_{2^{32}} \\
       \error &\otherwise
-    \end{cases}\\
-    \using f &= \begin{cases}
-      f^* &\when \mathbf{x}_s = (\mathbf{x}_\mathbf{u})_m\\
-      0 &\otherwise\\
     \end{cases}\\
     \using \mathbf{a} \in \mathbb{A} \cup \{\error\} &= \begin{cases}
       \tup{c, \is{\mathbf{s}}{\{\}}, \is{\mathbf{l}}{\{ (c, l) \mapsto [] \}}, \is{b}{\mathbf{a}_t}, g, m, \is{\mathbf{p}}{\{\}}, \is{r}{t}, f, \is{a}{0}, \is{p}{\mathbf{x}_s}} &\when c \ne \error \\
@@ -778,9 +774,11 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using \mathbf{s} &= \mathbf{x}_\mathbf{s} \exc \mathbf{s}_b = (\mathbf{x}_\mathbf{s})_b - \mathbf{a}_t \\
     (\execst', \registers'_7, \mathbf{x}'_i, (\mathbf{x}'_\mathbf{u})_\mathbf{d}) &\equiv \begin{cases}
       (\panic, \registers_7, \mathbf{x}_i, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\when c = \error \\
+      (\continue, \mathtt{HUH}, \mathbf{x}_i, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen f \ne 0 \wedge \mathbf{x}_s \ne (\mathbf{x}_\mathbf{u})_m \\
       (\continue, \mathtt{CASH}, \mathbf{x}_i, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen \mathbf{s}_b < (\mathbf{x}_\mathbf{s})_t \\
-      (\continue, \mathbf{x}_i, \text{check}(i), (\mathbf{x}_\mathbf{u})_\mathbf{d} \cup \{ \mathbf{x}_i \mapsto \mathbf{a}, \mathbf{x}_s \mapsto \mathbf{s} \}) &\otherwise \\
-      \multicolumn{2}{l}{\quad \where i = 2^8 + (\mathbf{x}_i - 2^8 + 42) \bmod (2^{32} - 2^9)}\\
+      (\continue, \mathbf{x}_i, i^*, (\mathbf{x}_\mathbf{u})_\mathbf{d} \cup \mathbf{d}) &\otherwise \\
+      \multicolumn{2}{l}{\quad \where i^* = \text{check}(2^8 + (\mathbf{x}_i - 2^8 + 42) \bmod (2^{32} - 2^9))}\\
+      \multicolumn{2}{l}{\quad \also \mathbf{d} = \{ \mathbf{x}_i \mapsto \mathbf{a}, \mathbf{x}_s \mapsto \mathbf{s} \}}\\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
