@@ -97,9 +97,8 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
       \Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
       \Omega_P(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{peek}\\
-      \Omega_Z(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{zero}\\
       \Omega_O(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{poke}\\
-      \Omega_V(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{void}\\
+      \Omega_Z(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{pages}\\
       \Omega_K(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{invoke}\\
       \Omega_X(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{expunge}\\
       (\continue, \gascounter - 10, \registers', \memory) &\otherwise\\
@@ -586,44 +585,26 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Z(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{zero} = 23 \\
+  \texttt{pages} = 23 \\
   $g = 10$} &
   $\begin{aligned}
-    \using [n, p, c] &= \registers_{7 \dots+ 3} \\
+    \using [n, p, c, r] &= \registers_{7 \dots+ 4} \\
     \using \mathbf{u} &= \begin{cases}
       \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
       \error &\otherwise\\
     \end{cases} \\
     \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
       (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = [0, 0, \dots] \\
-      (\mathbf{u}'_\mathbf{A})_{p\dots+c} = [\mathrm{W}, \mathrm{W}, \dots]
-    \end{cases}\\
-    (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\mathtt{HUH}, \mathbf{m}) &\when p < 16 \vee p+c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \\
-      (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{u} = \error \\
-      (\mathtt{OK}, \mathbf{m}')\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}' &\otherwise \\
-    \end{cases} \\
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_V(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}))$ \\
-  \texttt{void} = 24 \\
-  $g = 10$} &
-  $\begin{aligned}
-    \using [n, p, c] &= \registers_{7 \dots+ 3} \\
-    \using \mathbf{u} &= \begin{cases}
-      \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
-      \error &\otherwise\\
-    \end{cases} \\
-    \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
-      (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = [0, 0, \dots] \\
-      (\mathbf{u}'_\mathbf{A})_{p\dots+c} = [\none, \none, \dots]
+      (\mathbf{u}'_\mathbf{A})_{p\dots+c} = \begin{cases}
+        [\none, \none, \dots] &\when r = 0 \\
+        [\mathrm{R}, \mathrm{R}, \dots] &\when r = 1 \\
+        [\mathrm{W}, \mathrm{W}, \dots] &\when r = 2 \\
+      \end{cases}
     \end{cases}\\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
       (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{u} = \error \\
-      (\mathtt{HUH}, \mathbf{m}) &\otherwhen p < 16 \vee p + c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \vee \exists i \in \N_{p\dots+c} : (\mathbf{u}_\mathbf{A})_i = \none \\
-      (\mathtt{OK}, \mathbf{m}') &\otherwise \\
-      \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}'}
+      (\mathtt{HUH}, \mathbf{m}) &\otherwhen r > 2 \vee p < 16 \vee p+c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \\
+      (\mathtt{OK}, \mathbf{m}') &\otherwise\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}' \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
