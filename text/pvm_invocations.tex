@@ -594,16 +594,20 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \error &\otherwise\\
     \end{cases} \\
     \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
-      (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = [0, 0, \dots] \\
+      (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = \begin{cases}
+        [0, 0, \dots] &\when r < 3 \\
+        (\mathbf{u}_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} &\otherwise
+      \end{cases} \\
       (\mathbf{u}'_\mathbf{A})_{p\dots+c} = \begin{cases}
         [\none, \none, \dots] &\when r = 0 \\
-        [\mathrm{R}, \mathrm{R}, \dots] &\when r = 1 \\
-        [\mathrm{W}, \mathrm{W}, \dots] &\when r = 2 \\
+        [\mathrm{R}, \mathrm{R}, \dots] &\when r = 1 \vee r = 3 \\
+        [\mathrm{W}, \mathrm{W}, \dots] &\when r = 2 \vee r = 4 \\
       \end{cases}
     \end{cases}\\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
       (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{u} = \error \\
-      (\mathtt{HUH}, \mathbf{m}) &\otherwhen r > 2 \vee p < 16 \vee p+c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \\
+      (\mathtt{HUH}, \mathbf{m}) &\otherwhen r > 4 \vee p < 16 \vee p+c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \\
+      (\mathtt{HUH}, \mathbf{m}) &\otherwhen r > 2 \wedge (\mathbf{u}_\mathbf{A})_{p\dots+c} \ni \none \\
       (\mathtt{OK}, \mathbf{m}') &\otherwise\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}' \\
     \end{cases} \\
   \end{aligned}$\\
