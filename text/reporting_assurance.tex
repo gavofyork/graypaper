@@ -291,9 +291,9 @@ There must be no duplicate work-package hashes (\ie two work-reports of the same
   |\mathbf{p}| = |\mathbf{w}|
 \end{equation}
 
-We require that the anchor block be within the last $\mathsf{H}$ blocks and that its details be correct by ensuring that it appears within our most recent blocks $\beta^\dagger$:
+We require that the anchor block be within the last $\mathsf{H}$ blocks and that its details be correct by ensuring that it appears within our most recent blocks $\recenthistory^\dagger$:
 \begin{align}
-  \forall x \in \mathbf{x} : \exists y \in \beta^\dagger : x_a = y_h \wedge x_s = y_s \wedge x_b = \mathcal{M}_R(y_\mathbf{b})\!\!\!\!\!\!
+  \forall x \in \mathbf{x} : \exists y \in \recenthistory^\dagger : x_a = y_h \wedge x_s = y_s \wedge x_b = \mathcal{M}_R(y_\mathbf{b})\!\!\!\!\!\!
 \end{align}
 
 We require that each lookup-anchor block be within the last $\mathsf{L}$ timeslots:
@@ -310,21 +310,21 @@ We require that the work-package of the report not be the work-package of some o
 \begin{align}
   &\using \mathbf{q} = \{(w_x)_p \mid \mathbf{q} \in \ready, (w, \mathbf{d}) \in \mathbf{q}\} \\
   &\using \mathbf{a} = \{((i_w)_x)_p \mid i \in \rho, i \ne \none\}\\
-  &\forall p \in \mathbf{p}, p \not\in \bigcup_{x \in \beta}\keys{x_\mathbf{p}} \cup \bigcup_{x \in \accumulated}x \cup \mathbf{q} \cup \mathbf{a}
+  &\forall p \in \mathbf{p}, p \not\in \bigcup_{x \in \recenthistory}\keys{x_\mathbf{p}} \cup \bigcup_{x \in \accumulated}x \cup \mathbf{q} \cup \mathbf{a}
 \end{align}
 
 We require that the prerequisite work-packages, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history.
 \begin{align}
   &\begin{aligned}
     &\forall w \in \mathbf{w}, \forall p \in (w_x)_\mathbf{p} \cup \keys{w_\mathbf{l}} :\\
-    &\quad p \in \mathbf{p} \cup \{ x \mid x \in \keys{b_\mathbf{p}} ,\, b \in \beta \}
+    &\quad p \in \mathbf{p} \cup \{ x \mid x \in \keys{b_\mathbf{p}} ,\, b \in \recenthistory \}
   \end{aligned}
 \end{align}
 
 We require that any segment roots mentioned in the segment-root lookup be verified as correct based on our recent work-package history and the present block:
 \begin{align}
   &\using \mathbf{p} = \{ ((g_w)_s)_h \mapsto ((g_w)_s)_e \mid g \in \xtguarantees \} \\
-  &\forall w \in \mathbf{w}: w_\mathbf{l} \subseteq \mathbf{p} \cup \bigcup_{b \in \beta} b_\mathbf{p}
+  &\forall w \in \mathbf{w}: w_\mathbf{l} \subseteq \mathbf{p} \cup \bigcup_{b \in \recenthistory} b_\mathbf{p}
 \end{align}
 
 (Note that these checks leave open the possibility of accepting work-reports in apparent dependency loops. We do not consider this a problem: the pre-accumulation stage effectively guarantees that accumulation never happens in these cases and the reports are simply ignored.)

@@ -169,7 +169,6 @@ These terms are all contextualized to a single block. They may be superscripted 
 \begin{description}
   \item[$\mathbf{A}$] The ancestor set of the block. See equation \ref{eq:ancestors}.
   \item[$\mathbf{B}$] The block. See equation \ref{eq:block}.
-  \item[$\beefycommitmap$] The service accumulation-commitment, used to form the \textsc{Beefy} root. See equation \ref{eq:beefycommitment}.
   \item[$\mathbf{E}$] The block extrinsic. See equation \ref{eq:extrinsic}.
   \item[$\mathbf{F}_v$] The \textsc{Beefy} signed commitment of validator $v$. See equation \ref{eq:beefysignedcommitment}.
   \item[$\mathbf{G}$] The mapping from cores to guarantor keys. See section \ref{sec:coresandvalidators}.
@@ -197,7 +196,11 @@ Without any superscript, the block is assumed to the block being imported or, if
 Here, the prime annotation indicates posterior state. Individual components may be identified with a letter subscript.
 \begin{description}
   \item[$\alpha$] The core $\alpha$uthorizations pool. See equation \ref{eq:authstatecomposition}. %	α
-  \item[$\beta$] Information on the most recent $\beta$locks. %	β
+  \item[$\beta$] Log of recent activity. See equation \ref{eq:recenthistory}. %	β
+  \begin{description}
+    \item[$\recenthistory$] Information on the most recent blocks.
+    \item[$\beefybelt$] The Merkle mountain belt for accumulating Accumulation outputs.
+  \end{description}
   \item[$\gamma$] State concerning Safrole. See equation \ref{eq:consensusstatecomposition}. %	γ
   \begin{description}
     \item[$\gamma_\mathbf{a}$] The sealing lottery ticket accumulator.
@@ -239,8 +242,8 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\pi$] The activity statistics for the validators. % π
   \item[$\vartheta$] The accumulation queue. % ϑ
   \item[$\xi$] The accumulation history. % ξ
+  \item[$\lastaccout$] The most recent Accumulation outputs. See equation \ref{eq:lastaccout}. % θ
 \end{description}
-% θ
 
 \subsubsection{Virtual Machine components}
 
