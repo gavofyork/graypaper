@@ -247,10 +247,12 @@ This introduces $\operandtuple$, the set of wrangled \emph{operand tuples}, used
 
 \subsection{Deferred Transfers and State Integration}
 
-Given the result of the top-level $\Delta_+$, we may define the posterior state $\chi'$, $\varphi'$ and $\iota'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the \textsc{Beefy} commitment map $\beefycommitmap$:
+\newcommand*{\accoutseq}{\mathbf{c}}
+
+Given the result of the top-level $\Delta_+$, we may define the posterior state $\chi'$, $\varphi'$ and $\iota'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the Accumulation Output Log $\lastaccout'$:
 \begin{align}
   \using &g = \max\left(\mathsf{G}_T, \mathsf{G}_A\cdot \mathsf{C} + \textstyle \sum_{x \in \mathcal{V}(\alwaysaccers)}(x)\right)\\
-  \using &(n, \mathbf{o}, \mathbf{t}, \beefycommitmap, \mathbf{u}) = \Delta_+(g, \mathbf{W}^*, (\chi, \accountspre, \iota, \varphi), \alwaysaccers) \\
+  \using &(n, \mathbf{o}, \mathbf{t}, \lastaccout', \mathbf{u}) = \Delta_+(g, \mathbf{W}^*, (\chi, \accountspre, \iota, \varphi), \alwaysaccers) \\
   &(\chi', \accountspostacc, \iota', \varphi') \equiv \mathbf{o}
 \end{align}
 
@@ -260,8 +262,6 @@ We compose $\mathbf{I}$, our accumulation statistics, which is a mapping from th
   &\textstyle \mathbf{I} \equiv \left\{ s \mapsto \tup{\sum_{(s, u) \in \mathbf{u}}(u), \len{N(s)}} \;\middle\mid\; N(s) \ne [] \right\} \\
   \where &N(s) \equiv \sq{r \mid w \orderedin \mathbf{W}^*_{\dots n} , r \orderedin w_\mathbf{r} , r_s = s }
 \end{align}
-
-Note that the accumulation commitment map $\beefycommitmap$ is a set of pairs of indices of the output-yielding accumulated services to their accumulation result. This is utilized in equation \ref{eq:buildbeefymap}, when determining the accumulation-result tree root for the present block, useful for the \textsc{Beefy} protocol.
 
 We have denoted the sequence of implied transfers as $\mathbf{t}$, ordered internally according to the source service's execution. We define a selection function $R$, which maps a sequence of deferred transfers and a desired destination service index into the sequence of transfers targeting said service, ordered primarily according to the source service index and secondarily their order within $\mathbf{t}$. Formally:
 \begin{equation}

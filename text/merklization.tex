@@ -22,7 +22,7 @@ The state serialization is then defined as the dictionary built from the amalgam
   T(\sigma) \equiv \left\{\begin{aligned}
     &&C(1) &\mapsto \se([\var{x}\mid x\orderedin \alpha]) \;, \\
     &&C(2) &\mapsto \se(\varphi) \;, \\
-    &&C(3) &\mapsto \se(\var{[(h, \se_M(\mathbf{b}), s, \var{\mathbf{p}})\mid (h, \mathbf{b}, s, \mathbf{p})\orderedin \beta]}) \;, \\
+    &&C(3) &\mapsto \se(\var{[(h, b, s, \var{\mathbf{p}})\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \se_M(\beefybelt)) \;, \\
     &&C(4) &\mapsto \se\left(\tup{\gamma_\mathbf{k}, \gamma_z, \left\{\,\begin{aligned}
       0\ &\when \gamma_\mathbf{s} \in \seq{\mathbb{C}}_\mathsf{E}\\
       1\ &\when \gamma_\mathbf{s} \in \seq{\H_B}_\mathsf{E}\\
@@ -39,6 +39,7 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(13) &\mapsto \se(\se^\#_4(\pi_V), \se^\#_4(\pi_L), \pi_C, \pi_S) \;, \\
     &&C(14) &\mapsto \se([\var{(\mathbf{w}, \var{\mathbf{d}})} \mid (\mathbf{w}, \mathbf{d}) \orderedin \mathbf{i} \mid \mathbf{i} \orderedin \ready]) \;, \\
     &&C(15) &\mapsto \se([\var{\mathbf{i}} \mid \mathbf{i} \orderedin \accumulated]) \;, \\
+    &&C(16) &\mapsto \se(\var{[(\se_4(s), \se(h)) \mid (s, h) \orderedin \lastaccout]}) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_o, \mathbf{a}_f) \concat \se_4(\mathbf{a}_i, \mathbf{a}_r, \mathbf{a}_a, \mathbf{a}_p) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (k \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \frown k_{0\dots 27}) &\mapsto \mathbf{v} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \se_4(2^{32}-2) \frown h_{1\dots 28}) &\mapsto \mathbf{p} \;, \\
