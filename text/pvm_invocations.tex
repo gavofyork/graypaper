@@ -408,7 +408,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using [k_o, k_z, o] &= \registers_{8\dots+3} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \mathbb{N}_{k_o \dots+ k_z} \not\subseteq \mathbb{V}_{\memory} \\
-      \mathbf{a}_\mathbf{s}[k] &\otherwhen \mathbf{a} \ne \none \wedge k \in \keys{\mathbf{a}_\mathbf{s}}\,,\ \where k = \hash(\se_4(s^*) \concat \memory_{k_o\dots+k_z}) \\
+      \mathbf{a}_\mathbf{s}[\mathbf{k}] &\otherwhen \mathbf{a} \ne \none \wedge \mathbf{k} \in \keys{\mathbf{a}_\mathbf{s}}\,,\ \where \mathbf{k} = \memory_{k_o\dots+k_z} \\
       \none &\otherwise
     \end{cases} \\
     \using f &= \min(\registers_{11}, |\mathbf{v}|) \\
@@ -427,21 +427,21 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   } &
   $\begin{aligned}
     \using [k_o, k_z, v_o, v_z] &= \registers_{7\dots+4} \\
-    \using k &= \begin{cases}
-      \hash(\se_4(s) \concat \memory_{k_o\dots+k_z}) &\when \N_{k_o \dots+ k_z} \subseteq \mathbb{V}_{\memory} \\
+    \using \mathbf{k} &= \begin{cases}
+      \memory_{k_o\dots+k_z} &\when \N_{k_o \dots+ k_z} \subseteq \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
       \mathbf{s}\,,\ \exc \keys{\mathbf{a}_\mathbf{s}} = \keys{\mathbf{a}_\mathbf{s}} \setminus \{k\} & \when v_z = 0 \\
-      \mathbf{s}\,,\ \exc \mathbf{a}_\mathbf{s}[k] = \memory_{v_o\dots+v_z} &\otherwhen \N_{v_o \dots+ v_z} \subseteq \mathbb{V}_{\memory} \\
+      \mathbf{s}\,,\ \exc \mathbf{a}_\mathbf{s}[\mathbf{k}] = \memory_{v_o\dots+v_z} &\otherwhen \N_{v_o \dots+ v_z} \subseteq \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using l &= \begin{cases}
-      |\mathbf{s}_\mathbf{s}[k]| &\when k \in \keys{\mathbf{s}_\mathbf{s}} \\
+      |\mathbf{s}_\mathbf{s}[k]| &\when \mathbf{k} \in \keys{\mathbf{s}_\mathbf{s}} \\
       \mathtt{NONE} &\otherwise
     \end{cases} \\
     (\execst', \registers'_7, \mathbf{s}') &\equiv \begin{cases}
-      (\panic, \registers_7, \mathbf{s}) &\when k = \error \vee \mathbf{a} = \error\\
+      (\panic, \registers_7, \mathbf{s}) &\when \mathbf{k} = \error \vee \mathbf{a} = \error\\
       (\continue, \mathtt{FULL}, \mathbf{s}) &\otherwhen \mathbf{a}_t > \mathbf{a}_b \\
       (\continue, l, \mathbf{a}) &\otherwise\\
     \end{cases}
