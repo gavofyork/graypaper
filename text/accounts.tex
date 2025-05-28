@@ -11,7 +11,7 @@ Service accounts are held in state under $\delta$, a partial mapping from a serv
 The service account is defined as the tuple of storage dictionary $\mathbf{s}$, preimage lookup dictionaries $\mathbf{p}$ and $\mathbf{l}$, code hash $c$, balance $b$ and gratis storage offset $f$, as well as the two code gas limits $g$ \& $m$. We also record certain usage characteristics concerning the account: the time slot at creation $r$, the time slot at the most recent accumulation $a$ and the parent service $p$. Formally:
 \begin{align}\label{eq:serviceaccount}
   \mathbb{A} \equiv \tuple{\ \begin{aligned}
-    \mathbf{s} &\in \dict{\H}{\Y}\,,\ 
+    \mathbf{s} &\in \dict{\Y}{\Y}\,,\ 
     \mathbf{p} \in \dict{\H}{\Y}\,,\\
     \mathbf{l} &\in \dict{\tuple{\H,\N_L}}{\seq{\N_T}_{:3}}\,,\\
     f &\in \N_B\,,\ 
@@ -26,7 +26,7 @@ The service account is defined as the tuple of storage dictionary $\mathbf{s}$, 
   \end{aligned}\,}
 \end{align}
 
-Thus, the balance of the service of index $s$ would be denoted $\delta[s]_b$ and the storage item of key $k \in \H$ for that service is written $\delta[s]_\mathbf{s}[k]$.
+Thus, the balance of the service of index $s$ would be denoted $\delta[s]_b$ and the storage item of key $\mathbf{k} \in \Y$ for that service is written $\delta[s]_\mathbf{s}[\mathbf{k}]$.
 
 
 
@@ -143,8 +143,8 @@ We may then define a second dependent term $t$, the minimum, or \emph{threshold}
 \begin{align}
   \forall a \in \mathcal{V}(\delta):\left\{\begin{aligned}
     a_i \in \N_{2^{32}} &\equiv 2\cdot|\,a_\mathbf{l}\,| + |\,a_\mathbf{s}\,| \\
-    a_o \in \N_{2^{64}} &\equiv \sum\limits_{\,(h, z) \in \keys{a_\mathbf{l}}\,} \!\!\!\!\!81 + z \\
-    &\phantom{\equiv\ } + \sum\limits_{x \in \mathcal{V}(a_\mathbf{s})} 32 + |x| \\
+    a_o \in \N_{2^{64}} &\equiv \sum\limits_{\,(h, z) \in \keys{a_\mathbf{l}}\,} \!\!\!\!81 + z \\
+    &\phantom{\equiv\ } + \sum\limits_{(x, y) \in a_\mathbf{s}} 34 + |y| + |x| \\
     a_t \in \N_B &\equiv \max(0, \mathsf{B}_S + \mathsf{B}_I \cdot a_i + \mathsf{B}_L \cdot a_o - a_f)
   \end{aligned}\right.
 \end{align}

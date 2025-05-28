@@ -41,7 +41,7 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(15) &\mapsto \se([\var{\mathbf{i}} \mid \mathbf{i} \orderedin \accumulated]) \;, \\
     &&C(16) &\mapsto \se(\var{[(\se_4(s), \se(h)) \mid (s, h) \orderedin \lastaccout]}) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_o, \mathbf{a}_f) \concat \se_4(\mathbf{a}_i, \mathbf{a}_r, \mathbf{a}_a, \mathbf{a}_p) \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \delta, (k \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \frown k) &\mapsto \mathbf{v} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \delta, (\mathbf{k} \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \frown \mathbf{k}) &\mapsto \mathbf{v} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \se_4(2^{32}-2) \frown h) &\mapsto \mathbf{p} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \delta, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat h) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
   \end{aligned}\right.
@@ -50,6 +50,8 @@ The state serialization is then defined as the dictionary built from the amalgam
 Note that most rows describe a single mapping between a key derived from a natural and the serialization of a state component. However, the final four rows each define sets of mappings since these items act over all service accounts and in the case of the final three rows, the keys of a nested dictionary with the service.
 
 Also note that all non-discriminator numeric serialization in state is done in fixed-length according to the size of the term.
+
+Finally, be aware that \Jam does not allow service storage keys to be directly inspected or enumerated. Thus the key values themselves are not required to be known by implementations, and only the Merklisation-ready serialisation is important, which is a fixed-size hash (alongside the service index and item marker). Implementations are free to use this fact in order to avoid storing the keys themselves.
 
 \subsection{Merklization}
 
