@@ -8,16 +8,25 @@ Service accounts are held in state under $\delta$, a partial mapping from a serv
   \delta &\in \dict{\N_S}{\mathbb{A}}
 \end{align}
 
-The service account is defined as the tuple of storage dictionary $\mathbf{s}$, preimage lookup dictionaries $\mathbf{p}$ and $\mathbf{l}$, code hash $c$, and balance $b$ as well as the two code gas limits $g$ \& $m$. Formally:
+The service account is defined as the tuple of storage dictionary $\mathbf{s}$, preimage lookup dictionaries $\mathbf{p}$ and $\mathbf{l}$, code hash $c$, balance $b$ and gratis storage offset $f$, as well as the two code gas limits $g$ \& $m$. We also record certain usage characteristics concerning the account: the time slot at creation $r$, the time slot at the most recent accumulation $a$ and the parent service $p$. Formally:
 \begin{align}\label{eq:serviceaccount}
-  \mathbb{A} \equiv \ltuple\ \begin{aligned}
-  \mathbf{s} &\in \dict{\H}{\Y}\ ,\qquad \mathbf{p} \in \dict{\H}{\Y}\ ,\\
-  \mathbf{l} &\in \dict{\ltuple\H\ts\N_L\rtuple}{\seq{\N_T}_{:3}}\ ,\\
-  c &\in \H\ ,\quad b \in \N_B\ ,\quad  g \in \N_G\ ,\quad m \in \N_G
-\end{aligned}\,\rtuple
+  \mathbb{A} \equiv \tuple{\ \begin{aligned}
+    \mathbf{s} &\in \dict{\Y}{\Y}\,,\ 
+    \mathbf{p} \in \dict{\H}{\Y}\,,\\
+    \mathbf{l} &\in \dict{\tuple{\H,\N_L}}{\seq{\N_T}_{:3}}\,,\\
+    f &\in \N_B\,,\ 
+    c \in \H\,,\ 
+    b \in \N_B\,,\ 
+    g \in \N_G\,,\\
+    m &\in \N_G\,,\ 
+    r \in \N_T\,,\ 
+    a \in \N_T\,,\ 
+    p \in \N_S\\
+    %i, o, f
+  \end{aligned}\,}
 \end{align}
 
-Thus, the balance of the service of index $s$ would be denoted $\delta[s]_b$ and the storage item of key $k \in \H$ for that service is written $\delta[s]_\mathbf{s}[k]$.
+Thus, the balance of the service of index $s$ would be denoted $\delta[s]_b$ and the storage item of key $\mathbf{k} \in \Y$ for that service is written $\delta[s]_\mathbf{s}[\mathbf{k}]$.
 
 
 
@@ -28,11 +37,11 @@ Thus, the balance of the service of index $s$ would be denoted $\delta[s]_b$ and
 
 \subsection{Code and Gas}
 
-The code and associated metadata of a service account is identified by a hash which, if the service is to be functional, must be present within its preimage lookup (see section \ref{sec:lookups}). We thus define the actual code $\mathbf{c}$ and metadata $\mathbf{m}$:
+The code and associated metadata of a service account is identified by a hash which, if the service is to be functional, must be present within its preimage lookup (see section \ref{sec:lookups}) and have a preimage which is a proper encoding of the two blobs. We thus define the actual code $\mathbf{c}$ and metadata $\mathbf{m}$:
 \begin{align}
-  \forall \mathbf{a} \in \mathbb{A} : \se(\var{\mathbf{a}_\mathbf{m}}, \mathbf{a}_\mathbf{c}) \equiv \begin{cases}
-    \mathbf{a}_\mathbf{p}[\mathbf{a}_c] &\when \mathbf{a}_c \in \mathbf{a}_\mathbf{p} \\
-    \none &\otherwise
+  \forall \mathbf{a} \in \mathbb{A} : \tup{\mathbf{a}_\mathbf{m}, \mathbf{a}_\mathbf{c}} \equiv \begin{cases}
+    \tup{\mathbf{m}, \mathbf{c}} &\when \se(\var{\mathbf{m}}, \mathbf{c}) = \mathbf{a}_\mathbf{p}[\mathbf{a}_c] \\
+    \tup{\none, \none} &\otherwise
   \end{cases}
 \end{align}
 
@@ -132,12 +141,12 @@ Furthermore, as we will see in the account serialization function in section \re
 
 We may then define a second dependent term $t$, the minimum, or \emph{threshold}, balance needed for any given service account in terms of its storage footprint.
 \begin{align}
-  \forall a \in \mathcal{V}(\delta):\ \begin{cases}
+  \forall a \in \mathcal{V}(\delta):\left\{\begin{aligned}
     a_i \in \N_{2^{32}} &\equiv 2\cdot|\,a_\mathbf{l}\,| + |\,a_\mathbf{s}\,| \\
-    a_o \in \N_{2^{64}} &\equiv \sum\limits_{\,(h, z) \in \keys{a_\mathbf{l}}\,} 81 + z \\
-    &\phantom{\equiv} + \sum\limits_{x \in \mathcal{V}(a_\mathbf{s})} 32 + |x| \\
-    a_t \in \N_B &\equiv \mathsf{B}_S + \mathsf{B}_I \cdot a_i + \mathsf{B}_L \cdot a_o
-  \end{cases}
+    a_o \in \N_{2^{64}} &\equiv \sum\limits_{\,(h, z) \in \keys{a_\mathbf{l}}\,} \!\!\!\!81 + z \\
+    &\phantom{\equiv\ } + \sum\limits_{(x, y) \in a_\mathbf{s}} 34 + |y| + |x| \\
+    a_t \in \N_B &\equiv \max(0, \mathsf{B}_S + \mathsf{B}_I \cdot a_i + \mathsf{B}_L \cdot a_o - a_f)
+  \end{aligned}\right.
 \end{align}
 
 
@@ -145,14 +154,14 @@ We may then define a second dependent term $t$, the minimum, or \emph{threshold}
 
 
 \subsection{Service Privileges}
-Up to three services may be recognized as privileged. The portion of state in which this is held is denoted $\chi$ and has three service index components together with a gas limit. The first, $\chi_m$, is the index of the \emph{manager} service which is the service able to effect an alteration of $\chi$ from block to block. The following two, $\chi_a$ and $\chi_v$, are each the indices of services able to alter $\varphi$ and $\iota$ from block to block.
+\Jam includes the ability to bestow privileges on a number of services. The portion of state in which this is held is denoted $\chi$ and includes four kinds of privilege. The first, $\manager$, is the index of the \emph{manager} service which is the service able to effect an alteration of $\chi$ from block to block as well as bestow services with storage deposit credits. The following, $\assigners$, are the service indices capable of altering the authorizer queue $\varphi$, one for each core. The next, $\delegator$, is able to set $\iota$.
 
-Finally, $\chi_\mathbf{g}$ is a small dictionary containing the indices of services which automatically accumulate in each block together with a basic amount of gas with which each accumulates. Formally:
+Finally, $\alwaysaccers$ is a small dictionary containing the indices of services which automatically accumulate in each block together with a basic amount of gas with which each accumulates. Formally:
 \begin{align}
   \chi \equiv \tuple{
-    \isa{\chi_m}{\N_S} \ts
-    \isa{\chi_a}{\N_S} \ts
-    \isa{\chi_v}{\N_S} \ts
-    \isa{\chi_\mathbf{g}}{\dict{\N_S}{\N_G}}
+    \isa{\manager}{\N_S} ,
+    \isa{\assigners}{\seq{\N_S}_\mathsf{C}} ,
+    \isa{\delegator}{\N_S} ,
+    \isa{\alwaysaccers}{\dict{\N_S}{\N_G}}
   }
 \end{align}

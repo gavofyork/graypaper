@@ -31,7 +31,7 @@ The header is a collection of metadata primarily concerned with cryptographic re
 
 Our state may be logically partitioned into several largely independent segments which can both help avoid visual clutter within our protocol description and provide formality over elements of computation which may be simultaneously calculated (i.e. parallelized). We therefore pronounce an equivalence between $\sigma$ (some complete state) and a tuple of partitioned segments of that state:
 \begin{align}\label{eq:statecomposition}
-  \sigma &\equiv (\alpha, \beta, \gamma, \delta, \eta, \iota, \kappa, \lambda, \rho, \tau, \varphi, \chi, \psi, \pi, \ready, \accumulated)
+  \sigma &\equiv (\alpha, \recenthistory, \gamma, \delta, \eta, \iota, \kappa, \lambda, \rho, \tau, \varphi, \chi, \psi, \pi, \ready, \accumulated)
 \end{align}
 
 In summary, $\delta$ is the portion of state dealing with \emph{services}, analogous in \Jam to the Yellow Paper's (smart contract) \emph{accounts}, the only state of the \emph{YP}'s Ethereum. The identities of services which hold some privileged status are tracked in $\chi$.
@@ -40,14 +40,14 @@ Validators, who are the set of economic actors uniquely privileged to help build
 
 Our state also tracks two aspects of each core: $\alpha$, the authorization requirement which work done on that core must satisfy at the time of being reported on-chain, together with the queue which fills this, $\varphi$; and $\rho$, each of the cores' currently assigned \emph{report}, the availability of whose \emph{work-package} must yet be assured by a super-majority of validators.
 
-Finally, details of the most recent blocks and timeslot index are tracked in $\beta$ and $\tau$ respectively, work-reports which are ready to be accumulated and work-packages which were recently accumulated are tracked in $\ready$ and $\accumulated$ respectively and, judgments are tracked in $\psi$ and validator statistics are tracked in $\pi$.
+Finally, details of the most recent blocks and timeslot index are tracked in $\recenthistory$ and $\tau$ respectively, work-reports which are ready to be accumulated and work-packages which were recently accumulated are tracked in $\ready$ and $\accumulated$ respectively and, judgments are tracked in $\psi$ and validator statistics are tracked in $\pi$.
 
 \subsubsection{State Transition Dependency Graph}
 
 Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulating all items of posterior state in terms of the prior state and block. To aid the architecting of implementations which parallelize this computation, we minimize the depth of the dependency graph where possible. The overall dependency graph is specified here:
 \begin{align}\label{eq:transitionfunctioncomposition}
   \tau' &\prec \mathbf{H} \\
-  \beta^\dagger &\prec (\mathbf{H}, \beta) \label{eq:betadagger} \\
+  \recenthistory^\dagger &\prec (\mathbf{H}, \recenthistory) \label{eq:betadagger} \\
   \gamma' &\prec (\mathbf{H}, \tau, \xttickets, \gamma, \iota, \eta', \kappa', \psi') \\
   \eta' &\prec (\mathbf{H}, \tau, \eta) \\
   \kappa' &\prec (\mathbf{H}, \tau, \kappa, \gamma) \\
@@ -57,8 +57,8 @@ Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulatin
   \rho^\ddagger &\prec (\xtassurances, \rho^\dagger) \label{eq:rhoddagger} \\
   \rho' &\prec (\xtguarantees, \rho^\ddagger, \kappa, \tau') \label{eq:rhoprime} \\
   \mathbf{W}^* &\prec (\xtassurances, \rho') \\
-  (\ready', \accumulated', \accountspostxfer, \chi', \iota', \varphi', \beefycommitmap, \mathbf{I}, \mathbf{X}) &\prec (\mathbf{W}^*, \ready, \accumulated, \accountspre, \chi, \iota, \varphi, \tau, \tau') \label{eq:accountspostxfer} \\
-  \beta' &\prec (\mathbf{H}, \xtguarantees, \beta^\dagger, \beefycommitmap) \label{eq:betaprime} \\
+  (\ready', \accumulated', \accountspostxfer, \chi', \iota', \varphi', \lastaccout', \mathbf{I}, \mathbf{X}) &\prec (\mathbf{W}^*, \ready, \accumulated, \accountspre, \chi, \iota, \varphi, \tau, \tau') \label{eq:accountspostxfer} \\
+  \recenthistory' &\prec (\mathbf{H}, \xtguarantees, \recenthistory^\dagger, \lastaccout') \label{eq:betaprime} \\
   \accountspostpreimage &\prec (\xtpreimages, \accountspostxfer, \tau') \label{eq:accountspostpreimage} \\
   \alpha' &\prec (\mathbf{H}, \xtguarantees, \varphi', \alpha) \\
   \pi' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \tau, \kappa', \pi, \mathbf{H}, \mathbf{I}, \mathbf{X})\!\!\!\!\!\!\!\!

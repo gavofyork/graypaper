@@ -117,11 +117,10 @@
     \item[$\Omega_S$] Solicit-preimage host-call.
     \item[$\Omega_T$] Transfer host-call.
     \item[$\Omega_U$] Upgrade-service host-call.
-    \item[$\Omega_V$] Void inner-\textsc{pvm} memory host-call.
     \item[$\Omega_W$] Write-storage host-call.
     \item[$\Omega_X$] Expunge-\textsc{pvm} host-call.
     \item[$\Omega_Y$] Fetch data host-call.
-    \item[$\Omega_Z$] Zero inner-\textsc{pvm} memory host-call.
+    \item[$\Omega_Z$] Pages inner-\textsc{pvm} memory host-call.
     \item[$\Omega_\Taurus$] Yield accumulation trie result host-call.
     \item[$\Omega_\Aries$] Provide preimage host-call.
   \end{description}
@@ -170,7 +169,6 @@ These terms are all contextualized to a single block. They may be superscripted 
 \begin{description}
   \item[$\mathbf{A}$] The ancestor set of the block. See equation \ref{eq:ancestors}.
   \item[$\mathbf{B}$] The block. See equation \ref{eq:block}.
-  \item[$\beefycommitmap$] The service accumulation-commitment, used to form the \textsc{Beefy} root. See equation \ref{eq:beefycommitment}.
   \item[$\mathbf{E}$] The block extrinsic. See equation \ref{eq:extrinsic}.
   \item[$\mathbf{F}_v$] The \textsc{Beefy} signed commitment of validator $v$. See equation \ref{eq:beefysignedcommitment}.
   \item[$\mathbf{G}$] The mapping from cores to guarantor keys. See section \ref{sec:coresandvalidators}.
@@ -198,7 +196,11 @@ Without any superscript, the block is assumed to the block being imported or, if
 Here, the prime annotation indicates posterior state. Individual components may be identified with a letter subscript.
 \begin{description}
   \item[$\alpha$] The core $\alpha$uthorizations pool. See equation \ref{eq:authstatecomposition}. %	α
-  \item[$\beta$] Information on the most recent $\beta$locks. %	β
+  \item[$\beta$] Log of recent activity. See equation \ref{eq:recenthistory}. %	β
+  \begin{description}
+    \item[$\recenthistory$] Information on the most recent blocks.
+    \item[$\beefybelt$] The Merkle mountain belt for accumulating Accumulation outputs.
+  \end{description}
   \item[$\gamma$] State concerning Safrole. See equation \ref{eq:consensusstatecomposition}. %	γ
   \begin{description}
     \item[$\gamma_\mathbf{a}$] The sealing lottery ticket accumulator.
@@ -232,16 +234,16 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \end{description}
   \item[$\chi$] The privileged service indices. %	χ
   \begin{description}
-    \item[$\chi_m$] The index of the blessed service.
-    \item[$\chi_v$] The index of the designate service.
-    \item[$\chi_a$] The index of the assign service.
-    \item[$\chi_\mathbf{g}$] The always-accumulate service indices and their basic gas allowance.
+    \item[$\manager$] The index of the blessed service.
+    \item[$\delegator$] The index of the designate service.
+    \item[$\assigners$] The indices of the services able to assign each core's authorizer queue.
+    \item[$\alwaysaccers$] The always-accumulate service indices and their basic gas allowance.
   \end{description}
   \item[$\pi$] The activity statistics for the validators. % π
   \item[$\vartheta$] The accumulation queue. % ϑ
   \item[$\xi$] The accumulation history. % ξ
+  \item[$\lastaccout$] The most recent Accumulation outputs. See equation \ref{eq:lastaccout}. % θ
 \end{description}
-% θ
 
 \subsubsection{Virtual Machine components}
 
@@ -270,7 +272,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{G}_A = 10,000,000$] The gas allocated to invoke a work-report's Accumulation logic.
   \item[$\mathsf{G}_I = 50,000,000$] The gas allocated to invoke a work-package's Is-Authorized logic.
   \item[$\mathsf{G}_R = 5,000,000,000$] The gas allocated to invoke a work-package's Refine logic.
-  \item[$\mathsf{G}_T = 3,500,000,000$] The total gas allocated across for all Accumulation. Should be no smaller than $\mathsf{G}_A\cdot\mathsf{C} + \sum_{g \in \mathcal{V}(\chi_\mathbf{g})}(g)$.
+  \item[$\mathsf{G}_T = 3,500,000,000$] The total gas allocated across for all Accumulation. Should be no smaller than $\mathsf{G}_A\cdot\mathsf{C} + \sum_{g \in \mathcal{V}(\alwaysaccers)}(g)$.
   \item[$\mathsf{H} = 8$] The size of recent history, in blocks.
   \item[$\mathsf{I} = 16$] The maximum amount of work items in a package.
   \item[$\mathsf{J} = 8$] The maximum sum of dependency items in a work-report.
@@ -286,7 +288,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{U} = 5$] The period in timeslots after which reported but unavailable work may be replaced.
   \item[$\mathsf{V} = 1023$] The total number of validators.
   \item[$\mathsf{W}_A = 64,000$] The maximum size of is-authorized code in octets.
-  \item[$\mathsf{W}_B = 12\cdot2^{20}$] The maximum size of an encoded work-package together with its extrinsic data and import implications, in octets.
+  \item[$\mathsf{W}_B = 13,794,305$] The maximum size of an encoded work-package together with its extrinsic data and import implications, in octets.
   \item[$\mathsf{W}_C = 4,000,000$] The maximum size of service code in octets.
   \item[$\mathsf{W}_E = 684$] The basic size of erasure-coded pieces in octets. See equation \ref{eq:erasurecoding}.
   \item[$\mathsf{W}_G = \mathsf{W}_P\mathsf{W}_E = 4104$] The size of a segment in octets.
