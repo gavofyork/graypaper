@@ -264,7 +264,7 @@ We come now to defining the host functions which are utilized by the \textsc{pvm
 
 The general functions are all broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory' \in \ram) = \Omega_\square(\gascounter \in \N_G, \registers \in \regs, \memory \in \ram)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
-Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \mathbb{A}$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that any additional parameters may be taken and are provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
+Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \mathbb{A}$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
 Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
@@ -292,7 +292,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_Y(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{o}, \mathbf{t})$ \\
+  $\Omega_Y(\gascounter, \registers, \memory, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{o}, \mathbf{t}, \dots)$ \\
   \texttt{fetch} = 1 \\
   $g = 10$} &
   $\begin{aligned}
@@ -452,23 +452,27 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{info} = 5 \\
   $g = 10$} &
   $\begin{aligned}
-    \using \mathbf{t} &= \begin{cases}
+    \using \mathbf{a} &= \begin{cases}
       \mathbf{d}[s] &\when \registers_7 = 2^{64} - 1 \\
       \mathbf{d}[\registers_7] &\otherwise
     \end{cases} \\
     \using o &= \registers_8 \\
-    \using \mathbf{m} &= \begin{cases}
-      \mathcal{E}(\mathbf{t}_c, \mathbf{t}_b, \mathbf{t}_t, \mathbf{t}_g, \mathbf{t}_m, \mathbf{t}_o, \mathbf{t}_i, \mathbf{t}_f, \mathbf{t}_r, \mathbf{t}_a, \mathbf{t}_p) &\when \mathbf{t} \ne \none \\
+    \using \mathbf{v} &= \begin{cases}
+      \se(
+        \mathbf{a}_c,
+        \se_8(\mathbf{a}_b, \mathbf{a}_t, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_o),
+        \se_4(\mathbf{a}_i),
+        \se_8(\mathbf{a}_f),
+        \se_4(\mathbf{a}_r, \mathbf{a}_a, \mathbf{a}_p)
+      ) &\when \mathbf{a} \ne \none \\
       \none &\otherwise
     \end{cases} \\
-    \forall i \in \N_{|\mathbf{m}|} : \memory'_{o + i} &\equiv \begin{cases}
-      \mathbf{m}_i & \when \mathbf{m} \ne \none \wedge \mathbb{N}_{o \dots+ |\mathbf{m}|} \subseteq \mathbb{V}^*_{\memory} \\
-      \memory_{o + i} & \otherwise
-    \end{cases} \\
-    (\execst', \registers'_7) &\equiv \begin{cases}
-      (\panic, \registers_7) &\when \mathbb{N}_{o \dots+ |\mathbf{m}|} \not\subseteq \mathbb{V}^*_{\memory}\\
-      (\continue, \mathtt{NONE}) &\otherwhen \mathbf{m} = \none \\
-      (\continue, \mathtt{OK}) &\otherwise \\
+    \using f &= \min(\registers_{11}, |\mathbf{v}|) \\
+    \using l &= \min(\registers_{12}, |\mathbf{v}| - f) \\
+    (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subseteq \mathbb{V}^*_{\memory}\\
+      (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
+      (\continue, |\mathbf{v}|, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
   \end{aligned}$ \\
   \bottomrule
