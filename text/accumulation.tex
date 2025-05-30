@@ -252,9 +252,13 @@ This introduces $\operandtuple$, the set of wrangled \emph{operand tuples}, used
 Given the result of the top-level $\Delta_+$, we may define the posterior state $\chi'$, $\varphi'$ and $\iota'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the Accumulation Output Log $\lastaccout'$:
 \begin{align}
   \using &g = \max\left(\mathsf{G}_T, \mathsf{G}_A\cdot \mathsf{C} + \textstyle \sum_{x \in \mathcal{V}(\alwaysaccers)}(x)\right)\\
-  \using &(n, \mathbf{o}, \mathbf{t}, \lastaccout', \mathbf{u}) = \Delta_+(g, \mathbf{W}^*, (\chi, \accountspre, \iota, \varphi), \alwaysaccers) \\
-  &(\chi', \accountspostacc, \iota', \varphi') \equiv \mathbf{o}
+  \also &\mathbf{o} = (\accountspre, \iota, \varphi, \manager, \assigners, \delegator, \alwaysaccers) \\
+  &(n, \mathbf{o}', \mathbf{t}, \lastaccout', \mathbf{u}) \equiv
+    \Delta_+(g, \mathbf{W}^*, \mathbf{o}, \alwaysaccers) \\
+  &(\accountspostacc, \iota', \varphi', \manager', \assigners', \delegator', \alwaysaccers') \equiv \mathbf{o}'
 \end{align}
+
+From this formulation, we also receive $\mathbf{t}$, the grand sequence of deferred transfers, together with $n$, the total number of work-items accumulated and $\mathbf{u}$, the gas used in the accumulation process for each service. Each of these terms are used shortly.
 
 We compose $\mathbf{I}$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-items accumulated. Formally:
 \begin{align}
@@ -263,17 +267,19 @@ We compose $\mathbf{I}$, our accumulation statistics, which is a mapping from th
   \where &N(s) \equiv \sq{r \mid w \orderedin \mathbf{W}^*_{\dots n} , r \orderedin w_\mathbf{r} , r_s = s }
 \end{align}
 
-We have denoted the sequence of implied transfers as $\mathbf{t}$, ordered internally according to the source service's execution. We define a selection function $R$, which maps a sequence of deferred transfers and a desired destination service index into the sequence of transfers targeting said service, ordered primarily according to the source service index and secondarily their order within $\mathbf{t}$. Formally:
+\newcommand*{\selectxfers}{X}
+
+We have denoted the sequence of implied transfers as $\mathbf{t}$, ordered internally according to the source service's execution. We define a selection function $\selectxfers$, which maps a desired destination service index into the sequence of transfers from $\mathbf{t}$ which target said service. It is ordered primarily according to the source service index and secondarily their order within $\mathbf{t}$. Formally:
 \begin{equation}
-  R\colon \left\{\;\begin{aligned}
-    (\defxfers, \N_S) &\to \defxfers \\
-    (\mathbf{t}, d) &\mapsto \left[\,t \mid s \orderedin \N_S,\ t \orderedin \mathbf{t},\ t_s = s,\ t_d = d\,\right]
+  \selectxfers\colon \left\{\;\begin{aligned}
+    \N_S &\to \defxfers \\
+    d &\mapsto \left[\,t \mid s \orderedin \N_S,\ t \orderedin \mathbf{t},\ t_s = s,\ t_d = d\,\right]
   \end{aligned}\right.\!\!\!\!
 \end{equation}
 
 The second intermediate state $\accountspostxfer$ may then be defined with all the deferred effects of the transfers applied followed by the last-accumulation record being updated for all accumulated services:
 \begin{align}
-  \mathbf{x} &= \{ s \mapsto \Psi_T(\accountspostacc, \tau', s, R(\mathbf{t}, s)) \mid (s \mapsto a) \in \accountspostacc \} \\
+  \mathbf{x} &= \{ s \mapsto \Psi_T(\accountspostacc, \tau', s, \selectxfers(s)) \mid (s \mapsto a) \in \accountspostacc \} \\
   \accountspostxfer &\equiv \left\{ s \mapsto a' \;\middle\mid\; (s \mapsto \tup{a, u}) \in \mathbf{x} \right\} \\
   &\where a' = \begin{cases}
     a \exc a'_a = \tau' &\when s \in \keys{\mathbf{I}} \\
@@ -285,13 +291,13 @@ Furthermore we build the deferred transfers statistics value $\mathbf{X}$ as the
 \begin{align}
   \label{eq:deferredtransfers}
   &\mathbf{X} \in \dict{\N_S}{\tuple{\N, \N_G}} \\
-  &\textstyle \mathbf{X} \equiv \left\{ d \mapsto \tup{\len{R(\mathbf{t}, d)}, u} \;\middle\vert\; \begin{aligned}
-    R(\mathbf{t}, d) &\ne [],\\ \exists a: \mathbf{x}[d] &= (a, u)
+  &\textstyle \mathbf{X} \equiv \left\{ d \mapsto \tup{\len{\selectxfers(d)}, u} \;\middle\vert\; \begin{aligned}
+    \selectxfers(d) &\ne [],\\ \exists a: \mathbf{x}[d] &= (a, u)
   \end{aligned}
   \right\}
 \end{align}
 
-Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such that it results in $\accountspostacc[d]$, \ie no difference to the account's intermediate state, if $R(d) = []$, \ie said account received no transfers.
+Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such that it results in $\accountspostacc[d]$, \ie no difference to the account's intermediate state, if $\selectxfers(d) = []$, \ie said account received no transfers.
 
 We define the final state of the ready queue and the accumulated map by integrating those work-reports which were accumulated in this block and shifting any from the prior state with the oldest such items being dropped entirely:
 \begin{align}
@@ -317,10 +323,10 @@ After accumulation, we must integrate all preimages provided in the lookup extri
 \begin{align}
   \xtpreimages &\in \lseq \ltuple\N_S\ts\Y\rtuple \rseq \\
   \label{eq:preimagesareordered}\xtpreimages &= \orderuniqby{i}{i \in \xtpreimages} \\
-  R(\mathbf{d}, s, h, l) &\Leftrightarrow
+  Y(\mathbf{d}, s, h, l) &\Leftrightarrow
   h \not\in \mathbf{d}[s]_\mathbf{p} \wedge
     \mathbf{d}[s]_\mathbf{l}[\tup{h, l}] = []\\
-  \forall \tup{s, \mathbf{p}} &\in \xtpreimages : R(\accountspre, s, \hash(\mathbf{p}), |\mathbf{p}|)
+  \forall \tup{s, \mathbf{p}} &\in \xtpreimages : Y(\accountspre, s, \hash(\mathbf{p}), |\mathbf{p}|)
 \end{align}
 
 We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
@@ -328,7 +334,7 @@ We disregard, without prejudice, any preimages which due to the effects of accum
   \using \mathbf{P} = \{
     (s, \mathbf{p})
     \mid
-      \tup{s, \mathbf{p}} \in \xtpreimages, R(\accountspostxfer, s, \hash(\mathbf{p}), |\mathbf{p}|)
+      \tup{s, \mathbf{p}} \in \xtpreimages, Y(\accountspostxfer, s, \hash(\mathbf{p}), |\mathbf{p}|)
     \}\\
   \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{s\ts\mathbf{p}} \in \mathbf{P} : \left\{\,\begin{aligned}
       \quad\accountspostpreimage[s]_\mathbf{p}[\hash(\mathbf{p})] &= \mathbf{p} \\
