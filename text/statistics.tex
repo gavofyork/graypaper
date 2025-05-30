@@ -36,10 +36,10 @@ The six validator statistics we track are:
 The objective statistics are updated in line with their description, formally:
 \begin{align}
     \using e =\; &\ffrac{\tau}{\mathsf{E}} \ ,\quad e' = \ffrac{\tau'}{\mathsf{E}}\\
-    (\mathbf{a}, \pi'_L) \equiv\;&\begin{cases}
+    \!(\mathbf{a}, \pi'_L) \equiv\;&\begin{cases}
         (\pi_V, \pi_L) &\when e' = e \\
-        (\sq{\tuple{0, \dots, [0, \dots]}, \dots}, \pi_V) &\otherwise
-    \end{cases}\\
+        (\sq{\tuple{0, \dots, [0, \dots]}, \dots}, \pi_V)\!\!\!\! &\otherwise
+    \end{cases}\!\!\!\!\\
     \forall v \in \N_\mathsf{V} :&\; \left\{\begin{aligned}
         \pi'_V[v]_b &\equiv \mathbf{a}[v]_b + (v = \mathbf{H}_i)\\
         \pi'_V[v]_t &\equiv \mathbf{a}[v]_t + \begin{cases}
@@ -56,7 +56,7 @@ The objective statistics are updated in line with their description, formally:
         \end{cases}\\
         \pi'_V[v]_g &\equiv \mathbf{a}[v]_g + (\kappa'_v \in \mathbf{R})\\
         \pi'_V[v]_a &\equiv \mathbf{a}[v]_a + (\exists a \in \xtassurances : a_v = v)
-    \end{aligned}\right.\!\!\!\!
+    \end{aligned}\right.\!\!\!\!\!
 \end{align}
 
 Note that $\mathbf{R}$ is the \emph{Reporters} set, as defined in equation \ref{eq:guarantorsig}.
@@ -64,7 +64,6 @@ Note that $\mathbf{R}$ is the \emph{Reporters} set, as defined in equation \ref{
 \subsection{Cores and Services}
 
 The other two components of statistics are the core and service activity statistics. These are tracked only on a per-block basis unlike the validator statistics which are tracked over the whole epoch.
-
 \begin{align}
   \pi_C &\in \seq{\tuple{
     \begin{alignedat}{7}
@@ -93,7 +92,6 @@ The other two components of statistics are the core and service activity statist
 \end{align}
 
 The core statistics are updated using several intermediate values from across the overall state-transition function; $\mathbf{w}$, the incoming work-reports, as defined in \ref{eq:incomingworkreports} and $\mathbf{W}$, the newly available work-reports, as defined in \ref{eq:availableworkreports}. We define the statistics as follows:
-
 \begin{align}
   \forall c \in \N_\mathsf{C} : \pi'_C[c] &\equiv \tup{
     \begin{alignedat}{5}

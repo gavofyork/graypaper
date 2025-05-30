@@ -134,6 +134,8 @@ And so on.
 \subsection{Block Serialization}
 
 A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\se_U$. Formally:
+
+\newcommand*{\seresult}{O}
 \begin{align}
   \se(\mathbf{B}) &= \se\,\left\lparen
     \mathbf{H},\ \se_T(\xttickets),\ \se_P(\xtpreimages),\ \se_G(\xtguarantees),\ \se_A(\xtassurances),\ \se_D(\xtdisputes)
@@ -144,27 +146,27 @@ A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, 
   \se_A(\xtassurances) &= \se(\var{[\tup{a, f, \se_2(v), s} \mid \tup{a, f, v, s} \orderedin \xtassurances]}) \\
   \se_D((\mathbf{v}, \mathbf{c}, \mathbf{f})) &= \se(\var{[(r, \se_4(a), [(v, \se_2(i), s) \mid (v, i, s) \orderedin \mathbf{j}]) \mid (r, a, \mathbf{j}) \orderedin \mathbf{v}]}, \var{\mathbf{c}}, \var{\mathbf{f}}) \\
   \se(\mathbf{H}) &= \se_U(\mathbf{H})\concat\se(\mathbf{H}_s) \\
-  \se_U(\mathbf{H}) &= \se(\mathbf{H}_p,\mathbf{H}_r,\mathbf{H}_x)\concat\se_4(\mathbf{H}_t)\concat\se(\maybe{\mathbf{H}_e},\maybe{\mathbf{H}_w},\var{\mathbf{H}_o},\se_2(\mathbf{H}_i),\mathbf{H}_v)\\
+  \se_U(\mathbf{H}) &= \se(\mathbf{H}_p,\mathbf{H}_r,\mathbf{H}_x)\concat\se_4(\mathbf{H}_t)\concat\se(\maybe{\mathbf{H}_e},\maybe{\mathbf{H}_w},\se_2(\mathbf{H}_i),\mathbf{H}_v,\var{\mathbf{H}_o})\\
   \se(x \in \mathbb{X}) &\equiv \se(x_a, x_s, x_b, x_l)\concat\se_4(x_t)\concat\se(\var{x_\mathbf{p}})\\
   \se(x \in \avspec) &\equiv \se(x_h) \concat \se_4(x_l)\concat\se(x_u, x_e) \concat \se_2(x_n) \\
-  \se(x \in \mathbb{L}) &\equiv \se(\se_4(x_s), x_c, x_y, \se_8(x_g), O(x_\wl¬result), x_u, x_i, x_x, x_z, x_e)\\
-  \se(x \in \mathbb{W}) &\equiv \se(x_s, x_x, x_c, x_a, \var{x_\wr¬authtrace}, \var{x_\mathbf{l}}, \var{x_\wr¬digests}, x_g) \\
-  \se(x \in \mathbb{P}) &\equiv \se(\var{x_\wp¬authtoken}, \se_4(x_\wp¬authcodehost), x_\wp¬authcodehash, \var{x_\wp¬authconfig}, x_\wp¬context, \var{x_\wp¬workitems}) \\
+  \se(x \in \mathbb{L}) &\equiv \se(\se_4(x_s), x_c, x_y, \se_8(x_g), x_u, x_i, x_x, x_z, x_e, \seresult(x_\wl¬result))\\
+  \se(x \in \mathbb{W}) &\equiv \se(x_s, x_x, x_c, x_a, x_g, \var{x_\wr¬authtrace}, \var{x_\mathbf{l}}, \var{x_\wr¬digests}) \\
+  \se(x \in \mathbb{P}) &\equiv \se(\se_4(x_\wp¬authcodehost), x_\wp¬authcodehash, x_\wp¬context, \var{x_\wp¬authtoken}, \var{x_\wp¬authconfig}, \var{x_\wp¬workitems}) \\
   % TODO: \se_4(i) should be just \se(i), but we should wait for this to be written.
   \se(x \in \mathbb{I}) &\equiv \se(
     \se_4(x_s),
     x_c,
-    \var{x_\mathbf{y}},
     \se_8(x_g),
     \se_8(x_a),
+    \se_2(x_e)
+    \var{x_\mathbf{y}},
     \var{\se_I^\#(x_\mathbf{i})},
     \var{\sq{(h, \se_4(i)) \mid (h, i) \orderedin x_\mathbf{x}}},
-    \se_2(x_e)
   ) \\
   \se(x \in \mathbb{C}) &\equiv \se(x_\mathbf{y}, x_r) \\
   \se(x \in \defxfer) &\equiv \se(\se_4(x_s), \se_4(x_d), \se_8(x_a), \se(x_m), \se_8(x_g)) \\
-  \se(x \in \operandtuple) &\equiv \se(x_\ot¬packagehash, x_\ot¬segroot, x_\ot¬authorizer,  x_\ot¬payloadhash, x_\ot¬gaslimit, O(x_\ot¬result), \var{x_\ot¬authtrace}) \\
-  O(o \in \mathbb{J} \cup \Y) &\equiv \begin{cases}
+  \se(x \in \operandtuple) &\equiv \se(x_\ot¬packagehash, x_\ot¬segroot, x_\ot¬authorizer,  x_\ot¬payloadhash, x_\ot¬gaslimit, \seresult(x_\ot¬result), \var{x_\ot¬authtrace}) \\
+  \seresult(o \in \mathbb{J} \cup \Y) &\equiv \begin{cases}
     (0, \var{o}) &\when o \in \Y \\
     1 &\when o = \infty \\
     2 &\when o = \panic \\
