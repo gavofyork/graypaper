@@ -25,18 +25,6 @@ Passing multiple arguments to the serialization functions is equivalent to passi
   \se(a, b, \dots) &\equiv \se(\tup{a, b, \dots})
 \end{align}
 
-\subsubsection{Integer Encoding}
-We first define the trivial natural number serialization functions which are subscripted by the number of octets of the final sequence. Values are encoded in a regular little-endian fashion. This is utilized for almost all integer encoding across the protocol. Formally:
-\begin{equation}
-  \se_{l \in \N}\colon\left\{\begin{aligned}
-    \N_{2^{8l}} &\to \Y_l \\
-    x &\mapsto \begin{cases}
-      [] &\when l = 0 \\
-      [x \bmod 256] \concat \se_{l - 1}\left(\left\lfloor \frac{x}{256} \right\rfloor\right) &\otherwise
-    \end{cases}
-  \end{aligned}\right.
-\end{equation}
-
 %We also define the variable-size prefix 29-bit natural serialization function $\se_{4*}$:
 %\begin{equation}
 %  \se_{4*}\colon\left\{\begin{aligned}
@@ -64,7 +52,7 @@ We define general natural number serialization, able to encode naturals of up to
 \subsubsection{Sequence Encoding}
 We define the sequence serialization function $\se(\seq{T})$ for any $T$ which is itself a subset of the domain of $\se$. We simply concatenate the serializations of each element in the sequence in turn:
 \begin{equation}
-  \se([i_0, i_1, ...]) \equiv \se(i_0) \concat \se(i_1) \concat \dots
+  \se([\mathbf{i}_0, \mathbf{i}_1, ...]) \equiv \se(\mathbf{i}_0) \concat \se(\mathbf{i}_1) \concat \dots
 \end{equation}
 
 Thus, conveniently, fixed length octet sequences (\eg hashes $\H$ and its variants) have an identity serialization.
@@ -121,6 +109,27 @@ For any values which are sets and don't already have a defined encoding above, w
 \begin{equation}
   \se(\{a, b, c, \dots\}) \equiv \se(a) \concat \se(b) \concat \se(c) \concat \dots \where a < b < c < \dots
 \end{equation}
+
+\subsubsection{Fixed-length Integer Encoding}
+We first define the trivial natural number serialization functions which are subscripted by the number of octets of the final sequence. Values are encoded in a regular little-endian fashion. This is utilized for almost all integer encoding across the protocol. Formally:
+\begin{equation}
+  \se_{l \in \N}\colon\left\{\begin{aligned}
+    \N_{2^{8l}} &\to \Y_l \\
+    x &\mapsto \begin{cases}
+      [] &\when l = 0 \\
+      [x \bmod 256] \concat \se_{l - 1}\left(\left\lfloor \frac{x}{256} \right\rfloor\right) &\otherwise
+    \end{cases}
+  \end{aligned}\right.
+\end{equation}
+
+For non-natural arguments, $\se_{l \in \N}$ corresponds to the definitions of $\se$, except that recursive elements are made as $\se_l$ rather than $\se$. Thus:
+\begin{align}
+  \se_{l \in \N}(a, b, \dots) &\equiv \se_l(\tup{a, b, \dots})\\
+  \se_{l \in \N}(\tup{a, b, \dots}) &\equiv \se_l(a) \concat \se_l(b) \concat \dots\\
+  \se_{l \in \N}([\mathbf{i}_0, \mathbf{i}_1, ...]) &\equiv \se_l(\mathbf{i}_0) \concat \se_l(\mathbf{i}_1) \concat \dots
+\end{align}
+
+And so on.
 
 \subsection{Block Serialization}
 
