@@ -2,12 +2,12 @@
 
 As in the Yellow Paper, we begin our formalisms by recalling that a blockchain may be defined as a pairing of some initial state together with a block-level state-transition function. The latter defines the posterior state given a pairing of some prior state and a block of data applied to it. Formally, we say:
 \begin{align}\label{eq:statetransition}
-\sigma' \equiv \Upsilon(\sigma, \mathbf{B})
+\thestate' \equiv \Upsilon(\thestate, \mathbf{B})
 \end{align}
 
-Where $\sigma$ is the prior state, $\sigma'$ is the posterior state, $B$ is some valid block and $\Upsilon$ is our block-level state-transition function.
+Where $\thestate$ is the prior state, $\thestate'$ is the posterior state, $B$ is some valid block and $\Upsilon$ is our block-level state-transition function.
 
-Broadly speaking, \Jam (and indeed blockchains in general) may be defined simply by specifying $\Upsilon$ and some \emph{genesis state} $\sigma^0$.\footnote{Practically speaking, blockchains sometimes make assumptions of some fraction of participants whose behavior is simply \emph{honest}, and not provably incorrect nor otherwise economically disincentivized. While the assumption may be reasonable, it must nevertheless be stated apart from the rules of state-transition.} We also make several additional assumptions of agreed knowledge: a universally known clock, and the practical means of sharing data with other systems operating under the same consensus rules. The latter two were both assumptions silently made in the \emph{YP}.
+Broadly speaking, \Jam (and indeed blockchains in general) may be defined simply by specifying $\Upsilon$ and some \emph{genesis state} $\thestate^0$.\footnote{Practically speaking, blockchains sometimes make assumptions of some fraction of participants whose behavior is simply \emph{honest}, and not provably incorrect nor otherwise economically disincentivized. While the assumption may be reasonable, it must nevertheless be stated apart from the rules of state-transition.} We also make several additional assumptions of agreed knowledge: a universally known clock, and the practical means of sharing data with other systems operating under the same consensus rules. The latter two were both assumptions silently made in the \emph{YP}.
 
 \subsection{The Block}
 
@@ -29,12 +29,12 @@ The header is a collection of metadata primarily concerned with cryptographic re
 
 \subsection{The State}
 
-Our state may be logically partitioned into several largely independent segments which can both help avoid visual clutter within our protocol description and provide formality over elements of computation which may be simultaneously calculated (i.e. parallelized). We therefore pronounce an equivalence between $\sigma$ (some complete state) and a tuple of partitioned segments of that state:
+Our state may be logically partitioned into several largely independent segments which can both help avoid visual clutter within our protocol description and provide formality over elements of computation which may be simultaneously calculated (i.e. parallelized). We therefore pronounce an equivalence between $\thestate$ (some complete state) and a tuple of partitioned segments of that state:
 \begin{align}\label{eq:statecomposition}
-  \sigma &\equiv (\authpool, \recenthistory, \gamma, \delta, \eta, \iota, \kappa, \lambda, \rho, \tau, \varphi, \privileges, \psi, \pi, \ready, \accumulated)
+  \thestate &\equiv (\authpool, \recenthistory, \gamma, \accounts, \eta, \iota, \kappa, \lambda, \rho, \tau, \varphi, \privileges, \psi, \pi, \ready, \accumulated)
 \end{align}
 
-In summary, $\delta$ is the portion of state dealing with \emph{services}, analogous in \Jam to the Yellow Paper's (smart contract) \emph{accounts}, the only state of the \emph{YP}'s Ethereum. The identities of services which hold some privileged status are tracked in $\privileges$.
+In summary, $\accounts$ is the portion of state dealing with \emph{services}, analogous in \Jam to the Yellow Paper's (smart contract) \emph{accounts}, the only state of the \emph{YP}'s Ethereum. The identities of services which hold some privileged status are tracked in $\privileges$.
 
 Validators, who are the set of economic actors uniquely privileged to help build and maintain the \Jam chain, are identified within $\kappa$, archived in $\lambda$ and enqueued from $\iota$. All other state concerning the determination of these keys is held within $\gamma$. Note this is a departure from the \emph{YP} proof-of-work definitions which were mostly stateless, and this set was not enumerated but rather limited to those with sufficient compute power to find a partial hash-collision in the \textsc{sha}\oldstylenums{2}-\oldstylenums{256} cryptographic hash function. An on-chain entropy pool is retained in $\eta$.
 
@@ -68,7 +68,7 @@ The only synchronous entanglements are visible through the intermediate componen
 
 \subsection{Which History?}
 
-A blockchain is a sequence of blocks, each cryptographically referencing some prior block by including a hash of its header, all the way back to some first block which references the genesis header. We already presume consensus over this genesis header $\mathbf{H}^0$ and the state it represents already defined as $\sigma^0$.
+A blockchain is a sequence of blocks, each cryptographically referencing some prior block by including a hash of its header, all the way back to some first block which references the genesis header. We already presume consensus over this genesis header $\mathbf{H}^0$ and the state it represents already defined as $\thestate^0$.
 
 By defining a deterministic function for deriving a single posterior state for any (valid) combination of prior state and block, we are able to define a unique \emph{canonical} state for any given block. We generally call the block with the most ancestors the \emph{head} and its state the \emph{head state}.
 
@@ -149,7 +149,7 @@ The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for 
   \Psi\colon
   \tuple{\,
     \begin{alignedat}{3}
-      &\Y\ts\ \ \N_R\ts\ \ &&\N_G\ts\\
+      &\blob\ts\ \ \N_R\ts\ \ &&\N_G\ts\\
       &\!\lseq\N_R\rseq_{13}\ts\ \ &&\mathbb{M}\\
     \end{alignedat}
   \,}
@@ -174,7 +174,7 @@ It is left as a rather important implementation detail to ensure that the amount
 The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 64-bit quantity, denoted as $\N_R$, a natural less than $2^{64}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\registers \in \seq{\N_R}_{13}$ is typically used to denote the registers.
 \begin{align}\label{eq:pvmmemory}
   \mathbb{M} &\equiv \tuple{
-    \isa{\mathbf{V}}{\Y_{2^{32}}},
+    \isa{\mathbf{V}}{\blob_{2^{32}}},
     \isa{\mathbf{A}}{\seq{\{\text{W}, \text{R}, \none\}}_p}
   }\,,\ p = \frac{2^{32}}{\mathsf{Z}_P}\\
   \mathsf{Z}_P &= 2^{12}

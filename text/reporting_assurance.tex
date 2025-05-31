@@ -1,6 +1,6 @@
 \section{Reporting and Assurance}\label{sec:reporting}
 
-Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make their way into the service state singleton, $\delta$. A \emph{work-package}, which comprises several \emph{work items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work-digests} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After enough assurances the work-report is considered \emph{available}, and the work-digests transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}. The report may also be \emph{timed-out}, implying it may be replaced by another report without accumulation.
+Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make their way into the state of service accounts, $\accounts$. A \emph{work-package}, which comprises several \emph{work-items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work-digests} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After enough assurances the work-report is considered \emph{available}, and the work-digests transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}. The report may also be \emph{timed-out}, implying it may be replaced by another report without accumulation.
 
 From the perspective of the work-report, therefore, the guarantee happens first and the assurance afterwards. However, from the perspective of a block's state-transition, the assurances are best processed first since each core may only have a single work-report pending its package becoming available at a time. Thus, we will first cover the transition arising from processing the availability assurances followed by the work-report guarantees. This synchroneity can be seen formally through the requirement of an intermediate state $\rho^\ddagger$, utilized later in equation \ref{eq:reportcoresareunusedortimedout}.
 
@@ -29,7 +29,7 @@ A work-report, of the set $\workreport$, is defined as a tuple of the work-packa
     \isa{\wr¬context}{\mathbb{X}},\ 
     \isa{\wr¬core}{\N_\mathsf{C}},\ 
     \isa{\wr¬authorizer}{\H},\ 
-    \isa{\wr¬authtrace}{\Y},\\
+    \isa{\wr¬authtrace}{\blob},\\
     &\isa{\wr¬srlookup}{\dict{\H}{\H}},\ 
     \isa{\wr¬digests}{\seq{\mathbb{L}}_{1:\mathsf{I}}},\ 
     \isa{\wr¬authgasused}{\N_G}
@@ -79,7 +79,7 @@ We finally come to define a \emph{work-digest}, $\workdigest$, which is the data
       \isa{&\wl¬codehash&}{\H}\,,\;
       \isa{&\wl¬payloadhash&}{\H}\,,\;
       \isa{&\wl¬gaslimit&}{\N_G}\,,\;
-      \isa{&\wl¬result&}{\Y \cup \mathbb{J}}\,,\;\\
+      \isa{&\wl¬result&}{\blob \cup \mathbb{J}}\,,\;\\
       \isa{\wl¬gasused&}{\N_G}\,,\; % gas_used: UnsignedGas,
       \isa{&\wl¬importcount&}{\N}\,,\; % imports: u16,
       \isa{&\wl¬xtcount&}{\N}\,,\; % extrinsic_count: u16,
@@ -105,7 +105,7 @@ Finally, we have five fields describing the level of activity which this workloa
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful refinement output blobs together with the authorizer trace, effectively limiting their overall size:
 \begin{align}
   &\forall w \in \workreport:
-    |w_\wr¬authtrace| + \sum_{r \in w_\wr¬digests \cap \Y} |r_\wl¬result| \le \mathsf{W}_R \\
+    |w_\wr¬authtrace| + \sum_{r \in w_\wr¬digests \cap \blob} |r_\wl¬result| \le \mathsf{W}_R \\
   &\mathsf{W}_R \equiv 48\cdot2^{10}
 \end{align}
 
@@ -135,7 +135,7 @@ The assurances must all be anchored on the parent and ordered by validator index
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\mathbf{H}_p$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \xtassurances : a_s \in \sig{\kappa[a_v]_e}{\mathsf{X}_A\frown \hash(\se(\mathbf{H}_p, a_f))} \\
+  &\forall a \in \xtassurances : a_s \in \sig{\kappa[a_v]_e}{\mathsf{X}_A\frown \blake(\se(\mathbf{H}_p, a_f))} \\
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
@@ -153,10 +153,10 @@ A work-report is said to become \emph{available} if and only if there are a clea
 
 % TODO: Rename $\mathbf{W}$ to \mathbf{V} or whatever and `\mathbf{w}` becomes `\mathbf{R}` and `\mathbf{R}` becomes `\mathbf{G}`. `\mathbf{G}` would become something else.
 
-This value is utilized in the definition of both $\delta'$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are either now available or have timed out:
+This value is utilized in the definition of both $\accountspost$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are either now available or have timed out:
 \begin{align}
   \forall c \in \N_\mathsf{C}: \rho^\ddagger[c] \equiv \begin{cases}
-    \none &\when\rho[c]_w \in \mathbf{W} \vee \mathbf{H}_t \ge \rho^\dagger[c]_t + \mathsf{U}\\
+    \none &\when\rho[c]_w \in \mathbf{W} \vee \h¬timeslot \ge \rho^\dagger[c]_t + \mathsf{U}\\
     \rho^\dagger[c] &\otherwise
   \end{cases}
 \end{align}
@@ -237,7 +237,7 @@ The signature must be one whose public key is that of the validator identified i
       \forall (v, s) &\in \xg¬credential
     \end{aligned}
       : \left\{\,\begin{aligned}
-        &s \in \sig{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\frown\hash(w)}\\
+        &s \in \sig{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\frown\blake(w)}\\
         &\mathbf{c}\sub{v} = w_\wr¬core \wedge \mathsf{R}(\floor{\nicefrac{\tau'}{\mathsf{R}}} - 1) \le t \le \tau'\\
       \end{aligned}\right.\\
       &k \in \mathbf{R} \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists (v, s) \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
@@ -266,7 +266,7 @@ We require that the gas allotted for accumulation of each work-digest in each wo
 \begin{equation}
   \forall w \in \mathbf{w}:
     \sum_{r \in w_\wr¬digests}\!(r_\wl¬gaslimit) \le \mathsf{G}_A \ \wedge \ 
-    \forall r \in w_\wr¬digests: r_\wl¬gaslimit \ge \delta[r_\wl¬service]_\sa¬minaccgas
+    \forall r \in w_\wr¬digests: r_\wl¬gaslimit \ge \accounts[r_\wl¬service]_\sa¬minaccgas
 \end{equation}
 
 
@@ -300,12 +300,12 @@ We require that the anchor block be within the last $\mathsf{H}$ blocks and that
 
 We require that each lookup-anchor block be within the last $\mathsf{L}$ timeslots:
 \begin{align}
-  \forall x \in \mathbf{x} :\ x_t \ge \mathbf{H}_t - \mathsf{L}
+  \forall x \in \mathbf{x} :\ x_t \ge \h¬timeslot - \mathsf{L}
 \end{align}
 
 We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\mathsf{L}$ headers as the ancestor set $\mathbf{A}$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
 \begin{align}
-  \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \hash(h) = x_l
+  \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \blake(h) = x_l
 \end{align}
 
 We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:
@@ -333,7 +333,7 @@ We require that any segment roots mentioned in the segment-root lookup be verifi
 
 Finally, we require that all work-digests within the extrinsic predicted the correct code hash for their corresponding service:
 \begin{align}\label{eq:reportcodesarecorrect}
-  \forall w \in \mathbf{w}, \forall r \in w_r : r_c = \delta[r_s]_c
+  \forall w \in \mathbf{w}, \forall r \in w_r : r_c = \accounts[r_s]_c
 \end{align}
 
 

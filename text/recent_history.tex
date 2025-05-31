@@ -24,7 +24,7 @@ We define the new Accumulation Output Log $\beefybelt$. This is formed from the 
 \begin{align}
   \using \mathbf{s} &= \sq{\se_4(s) \frown \se(h) \mid \tup{s, h} \orderedin \lastaccout'}\\
   \label{eq:buildbeefymap}
-  \beefybelt' &\equiv \mathcal{A}(\beefybelt, \mathcal{M}_B(\mathbf{s}, \hash_K), \hash_K)
+  \beefybelt' &\equiv \mathcal{A}(\beefybelt, \mathcal{M}_B(\mathbf{s}, \blake_K), \blake_K)
 \end{align}
 
 The final state transition for $\recenthistory$ appends a new item including the new block's header hash, a Merkle commitment to the block's Accumulation Output Log and the set of work-reports made into it (for which we use the guarantees extrinsic, $\xtguarantees$). Formally:
@@ -32,7 +32,7 @@ The final state transition for $\recenthistory$ appends a new item including the
   \begin{aligned}
     \recenthistory' &\equiv {\overleftarrow{\recenthistory^\dagger \doubleplus \tup{
       \mathbf{p},
-      \is{h}{\hash(\mathbf{H})},
+      \is{h}{\blake(\mathbf{H})},
       \is{b}{\mathcal{M}_R(\beefybelt')},
       \is{s}{\H^0}
       }}}^\mathsf{H} \\

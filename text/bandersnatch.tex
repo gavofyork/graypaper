@@ -5,15 +5,15 @@ The Bandersnatch curve is defined by \cite{cryptoeprint:2021/1152}.
 The singly-contextualized Bandersnatch Schnorr-like signatures $\bandersig{k}{c}{m}$ are defined as a formulation under the \emph{IETF} \textsc{vrf} template specified by \cite{hosseini2024bandersnatch} (as IETF VRF) and further detailed by \cite{rfc9381}.
 
 \begin{align}
-  \bandersig{k \in \H_B}{c \in \H}{m \in \Y} \subset \Y_{96} &\equiv \{ x \mid x \in \Y_{96}, \text{verify}(k, c, m, x) = \top \}  \\
+  \bandersig{k \in \H_B}{c \in \H}{m \in \blob} \subset \blob_{96} &\equiv \{ x \mid x \in \blob_{96}, \text{verify}(k, c, m, x) = \top \}  \\
   \banderout{s \in \bandersig{k}{c}{m}} \in \H &\equiv \text{output}(x \mid x \in \bandersig{k}{c}{m})_{\dots32}
 \end{align}
 
 The singly-contextualized Bandersnatch Ring\textsc{vrf} proofs $\bandersnatch{r}{c}{m}$ are a zk-\textsc{snark}-enabled analogue utilizing the Pedersen \textsc{vrf}, also defined by \cite{hosseini2024bandersnatch} and further detailed by \cite{cryptoeprint:2023/002}.
 
 \begin{align}
-  \mathcal{O}(\seq{\H_B}) \in \Y_R &\equiv \text{commit}(\seq{\H_B})  \\
-  \bandersnatch{r \in \Y_R}{c \in \H}{m \in \Y} \subset \Y_{784} &\equiv \{ x \mid x \in \Y_{784}, \text{verify}(r, c, m, x) = \top \}  \\
+  \mathcal{O}(\seq{\H_B}) \in \blob_R &\equiv \text{commit}(\seq{\H_B})  \\
+  \bandersnatch{r \in \blob_R}{c \in \H}{m \in \blob} \subset \blob_{784} &\equiv \{ x \mid x \in \blob_{784}, \text{verify}(r, c, m, x) = \top \}  \\
   \banderout{p \in \bandersnatch{r}{c}{m}} \in \H &\equiv \text{output}(x \mid x \in \bandersnatch{r}{c}{m})_{\dots32}
 \end{align}
 

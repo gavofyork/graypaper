@@ -7,7 +7,7 @@
 
 \section{Accumulation}\label{sec:accumulation}
 
-Accumulation may be defined as some function whose arguments are $\mathbf{W}$ and $\delta$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\accountspostpreimage$ together with additional state elements $\iota'$, $\varphi'$ and $\privileges'$.
+Accumulation may be defined as some function whose arguments are $\mathbf{W}$ and $\accounts$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\accountspostpreimage$ together with additional state elements $\iota'$, $\varphi'$ and $\privileges'$.
 
 The proposition of accumulation is in fact quite simple: we merely wish to execute the \emph{Accumulate} logic of the service code of each of the services which has at least one work-digest, passing to it relevant data from said digests together with useful contextual information. However, there are three main complications. Firstly, we must define the execution environment of this logic and in particular the host functions available to it. Secondly, we must define the amount of gas to be allowed for each service's execution. Finally, we must determine the nature of transfers within Accumulate which, as we will see, leads to the need for a second entry-point, \emph{on-transfer}.
 
@@ -78,7 +78,7 @@ Finally, we define the mapping function $\srmap$ which extracts the correspondin
 
 We may now define the sequence of accumulatable work-reports in this block as $\mathbf{W}^*$:
 \begin{align}
-  \using m &= \mathbf{H}_t \bmod \mathsf{E}\\
+  \using m &= \h¬timeslot \bmod \mathsf{E}\\
   \mathbf{W}^* &\equiv \mathbf{W}^! \frown Q(\mathbf{q}) \\
   \quad\where \mathbf{q} &= E(\wideparen{\ready_{m\dots}} \concat \wideparen{\ready_{\dots m}} \concat \mathbf{W}^Q, \srmap(\mathbf{W}^!))
 \end{align}
@@ -115,7 +115,7 @@ We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, notin
     \isa{s}{\N_S} ,
     \isa{d}{\N_S} ,
     \isa{a}{\N_B} ,
-    \isa{m}{\Y_{\mathsf{W}_T}} ,
+    \isa{m}{\blob_{\mathsf{W}_T}} ,
     \isa{g}{\N_G}
   }
 \end{align}
@@ -168,21 +168,21 @@ We come to define the parallelized accumulation function $\Delta_*$ which, with 
 And $\fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/hash pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
 \begin{equation}
   \fnprovide\colon\left\{\begin{aligned}
-    &(\dict{\N_S}{\serviceaccount}, \{\tup{\N_S, \Y}\}) \to \dict{\N_S}{\serviceaccount} \\
+    &(\dict{\N_S}{\serviceaccount}, \{\tup{\N_S, \blob}\}) \to \dict{\N_S}{\serviceaccount} \\
     &(\mathbf{d}, \mathbf{p}) \mapsto \mathbf{d}'\;\where \mathbf{d}' = \mathbf{d}\;\text{except:} \\
     &\quad\forall \tup{s, \mathbf{i}} \in \mathbf{p},\;
       s \in \keys{\mathbf{d}},\;
-      \mathbf{d}[s]_\mathbf{l}[\hash(\mathbf{i}), |\mathbf{i}|] = \sq{}:\\
-    &\qquad \mathbf{d}'[s]_\mathbf{l}[\hash(\mathbf{i}), |\mathbf{i}|] = [\tau']\\
-    &\qquad \mathbf{d}'[s]_\mathbf{p}[\hash(\mathbf{i})] = \mathbf{i}
+      \mathbf{d}[s]_\mathbf{l}[\blake(\mathbf{i}), |\mathbf{i}|] = \sq{}:\\
+    &\qquad \mathbf{d}'[s]_\mathbf{l}[\blake(\mathbf{i}), |\mathbf{i}|] = [\tau']\\
+    &\qquad \mathbf{d}'[s]_\mathbf{p}[\blake(\mathbf{i})] = \mathbf{i}
     %\begin{aligned}
     %  \tup{s, \mathbf{i}} \in \mathbf{p} \wedge
     %  s \in \keys{\mathbf{d}}\;\wedge& \\
-    %  \mathbf{d}[s]_\mathbf{l}[\hash(\mathbf{i}), |\mathbf{i}|] = \sq{}&
+    %  \mathbf{d}[s]_\mathbf{l}[\blake(\mathbf{i}), |\mathbf{i}|] = \sq{}&
     %\end{aligned} &\Rightarrow
     %\begin{aligned}
-    %  &\mathbf{d}'[s]_\mathbf{l}[\hash(\mathbf{i}), |\mathbf{i}|] = \tau' \wedge \\
-    %  &\mathbf{d}'[s]_\mathbf{p}[\hash{\mathbf{i}}] = \mathbf{i}
+    %  &\mathbf{d}'[s]_\mathbf{l}[\blake(\mathbf{i}), |\mathbf{i}|] = \tau' \wedge \\
+    %  &\mathbf{d}'[s]_\mathbf{p}[\blake{\mathbf{i}}] = \mathbf{i}
     %\end{aligned} \\
   \end{aligned}\right.
 \end{equation}
@@ -197,8 +197,8 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
     \isa{\ot¬authorizer}{\H},
     \isa{\ot¬payloadhash}{\H},
     \isa{\ot¬gaslimit}{\N_G},
-    \isa{\ot¬result}{\Y \cup \mathbb{J}},
-    \isa{\ot¬authtrace}{\Y}
+    \isa{\ot¬result}{\blob \cup \mathbb{J}},
+    \isa{\ot¬authtrace}{\blob}
   }
 \end{equation}
 \begin{align}
@@ -214,7 +214,7 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
           \isa{&\mathbf{t}&}{\defxfers}\,,\;
           \isa{b}{\H\bm{?}}\,,\\
           \isa{u&}{\N_G}\,,\;
-          \isa{&\mathbf{p}&}{\{\tup{\N_S, \Y}\}}
+          \isa{&\mathbf{p}&}{\{\tup{\N_S, \blob}\}}
         \end{alignedat}
       } \\
       (\mathbf{o}, \mathbf{w}, \mathbf{f}, s) &\mapsto \Psi_A(\mathbf{o}, \tau', s, g, \mathbf{i})
@@ -321,12 +321,12 @@ We define the final state of the ready queue and the accumulated map by integrat
 
 After accumulation, we must integrate all preimages provided in the lookup extrinsic to arrive at the posterior account state. The lookup extrinsic is a sequence of pairs of service indices and data. These pairs must be ordered and without duplicates (equation \ref{eq:preimagesareordered} requires this). The data must have been solicited by a service but not yet provided in the \emph{prior} state. Formally:
 \begin{align}
-  \xtpreimages &\in \lseq \ltuple\N_S\ts\Y\rtuple \rseq \\
+  \xtpreimages &\in \lseq \ltuple\N_S\ts\blob\rtuple \rseq \\
   \label{eq:preimagesareordered}\xtpreimages &= \orderuniqby{i}{i \in \xtpreimages} \\
   Y(\mathbf{d}, s, h, l) &\Leftrightarrow
   h \not\in \mathbf{d}[s]_\mathbf{p} \wedge
     \mathbf{d}[s]_\mathbf{l}[\tup{h, l}] = []\\
-  \forall \tup{s, \mathbf{p}} &\in \xtpreimages : Y(\accountspre, s, \hash(\mathbf{p}), |\mathbf{p}|)
+  \forall \tup{s, \mathbf{p}} &\in \xtpreimages : Y(\accountspre, s, \blake(\mathbf{p}), |\mathbf{p}|)
 \end{align}
 
 We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
@@ -334,10 +334,10 @@ We disregard, without prejudice, any preimages which due to the effects of accum
   \using \mathbf{P} = \{
     (s, \mathbf{p})
     \mid
-      \tup{s, \mathbf{p}} \in \xtpreimages, Y(\accountspostxfer, s, \hash(\mathbf{p}), |\mathbf{p}|)
+      \tup{s, \mathbf{p}} \in \xtpreimages, Y(\accountspostxfer, s, \blake(\mathbf{p}), |\mathbf{p}|)
     \}\\
   \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{s\ts\mathbf{p}} \in \mathbf{P} : \left\{\,\begin{aligned}
-      \quad\accountspostpreimage[s]_\mathbf{p}[\hash(\mathbf{p})] &= \mathbf{p} \\
-      \accountspostpreimage[s]_\mathbf{l}[\hash(\mathbf{p}), |\mathbf{p}|] &= [\tau']
+      \quad\accountspostpreimage[s]_\mathbf{p}[\blake(\mathbf{p})] &= \mathbf{p} \\
+      \accountspostpreimage[s]_\mathbf{l}[\blake(\mathbf{p}), |\mathbf{p}|] &= [\tau']
     \end{aligned}\right.\!\!\!\!
 \end{align}

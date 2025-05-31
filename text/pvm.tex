@@ -48,7 +48,7 @@
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
   \Psi&\colon \left\{\begin{aligned}
-    (\Y, \N_R, \N_G, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
+    (\blob, \N_R, \N_G, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
     (\mathbf{p}, \imath, \gascounter, \registers, \mem) &\mapsto \begin{cases}
       \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
       (\oog, \imath', \gascounter', \registers', \mem') &\when \gascounter' < 0\\
@@ -61,7 +61,7 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
     \end{cases}
   \end{aligned}\right.\\
   \deblob&\colon\left\{\begin{aligned}
-    \mathbb{Y} &\to \tuple{\mathbb{Y}, \mathbb{B}, \seq{\N_R}} \cup \error \\
+    \blob &\to \tuple{\blob, \mathbb{B}, \seq{\N_R}} \cup \error \\
     \mathbf{p} &\mapsto \begin{cases}
       \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \se(|\mathbf{j}|) \frown \se_1(z) \frown \se(|\mathbf{c}|) \frown \se_z(\mathbf{j}) \frown \se(\mathbf{c}) \frown \se(\mathbf{k})\,,\ |\mathbf{k}| = |\mathbf{c}| \\
       \error &\otherwise
@@ -136,7 +136,7 @@ We denote this set, as opcode indices rather than names, as $T$, which is a subs
 We must now define the single-step \textsc{pvm} state-transition function $\Psi_1$:
 \begin{equation}
   \Psi_1\colon \left\{\begin{aligned}
-    (\Y, \mathbb{B}, \seq{\N_R}, \N_R, \N_G, \regs, \ram) &\to (\{\panic, \halt, \continue \} \cup \{\fault, \host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
+    (\blob, \mathbb{B}, \seq{\N_R}, \N_R, \N_G, \regs, \ram) &\to (\{\panic, \halt, \continue \} \cup \{\fault, \host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
     (\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\mapsto (\varepsilon, \imath', \gascounter', \registers', \mem')
   \end{aligned}\right.
 \end{equation}
@@ -731,7 +731,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
 \begin{align}
   &\Psi_H\colon \left\{\begin{aligned}
     \tuple{\begin{aligned}
-      &\Y, \N_R, \N_G, \regs,\\&\ram, \Omega\langle X \rangle, X
+      &\blob, \N_R, \N_G, \regs,\\&\ram, \Omega\langle X \rangle, X
     \end{aligned}
     }
     &\to
@@ -770,7 +770,7 @@ The software programs which will run in each of the four instances where the \te
 We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} at program start. Given program blob $\mathbf{p}$ and argument data $\mathbf{a}$, we can decode the program code $\mathbf{c}$, registers $\registers$, and \textsc{ram} $\mem$ by invoking the standard initialization function $Y(\mathbf{p}, \mathbf{a})$:
 \begin{equation}
 Y\colon\left\{\begin{aligned}
-  (\Y, \Y_{:\mathsf{Z}_I}) &\to (\Y, \regs, \ram)? \\
+  (\blob, \blob_{:\mathsf{Z}_I}) &\to (\blob, \regs, \ram)? \\
   (\mathbf{p}, \mathbf{a}) &\mapsto \begin{cases}
     (\mathbf{c}, \registers, \mem) &\when \exists! (\mathbf{c}, \mathbf{o}, \mathbf{w}, z, s) \text{ which satisfy equation \ref{eq:conditions}}\\
     \none &\otherwise
@@ -834,8 +834,8 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
 \begin{equation}
   \Psi_M\colon \left\{\begin{aligned}
     \left(
-      \Y, \N_R, \N_G, \Y_{:\mathsf{Z}_I}, \Omega\langle X \rangle, X
-    \right) &\to (\N_G, \Y \cup \{\panic, \oog\}, X)\\
+      \blob, \N_R, \N_G, \blob_{:\mathsf{Z}_I}, \Omega\langle X \rangle, X
+    \right) &\to (\N_G, \blob \cup \{\panic, \oog\}, X)\\
     (\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}) &\mapsto \begin{cases}
       (0, \panic, \mathbf{x}) &\when Y(\mathbf{p}, \mathbf{a}) = \none\\
       R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}, \mathbf{a}) = (\mathbf{c}, \registers, \mem)\\
