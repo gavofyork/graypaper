@@ -39,7 +39,7 @@ Note return codes for a host-call-request exit are any non-zero value less than 
 The Is-Authorized invocation is the first and simplest of the four, being totally stateless. It provides only host-call functions for inspecting its environment and parameters. It accepts as arguments only the core on which it should be executed, $c$. Formally, it is defined as $\Psi_I$:
 \begin{align}
   \Psi_I &\colon \left\{\begin{aligned}
-    (\mathbb{P}, \N_\mathsf{C}) &\to \tuple{\Y \cup \mathbb{J}, \N_G} \\
+    (\workpackage, \N_\mathsf{C}) &\to \tuple{\Y \cup \mathbb{J}, \N_G} \\
     (\wpX, c) &\mapsto \begin{cases}
       \tup{\token{BAD}, 0} &\when \wpX_\mathbf{c} = \none \\
       \tup{\token{BIG}, 0} &\otherwhen |\wpX_\mathbf{c}| > \mathsf{W}_A \\
@@ -76,7 +76,7 @@ The Export host-call depends on two pieces of context; one sequence of segments 
 Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\delta$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work-package $p$ and the index of the work item to be refined, $i$. Additionally, the authorizer trace $\mathbf{r}$ is provided together with all work items' import segments $\overline{\mathbf{i}}$ and an export segment offset $\segoff$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   &\Psi_R \colon \left\{\begin{aligned}
-    (\N, \mathbb{P}, \Y, \seq{\seq{\G}}, \N) &\to (\Y \cup \mathbb{J}, \seq{\G}, \N_G) \\
+    (\N, \workpackage, \Y, \seq{\seq{\G}}, \N) &\to (\Y \cup \mathbb{J}, \seq{\G}, \N_G) \\
     (i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
       (\token{BAD}, [], 0) &\when w_s \not\in \keys{\delta} \vee \Lambda(\delta[w_s], (p_\mathbf{x})_t, w_\wi¬codehash) = \none \\
       (\token{BIG}, [], 0) &\otherwhen |\Lambda(\delta[w_s], (p_\mathbf{x})_t, w_\wi¬codehash)| > \mathsf{W}_C \\
@@ -178,7 +178,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \quad \where \mathbf{d} = (\mathbf{x}_\mathbf{u})_\mathbf{d}\;,\ \mathbf{s} = (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!& \\
   \end{cases} \\
   G&\colon\left\{\begin{aligned}
-    ((\{\continue, \halt, \panic, \oog\}, \N_G, \regs, \ram, \mathbb{A}), (\mathbf{X}, \mathbf{X})) &\to (\{\continue, \halt, \panic, \oog\}, \N_G, \regs, \ram, (\mathbf{X}, \mathbf{X})) \\
+    ((\{\continue, \halt, \panic, \oog\}, \N_G, \regs, \ram, \serviceaccount), (\mathbf{X}, \mathbf{X})) &\to (\{\continue, \halt, \panic, \oog\}, \N_G, \regs, \ram, (\mathbf{X}, \mathbf{X})) \\
     ((\execst, \gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\mapsto (\execst, \gascounter, \registers, \memory, (\mathbf{x}^*, \mathbf{y})) \\
     &\qquad \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[\mathbf{x}^*_s] = \mathbf{s}
   \end{aligned}\right.\\
@@ -229,7 +229,7 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
 \begin{align}
   \Psi_T &: \begin{cases}
-    (\dict{\N_S}{\mathbb{A}}, \N_T, \N_S, \seq{\mathbb{T}}) &\to \tuple{\mathbb{A}, \N_G} \\
+    (\dict{\N_S}{\serviceaccount}, \N_T, \N_S, \seq{\mathbb{T}}) &\to \tuple{\serviceaccount, \N_G} \\
     (\mathbf{d}, t, s, \mathbf{t}) &\mapsto \begin{cases}
     \tup{\mathbf{s}, 0} &\when \mathbf{s}_\mathbf{c} = \none \vee |\mathbf{s}_\mathbf{c}| > \mathsf{W}_C \vee \mathbf{t} = [] \\
     \tup{\mathbf{s}', u} &\otherwise \\
@@ -241,7 +241,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     }
     \end{cases} \\
   \end{cases} \\
-  \also F &\in \Omega\ang{\mathbb{A}}\colon (n, \gascounter, \registers, \memory, \mathbf{s}) \equiv \begin{cases}
+  \also F &\in \Omega\ang{\serviceaccount}\colon (n, \gascounter, \registers, \memory, \mathbf{s}) \equiv \begin{cases}
     \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
     \Omega_Y(\gascounter, \registers, \memory, \none, \eta'_0, \none, \none, \none, \none, \none, \mathbf{t}) &\when n = \mathtt{fetch}\\
     \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{lookup} \\
@@ -264,7 +264,7 @@ We come now to defining the host functions which are utilized by the \textsc{pvm
 
 The general functions are all broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory' \in \ram) = \Omega_\square(\gascounter \in \N_G, \registers \in \regs, \memory \in \ram)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
-Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \mathbb{A}$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
+Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \serviceaccount$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
 Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
@@ -756,7 +756,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \memory_{o\dots+32} &\when \N_{o\dots+32} \subseteq \mathbb{V}_{\memory} \wedge l \in \N_{2^{32}} \\
       \error &\otherwise
     \end{cases}\\
-    \using \mathbf{a} \in \mathbb{A} \cup \{\error\} &= \begin{cases}
+    \using \mathbf{a} \in \serviceaccount \cup \{\error\} &= \begin{cases}
       \tup{c, \is{\mathbf{s}}{\{\}}, \is{\mathbf{l}}{\{ (c, l) \mapsto [] \}}, \is{b}{\mathbf{a}_t}, g, m, \is{\mathbf{p}}{\{\}}, \is{r}{t}, f, \is{a}{0}, \is{p}{\mathbf{x}_s}} &\when c \ne \error \\
       \error &\otherwise
     \end{cases} \\

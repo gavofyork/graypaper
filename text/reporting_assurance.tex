@@ -15,15 +15,15 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 \subsection{State}
 The state of the reporting and availability portion of the protocol is largely contained within $\rho$, which tracks the work-reports which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
 \begin{equation}\label{eq:reportingstate}
-  \rho \in \seq{\tuple{\isa{w}{\mathbb{W}},\isa{t}{\N_T}}\bm{?}}_\mathsf{C}
+  \rho \in \seq{\tuple{\isa{w}{\workreport},\isa{t}{\N_T}}\bm{?}}_\mathsf{C}
 \end{equation}
 
 As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\rho'$) are held under the same constraints as the prior value.
 
 \subsubsection{Work Report}\label{sec:workreport}
-A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-package specification, $\wr¬avspec$; the refinement context, $\wr¬context$; the core-index (\ie on which the work is done), $\wr¬core$; as well as the authorizer hash $\wr¬authorizer$ and trace $\wr¬authtrace$; a segment-root lookup dictionary $\wr¬srlookup$; the gas consumed during the Is-Authorized invocation, $\wr¬authgasused$; and finally the work-digests $\wr¬digests$ which comprise the results of the evaluation of each of the items in the package together with some associated data. Formally:
+A work-report, of the set $\workreport$, is defined as a tuple of the work-package specification, $\wr¬avspec$; the refinement context, $\wr¬context$; the core-index (\ie on which the work is done), $\wr¬core$; as well as the authorizer hash $\wr¬authorizer$ and trace $\wr¬authtrace$; a segment-root lookup dictionary $\wr¬srlookup$; the gas consumed during the Is-Authorized invocation, $\wr¬authgasused$; and finally the work-digests $\wr¬digests$ which comprise the results of the evaluation of each of the items in the package together with some associated data. Formally:
 \begin{equation}\label{eq:workreport}
-\mathbb{W} \equiv \tuple{
+\workreport \equiv \tuple{
   \begin{aligned}
     &\isa{\wr¬avspec}{\avspec},\ 
     \isa{\wr¬context}{\mathbb{X}},\ 
@@ -39,12 +39,12 @@ A work-report, of the set $\mathbb{W}$, is defined as a tuple of the work-packag
 
 We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\mathsf{J} = 8$:
 \begin{equation}
-  \forall w \in \mathbb{W} : |w_\wr¬srlookup| + |(w_x)_\mathbf{p}| \le \mathsf{J}
+  \forall w \in \workreport : |w_\wr¬srlookup| + |(w_x)_\mathbf{p}| \le \mathsf{J}
 \end{equation}
 
 \subsubsection{Refinement Context}
 
-% TODO: Move \mathbf{p} from here into the \mathbb{W} - it's really not part of the context.
+% TODO: Move \mathbf{p} from here into the \workreport - it's really not part of the context.
 
 A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $a$ along with its associated posterior state-root $s$ and posterior \textsc{Beefy} root $b$; and the \emph{lookup-anchor}, header hash $l$ and of timeslot $t$. Finally, it identifies the hash of any prerequisite work-packages $\mathbf{p}$. Formally:
 \begin{equation}
@@ -55,23 +55,23 @@ A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the cont
 \end{equation}
 
 \subsubsection{Availability}
-We define the set of \emph{availability specifications}, $\avspec$, as the tuple of the work-package's hash $h$, an auditable work bundle length $l$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $u$, a segment-root $e$ and segment-count $n$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
+We define the set of \emph{availability specifications}, $\avspec$, as the tuple of the work-package's hash $\as¬packagehash$, an auditable work bundle length $\as¬bundlelen$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $\as¬erasureroot$, a segment-root $\as¬segroot$ and segment-count $\as¬segcount$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
 \begin{align}
   \avspec &\equiv \tuple{
-    \isa{h}{\H}\,,\;
-    \isa{l}{\N_L}\,,\;
-    \isa{u}{\H}\,,\;
-    \isa{e}{\H}\,,\;
-    \isa{n}{\N}
+    \isa{\as¬packagehash}{\H}\,,\;
+    \isa{\as¬bundlelen}{\N_L}\,,\;
+    \isa{\as¬erasureroot}{\H}\,,\;
+    \isa{\as¬segroot}{\H}\,,\;
+    \isa{\as¬segcount}{\N}
   }
 \end{align}
 
-The \emph{erasure-root} ($u$) is the root of a binary Merkle tree which functions as a commitment to all data required for the auditing of the report and for use by later work-packages should they need to retrieve any data yielded. It is thus used by assurers to verify the correctness of data they have been sent by guarantors, and it is later verified as correct by auditors. It is discussed fully in section \ref{sec:workpackagesandworkreports}.
+The \emph{erasure-root} ($\as¬erasureroot$) is the root of a binary Merkle tree which functions as a commitment to all data required for the auditing of the report and for use by later work-packages should they need to retrieve any data yielded. It is thus used by assurers to verify the correctness of data they have been sent by guarantors, and it is later verified as correct by auditors. It is discussed fully in section \ref{sec:workpackagesandworkreports}.
 
-The \emph{segment-root} ($e$) is the root of a constant-depth, left-biased and zero-hash-padded binary Merkle tree committing to the hashes of each of the exported segments of each work-item. These are used by guarantors to verify the correctness of any reconstructed segments they are called upon to import for evaluation of some later work-package. It is also discussed in section \ref{sec:workpackagesandworkreports}.
+The \emph{segment-root} ($\as¬segroot$) is the root of a constant-depth, left-biased and zero-hash-padded binary Merkle tree committing to the hashes of each of the exported segments of each work-item. These are used by guarantors to verify the correctness of any reconstructed segments they are called upon to import for evaluation of some later work-package. It is also discussed in section \ref{sec:workpackagesandworkreports}.
 
 \subsubsection{Work Digest}
-We finally come to define a \emph{work-digest}, $\mathbb{L}$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
+We finally come to define a \emph{work-digest}, $\workdigest$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
 \begin{equation}\label{eq:workdigest}
   \mathbb{L} \equiv \tuple{
     \begin{alignedat}{9}
@@ -104,7 +104,7 @@ Finally, we have five fields describing the level of activity which this workloa
 
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful refinement output blobs together with the authorizer trace, effectively limiting their overall size:
 \begin{align}
-  &\forall w \in \mathbb{W}:
+  &\forall w \in \workreport:
     |w_\wr¬authtrace| + \sum_{r \in w_\wr¬digests \cap \Y} |r_\wl¬result| \le \mathsf{W}_R \\
   &\mathsf{W}_R \equiv 48\cdot2^{10}
 \end{align}
@@ -214,31 +214,33 @@ We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as 
 
 \subsection{Work Report Guarantees}\label{sec:workreportguarantees}
 
-We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a \emph{work-report}, a credential $a$ and its corresponding timeslot $t$. The core index of each guarantee must be unique and guarantees must be in ascending order of this. Formally:
+We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a \emph{work-report}, a credential $\xg¬credential$ and its corresponding timeslot $\xg¬timeslot$. The core index of each guarantee must be unique and guarantees must be in ascending order of this. Formally:
 \begin{align}\label{eq:guaranteesextrinsic}
   \xtguarantees &\in \seq{\tuple{
-    w \in \mathbb{W},\, t \in \N_T,\, a \in \seq{\tuple{\N_V, \mathbb{E}}}_{2:3}
+    \isa{\xg¬workreport}{\workreport},\,
+    \isa{\xg¬timeslot}{\N_T},\,
+    \isa{\xg¬credential}{\seq{\tuple{\N_V, \mathbb{E}}}_{2:3}}
   }}_{:\mathsf{C}} \\
-  \xtguarantees &= \orderby{(g_w)_c}{g \in \xtguarantees}
+  \xtguarantees &= \orderby{(g_\xg¬workreport)_\wr¬core}{g \in \xtguarantees}
 \end{align}
 
 The credential is a sequence of two or three tuples of a unique validator index and a signature. Credentials must be ordered by their validator index:
 \begin{align}
-  \forall g &\in \xtguarantees : g_a = \orderuniqby{v}{\tup{v, s} \in g_a}
+  \forall g &\in \xtguarantees : g_\xg¬credential = \orderuniqby{v}{\tup{v, s} \in g_\xg¬credential}
 \end{align}
 
 The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the hash of the work-report. The signing validators must be assigned to the core in question in either this block $\mathbf{G}$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\mathbf{G}^*$:
 \begin{align}\label{eq:guarantorsig}
   &\begin{aligned}
     &\begin{aligned}
-      \forall (w, t, a) &\in \xtguarantees,\\
-      \forall (v, s) &\in a
+      \forall \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} &\in \xtguarantees,\\
+      \forall (v, s) &\in \xg¬credential
     \end{aligned}
       : \left\{\,\begin{aligned}
-        &s \in \sig{(\mathbf{k}_v)_e}{\mathsf{X}_G\frown\hash(w)}\\
-        &\mathbf{c}_v = w_c \wedge \mathsf{R}(\floor{\nicefrac{\tau'}{\mathsf{R}}} - 1) \le t \le \tau'\\
+        &s \in \sig{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\frown\hash(w)}\\
+        &\mathbf{c}\sub{v} = w_\wr¬core \wedge \mathsf{R}(\floor{\nicefrac{\tau'}{\mathsf{R}}} - 1) \le t \le \tau'\\
       \end{aligned}\right.\\
-      &k \in \mathbf{R} \Leftrightarrow \exists (w, t, a) \in \xtguarantees, \exists (v, s) \in a: k = (\mathbf{k}_v)_e\\
+      &k \in \mathbf{R} \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists (v, s) \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
       &\quad\where (\mathbf{c}, \mathbf{k}) = \begin{cases}
         \mathbf{G} &\when \displaystyle \ffrac{\tau'}{\mathsf{R}} = \ffrac{t}{\mathsf{R}} \\
         \mathbf{G}^* &\otherwise
@@ -251,20 +253,20 @@ We note that the Ed25519 key of each validator whose signature is in a credentia
 
 We denote $\mathbf{w}$ to be the set of work-reports in the present extrinsic $\mathbf{E}$:
 \begin{align}\label{eq:incomingworkreports}
-  \text{let}\ \mathbf{w} = \{ g_w \mid g \in \xtguarantees \}
+  \text{let}\ \mathbf{w} = \{ g_\xg¬workreport \mid g \in \xtguarantees \}
 \end{align}
 
 No reports may be placed on cores with a report pending availability on it. A report is valid only if the authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
 \begin{equation}\label{eq:reportcoresareunusedortimedout}
   \forall w \in \mathbf{w} :
-    \rho^\ddagger[w_c] = \none \wedge w_a \in \alpha[w_c]
+    \rho^\ddagger[w_\wr¬core] = \none \wedge w_\wr¬authorizer \in \authpool_{w_\wr¬core}
 \end{equation}
 
 We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\mathsf{G}_A$:
 \begin{equation}
   \forall w \in \mathbf{w}:
-    \sum_{r \in w_\mathbf{r}}\!(r_g) \le \mathsf{G}_A \ \wedge \ 
-    \forall r \in w_\mathbf{r}: r_g \ge \delta[r_s]_g
+    \sum_{r \in w_\wr¬digests}\!(r_\wl¬gaslimit) \le \mathsf{G}_A \ \wedge \ 
+    \forall r \in w_\wr¬digests: r_\wl¬gaslimit \ge \delta[r_\wl¬service]_\sa¬minaccgas
 \end{equation}
 
 

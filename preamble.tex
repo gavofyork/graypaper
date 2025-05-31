@@ -147,16 +147,16 @@
 \newcommand*{\transpose}{{}^\text{T}}
 \newcommand*{\joined}{\wideparen}
 \newcommand*{\ang}[1]{\langle#1\rangle}
+\renewcommand*{\hash}{\mathcal{H}}
+\newcommand*{\sub}[1]{_{#1}}
 
 % GP terms
-\renewcommand*{\hash}{\mathcal{H}}
 \newcommand*{\goodset}{\psi_\mathbf{g}}
 \newcommand*{\badset}{\psi_\mathbf{b}}
 \newcommand*{\wonkyset}{\psi_\mathbf{w}}
 \newcommand*{\offenders}{\psi_\mathbf{o}}
 \newcommand*{\xttickets}{\mathbf{E}_T}
 \newcommand*{\xtdisputes}{\mathbf{E}_D}
-\newcommand*{\xtguarantees}{\mathbf{E}_G}
 \newcommand*{\xtassurances}{\mathbf{E}_A}
 \newcommand*{\xtpreimages}{\mathbf{E}_P}
 
@@ -174,17 +174,24 @@
 \newcommand*{\¬exportcount}{e}
 \newcommand*{\¬importcount}{i}
 
+\newcommand*{\xtguarantees}{\mathbf{E}_G}
+\newcommand*{\xg¬workreport}{w}
+\newcommand*{\xg¬timeslot}{t}
+\newcommand*{\xg¬credential}{a}
+
+\newcommand*{\workpackage}{\mathbb{P}}
 \newcommand*{\wp¬authtoken}{\mathbf{j}}
 \newcommand*{\wp¬authcodehost}{h}
 \newcommand*{\wp¬authcodehash}{u}
 \newcommand*{\wp¬authconfig}{\mathbf{p}}
 \newcommand*{\wp¬context}{\mathbf{x}} % Consider rename to \mathbf{c}
 \newcommand*{\wp¬workitems}{\mathbf{w}}
-
+% derived fields
 \newcommand*{\wp¬authorizer}{\¬authorizer}
 \newcommand*{\wp¬authcode}{\mathbf{c}}
 \newcommand*{\wp¬metadata}{\mathbf{m}}
 
+\newcommand*{\workitem}{\mathbb{I}}
 \newcommand*{\wi¬service}{\¬service}
 \newcommand*{\wi¬codehash}{\¬codehash}
 \newcommand*{\wi¬payload}{\¬payload}
@@ -194,6 +201,7 @@
 \newcommand*{\wi¬importsegments}{\mathbf{i}}
 \newcommand*{\wi¬extrinsics}{\mathbf{x}}
 
+\newcommand*{\workreport}{\mathbb{W}}
 \newcommand*{\wr¬avspec}{s} % O/L ¬service TODO: make bold
 \newcommand*{\wr¬context}{x} % TODO: Make bold like package. Consider renaming to \mathbf{c}
 \newcommand*{\wr¬core}{\¬core}
@@ -206,10 +214,11 @@
 % p P: work Packages
 % w I: work Items
 % w W: work Reports
-% r L: work resulTs -> Digests TODO: Rename d D
+% r L: work digests TODO: Rename d D
 % d: work output data (digest)
 % y: work payload
 
+\newcommand*{\workdigest}{\mathbb{L}}
 \newcommand*{\wl¬service}{\¬service}
 \newcommand*{\wl¬codehash}{\¬codehash}
 \newcommand*{\wl¬payloadhash}{\¬payloadhash}
@@ -221,29 +230,55 @@
 \newcommand*{\wl¬xtsize}{z}
 \newcommand*{\wl¬exportcount}{\¬exportcount}
 
+\newcommand*{\operandtuple}{\mathbb{O}}
 \newcommand*{\ot¬packagehash}{h} % O/L ¬codehash TODO: RENAME to k
-\newcommand*{\ot¬segroot}{e} % O/L ¬exprotcount TODO: RENAME to r?
+\newcommand*{\ot¬segroot}{e} % O/L ¬exportcount TODO: RENAME to r?
 \newcommand*{\ot¬authorizer}{\¬authorizer}
 \newcommand*{\ot¬authtrace}{\¬authtrace}
 \newcommand*{\ot¬payloadhash}{\¬payloadhash}
 \newcommand*{\ot¬gaslimit}{\¬gaslimit}
 \newcommand*{\ot¬result}{\¬result}
 
-\newcommand*{\manager}{\chi_m}
-\newcommand*{\delegator}{\chi_v}
-\newcommand*{\assigners}{\chi_\mathbf{a}}
-\newcommand*{\alwaysaccers}{\chi_\mathbf{g}}
-\newcommand*{\accumulated}{\xi}
-\newcommand*{\ready}{\vartheta}
-
 \newcommand*{\avspec}{\mathbb{S}}
-\newcommand*{\operandtuple}{\mathbb{O}}
+\newcommand*{\as¬packagehash}{h}
+\newcommand*{\as¬bundlelen}{l}
+\newcommand*{\as¬erasureroot}{u}
+\newcommand*{\as¬segroot}{r} % Inconsistent with other segroot. TODO: RENAME to e?
+\newcommand*{\as¬segcount}{n}
+
+\newcommand*{\serviceaccount}{\mathbb{A}}
+\newcommand*{\sa¬storage}{\mathbf{s}}
+\newcommand*{\sa¬preimages}{\mathbf{p}}
+\newcommand*{\sa¬requests}{\mathbf{l}}
+\newcommand*{\sa¬gratis}{f}
+\newcommand*{\sa¬minaccgas}{g}
+\newcommand*{\sa¬minmemogas}{m}
+\newcommand*{\sa¬codehash}{c} % Inconsistent with ¬codehash
+\newcommand*{\sa¬balance}{b}
+\newcommand*{\sa¬created}{r}
+\newcommand*{\sa¬lastacc}{a}
+\newcommand*{\sa¬parent}{p}
+% Derived fields
+\newcommand*{\sa¬items}{i}
+\newcommand*{\sa¬octets}{o}
+\newcommand*{\sa¬minbalance}{f}
+
+% MISC - These need tidying.
+\newcommand*{\vk¬ed}{e}
+
 \newcommand*{\partialstate}{\mathbb{U}}
 \newcommand*{\defxfer}{\mathbb{T}}
 \newcommand*{\defxfers}{\seq{\defxfer}}
 
+\newcommand*{\privileges}{\chi}
+\newcommand*{\manager}{\privileges_m}
+\newcommand*{\delegator}{\privileges_v}
+\newcommand*{\assigners}{\privileges_\mathbf{a}}
+\newcommand*{\alwaysaccers}{\privileges_\mathbf{g}}
+\newcommand*{\accumulated}{\xi}
+\newcommand*{\ready}{\vartheta}
 \newcommand*{\lastaccout}{\theta}
-
+\newcommand*{\authpool}{\alpha}
 \newcommand*{\recenthistory}{\beta_H}
 \newcommand*{\beefybelt}{\beta_B}
 
@@ -252,6 +287,7 @@
 \newcommand*{\accountspostxfer}{\delta^\ddagger}
 \newcommand*{\accountspostpreimage}{\delta'}
 
+% PVM stuff
 \newcommand*{\gascounter}{\varrho}
 \newcommand*{\registers}{\omega}
 \newcommand*{\memory}{\mu}

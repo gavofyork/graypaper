@@ -12,9 +12,9 @@ Authorizers are identified as the hash of their \textsc{pvm} code concatenated w
 
 \subsection{Pool and Queue}
 
-We define the set of authorizers allowable for a particular core $\¬core$ as the \emph{authorizer pool} $\alpha[\¬core]$. To maintain this value, a further portion of state is tracked for each core: the core's current \emph{authorizer queue} $\varphi[\¬core]$, from which we draw values to fill the pool. Formally:
+We define the set of authorizers allowable for a particular core $\¬core$ as the \emph{authorizer pool} $\authpool[\¬core]$. To maintain this value, a further portion of state is tracked for each core: the core's current \emph{authorizer queue} $\varphi[\¬core]$, from which we draw values to fill the pool. Formally:
 \begin{equation}\label{eq:authstatecomposition}
-  \alpha \in \seq{\seq{\H}_{:\mathsf{O}}}_\mathsf{C}\ , \qquad
+  \authpool \in \seq{\seq{\H}_{:\mathsf{O}}}_\mathsf{C}\ , \qquad
   \varphi \in \seq{\seq{\H}_{\mathsf{Q}}}_\mathsf{C}
 \end{equation}
 
@@ -22,8 +22,8 @@ Note: The portion of state $\varphi$ may be altered only through an exogenous ca
 
 The state transition of a block involves placing a new authorization into the pool from the queue:
 \begin{align}
-  &\forall \¬core \in \N_\mathsf{C} : \alpha'[\¬core] \equiv {\overleftarrow{F(\¬core) \doubleplus \varphi'[\¬core] [ \mathbf{H}_t ]^{\circlearrowleft}}}^{\mathsf{O}} \\
-  &F(\¬core) \equiv \begin{cases} \alpha[\¬core] \seqminusl \{(g_w)_a\} &\when \exists g \in \xtguarantees : (g_w)_\¬core = \¬core \\ \alpha[\¬core] & \otherwise \end{cases}
+  &\forall \¬core \in \N_\mathsf{C} : \authpool'[\¬core] \equiv {\overleftarrow{F(\¬core) \doubleplus \varphi'[\¬core] [ \mathbf{H}_t ]^{\circlearrowleft}}}^{\mathsf{O}} \\
+  &F(\¬core) \equiv \begin{cases} \authpool[\¬core] \seqminusl \{(g_w)_a\} &\when \exists g \in \xtguarantees : (g_w)_\¬core = \¬core \\ \authpool[\¬core] & \otherwise \end{cases}
 \end{align}
 
-Since $\alpha'$ is dependent on $\varphi'$, practically speaking, this step must be computed after accumulation, the stage in which $\varphi'$ is defined. Note that we utilize the guarantees extrinsic $\xtguarantees$ to remove the oldest authorizer which has been used to justify a guaranteed work-package in the current block. This is further defined in equation \ref{eq:guaranteesextrinsic}.
+Since $\authpool'$ is dependent on $\varphi'$, practically speaking, this step must be computed after accumulation, the stage in which $\varphi'$ is defined. Note that we utilize the guarantees extrinsic $\xtguarantees$ to remove the oldest authorizer which has been used to justify a guaranteed work-package in the current block. This is further defined in equation \ref{eq:guaranteesextrinsic}.

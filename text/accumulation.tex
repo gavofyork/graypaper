@@ -7,7 +7,7 @@
 
 \section{Accumulation}\label{sec:accumulation}
 
-Accumulation may be defined as some function whose arguments are $\mathbf{W}$ and $\delta$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\accountspostpreimage$ together with additional state elements $\iota'$, $\varphi'$ and $\chi'$.
+Accumulation may be defined as some function whose arguments are $\mathbf{W}$ and $\delta$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\accountspostpreimage$ together with additional state elements $\iota'$, $\varphi'$ and $\privileges'$.
 
 The proposition of accumulation is in fact quite simple: we merely wish to execute the \emph{Accumulate} logic of the service code of each of the services which has at least one work-digest, passing to it relevant data from said digests together with useful contextual information. However, there are three main complications. Firstly, we must define the execution environment of this logic and in particular the host functions available to it. Secondly, we must define the amount of gas to be allowed for each service's execution. Finally, we must determine the nature of transfers within Accumulate which, as we will see, leads to the need for a second entry-point, \emph{on-transfer}.
 
@@ -27,7 +27,7 @@ Accumulation of a work-package/work-report is deferred in the case that it has a
 
 We also maintain knowledge of ready (\ie available and/or audited) but not-yet-accumulated work-reports in the state item $\ready$. Each of these were made available at most one epoch ago but have or had unfulfilled dependencies. Alongside the work-report itself, we retain its unaccumulated dependencies, a set of work-package hashes. Formally:
 \begin{align}
-  \ready &\in \seq{\seq{(\mathbb{W}, \{\H\})}}_\mathsf{E}
+  \ready &\in \seq{\seq{(\workreport, \{\H\})}}_\mathsf{E}
 \end{align}
 
 The newly available work-reports, $\mathbf{W}$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\mathbf{W}^!$, are accumulated immediately. Those not, $\mathbf{W}^Q$, are for queued execution. Formally:
@@ -44,13 +44,13 @@ The newly available work-reports, $\mathbf{W}$, are partitioned into two sequenc
 We define the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by sets of now-accumulated work-package hashes (those in $\accumulated$). It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the set provided as a parameter, and removes any dependencies which appear in said set. Formally:
 \begin{equation}
   E\colon\left\{\begin{aligned}
-      &(\seq{(\mathbb{W}, \{\H\})}, \{\H\}) \to \seq{(\mathbb{W}, \{\H\})} \\
+      &(\seq{(\workreport, \{\H\})}, \{\H\}) \to \seq{(\workreport, \{\H\})} \\
     &(\mathbf{r}, \mathbf{x}) \mapsto \left[
       (w, \mathbf{d} \setminus \mathbf{x})
       \,\middle\vert\,
       \left\{\,\begin{aligned}
         &(w, \mathbf{d}) \orderedin \mathbf{r} ,\\
-        &(w_s)_h \not\in \mathbf{x}
+        &(w_\wr¬avspec)_\as¬packagehash \not\in \mathbf{x}
       \end{aligned}\right.
       \right]
   \end{aligned}\right.
@@ -59,7 +59,7 @@ We define the queue-editing function $E$, which is essentially a mutator functio
 We further define the accumulation priority queue function $Q$, which provides the sequence of work-reports which are accumulatable given a set of not-yet-accumulated work-reports and their dependencies.
 \begin{equation}
   Q\colon\left\{\begin{aligned}
-    &\seq{(\mathbb{W}, \{\H\})} \to \seq{\mathbb{W}} \\
+    &\seq{(\workreport, \{\H\})} \to \seq{\workreport} \\
     &\mathbf{r} \mapsto \begin{cases}
       [] &\when \mathbf{g} = [] \\
       \mathbf{g} \frown Q(E(\mathbf{r}, \srmap(\mathbf{g})))\!\!\!\! &\otherwise \\
@@ -71,8 +71,8 @@ We further define the accumulation priority queue function $Q$, which provides t
 Finally, we define the mapping function $\srmap$ which extracts the corresponding work-package hashes from a set of work-reports:
 \begin{equation}
   \srmap\colon\left\{\begin{aligned}
-    \{\mathbb{W}\} &\to \{\H\}\\
-    \mathbf{w} &\mapsto \{ (w_s)_h \mid w \in \mathbf{w} \}
+    \{\workreport\} &\to \{\H\}\\
+    \mathbf{w} &\mapsto \{ (w_\wr¬avspec)_\as¬packagehash \mid w \in \mathbf{w} \}
   \end{aligned}\right.
 \end{equation}
 
@@ -95,11 +95,11 @@ We resolve this by defining a function $\Delta_+$ which accumulates work-reports
 
 Only once all such accumulation is executed do we integrate the results and thus define the relevant posterior state items. In doing so we also integrate the consequences of any \emph{deferred-transfers} implied by accumulation.
 
-Our formalisms begin by defining $\partialstate$ as a characterization of (\ie values capable of representing) state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\accountspre$), the upcoming validator keys $\iota$, the queue of authorizers $\varphi$ and the privileges state $\chi$. Formally:
+Our formalisms begin by defining $\partialstate$ as a characterization of (\ie values capable of representing) state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\accountspre$), the upcoming validator keys $\iota$, the queue of authorizers $\varphi$ and the privileges state $\privileges$. Formally:
 \begin{equation}
   \label{eq:partialstate}
   \partialstate \equiv \left(\begin{aligned}
-    &\isa{\mathbf{d}}{\dict{\N_S}{\mathbb{A}}} \,,\;
+    &\isa{\mathbf{d}}{\dict{\N_S}{\serviceaccount}} \,,\;
     \isa{\mathbf{i}}{\seq{\mathbb{K}}_\mathsf{V}} \,,\;
     \isa{\mathbf{q}}{\seq{\seq{\H}_\mathsf{Q}}_\mathsf{C}} \,,\\
     &\isa{m}{\N_S} \,,\;
@@ -128,7 +128,7 @@ Finally, we denote the set of service/hash pairs, utilized as a service-indexed 
 We define the outer accumulation function $\Delta_+$ which transforms a gas-limit, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the number of work-results accumulated, a posterior state-context, the resultant deferred-transfers and accumulation-output pairings:
 \begin{equation}
   \Delta_+\colon\left\{\begin{aligned}
-    &(\N_G, \seq{\mathbb{W}}, \partialstate, \dict{\N_S}{\N_G}) \to (\N, \partialstate, \defxfers, \servouts, \gasused) \\
+    &(\N_G, \seq{\workreport}, \partialstate, \dict{\N_S}{\N_G}) \to (\N, \partialstate, \defxfers, \servouts, \gasused) \\
     &(g, \mathbf{w}, \mathbf{o}, \mathbf{f}) \!\mapsto\! \begin{cases}
       (0, \mathbf{o}, [], \{\}, []) &
         \when i = 0 \\
@@ -144,7 +144,7 @@ We define the outer accumulation function $\Delta_+$ which transforms a gas-limi
 We come to define the parallelized accumulation function $\Delta_*$ which, with the help of the single-service accumulation function $\Delta_1$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution $u$, a posterior state-context $(\mathbf{d}', \mathbf{i}', \mathbf{q}', m', \mathbf{a}', v', \mathbf{x}')$ and the resultant accumulation-output pairings $\mathbf{b}$ and deferred-transfers $\wideparen{\mathbf{t}}$:
 \begin{equation}
   \Delta_*\colon\left\{\;\begin{aligned}
-    &(\partialstate, \seq{\mathbb{W}}, \dict{\N_S}{\N_G}) \to (\partialstate, \defxfers, \servouts, \gasused) \\
+    &(\partialstate, \seq{\workreport}, \dict{\N_S}{\N_G}) \to (\partialstate, \defxfers, \servouts, \gasused) \\
     &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto ((\mathbf{d}', \mathbf{i}', \mathbf{q}', m', \mathbf{a}', v', \mathbf{z}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u})\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
@@ -168,7 +168,7 @@ We come to define the parallelized accumulation function $\Delta_*$ which, with 
 And $\fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/hash pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
 \begin{equation}
   \fnprovide\colon\left\{\begin{aligned}
-    &(\dict{\N_S}{\mathbb{A}}, \{\tup{\N_S, \Y}\}) \to \dict{\N_S}{\mathbb{A}} \\
+    &(\dict{\N_S}{\serviceaccount}, \{\tup{\N_S, \Y}\}) \to \dict{\N_S}{\serviceaccount} \\
     &(\mathbf{d}, \mathbf{p}) \mapsto \mathbf{d}'\;\where \mathbf{d}' = \mathbf{d}\;\text{except:} \\
     &\quad\forall \tup{s, \mathbf{i}} \in \mathbf{p},\;
       s \in \keys{\mathbf{d}},\;
@@ -205,7 +205,7 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
     &\Delta_1 \colon \left\{\;\begin{aligned}
     &\begin{aligned}
       \tup{\begin{aligned}
-        &\partialstate, \seq{\mathbb{W}},\\
+        &\partialstate, \seq{\workreport},\\
         &\dict{\N_S}{\N_G}, \N_S
       \end{aligned}}
       &\to \tup{
@@ -221,7 +221,7 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
     \end{aligned} \\
     &\text{where:} \\
     &\ \begin{aligned}
-      g &= \subifnone(\mathbf{f}_s, 0) + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests , \mathbf{r}_\wl¬service = s}\!\!\!\!(\mathbf{r}_g) \\
+      g &= \subifnone(\mathbf{f}\sub{s}, 0) + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests , \mathbf{r}_\wl¬service = s}\!\!\!\!(\mathbf{r}_\wr¬authgasused) \\
       \mathbf{i} &= \left[ \tup{\begin{alignedat}{3}
         % TODO: Rename \mathbf{o} to something else, to allow mathbf{a} to become \mathbf{o}.
         % TODO: Rename k to h. Then 5 of the 6 fields keep their names.
@@ -229,8 +229,8 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
         \is{\ot¬gaslimit}{\mathbf{r}_\wl¬gaslimit},\,
         \is{\ot¬payloadhash}{\mathbf{r}_\wl¬payloadhash},\,
         \is{&\ot¬authtrace\;&}{w_\wr¬authtrace&},\\
-        \is{\ot¬segroot}{(w_\wr¬avspec)_e},\,
-        \is{\ot¬packagehash}{(w_\wr¬avspec)_h},\,
+        \is{\ot¬segroot}{(w_\wr¬avspec)_\as¬segroot},\,
+        \is{\ot¬packagehash}{(w_\wr¬avspec)_\as¬packagehash},\,
         \is{&\ot¬authorizer\;&}{w_\wr¬authorizer&}
       \end{alignedat}}
       \,\middle\vert\ 
@@ -249,7 +249,7 @@ This introduces $\operandtuple$, the set of wrangled \emph{operand tuples}, used
 
 \newcommand*{\accoutseq}{\mathbf{c}}
 
-Given the result of the top-level $\Delta_+$, we may define the posterior state $\chi'$, $\varphi'$ and $\iota'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the Accumulation Output Log $\lastaccout'$:
+Given the result of the top-level $\Delta_+$, we may define the posterior state $\privileges'$, $\varphi'$ and $\iota'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the Accumulation Output Log $\lastaccout'$:
 \begin{align}
   \using &g = \max\left(\mathsf{G}_T, \mathsf{G}_A\cdot \mathsf{C} + \textstyle \sum_{x \in \mathcal{V}(\alwaysaccers)}(x)\right)\\
   \also &\mathbf{o} = (\accountspre, \iota, \varphi, \manager, \assigners, \delegator, \alwaysaccers) \\

@@ -20,7 +20,7 @@ We define the state-key constructor functions $C$ as:
 The state serialization is then defined as the dictionary built from the amalgamation of each of the components. Cryptographic hashing ensures that there will be no duplicate state-keys given that there are no duplicate inputs to $C$. Formally, we define $T$ which transforms some state $\sigma$ into its serialized form:
 \begin{equation}
   T(\sigma) \equiv \left\{\begin{aligned}
-    &&C(1) &\mapsto \se([\var{x}\mid x\orderedin \alpha]) \;, \\
+    &&C(1) &\mapsto \se([\var{x}\mid x\orderedin \authpool]) \;, \\
     &&C(2) &\mapsto \se(\varphi) \;, \\
     &&C(3) &\mapsto \se(\var{[(h, b, s, \var{\mathbf{p}})\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \se_M(\beefybelt)) \;, \\
     &&C(4) &\mapsto \se\left(\tup{\gamma_\mathbf{k}, \gamma_z, \left\{\,\begin{aligned}

@@ -32,7 +32,7 @@ Each validator shall perform auditing duties on each valid block received. Since
 
 We define the sequence of work-reports which we may be required to audit as $\mathbf{Q}$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
 \begin{align}\label{eq:auditselection}
-  \mathbf{Q} &\in \seq{\mathbb{W}?}_\mathsf{C} \\
+  \mathbf{Q} &\in \seq{\workreport?}_\mathsf{C} \\
   \mathbf{Q} &\equiv \left[\begin{rcases}
     \rho[c]_w &\when \rho[c]_w \in \mathbf{W} \\
     \none &\otherwise
@@ -70,13 +70,13 @@ Formally, for each tranche $n$ we ensure the announcement statement is published
 
 We define $A_n$ as our perception of which validator is required to audit each of the work-reports (identified by their associated core) at tranche $n$. This comes from each other validators' announcements (defined above). It cannot be correctly evaluated until $n$ is current. We have absolute knowledge about our own audit requirements.
 \begin{align}
-  A_n: \mathbb{W} &\to \powset{\N_\mathsf{V}} \\
+  A_n: \workreport &\to \powset{\N_\mathsf{V}} \\
   \forall (c, w) &\in \mathbf{a}_0 : v \in q_0(w)
 \end{align}
 
 We further define $J_\top$ and $J_\bot$ to be the validator indices who we know to have made respectively, positive and negative, judgments mapped from each work-report's core. We don't care from which tranche a judgment is made.
 \begin{align}
-  J_{\{\bot, \top\}}: \mathbb{W} \to \powset{\N_\mathsf{V}}
+  J_{\{\bot, \top\}}: \workreport \to \powset{\N_\mathsf{V}}
 \end{align}
 
 We are able to define $\mathbf{a}_n$ for tranches beyond the first on the basis of the number of validators who we know are required to conduct an audit yet from whom we have not yet seen a judgment. It is possible that the late arrival of information alters $\mathbf{a}_n$ and nodes should reevaluate and act accordingly should this happen.
@@ -103,12 +103,12 @@ We then attempt to reproduce the report on the core to give $e_n$, a mapping fro
 \begin{equation}
   \begin{aligned}
   %  \forall (c, w) \in \mathbf{a}_n \!: e_n(w) \!\Leftrightarrow\! \begin{cases}
-  %    w = \Xi(p, c)\!\!\!\!\! &\when \exists p \in \mathbb{P}: \se(p) = F(w) \\
+  %    w = \Xi(p, c)\!\!\!\!\! &\when \exists p \in \workpackage: \se(p) = F(w) \\
   %    \bot &\otherwise
   %  \end{cases}
     \forall (c, w) \in \mathbf{a}_n :\ \ &\\[-10pt]
     e_n(w) \Leftrightarrow &\begin{cases}
-      w = \Xi(p, c)\!\!\! &\when \exists p \in \mathbb{P}: \se(p) = F(w) \\
+      w = \Xi(p, c)\!\!\! &\when \exists p \in \workpackage: \se(p) = F(w) \\
       \bot &\otherwise
     \end{cases}
   \end{aligned}\!\!
