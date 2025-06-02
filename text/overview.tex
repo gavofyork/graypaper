@@ -31,7 +31,7 @@ The header is a collection of metadata primarily concerned with cryptographic re
 
 Our state may be logically partitioned into several largely independent segments which can both help avoid visual clutter within our protocol description and provide formality over elements of computation which may be simultaneously calculated (i.e. parallelized). We therefore pronounce an equivalence between $\thestate$ (some complete state) and a tuple of partitioned segments of that state:
 \begin{align}\label{eq:statecomposition}
-  \thestate &\equiv (\authpool, \recenthistory, \safrole, \accounts, \entropy, \stagingset, \activeset, \previousset, \rho, \thetime, \varphi, \privileges, \psi, \pi, \ready, \accumulated)
+  \thestate &\equiv (\authpool, \recenthistory, \safrole, \accounts, \entropy, \stagingset, \activeset, \previousset, \rho, \thetime, \varphi, \privileges, \disputes, \pi, \ready, \accumulated)
 \end{align}
 
 In summary, $\accounts$ is the portion of state dealing with \emph{services}, analogous in \Jam to the Yellow Paper's (smart contract) \emph{accounts}, the only state of the \emph{YP}'s Ethereum. The identities of services which hold some privileged status are tracked in $\privileges$.
@@ -40,7 +40,7 @@ Validators, who are the set of economic actors uniquely privileged to help build
 
 Our state also tracks two aspects of each core: $\authpool$, the authorization requirement which work done on that core must satisfy at the time of being reported on-chain, together with the queue which fills this, $\varphi$; and $\rho$, each of the cores' currently assigned \emph{report}, the availability of whose \emph{work-package} must yet be assured by a super-majority of validators.
 
-Finally, details of the most recent blocks and timeslot index are tracked in $\recenthistory$ and $\thetime$ respectively, work-reports which are ready to be accumulated and work-packages which were recently accumulated are tracked in $\ready$ and $\accumulated$ respectively and, judgments are tracked in $\psi$ and validator statistics are tracked in $\pi$.
+Finally, details of the most recent blocks and timeslot index are tracked in $\recenthistory$ and $\thetime$ respectively, work-reports which are ready to be accumulated and work-packages which were recently accumulated are tracked in $\ready$ and $\accumulated$ respectively and, judgments are tracked in $\disputes$ and validator statistics are tracked in $\pi$.
 
 \subsubsection{State Transition Dependency Graph}
 
@@ -48,11 +48,11 @@ Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulatin
 \begin{align}\label{eq:transitionfunctioncomposition}
   \thetime' &\prec \theheader \\
   \recenthistory^\dagger &\prec (\theheader, \recenthistory) \label{eq:betadagger} \\
-  \safrole' &\prec (\theheader, \thetime, \xttickets, \safrole, \stagingset, \entropy', \activeset', \psi') \\
+  \safrole' &\prec (\theheader, \thetime, \xttickets, \safrole, \stagingset, \entropy', \activeset', \disputes') \\
   \entropy' &\prec (\theheader, \thetime, \entropy) \\
   \activeset' &\prec (\theheader, \thetime, \activeset, \safrole) \\
   \previousset' &\prec (\theheader, \thetime, \previousset, \activeset) \\
-  \psi' &\prec (\xtdisputes, \psi) \\
+  \disputes' &\prec (\xtdisputes, \disputes) \\
   \rho^\dagger &\prec (\xtdisputes, \rho) \label{eq:rhodagger} \\
   \rho^\ddagger &\prec (\xtassurances, \rho^\dagger) \label{eq:rhoddagger} \\
   \rho' &\prec (\xtguarantees, \rho^\ddagger, \activeset, \thetime') \label{eq:rhoprime} \\

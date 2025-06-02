@@ -223,7 +223,7 @@ The epoch and winning-tickets markers are information placed in the header in or
 As mentioned earlier, the header's epoch marker $\H_\¬epochmark$ is either empty or, if the block is the first in a new epoch, then a tuple of the next and current epoch randomness, along with a sequence of tuples containing both Bandersnatch keys and Ed25519 keys for each validator defining the validator keys beginning in the next epoch. Formally:
 \begin{align}\label{eq:epochmarker}
   \H_\¬epochmark &\equiv \begin{cases}
-    ( \entropyaccumulator, \entropy_1, [ \tup{k_b, k_e} \mid k \orderedin \pendingset' ] )\qquad\qquad &\when e' > e \\
+    \tup{ \entropyaccumulator, \entropy_1, [ \tup{k_b, k_e} \mid k \orderedin \pendingset' ] } \qquad\qquad &\when e' > e \\
     \none & \otherwise
   \end{cases}
 \end{align}
