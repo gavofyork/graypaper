@@ -2,8 +2,8 @@
 
 Nodes take part in the \textsc{Grandpa} protocol as defined by \cite{stewart2020grandpa}.
 
-\newcommand{\final}{\natural}
-\newcommand{\best}{\flat}
+\newcommand*{\final}{\natural}
+\newcommand*{\best}{\flat}
 
 We define the latest finalized block as $\mathbf{B}^\final$. All associated terms concerning block and state are similarly superscripted. We consider the \emph{best block}, $\mathbf{B}^\best$ to be that which is drawn from the set of acceptable blocks of the following criteria:
 
@@ -15,13 +15,13 @@ We define the latest finalized block as $\mathbf{B}^\final$. All associated term
 
 Formally:
 \begin{align}
-  \mathbf{A}(\mathbf{H}^\best) &\owns \mathbf{H}^\final \\
+  \mathbf{A}(\header^\best) &\owns \header^\final \\
   \mathbf{U}^\best &\equiv \top \\
-  \not\exists \mathbf{H}^A, \mathbf{H}^B &: \bigwedge \left\{\,\begin{aligned}
-    \mathbf{H}^A &\ne \mathbf{H}^B \\
-    \mathbf{H}^A_T &= \mathbf{H}^B_T \\
-    \mathbf{H}^A &\in \mathbf{A}(\mathbf{H}^\best) \\
-    \mathbf{H}^A &\not\in \mathbf{A}(\mathbf{H}^\final)
+  \not\exists \header^A, \header^B &: \bigwedge \left\{\,\begin{aligned}
+    \header^A &\ne \header^B \\
+    \header^A_\¬timeslot &= \header^B_\¬timeslot \\
+    \header^A &\in \mathbf{A}(\header^\best) \\
+    \header^A &\not\in \mathbf{A}(\header^\final)
   \end{aligned}\right.
 \end{align}
 
@@ -29,7 +29,7 @@ Of these acceptable blocks, that which contains the most ancestor blocks whose a
 
 Formally, we aim to select $\mathbf{B}^\best$ to maximize the value $m$ where:
 \begin{equation}
-  m = \sum_{\mathbf{H}^A \in \mathbf{A}^\best} \mathbf{T}^A
+  m = \sum_{\header^A \in \mathbf{A}^\best} \mathbf{T}^A
 \end{equation}
 
 The specific data to be voted on in \textsc{Grandpa} shall be the block header of the best block, $\mathbf{B}^\best$ together with its \emph{posterior} state root, $\mathcal{M}_\omega(\omega')$. The state root has no direct relevance to the \textsc{Grandpa} protocol, but is included alongside the header during voting/signing into order to ensure that systems utilizing the output of \textsc{Grandpa} are able to verify the most recent chain state as possible.

@@ -3,7 +3,7 @@
 \newcommand{\join}{\text{join}}
 \newcommand{\spl}{\text{split}}
 
-The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\Y_2$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\se_2$. From this we may assume the encoding function $\mathcal{C}: \seq{\Y_2}_{342} \to \seq{\Y_2}_{1023}$ and the recovery function $\mathcal{R}: \powset[342]{\tuple{\Y_2, \N_{1023}}} \to \seq{\Y_2}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\mathcal{C}$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
+The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\blob_2$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\se_2$. From this we may assume the encoding function $\mathcal{C}: \seq{\blob_2}_{342} \to \seq{\blob_2}_{1023}$ and the recovery function $\mathcal{R}: \powset[342]{\tuple{\blob_2, \N_{1023}}} \to \seq{\blob_2}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\mathcal{C}$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
 
 Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of 684 octets. Data whose length is not divisible by 684 must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit \textsc{da} and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import \textsc{da} system.
 
@@ -14,16 +14,16 @@ For the Import \textsc{da} system, we deal with an input size of 4,104 octets re
 \newcommand*{\unzip}{\text{unzip}}
 \newcommand*{\lace}{\text{lace}}
 
-We assume some data blob $\mathbf{d} \in \Y_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\Y_{684}} = \unzip_{684}(\mathbf{d})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $\mathcal{C}$ as above to give 1,023 octet pairs per piece.
+We assume some data blob $\mathbf{d} \in \blob_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\blob_{684}} = \unzip_{684}(\mathbf{d})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $\mathcal{C}$ as above to give 1,023 octet pairs per piece.
 
 The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
 Formally we begin by defining four utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
 \begin{align}
-  \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \Y_{k:n}) \in \seq{\Y_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
-  \forall n \in \N, k \in \N :\ &\join_n(\mathbf{c} \in \seq{\Y_n}_k) \in \Y_{k:n} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots \\
-  \forall n \in \N, k \in \N :\ &\unzip_n(\mathbf{d} \in \Y_{k:n}) \in \seq{\Y_n}_k \equiv \sq{ [\mathbf{d}_{j\cdot k + i} \mid j \orderedin \N_n] \mid i \orderedin \N_k} \\
-  \forall n \in \N, k \in \N :\ &\lace_n(\mathbf{c} \in \seq{\Y_n}_k) \in \Y_{k:n} \equiv \mathbf{d} \ \where \forall i \in \N_k, j \in \N_n: \mathbf{d}_{j\cdot k + i} = (\mathbf{c}_i)_j
+  \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \blob_{k:n}) \in \seq{\blob_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
+  \forall n \in \N, k \in \N :\ &\join_n(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{k:n} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots \\
+  \forall n \in \N, k \in \N :\ &\unzip_n(\mathbf{d} \in \blob_{k:n}) \in \seq{\blob_n}_k \equiv \sq{ [\mathbf{d}_{j\cdot k + i} \mid j \orderedin \N_n] \mid i \orderedin \N_k} \\
+  \forall n \in \N, k \in \N :\ &\lace_n(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{k:n} \equiv \mathbf{d} \ \where \forall i \in \N_k, j \in \N_n: \mathbf{d}_{j\cdot k + i} = (\mathbf{c}_i)_j
 \end{align}
 
 We define the transposition operator hence:
@@ -34,7 +34,7 @@ We define the transposition operator hence:
 We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 684 octets and results in 1,023 sequences of sequences each of smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
   \mathcal{C}_{k \in \N}\colon\left\{\begin{aligned}
-    \Y_{684k} &\to \seq{\Y_{2k}}_{1023} \\
+    \blob_{684k} &\to \seq{\blob_{2k}}_{1023} \\
     \mathbf{d} &\mapsto [ \join(\mathbf{c}) \mid \mathbf{c} \orderedin {}^{\text{T}}[\mathcal{C}(\mathbf{p}) \mid \mathbf{p} \orderedin \text{unzip}_{684}(\mathbf{d})] ]
   \end{aligned}\right.
 \end{equation}
@@ -42,7 +42,7 @@ We may then define our erasure-code chunking function which accepts an arbitrary
 The original data may be reconstructed with any 342 of the 1,023 resultant items (along with their indices). If the original 342 items are known then reconstruction is just their concatenation.
 \begin{equation}\label{eq:erasurecodinginv}
   \mathcal{R}_{k \in \N}\colon\left\{\begin{aligned}
-    \{(\Y_{2k}, \N_{1023})\}_{342} &\to \Y_{684k} \\
+    \{(\blob_{2k}, \N_{1023})\}_{342} &\to \blob_{684k} \\
     \mathbf{c} &\mapsto \begin{cases}
       \se([\mathbf{x} \mid (\mathbf{x}, i) \orderedin \mathbf{c}]) &\when [i \mid (\mathbf{x}, i) \orderedin \mathbf{c}] = [0, 1, \dots 341]\\
       \lace_k([
@@ -70,42 +70,42 @@ Hence:
 \mathbb{F}_{16} \equiv \frac{\mathbb{F}_2[x]}{x^{16}} + x^5 + x^3 + x^2 + 1
 \end{equation}
 
-We name the generator of $\frac{\mathbb{F}_{16}}{\mathbb{F}_2}$, the root of the above polynomial, $\alpha$ as such: $\mathbb{F}_{16} = \mathbb{F}_2(\alpha)$.
+We name the generator of $\frac{\mathbb{F}_{16}}{\mathbb{F}_2}$, the root of the above polynomial, $\authpool$ as such: $\mathbb{F}_{16} = \mathbb{F}_2(\authpool)$.
 
-Instead of using the standard basis $\{1, \alpha, \alpha^2, \dots, \alpha^{15}\}$, we opt for a representation of $\mathbb{F}_{16}$ which performs more efficiently for the encoding and the decoding process. To that aim, we name this specific representation of $\mathbb{F}_{16}$ as $\tilde{\mathbb{F}}_{16}$ and define it as a vector space generated by the following Cantor basis:
+Instead of using the standard basis $\{1, \authpool, \authpool^2, \dots, \authpool^{15}\}$, we opt for a representation of $\mathbb{F}_{16}$ which performs more efficiently for the encoding and the decoding process. To that aim, we name this specific representation of $\mathbb{F}_{16}$ as $\tilde{\mathbb{F}}_{16}$ and define it as a vector space generated by the following Cantor basis:
 
 \begin{center}
   \begin{tabular}{ll}
     & \\
     \hline
     $v_0$ & $1$\\
-    $v_1$ & $\alpha^{15} + \alpha^{13} + \alpha^{11} + \alpha^{10} + \alpha^7
-    + \alpha^6 + \alpha^3 + \alpha$\\
-    $v_2$ & $\alpha^{13} + \alpha^{12} + \alpha^{11} + \alpha^{10} + \alpha^3
-    + \alpha^2 + \alpha$\\
-    $v_3$ & $\alpha^{12} + \alpha^{10} + \alpha^9 + \alpha^5 + \alpha^4 +
-    \alpha^3 + \alpha^2 + \alpha$\\
-    $v_4$ & $\alpha^{15} + \alpha^{14} + \alpha^{10} + \alpha^8 + \alpha^7 +
-    \alpha$\\
-    $v_5$ & $\alpha^{15} + \alpha^{14} + \alpha^{13} + \alpha^{11} +
-    \alpha^{10} + \alpha^8 + \alpha^5 + \alpha^3 + \alpha^2 + \alpha$\\
-    $v_6$ & $\alpha^{15} + \alpha^{12} + \alpha^8 + \alpha^6 + \alpha^3 +
-    \alpha^2$\\
-    $v_7$ & $\alpha^{14} + \alpha^4 + \alpha$\\
-    $v_8$ & $\alpha^{14} + \alpha^{13} + \alpha^{11} + \alpha^{10} + \alpha^7
-    + \alpha^4 + \alpha^3$\\
-    $v_9$ & $\alpha^{12} + \alpha^7 + \alpha^6 + \alpha^4 + \alpha^3$\\
-    $v_{10}$ & $\alpha^{14} + \alpha^{13} + \alpha^{11} + \alpha^9 + \alpha^6
-    + \alpha^5 + \alpha^4 + \alpha$\\
-    $v_{11}$ & $\alpha^{15} + \alpha^{13} + \alpha^{12} + \alpha^{11} + \alpha^8$\\
-    $v_{12}$ & $\alpha^{15} + \alpha^{14} + \alpha^{13} + \alpha^{12} + \alpha^{11} + \alpha^{10} + \alpha^8 + \alpha^7 + \alpha^5 + \alpha^4 + \alpha^3$\\
-    $v_{13}$ & $\alpha^{15} + \alpha^{14} + \alpha^{13} + \alpha^{12} +
-    \alpha^{11} + \alpha^9 + \alpha^8 + \alpha^5 + \alpha^4 + \alpha^2$\\
-    $v_{14}$ & $\alpha^{15} + \alpha^{14} + \alpha^{13} + \alpha^{12} +
-    \alpha^{11} + \alpha^{10} + \alpha^9 + \alpha^8 + \alpha^5 + \alpha^4 +
-    \alpha^3$\\
-    $v_{15}$ & $\alpha^{15} + \alpha^{12} + \alpha^{11} + \alpha^8 + \alpha^4
-    + \alpha^3 + \alpha^2 + \alpha$\\
+    $v_1$ & $\authpool^{15} + \authpool^{13} + \authpool^{11} + \authpool^{10} + \authpool^7
+    + \authpool^6 + \authpool^3 + \authpool$\\
+    $v_2$ & $\authpool^{13} + \authpool^{12} + \authpool^{11} + \authpool^{10} + \authpool^3
+    + \authpool^2 + \authpool$\\
+    $v_3$ & $\authpool^{12} + \authpool^{10} + \authpool^9 + \authpool^5 + \authpool^4 +
+    \authpool^3 + \authpool^2 + \authpool$\\
+    $v_4$ & $\authpool^{15} + \authpool^{14} + \authpool^{10} + \authpool^8 + \authpool^7 +
+    \authpool$\\
+    $v_5$ & $\authpool^{15} + \authpool^{14} + \authpool^{13} + \authpool^{11} +
+    \authpool^{10} + \authpool^8 + \authpool^5 + \authpool^3 + \authpool^2 + \authpool$\\
+    $v_6$ & $\authpool^{15} + \authpool^{12} + \authpool^8 + \authpool^6 + \authpool^3 +
+    \authpool^2$\\
+    $v_7$ & $\authpool^{14} + \authpool^4 + \authpool$\\
+    $v_8$ & $\authpool^{14} + \authpool^{13} + \authpool^{11} + \authpool^{10} + \authpool^7
+    + \authpool^4 + \authpool^3$\\
+    $v_9$ & $\authpool^{12} + \authpool^7 + \authpool^6 + \authpool^4 + \authpool^3$\\
+    $v_{10}$ & $\authpool^{14} + \authpool^{13} + \authpool^{11} + \authpool^9 + \authpool^6
+    + \authpool^5 + \authpool^4 + \authpool$\\
+    $v_{11}$ & $\authpool^{15} + \authpool^{13} + \authpool^{12} + \authpool^{11} + \authpool^8$\\
+    $v_{12}$ & $\authpool^{15} + \authpool^{14} + \authpool^{13} + \authpool^{12} + \authpool^{11} + \authpool^{10} + \authpool^8 + \authpool^7 + \authpool^5 + \authpool^4 + \authpool^3$\\
+    $v_{13}$ & $\authpool^{15} + \authpool^{14} + \authpool^{13} + \authpool^{12} +
+    \authpool^{11} + \authpool^9 + \authpool^8 + \authpool^5 + \authpool^4 + \authpool^2$\\
+    $v_{14}$ & $\authpool^{15} + \authpool^{14} + \authpool^{13} + \authpool^{12} +
+    \authpool^{11} + \authpool^{10} + \authpool^9 + \authpool^8 + \authpool^5 + \authpool^4 +
+    \authpool^3$\\
+    $v_{15}$ & $\authpool^{15} + \authpool^{12} + \authpool^{11} + \authpool^8 + \authpool^4
+    + \authpool^3 + \authpool^2 + \authpool$\\
     \hline
   \end{tabular}
 \end{center}

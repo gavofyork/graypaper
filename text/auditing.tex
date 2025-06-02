@@ -10,7 +10,7 @@ The auditing process involves each node requiring themselves to fetch, evaluate 
 
 If all declared intentions for a work-report are matched by a positive judgment at any given juncture, then the work-report is considered \emph{audited}. Once all of any given block's newly available work-reports are audited, then we consider the block to be \emph{audited}. One prerequisite of a node finalizing a block is for it to view the block as audited. Note that while there will be eventual consensus on whether a block is audited, there may not be consensus at the time that the block gets finalized. This does not affect the crypto-economic guarantees of this system.
 
-In regular operation, no negative judgments will ultimately be found for a work-report, and there will be no direct consequences of the auditing stage. In the unlikely event that a negative judgment is found, then one of several things happens; if there are still more than $\nicefrac{2}{3}\mathsf{V}$ positive judgments, then validators issuing negative judgments may receive a punishment for time-wasting. If there are greater than $\nicefrac{1}{3}\mathsf{V}$ negative judgments, then the block which includes the work-report is ban-listed. It and all its descendants are disregarded and may not be built on. In all cases, once there are enough votes, a judgment extrinsic can be constructed by a block author and placed on-chain to denote the outcome. See section \ref{sec:disputes} for details on this.
+In regular operation, no negative judgments will ultimately be found for a work-report, and there will be no direct consequences of the auditing stage. In the unlikely event that a negative judgment is found, then one of several things happens; if there are still more than $\nicefrac{2}{3}\valcount$ positive judgments, then validators issuing negative judgments may receive a punishment for time-wasting. If there are greater than $\nicefrac{1}{3}\valcount$ negative judgments, then the block which includes the work-report is ban-listed. It and all its descendants are disregarded and may not be built on. In all cases, once there are enough votes, a judgment extrinsic can be constructed by a block author and placed on-chain to denote the outcome. See section \ref{sec:disputes} for details on this.
 
 All announcements and judgments are published to all validators along with metadata describing the signed material. On receipt of sure data, validators are expected to update their perspective accordingly (later defined as $J$ and $A$).
 
@@ -28,33 +28,33 @@ All items in the work-package specification field of the work-report should be r
 
 \subsection{Selection of Reports}
 
-Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\mathbf{B}$ with other terms corresponding to the state-transition implied by that block, so $\rho$ is said block's prior core-allocation, $\kappa$ is its prior validator set, $\mathbf{H}$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
+Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\mathbf{B}$ with other terms corresponding to the state-transition implied by that block, so $\rho$ is said block's prior core-allocation, $\activeset$ is its prior validator set, $\H$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
 
 We define the sequence of work-reports which we may be required to audit as $\mathbf{Q}$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
 \begin{align}\label{eq:auditselection}
-  \mathbf{Q} &\in \seq{\mathbb{W}?}_\mathsf{C} \\
+  \mathbf{Q} &\in \seq{\workreport?}_\corecount \\
   \mathbf{Q} &\equiv \left[\begin{rcases}
     \rho[c]_w &\when \rho[c]_w \in \mathbf{W} \\
     \none &\otherwise
-  \end{rcases} \,\middle\vert\,c \orderedin \N_\mathsf{C}\right]
+  \end{rcases} \,\middle\vert\,c \orderedin \coreindex\right]
 \end{align}
 
 We define our initial audit tranche in terms of a verifiable random quantity $s_0$ created specifically for it:
 \begin{align}
-  s_0 &\in \bandersig{\kappa[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}}{[]} \\
+  s_0 &\in \bandersig{\activeset[v]_b}{\mathsf{X}_U \concat \banderout{\H_\¬vrfsig}}{[]} \\
   \mathsf{X}_U &= \token{\$jam\_audit}
 \end{align}
 
 We may then define $\mathbf{a}_0$ as the non-empty items to audit through a verifiably random selection of ten cores:
 \begin{align}
   \mathbf{a}_0 &= \{\tup{c, w} \mid \tup{c, w} \in \mathbf{p}_{\dots+10}, w \ne \none\} \\
-  \where \mathbf{p} &= \mathcal{F}([\tup{c, \mathbf{Q}_c} \mid c \orderedin \N_\mathsf{C}], r) \\
+  \where \mathbf{p} &= \mathcal{F}([\tup{c, \mathbf{Q}_c} \mid c \orderedin \coreindex], r) \\
   \also r &= \banderout{s_0}
 \end{align}
 
 Every $\mathsf{A} = 8$ seconds following a new time slot, a new tranche begins, and we may determine that additional cores warrant an audit from us. Such items are defined as $\mathbf{a}_n$ where $n$ is the current tranche. Formally:
 \begin{equation}
-  \using n = \ffrac{\mathcal{T} - \mathsf{P}\cdot\mathbf{H}_t}{\mathsf{A}}
+  \using n = \ffrac{\wallclock - \mathsf{P}\cdot\H_\¬timeslot}{\mathsf{A}}
 \end{equation}
 
 New tranches may contain items from $\mathbf{Q}$ stemming from one of two reasons: either a negative judgment has been received; or the number of judgments from the previous tranche is less than the number of announcements from said tranche. In the first case, the validator is always required to issue a judgment on the work-report. In the second case, a new special-purpose \textsc{vrf} must be constructed to determine if an audit and judgment is warranted from us.
@@ -63,20 +63,20 @@ In all cases, we publish a signed statement of which of the cores we believe we 
 
 Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $s_n$ and all signed data. Validator's announcement statements must be in the set $S$:
 \begin{align}
-  S &\equiv \sig{\kappa[v]_e}{\mathsf{X}_I \doubleplus n \concat \mathbf{x}_n \concat \hash(\mathbf{H})} \\
-  \where \mathbf{x}_n &= \se([\se_2(c) \frown \hash(w) \mid \tup{c, w} \in \mathbf{a}_n])\\
+  S &\equiv \sig{\activeset[v]_e}{\mathsf{X}_I \doubleplus n \concat \mathbf{x}_n \concat \blake(\H)} \\
+  \where \mathbf{x}_n &= \se([\se_2(c) \frown \blake(w) \mid \tup{c, w} \in \mathbf{a}_n])\\
   \mathsf{X}_I &= \token{\$jam\_announce}
 \end{align}
 
 We define $A_n$ as our perception of which validator is required to audit each of the work-reports (identified by their associated core) at tranche $n$. This comes from each other validators' announcements (defined above). It cannot be correctly evaluated until $n$ is current. We have absolute knowledge about our own audit requirements.
 \begin{align}
-  A_n: \mathbb{W} &\to \powset{\N_\mathsf{V}} \\
+  A_n: \workreport &\to \powset{\valindex} \\
   \forall (c, w) &\in \mathbf{a}_0 : v \in q_0(w)
 \end{align}
 
 We further define $J_\top$ and $J_\bot$ to be the validator indices who we know to have made respectively, positive and negative, judgments mapped from each work-report's core. We don't care from which tranche a judgment is made.
 \begin{align}
-  J_{\{\bot, \top\}}: \mathbb{W} \to \powset{\N_\mathsf{V}}
+  J_{\{\bot, \top\}}: \workreport \to \powset{\valindex}
 \end{align}
 
 We are able to define $\mathbf{a}_n$ for tranches beyond the first on the basis of the number of validators who we know are required to conduct an audit yet from whom we have not yet seen a judgment. It is possible that the late arrival of information alters $\mathbf{a}_n$ and nodes should reevaluate and act accordingly should this happen.
@@ -84,8 +84,8 @@ We are able to define $\mathbf{a}_n$ for tranches beyond the first on the basis 
 We can thus define $\mathbf{a}_n$ beyond the initial tranche through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
 \begin{align}
   \nonumber\forall n > 0:&\\
-  \ s_n(w) &\in \bandersig{\kappa[v]_b}{\mathsf{X}_U \concat \banderout{\mathbf{H}_v}\concat\hash(w)\doubleplus n}{[]} \\
-  \ \mathbf{a}_n &\equiv \{ \textstyle\frac{\mathsf{V}}{256\mathsf{F}}\banderout{s_n(w)}_0 < m_n \mid w \in \mathbf{Q}, w \ne \none \}\!\!\!\!\\
+  \ s_n(w) &\in \bandersig{\activeset[v]_b}{\mathsf{X}_U \concat \banderout{\H_\¬vrfsig}\concat\blake(w)\doubleplus n}{[]} \\
+  \ \mathbf{a}_n &\equiv \{ \textstyle\frac{\valcount}{256\mathsf{F}}\banderout{s_n(w)}_0 < m_n \mid w \in \mathbf{Q}, w \ne \none \}\!\!\!\!\\
   \nonumber \where m_n &= |A_{n - 1}(w) \setminus J_\top(w)|
 \end{align}
 
@@ -103,12 +103,12 @@ We then attempt to reproduce the report on the core to give $e_n$, a mapping fro
 \begin{equation}
   \begin{aligned}
   %  \forall (c, w) \in \mathbf{a}_n \!: e_n(w) \!\Leftrightarrow\! \begin{cases}
-  %    w = \Xi(p, c)\!\!\!\!\! &\when \exists p \in \mathbb{P}: \se(p) = F(w) \\
+  %    w = \Xi(p, c)\!\!\!\!\! &\when \exists p \in \workpackage: \se(p) = F(w) \\
   %    \bot &\otherwise
   %  \end{cases}
     \forall (c, w) \in \mathbf{a}_n :\ \ &\\[-10pt]
     e_n(w) \Leftrightarrow &\begin{cases}
-      w = \Xi(p, c)\!\!\! &\when \exists p \in \mathbb{P}: \se(p) = F(w) \\
+      w = \Xi(p, c)\!\!\! &\when \exists p \in \workpackage: \se(p) = F(w) \\
       \bot &\otherwise
     \end{cases}
   \end{aligned}\!\!
@@ -118,7 +118,7 @@ Note that a failure to decode implies an invalid work-report.
 
 From this mapping the validator issues a set of judgments $\mathbf{j}_n$:
 \begin{align}
-  \mathbf{j}_n &= \{ \mathcal{S}_{\kappa[v]_e}(\mathsf{X}_{e(w)} \concat \hash(w)) \mid (c, w) \in \mathbf{a}_n \}
+  \mathbf{j}_n &= \{ \mathcal{S}_{\activeset[v]_e}(\mathsf{X}_{e(w)} \concat \blake(w)) \mid (c, w) \in \mathbf{a}_n \}
 \end{align}
 
 %We denote the guarantors of a work-package $w$ as $\mathbf{G}(w)$ from a particular chain head, and this may be derived from the guarantees extrinsic $\xtguarantees$ of the ancestor block which introduced the work-report. Our restrictions on the guarantees extrinsic (described in section \ref{sec:accumulation}) ensures that this is unique.
@@ -126,7 +126,7 @@ From this mapping the validator issues a set of judgments $\mathbf{j}_n$:
 %\begin{aligned}
 %    \mathbf{G}(w) &\equiv [ v \mid (s, v) \orderedin a ] \\
 %    \where (c, w, a) &\in \xtguarantees \\
-%    (\mathbf{H}, \mathbf{E}) &\in \mathbf{A}
+%    (\H, \mathbf{E}) &\in \mathbf{A}
 %\end{aligned}
 %\end{equation}
 
@@ -134,10 +134,10 @@ All judgments $\mathbf{j}_*$ should be published to other validators in order th
 
 We consider a work-report as audited under two circumstances. Either, when it has no negative judgments and there exists some tranche in which we see a positive judgment from all validators who we believe are required to audit it; or when we see positive judgments for it from greater than two-thirds of the validator set.
 \begin{align}
-%  U(w) &\Leftrightarrow J_\bot(w) = \emptyset \wedge \exists n : A_n(w) \subset J_\top(w) \vee |J_\top(w)| > \nicefrac{2}{3}\mathsf{V}%\!\!\!\!\!\!\!\!\!\!\!\!\!\!
+%  U(w) &\Leftrightarrow J_\bot(w) = \emptyset \wedge \exists n : A_n(w) \subset J_\top(w) \vee |J_\top(w)| > \nicefrac{2}{3}\valcount%\!\!\!\!\!\!\!\!\!\!\!\!\!\!
   U(w) &\Leftrightarrow \bigvee\,\left\{\,\begin{aligned}
       &J_\bot(w) = \emptyset \wedge \exists n : A_n(w) \subset J_\top(w) \\
-      &|J_\top(w)| > \nicefrac{2}{3}\mathsf{V}
+      &|J_\top(w)| > \nicefrac{2}{3}\valcount
   \end{aligned}\right.
 \end{align}
 
