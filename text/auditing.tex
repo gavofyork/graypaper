@@ -54,7 +54,7 @@ We may then define $\mathbf{a}_0$ as the non-empty items to audit through a veri
 
 Every $\mathsf{A} = 8$ seconds following a new time slot, a new tranche begins, and we may determine that additional cores warrant an audit from us. Such items are defined as $\mathbf{a}_n$ where $n$ is the current tranche. Formally:
 \begin{equation}
-  \using n = \ffrac{\mathcal{T} - \mathsf{P}\cdot\H_\¬timeslot}{\mathsf{A}}
+  \using n = \ffrac{\wallclock - \mathsf{P}\cdot\H_\¬timeslot}{\mathsf{A}}
 \end{equation}
 
 New tranches may contain items from $\mathbf{Q}$ stemming from one of two reasons: either a negative judgment has been received; or the number of judgments from the previous tranche is less than the number of announcements from said tranche. In the first case, the validator is always required to issue a judgment on the work-report. In the second case, a new special-purpose \textsc{vrf} must be constructed to determine if an audit and judgment is warranted from us.
