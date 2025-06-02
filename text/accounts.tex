@@ -153,13 +153,13 @@ We may then define a third dependent term $\sa¬minbalance$, the minimum, or \em
 
 
 \subsection{Service Privileges}
-\Jam includes the ability to bestow privileges on a number of services. The portion of state in which this is held is denoted $\privileges$ and includes four kinds of privilege. The first, $\manager$, is the index of the \emph{manager} service which is the service able to effect an alteration of $\privileges$ from block to block as well as bestow services with storage deposit credits. The following, $\assigners$, are the service indices capable of altering the authorizer queue $\varphi$, one for each core. The next, $\delegator$, is able to set $\iota$.
+\Jam includes the ability to bestow privileges on a number of services. The portion of state in which this is held is denoted $\privileges$ and includes four kinds of privilege. The first, $\manager$, is the index of the \emph{manager} service which is the service able to effect an alteration of $\privileges$ from block to block as well as bestow services with storage deposit credits. The following, $\assigners$, are the service indices capable of altering the authorizer queue $\varphi$, one for each core. The next, $\delegator$, is able to set $\stagingset$.
 
 Finally, $\alwaysaccers$ is a small dictionary containing the indices of services which automatically accumulate in each block together with a basic amount of gas with which each accumulates. Formally:
 \begin{align}
   \privileges \equiv \tuple{
     \isa{\manager}{\N_S} ,
-    \isa{\assigners}{\seq{\N_S}_\mathsf{C}} ,
+    \isa{\assigners}{\seq{\N_S}_\corecount} ,
     \isa{\delegator}{\N_S} ,
     \isa{\alwaysaccers}{\dict{\N_S}{\gas}}
   }

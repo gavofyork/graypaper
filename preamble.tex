@@ -58,48 +58,42 @@
 }}
 \makeatother
 
-\def\drawplusplus#1#2#3{\hbox to 0pt{\hbox to #1{\hfill\vrule height #3 depth
-      0pt width #2\hfill\vrule height #3 depth 0pt width #2\hfill
-      }}\vbox to #3{\vfill\hrule height #2 depth 0pt width
-      #1 \vfill}}
-      %Poor man's typography
-\def\doubleplus{\mathrel{\drawplusplus {7pt}{0.6pt}{5pt}}}
-\def\concat{\ensuremath{\frown}}
-\def\seqminusl{\nwspoon}
-\def\seqminusr{\sespoon}
+% Typical typography
 \newcommand*\eg{e.g.\@\xspace}
 \newcommand*\Eg{E.g.\@\xspace}
 \newcommand*\ie{i.e.\@\xspace}
 \newcommand*\Ie{I.e.\@\xspace}
 \newcommand*\etc{\&c.\@\xspace}
 \newcommand*\nb{\textsc{nb}\@\xspace}
+
+% Some symbols
+\def\drawplusplus#1#2#3{\hbox to 0pt{\hbox to #1{\hfill\vrule height #3 depth
+      0pt width #2\hfill\vrule height #3 depth 0pt width #2\hfill
+      }}\vbox to #3{\vfill\hrule height #2 depth 0pt width
+      #1 \vfill}}
+      %Poor man's typography
+\newcommand*{\doubleplus}{\mathrel{\drawplusplus {7pt}{0.6pt}{5pt}}}
+\newcommand*{\concat}{\ensuremath{\frown}}
+\newcommand*{\seqminusl}{\nwspoon}
+\newcommand*{\seqminusr}{\sespoon}
+\newcommand*{\disjoint}{\downspoon}
+
+% Misc text typography
+\newcommand*{\token}[1]{\text{{\small \texttt{#1}}}}
+\newcommand*{\Jam}{\raisebox{-1.2pt}{J}\textsc{am}\@\xspace}
+
+% Some typogrphy for irregular operations
 \newcommand*\rem{\ \text{\scriptsize{\%}}\ }
 \newcommand*\remainder{\text{\hspace{2pt}\footnotesize{\textsf{R}}\hspace{2pt}}}
 \newcommand*\fold{\ \thicksim\mathchoice{\!\!\!\!\!\!\!}{\!\!\!\!\!\!}{\!\!\!\!\!\!}{\!\!\!\!\!\!}\int}
-\newcommand*{\powset}[2][{}]{\wp\left\langle#2\right\rangle_{#1}}
-\newcommand*{\sig}[2]{\mathbb{E}_{#1}\langle#2\rangle}
-\newcommand*{\bandersnatch}[3]{\bar{\mathbb{F}}_{#1}^{#3}\langle#2\rangle}
-\newcommand*{\bandersig}[3]{\mathbb{F}_{#1}^{#3}\langle#2\rangle}
-\newcommand*{\banderout}[1]{\mathcal{Y}(#1)}
-\newcommand*{\dict}[2]{\mathbb{D}\langle #1\to#2\rangle}
 \newcommand*{\order}[1]{\left[#1\right]}
 \newcommand*{\orderby}[2]{\left[#1\,\middle\lwavy\,#2\right]}
 \newcommand*{\orderuniqby}[2]{\left[#1\,\middle\lWavy\,#2\right]}
-\newcommand*{\token}[1]{\text{{\small \texttt{#1}}}}
-\renewcommand*{\hash}{\mathbb{H}}
-\newcommand*{\zerohash}{\hash_0}
-\newcommand*{\N}{\mathbb{N}}
-\newcommand*{\blob}{\mathbb{Y}}
-\newcommand*{\Z}{\mathbb{Z}}
-\newcommand*{\G}{\mathbb{G}}
 \newcommand*{\orderedin}{\ensuremath{\mathrel{\mathrlap{<}{\scalebox{0.95}[1]{$-$}}}}}
-\newcommand*{\using}{\text{let }}
-\newcommand*{\where}{ \text{where }}
-\newcommand*{\also}{ \text{and }}
-\newcommand*{\otherwise}{\text{otherwise}}
-\newcommand*{\otherwhen}{\text{otherwise if }}
-\newcommand*{\when}{\text{if }}
-\newcommand*{\exc}{\text{ except }}
+% Encoding types with a length prefix
+\newcommand*{\var}[1]{\left\updownarrow#1\right.\!}
+
+% Helpful symbols for the protocol.
 \newcommand*{\oog}{\infty}
 \newcommand*{\error}{\nabla}
 \newcommand*{\panic}{\lightning}
@@ -108,39 +102,30 @@
 \newcommand*{\host}{\hbar}
 \newcommand*{\halt}{\blacksquare}
 \newcommand*{\fault}{\text{\raisebox{6pt}{\rotatebox{180}{\textsf{F}}}}}
+
+% Making types be optional
 \newcommand*{\none}{\emptyset}
-\newcommand*{\subifnone}{\mathcal{U}}
-\newcommand*{\disjoint}{\downspoon}
-\newcommand*{\Jam}{\raisebox{-1.2pt}{J}\textsc{am}\@\xspace}
-\newcommand*{\suchthat}{\text{ such that }}
-\newcommand*{\keys}[1]{\mathcal{K}(#1)}
+\newcommand*{\maybe}[1]{\mathord{\text{¿}}#1}
+\newcommand*{\optional}[1]{#1\bm{?}}
+
+% Tuples
 \let\originalleft\left
 \let\originalright\right
 \renewcommand{\left}{\mathopen{}\mathclose\bgroup\originalleft}
 \renewcommand{\right}{\aftergroup\egroup\originalright}
-\newcommand*{\var}[1]{\left\updownarrow#1\right.\!}
-\newcommand*{\maybe}[1]{\mathord{\text{¿}}#1}
-\newcommand*{\optional}[1]{#1\bm{?}}
-\newcommand*{\se}{\mathcal{E}}
-\newcommand*{\de}{\mathcal{E}^{-1}}
 \newcommand*{\tricolon}{\!\mathrel{\vcenter{\offinterlineskip%
 \hbox{\scalebox{0.5}[0.5]{${\scriptscriptstyle \blacktriangleright}$}}
 \vskip.15ex
 \hbox{\scalebox{0.5}[0.5]{${\scriptscriptstyle \blacktriangleright}$}}
 }}}
+\newcommand*{\tup}[1]{\!\left\lgroup#1\right\rgroup\!}
+\newcommand*{\tuple}[1]{\!\left\lgroup#1\right\rgroup\!}
 \newcommand*{\is}[2]{#1\tricolon#2}
 \newcommand*{\isa}[2]{#1\in #2}
-\newcommand*{\ts}{,\,}
-\newcommand*{\lseq}{\left\lsem}
-\newcommand*{\rseq}{\right\rsem}
-\newcommand*{\ltup}{\!\left\lgroup}
-\newcommand*{\rtup}{\right\rgroup\!}
-\newcommand*{\ltuple}{\!\left\lgroup}
-\newcommand*{\rtuple}{\right\rgroup\!}
 \newcommand*{\sq}[1]{\left[#1\right]}
-\newcommand*{\seq}[1]{\lseq#1\rseq}
-\newcommand*{\tup}[1]{\ltup#1\rtup}
-\newcommand*{\tuple}[1]{\ltuple#1\rtuple}
+\newcommand*{\seq}[1]{\left\lsem#1\right\rsem}
+
+% Typical operations.
 \newcommand*{\floor}[1]{\left\lfloor#1\right\rfloor}
 \newcommand*{\ceil}[1]{\left\lceil#1\right\rceil}
 \newcommand*{\len}[1]{\left|#1\right|}
@@ -149,16 +134,35 @@
 \newcommand*{\transpose}{{}^\text{T}}
 \newcommand*{\joined}{\wideparen}
 \newcommand*{\ang}[1]{\langle#1\rangle}
-\newcommand*{\blake}{\mathcal{H}}
-\newcommand*{\keccak}{\mathcal{H}_K}
 \newcommand*{\sub}[1]{_{#1}}
 \newcommand*{\subb}[1]{[#1]}
+\newcommand*{\cyclic}[1]{{#1}^\circlearrowleft}
 
-% Caligraphic terms
+% Bits of text
+\newcommand*{\suchthat}{\text{ such that }}
+\newcommand*{\using}{\text{let }}
+\newcommand*{\where}{ \text{where }}
+\newcommand*{\also}{ \text{and }}
+\newcommand*{\otherwise}{\text{otherwise}}
+\newcommand*{\otherwhen}{\text{otherwise if }}
+\newcommand*{\when}{\text{if }}
+\newcommand*{\exc}{\text{ except }}
+
+% Special constants/functions
+\newcommand*{\se}{\mathcal{E}}  % TODO: Make them all take a parameter.
+\newcommand*{\de}{\mathcal{E}^{-1}}
+\newcommand*{\blake}{\mathcal{H}}
+\newcommand*{\keccak}{\mathcal{H}_K}
+\newcommand*{\keys}[1]{\mathcal{K}(#1)}
 \newcommand*{\wallclock}{\mathcal{T}}
+\newcommand*{\subifnone}{\mathcal{U}}
+\newcommand*{\banderout}[1]{\mathcal{Y}(#1)}
+\newcommand*{\powset}[2][{}]{\wp\left\langle#2\right\rangle_{#1}}
 
 % Constants
 \newcommand*{\corecount}{\mathsf{C}}
+\newcommand*{\epochlen}{\mathsf{E}}
+\newcommand*{\ticketentries}{\mathsf{N}}
 \newcommand*{\valcount}{\mathsf{V}}
 
 % Numeric
@@ -167,6 +171,31 @@
 \newcommand*{\gas}{\N_G}
 \newcommand*{\coreindex}{\N_\corecount}
 \newcommand*{\valindex}{\N_\valcount}
+\newcommand*{\ticketentryindex}{\N_\ticketentries}
+\newcommand*{\epochindex}{\N_\epochlen}
+
+% Functions
+\newcommand*{\histlookup}{\Lambda}
+
+% Primitive types
+\newcommand*{\dict}[2]{\mathbb{D}\langle #1\to#2\rangle}
+\newcommand*{\sig}[2]{\mathbb{E}_{#1}\langle#2\rangle}
+\newcommand*{\bandersnatch}[3]{\bar{\mathbb{F}}_{#1}^{#3}\langle#2\rangle}
+\newcommand*{\bandersig}[3]{\mathbb{F}_{#1}^{#3}\langle#2\rangle}
+\renewcommand*{\hash}{\mathbb{H}}
+\newcommand*{\N}{\mathbb{N}}
+\newcommand*{\G}{\mathbb{G}}
+\newcommand*{\blob}{\mathbb{Y}}
+\newcommand*{\Z}{\mathbb{Z}}
+
+% The hash & blob types have a bunch of peripheral definitions.
+\newcommand*{\zerohash}{\hash_0}
+\newcommand*{\edkey}{\hash_E}
+\newcommand*{\bskey}{\hash_B}
+\newcommand*{\keccakoutput}{\hash_K}
+\newcommand*{\blskey}{\blob_{BLS}}
+\newcommand*{\metadatakey}{\blob_{128}}
+\newcommand*{\ringroot}{\blob_R}
 
 % TODO: Use non-prefixed items for common fields:
 \newcommand*{\¬gaslimit}{g}
@@ -181,6 +210,11 @@
 \newcommand*{\¬codehash}{h} % O/L \ot¬packagehash
 \newcommand*{\¬exportcount}{e}
 \newcommand*{\¬importcount}{i}
+
+% TODO make this local.
+\newcommand*{\safroleticket}{\mathbb{C}}
+\newcommand*{\st¬id}{y}
+\newcommand*{\st¬entry}{r}
 
 \newcommand*{\workpackage}{\mathbb{P}}
 \newcommand*{\wp¬authtoken}{\mathbf{j}}
@@ -305,12 +339,15 @@
 \newcommand*{\¬vrfsig}{v}
 \newcommand*{\¬sealsig}{s}
 % Derived fields
-\newcommand*{\¬authorbanderkey}{a}
+\newcommand*{\¬authorbskey}{a}
 
-% MISC - These need tidying.
+% Derived fields of validator keys.
+\newcommand*{\valkey}{\mathbb{K}}
+\newcommand*{\vk¬bs}{b}
 \newcommand*{\vk¬ed}{e}
-
-\newcommand*{\histlookup}{\Lambda}
+\newcommand*{\vk¬bls}{BLS}
+\newcommand*{\vk¬metadata}{m}
+\newcommand*{\allvalkeys}{\seq{\valkey}_{\valcount}}
 
 \newcommand*{\partialstate}{\mathbb{U}}
 \newcommand*{\defxfer}{\mathbb{T}}
@@ -319,6 +356,9 @@
 \newcommand*{\thestate}{\sigma}
 \newcommand*{\genesisstate}{\sigma^0}
 \newcommand*{\merklizestate}{\mathcal{M}_\sigma}
+
+\newcommand*{\entropy}{\eta}
+\newcommand*{\entropyaccumulator}{\eta_0}
 
 \newcommand*{\privileges}{\chi}
 \newcommand*{\manager}{\privileges_m}
@@ -337,6 +377,19 @@
 \newcommand*{\wonkyset}{\psi_\mathbf{w}}
 \newcommand*{\offenders}{\psi_\mathbf{o}}
 
+% Safrole state.
+\newcommand*{\safrole}{\gamma}
+\newcommand*{\epochroot}{\gamma_z}
+\newcommand*{\sealtickets}{\gamma_\mathbf{s}}
+\newcommand*{\ticketaccumulator}{\gamma_\mathbf{a}}
+\newcommand*{\pendingset}{\gamma_\mathbf{k}}
+% Safrole-adjacent sets
+\newcommand*{\thetime}{\tau}
+% Validator key sets.
+\newcommand*{\stagingset}{\iota}
+\newcommand*{\activeset}{\kappa}
+\newcommand*{\previousset}{\lambda}
+
 \newcommand*{\accounts}{\delta}
 \newcommand*{\accountspre}{\accounts}
 \newcommand*{\accountspostacc}{\accounts^\dagger}
@@ -348,6 +401,7 @@
 \newcommand*{\gascounter}{\varrho}
 \newcommand*{\registers}{\omega}
 \newcommand*{\memory}{\mu}
+\newcommand*{\pvmreg}{\N_R}
 
 \newcommand*{\jamdraftversion}{\input{VERSION}\!\!\!\!}
 \newcommand*{\jamdraftversionstring}{\jamdraftversion}

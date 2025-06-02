@@ -94,8 +94,8 @@ We limit the total number of exported items to $\mathsf{W}_X = 3072$, the total 
   \!\!\!\!\begin{aligned}
     &\forall \wpX \in \workpackage: \\
     &\ \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportcount \le \mathsf{W}_X \ \wedge\ 
-    \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬importsegments| \le \mathsf{W}_M \ \wedge\ 
-    \sum_{\wiX \in \wpX_\wp¬workitems} |\wiX_\wi¬extrinsics| \le \mathsf{T}
+    \sum_{\wiX \in \wpX_\wp¬workitems} \len{\wiX_\wi¬importsegments} \le \mathsf{W}_M \ \wedge\ 
+    \sum_{\wiX \in \wpX_\wp¬workitems} \len{\wiX_\wi¬extrinsics} \le \mathsf{T}
   \end{aligned}
 \end{equation}
 
@@ -105,9 +105,9 @@ We limit the total size of the auditable \emph{work-bundle}, containing the work
 \begin{align}
   \label{eq:checkextractsize}
   &\begin{aligned}
-    &\forall \wpX \in \workpackage: \Big(|\wpX_\wp¬authtoken| + |\wpX_\wp¬authconfig| +
+    &\forall \wpX \in \workpackage: \Big(\len{\wpX_\wp¬authtoken} + \len{\wpX_\wp¬authconfig} +
     \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \mathsf{W}_B \\
-    &\where S(\wiX \in \workitem) \equiv |\wiX_\wi¬payload| + |\wiX_\wi¬importsegments|\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l
+    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l
   \end{aligned}\\
   &\mathsf{W}_B \equiv 13,794,305\\
   &\phantom{\mathsf{W}_B} = \mathsf{W}_M(\mathsf{W}_G + 1 + 32\ceil{\log_2(\mathsf{W}_T)}) + 4096 + 1
@@ -138,10 +138,10 @@ Given the result $\wl¬result$ and gas used $\wl¬gasused$ of some work-item, we
       \is{\wl¬gaslimit}{\wi¬accgaslimit},\,
       \wl¬result,\,
       \wl¬gasused,\\
-      &\is{\wl¬importcount}{|\wi¬importsegments|},\,
+      &\is{\wl¬importcount}{\len{\wi¬importsegments}},\,
       \wl¬exportcount,\,
-      \is{\wl¬xtcount}{|\wi¬extrinsics|},\,
-      \is{\wl¬xtsize}{\!\!\!\!\sum_{(h, z) \in \wi¬extrinsics}\!\!\!\!z}
+      \is{\wl¬xtcount}{\len{\wi¬extrinsics}},\,
+      \is{\wl¬xtsize}{\!\!\!\!\sum_{\tup{h, z} \in \wi¬extrinsics}\!\!\!\!z}
     \end{aligned}}\!\!\!\!
   \end{aligned}\right.
 \end{equation}
@@ -171,7 +171,7 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
         \var{\mathcal{J}_6(\mathbf{s}, i)},
         \var{\mathcal{L}_6(\mathbf{s}, i)}
       ))
-      \mid i \orderedin \N_{\ceil{\nicefrac{|\mathbf{s}|}{64}}}
+      \mid i \orderedin \N_{\ceil{\nicefrac{\len{\mathbf{s}}}{64}}}
     } \\
     & \where l = \mathsf{W}_G
   \end{aligned}\right.\!\!\!\!
@@ -193,24 +193,24 @@ We now come to the work-report computation function $\Xi$. This forms the basis 
 
 Where:
 \begin{align*}
-  \keys{\wr¬srlookup} \equiv \,&\{ h \mid \wiX \in \wpX_\mathbf{w}, (h^\boxplus, n) \in \wiX_\mathbf{i} \} \ ,\quad|\wr¬srlookup| \le 8\\
+  \keys{\wr¬srlookup} \equiv \,&\{ h \mid \wiX \in \wpX_\mathbf{w}, (h^\boxplus, n) \in \wiX_\mathbf{i} \} \ ,\quad\len{\wr¬srlookup} \le 8\\
   (\wr¬authtrace, \wr¬authgasused) = \,&\Psi_I(\wpX, \¬core) \\
   (\wr¬digests, \allexports) = \,&\transpose[
     (\itemtodigest(\wpX_\wp¬workitems[j], r, u), \mathbf{e})
     \mid
     (r, u, \mathbf{e}) = \countupexports(\wpX, j),\,
-    j \orderedin \N_{|\wpX_\wp¬workitems|}
+    j \orderedin \N_{\len{\wpX_\wp¬workitems}}
   ] \\
   \countupexports(\wpX, j) \equiv \,&\begin{cases}
     (\oversize, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\when |r| + z > \mathsf{W}_R\\
-    (\badexports, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen |\mathbf{e}| \ne w_e \\
+    (\badexports, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen \len{\mathbf{e}} \ne w_e \\
     (r, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen r \not\in \blob \\
     (r, u, \mathbf{e}) &\otherwise \\
     \multicolumn{2}{l}{\where (r, \mathbf{e}, u) = \Psi_R(
       j, \wpX, \mathbf{o}, [\importsegmentdata(w) \mid w \orderedin \wpX_\wp¬workitems], \ell
     )}\\
     \multicolumn{2}{l}{\also h = \blake(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportcount}\\
-    \multicolumn{2}{l}{\also z = |\mathbf{o}| + \sum_{k < j, (r \in \blob, \dots) = I(p, k)} |r|}
+    \multicolumn{2}{l}{\also z = \len{\mathbf{o}} + \sum_{k < j, (r \in \blob, \dots) = I(p, k)} |r|}
   \end{cases}
 \end{align*}
 
@@ -240,7 +240,7 @@ The next term to be introduced, $\tup{\wr¬authtrace, \wr¬authgasused}$, is the
 The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $\wiX$. We also define $\justifysegmentdata$, which compiles justifications of segment data:
 \begin{equation}
   \begin{aligned}
-    \extrinsicdata(\wiX \in \workitem) &\equiv [\mathbf{d} \mid (\blake(\mathbf{d}), |\mathbf{d}|) \orderedin \wiX_\wi¬extrinsics] \\
+    \extrinsicdata(\wiX \in \workitem) &\equiv [\mathbf{d} \mid (\blake(\mathbf{d}), \len{\mathbf{d}}) \orderedin \wiX_\wi¬extrinsics] \\
     \importsegmentdata(\wiX \in \workitem) &\equiv [\segsX[n] \mid \mathcal{M}(\segsX) = \segrootlookup(r), (r, n) \orderedin \wiX_\wi¬importsegments] \\
     \justifysegmentdata(\wiX \in \workitem) &\equiv [\var{\mathcal{J}_0(\segsX, n)} \mid \mathcal{M}(\segsX) = \segrootlookup(r), (r, n) \orderedin \wiX_\wi¬importsegments]
   \end{aligned}
@@ -279,10 +279,10 @@ We define the availability specifier function $\newavailabilityspecifier$, which
     \tuple{\hash, \blob, \seq{\G}} &\to \avspec\\
     \tup{h, \mathbf{b},\,\mathbf{s}} &\mapsto \tup{
       h,\,
-      \is{l}{|\mathbf{b}|},\,
+      \is{l}{\len{\mathbf{b}}},\,
       u,\,
       \is{e}{\mathcal{M}(\mathbf{s})},\,
-      \is{n}{|\mathbf{s}|}
+      \is{n}{\len{\mathbf{s}}}
     }
   \end{aligned}\right.\!\!\!\!\!
 \end{equation}
@@ -290,7 +290,7 @@ We define the availability specifier function $\newavailabilityspecifier$, which
   \where u &= \mathcal{M}_B(
     [\wideparen{\mathbf{x}} \mid \mathbf{x} \orderedin \transpose[\mathbf{b}^\clubsuit, \mathbf{s}^\clubsuit]]
   )\\
-  \also \mathbf{b}^\clubsuit &= \blake^\#(\mathcal{C}_{\ceil{\nicefrac{|\mathbf{b}|}{\mathsf{W}_E}}}(\mathcal{P}_{\mathsf{W}_E}(\mathbf{b})))\\
+  \also \mathbf{b}^\clubsuit &= \blake^\#(\mathcal{C}_{\ceil{\nicefrac{\len{\mathbf{b}}}{\mathsf{W}_E}}}(\mathcal{P}_{\mathsf{W}_E}(\mathbf{b})))\\
   \also \mathbf{s}^\clubsuit &= \mathcal{M}_B^\#(\transpose\mathcal{C}^\#_6(\mathbf{s} \concat \pagedproofs(\mathbf{s})))
 \end{align*}
 

@@ -20,7 +20,7 @@ The state of the reporting and availability portion of the protocol is largely c
       \isa{w}{\workreport} ,
       \isa{t}{\timeslot}
     }}
-  }_\mathsf{C}
+  }_\corecount
 \end{equation}
 
 As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\rho'$) are held under the same constraints as the prior value.
@@ -53,10 +53,10 @@ We limit the sum of the number of items in the segment-root lookup dictionary an
 
 A \emph{refinement context}, denoted by the set $\mathbb{X}$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $a$ along with its associated posterior state-root $s$ and posterior \textsc{Beefy} root $b$; and the \emph{lookup-anchor}, header hash $l$ and of timeslot $t$. Finally, it identifies the hash of any prerequisite work-packages $\mathbf{p}$. Formally:
 \begin{equation}
-  \mathbb{X} \equiv \ltuple\,\begin{alignedat}{5}
+  \mathbb{X} \equiv \tuple{\,\begin{alignedat}{5}
     \isa{a&}{\hash}\,,\; \isa{&s&}{\hash}\,,\; \isa{&b&}{\hash}\,,\;\\
     \isa{l&}{\hash}\,,\; \isa{&t&}{\timeslot}\,,\; \isa{&\mathbf{p}&}{\{\hash\}}
-  \end{alignedat}\rtuple
+  \end{alignedat}}
 \end{equation}
 
 \subsubsection{Availability}
@@ -129,18 +129,18 @@ We first define $\rho^\ddagger$, the intermediate state to be utilized next in s
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
 \begin{align}
-  \xtassurances \in \lseq\ltuple\isa{a}{\hash}\ts\isa{f}{\mathbb{B}_\mathsf{C}}\ts\isa{v}{\valindex}\ts\isa{s}{\mathbb{E}}\rtuple\rseq_\mathsf{:V}
+  \xtassurances \in \seq{\tuple{\isa{a}{\hash},\,\isa{f}{\mathbb{B}_\corecount},\,\isa{v}{\valindex},\,\isa{s}{\mathbb{E}}}}_\mathsf{:\valcount}
 \end{align}
 
 The assurances must all be anchored on the parent and ordered by validator index:
 \begin{align}
   \forall a &\in \xtassurances : a_a = \H_\¬parent \\
-  \forall i &\in \{ 1\dots|\xtassurances| \} : \xtassurances[i - 1]_v < \xtassurances[i]_v
+  \forall i &\in \{ 1\dots\len{\xtassurances} \} : \xtassurances[i - 1]_v < \xtassurances[i]_v
 \end{align}
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\H_\¬parent$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \xtassurances : a_s \in \sig{\kappa[a_v]_e}{\mathsf{X}_A\frown \blake(\se(\H_\¬parent, a_f))} \\
+  &\forall a \in \xtassurances : a_s \in \sig{\activeset[a_v]_e}{\mathsf{X}_A\frown \blake(\se(\H_\¬parent, a_f))} \\
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
@@ -153,7 +153,7 @@ A bit may only be set if the corresponding core has a report pending availabilit
 \subsubsection{Available Reports}
 A work-report is said to become \emph{available} if and only if there are a clear \nicefrac{2}{3} super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\mathbf{W}$ as:
 \begin{align}\label{eq:availableworkreports}
-  \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \coreindex,\;\sum_{a \in \xtassurances}\!a_f[c]\,>\,\nicefrac{2}{3}\,\mathsf{V}\right]
+  \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \coreindex,\;\sum_{a \in \xtassurances}\!a_f[c]\,>\,\nicefrac{2}{3}\,\valcount\right]
 \end{align}
 
 % TODO: Rename $\mathbf{W}$ to \mathbf{V} or whatever and `\mathbf{w}` becomes `\mathbf{R}` and `\mathbf{R}` becomes `\mathbf{G}`. `\mathbf{G}` would become something else.
@@ -178,18 +178,18 @@ This value is utilized in the definition of both $\accountspost$ and $\rho^\ddag
 
 \subsection{Guarantor Assignments}\label{sec:coresandvalidators}
 
-Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\mathsf{V} = 1,023$ validators and $\mathsf{C} = 341$ cores, since $\nicefrac{\mathsf{V}}{\mathsf{C}} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\mathbf{G}$:
+Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\valcount = 1,023$ validators and $\corecount = 341$ cores, since $\nicefrac{\valcount}{\corecount} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\mathbf{G}$:
 \begin{equation}
-  \mathbf{G} \in (\seq{\coreindex}_{\valindex}, \seq{\mathbb{H}_K}_{\valindex})
+  \mathbf{G} \in \tuple{\seq{\coreindex}_\valcount, \seq{\edkey}_\valcount}
 \end{equation}
 
-We determine the core to which any given validator is assigned through a shuffle using epochal entropy and a periodic rotation to help guard the security and liveness of the network. We use $\eta_2$ for the epochal entropy rather than $\eta_1$ to avoid the possibility of fork-magnification where uncertainty about chain state at the end of an epoch could give rise to two established forks before it naturally resolves.
+We determine the core to which any given validator is assigned through a shuffle using epochal entropy and a periodic rotation to help guard the security and liveness of the network. We use $\entropy_2$ for the epochal entropy rather than $\entropy_1$ to avoid the possibility of fork-magnification where uncertainty about chain state at the end of an epoch could give rise to two established forks before it naturally resolves.
 
 We define the permute function $P$, the rotation function $R$ and finally the guarantor assignments  $\mathbf{G}$ as follows:
 \begin{align}
-  R(\mathbf{c}, n) &\equiv [(x + n) \bmod \mathsf{C} \mid x \orderedin \mathbf{c}]\\
-  P(e, t) &\equiv R\left(\mathcal{F}\left(\left[\ffrac{\mathsf{C}\cdot i}{\mathsf{V}} \,\middle\mid\, i \orderedin \valindex\right], e\right), \ffrac{t \bmod \mathsf{E}}{\mathsf{R}}\right)\\
-  \mathbf{G} &\equiv (P(\eta_2', \tau'), \Phi(\kappa'))
+  R(\mathbf{c}, n) &\equiv [(x + n) \bmod \corecount \mid x \orderedin \mathbf{c}]\\
+  P(e, t) &\equiv R\left(\mathcal{F}\left(\left[\ffrac{\corecount \cdot i}{\valcount} \,\middle\mid\, i \orderedin \valindex\right], e\right), \ffrac{t \bmod \mathsf{E}}{\mathsf{R}}\right)\\
+  \mathbf{G} &\equiv (P(\entropy_2', \thetime'), \Phi(\activeset'))
 \end{align}
 
 We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as it would have been under the previous rotation:
@@ -197,10 +197,10 @@ We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as 
   \label{eq:priorassignments}
   \begin{aligned}
     \using (e, \mathbf{k}) &= \begin{cases}
-      (\eta'_2, \kappa') &\when \displaystyle\ffrac{\tau' - \mathsf{R}}{\mathsf{E}} = \ffrac{\tau'}{\mathsf{E}}\\
-      (\eta'_3, \lambda') &\otherwise
+      (\entropy'_2, \activeset') &\when \displaystyle\ffrac{\thetime' - \mathsf{R}}{\mathsf{E}} = \ffrac{\thetime'}{\mathsf{E}}\\
+      (\entropy'_3, \previousset') &\otherwise
     \end{cases} \\
-    \mathbf{G}^* &\equiv (P(e, \tau' - \mathsf{R}), \Phi(\mathbf{k}))
+    \mathbf{G}^* &\equiv (P(e, \thetime' - \mathsf{R}), \Phi(\mathbf{k}))
   \end{aligned}
 \end{equation}
 
@@ -225,7 +225,7 @@ We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emp
     \isa{\xg¬workreport}{\workreport},\,
     \isa{\xg¬timeslot}{\timeslot},\,
     \isa{\xg¬credential}{\seq{\tuple{\valindex, \mathbb{E}}}_{2:3}}
-  }}_{:\mathsf{C}} \\
+  }}_{:\corecount} \\
   \xtguarantees &= \orderby{(g_\xg¬workreport)_\wr¬core}{g \in \xtguarantees}
 \end{align}
 
@@ -243,11 +243,11 @@ The signature must be one whose public key is that of the validator identified i
     \end{aligned}
       : \left\{\,\begin{aligned}
         &s \in \sig{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\frown\blake(w)}\\
-        &\mathbf{c}\sub{v} = w_\wr¬core \wedge \mathsf{R}(\floor{\nicefrac{\tau'}{\mathsf{R}}} - 1) \le t \le \tau'\\
+        &\mathbf{c}\sub{v} = w_\wr¬core \wedge \mathsf{R}(\floor{\nicefrac{\thetime'}{\mathsf{R}}} - 1) \le t \le \thetime'\\
       \end{aligned}\right.\\
       &k \in \mathbf{R} \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists (v, s) \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
       &\quad\where (\mathbf{c}, \mathbf{k}) = \begin{cases}
-        \mathbf{G} &\when \displaystyle \ffrac{\tau'}{\mathsf{R}} = \ffrac{t}{\mathsf{R}} \\
+        \mathbf{G} &\when \displaystyle \ffrac{\thetime'}{\mathsf{R}} = \ffrac{t}{\mathsf{R}} \\
         \mathbf{G}^* &\otherwise
       \end{cases}
   \end{aligned}\\
@@ -295,7 +295,7 @@ For convenience, we define two equivalences $\mathbf{x}$ and $\mathbf{p}$ to be,
 
 There must be no duplicate work-package hashes (\ie two work-reports of the same package). Therefore, we require the cardinality of $\mathbf{p}$ to be the length of the work-report sequence $\mathbf{w}$:
 \begin{equation}
-  |\mathbf{p}| = |\mathbf{w}|
+  \len{\mathbf{p}} = \len{\mathbf{w}}
 \end{equation}
 
 We require that the anchor block be within the last $\mathsf{H}$ blocks and that its details be correct by ensuring that it appears within our most recent blocks $\recenthistory^\dagger$:
@@ -351,10 +351,10 @@ Finally, we require that all work-digests within the extrinsic predicted the cor
 
 \subsection{Transitioning for Reports}
 
-We define $\rho'$ as being equivalent to $\rho^\ddagger$, except where the extrinsic replaced an entry. In the case an entry is replaced, the new value includes the present time $\tau'$ allowing for the value to be replaced without respect to its availability once sufficient time has elapsed (see equation \ref{eq:reportcoresareunusedortimedout}).
+We define $\rho'$ as being equivalent to $\rho^\ddagger$, except where the extrinsic replaced an entry. In the case an entry is replaced, the new value includes the present time $\thetime'$ allowing for the value to be replaced without respect to its availability once sufficient time has elapsed (see equation \ref{eq:reportcoresareunusedortimedout}).
 \begin{equation}
     \forall c \in \coreindex : \rho'[c] \equiv \begin{cases}
-      \tup{w\ts\is{t}{\tau'}} &\when \exists \tup{c, w, a} \in \xtguarantees \\
+      \tup{w,\,\is{t}{\thetime'}} &\when \exists \tup{c,\,w,\,a} \in \xtguarantees \\
       \rho^\ddagger[c] &\otherwise
     \end{cases}
 \end{equation}

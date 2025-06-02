@@ -4,7 +4,7 @@
 
 \subsection{Basic Definition}
 \newcommand*{\instr}[1]{\text{{\small \texttt{#1}}}}
-\newcommand*{\regs}{\seq{\N_R}_{13}}
+\newcommand*{\regs}{\seq{\pvmreg}_{13}}
 \newcommand*{\reg}{{\registers}}
 \newcommand*{\mem}{{\memory}}
 \newcommand*{\memr}{\mem^{\circlearrowleft}}
@@ -48,7 +48,7 @@
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
   \Psi&\colon \left\{\begin{aligned}
-    (\blob, \N_R, \gas, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
+    (\blob, \pvmreg, \gas, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \pvmreg, \pvmreg, \Z_G, \regs, \ram)\\
     (\mathbf{p}, \imath, \gascounter, \registers, \mem) &\mapsto \begin{cases}
       \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
       (\oog, \imath', \gascounter', \registers', \mem') &\when \gascounter' < 0\\
@@ -61,15 +61,15 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
     \end{cases}
   \end{aligned}\right.\\
   \deblob&\colon\left\{\begin{aligned}
-    \blob &\to \tuple{\blob, \mathbb{B}, \seq{\N_R}} \cup \error \\
+    \blob &\to \tuple{\blob, \mathbb{B}, \seq{\pvmreg}} \cup \error \\
     \mathbf{p} &\mapsto \begin{cases}
-      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \se(|\mathbf{j}|) \frown \se_1(z) \frown \se(|\mathbf{c}|) \frown \se_z(\mathbf{j}) \frown \se(\mathbf{c}) \frown \se(\mathbf{k})\,,\ |\mathbf{k}| = |\mathbf{c}| \\
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \se(\len{\mathbf{j}}) \frown \se_1(z) \frown \se(\len{\mathbf{c}}) \frown \se_z(\mathbf{j}) \frown \se(\mathbf{c}) \frown \se(\mathbf{k})\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
       \error &\otherwise
     \end{cases} \\
   \end{aligned}\right.
 \end{align}
 
-The \textsc{pvm} exit reason $\varepsilon \in \{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R$ may be one of regular halt $\halt$, panic $\panic$ or out-of-gas $\oog$, or alternatively a host-call $\host$, in which the host-call identifier is associated, or page-fault $\fault$ in which case the address into \textsc{ram} is associated.
+The \textsc{pvm} exit reason $\varepsilon \in \{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \pvmreg$ may be one of regular halt $\halt$, panic $\panic$ or out-of-gas $\oog$, or alternatively a host-call $\host$, in which the host-call identifier is associated, or page-fault $\fault$ in which case the address into \textsc{ram} is associated.
 
 \subsection{Instructions, Opcodes and Skip-distance}
 
@@ -89,7 +89,7 @@ We define the Skip function $\Fskip$ which provides the number of octets, minus 
   \end{aligned}\right.
 \end{equation}
 
-The Skip function appends $\mathbf{k}$ with a sequence of set bits in order to ensure a well-defined result for the final instruction $\Fskip(|\mathbf{c}| - 1)$.
+The Skip function appends $\mathbf{k}$ with a sequence of set bits in order to ensure a well-defined result for the final instruction $\Fskip(\len{\mathbf{c}} - 1)$.
 
 Given some instruction-index $i$, its opcode is readily expressed as $\mathbf{c}_i$ and the distance in octets to move forward to the next instruction is $1 + \Fskip(i)$. However, each instruction's ``length'' (defined as the number of contiguous octets starting with the opcode which are needed to fully define the instruction's semantics) is left implicit though limited to being at most 16.
 
@@ -128,7 +128,7 @@ Instructions of the following opcodes are considered basic-block termination ins
 
 We denote this set, as opcode indices rather than names, as $T$, which is a subset of all valid opcode indices $U$. We define the instruction opcode indices denoting the beginning of basic-blocks as $\basicblocks$:
 \begin{equation}
-  \basicblocks \equiv \left(\{0\} \cup \{n + 1 + \Fskip(n) \mid n \in \N_{|\mathbf{c}|} \wedge \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in T\}\right) \cap \{n \mid \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in U\}
+  \basicblocks \equiv \left(\{0\} \cup \{n + 1 + \Fskip(n) \mid n \in \N_{\len{\mathbf{c}}} \wedge \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in T\}\right) \cap \{n \mid \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in U\}
 \end{equation}
 
 \subsection{Single-Step State Transition}
@@ -136,7 +136,7 @@ We denote this set, as opcode indices rather than names, as $T$, which is a subs
 We must now define the single-step \textsc{pvm} state-transition function $\Psi_1$:
 \begin{equation}
   \Psi_1\colon \left\{\begin{aligned}
-    (\blob, \mathbb{B}, \seq{\N_R}, \N_R, \gas, \regs, \ram) &\to (\{\panic, \halt, \continue \} \cup \{\fault, \host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
+    (\blob, \mathbb{B}, \seq{\pvmreg}, \pvmreg, \gas, \regs, \ram) &\to (\{\panic, \halt, \continue \} \cup \{\fault, \host\} \times \pvmreg, \pvmreg, \Z_G, \regs, \ram)\\
     (\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\mapsto (\varepsilon, \imath', \gascounter', \registers', \mem')
   \end{aligned}\right.
 \end{equation}
@@ -205,7 +205,7 @@ We define signed/unsigned transitions for various octet widths:
 Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values. We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
 \begin{align}\label{eq:signedextension}
   \sext_{n \in \{0, 1, 2, 3, 4, 8\}}\colon\left\{\begin{aligned}
-    \N_{2^{8n}} &\to \N_R\\
+    \N_{2^{8n}} &\to \pvmreg\\
     x &\mapsto x + \ffrac{x}{2^{8n-1}}(2^{64}-2^{8n})
   \end{aligned}\right.
 \end{align}
@@ -225,7 +225,7 @@ As with other irregular alterations to the program counter, target code index mu
 \begin{equation}\label{eq:jumptablealignment}
   \token{djump}(a) \implies (\varepsilon, \imath') = \begin{cases}
     (\halt, \imath) &\when a = 2^{32} - 2^{16}\\
-    (\panic, \imath) &\otherwhen a = 0 \vee a > |\mathbf{j}|\cdot\mathsf{Z}_A \vee a \bmod \mathsf{Z}_A \ne 0 \vee \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1} \not\in \basicblocks \\
+    (\panic, \imath) &\otherwhen a = 0 \vee a > \len{\mathbf{j}}\cdot\mathsf{Z}_A \vee a \bmod \mathsf{Z}_A \ne 0 \vee \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1} \not\in \basicblocks \\
     (\continue, \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1}) &\otherwise
   \end{cases}
 \end{equation}
@@ -450,7 +450,7 @@ We assume the skip length $\ell$ is well-defined:
   \endhead
   100&\token{move\_reg}&1&$\reg'_D = \reg_A$\\ \mrule
   101&\token{sbrk}&1&$\begin{aligned}
-    \reg'_D \equiv &\min(x \in \N_R): \\
+    \reg'_D \equiv &\min(x \in \pvmreg): \\
     &x \ge h\\
     &\N_{x\dots+\reg_A} \not\subseteq \mathbb{V}_{\memory}\\
     &\N_{x\dots+\reg_A} \subseteq \mathbb{V}^*_{\memory'}
@@ -469,7 +469,7 @@ We assume the skip length $\ell$ is well-defined:
 \bottomrule
 \end{longtable}
 
-Note, the term $h$ above refers to the beginning of the heap, the second major section of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_Z + \rnq{|\mathbf{o}|}$. If $\token{sbrk}$ instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
+Note, the term $h$ above refers to the beginning of the heap, the second major section of memory as defined in equation \ref{eq:memlayout} as $2\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}}$. If $\token{sbrk}$ instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Immediate}
 \begin{equation}
@@ -731,14 +731,14 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
 \begin{align}
   &\Psi_H\colon \left\{\begin{aligned}
     \tuple{\begin{aligned}
-      &\blob, \N_R, \gas, \regs,\\&\ram, \Omega\langle X \rangle, X
+      &\blob, \pvmreg, \gas, \regs,\\&\ram, \Omega\langle X \rangle, X
     \end{aligned}
     }
     &\to
-    \tuple{\{\panic, \oog, \halt\} \cup \{\fault\} \times \N_R, \N_R, \Z_G, \regs, \ram, X}\\
+    \tuple{\{\panic, \oog, \halt\} \cup \{\fault\} \times \pvmreg, \pvmreg, \Z_G, \regs, \ram, X}\\
     (\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}) &\mapsto \begin{cases}
       \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem):} \\[8pt]
-      (\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \varepsilon' \in \{ \halt, \panic, \oog \} \cup \{\fault\} \times \N_R \\[4pt]
+      (\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \varepsilon' \in \{ \halt, \panic, \oog \} \cup \{\fault\} \times \pvmreg \\[4pt]
       (\fault \times a, \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \bigwedge\left\{\;\begin{aligned}
         &\varepsilon' = \host \times h\\[2pt]
         &\fault \times a = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
@@ -755,7 +755,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
       \end{aligned}\right.\\[8pt]
     \end{cases} \\
     \end{aligned}\right.\!\!\!\!\!\!\!\!\\
-    &\Omega\langle X \rangle \equiv (\N, \gas, \regs, \ram, X) \to \tuple{\{\continue, \halt, \panic, \oog\}, \gas, \regs, \ram, X} \cup \{\fault\} \times \N_R
+    &\Omega\langle X \rangle \equiv (\N, \gas, \regs, \ram, X) \to \tuple{\{\continue, \halt, \panic, \oog\}, \gas, \regs, \ram, X} \cup \{\fault\} \times \pvmreg
 \end{align}
 
 On exit, the instruction counter $\imath'$ references the instruction \emph{which caused the exit}. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed. This is sensible when the instruction is one which necessarily needs re-executing such as in the case of an out-of-gas or page fault reason.
@@ -779,30 +779,30 @@ Y\colon\left\{\begin{aligned}
 \end{equation}
 With conditions:
 \begin{align}\label{eq:conditions}
-  &\using \mathcal{E}_3(|\mathbf{o}|) \concat \mathcal{E}_3(|\mathbf{w}|) \concat \mathcal{E}_2(z) \concat \mathcal{E}_3(s) \concat \mathbf{o} \concat \mathbf{w} \concat \mathcal{E}_4(|\mathbf{c}|) \concat \mathbf{c} = \mathbf{p}\\
+  &\using \mathcal{E}_3(\len{\mathbf{o}}) \concat \mathcal{E}_3(\len{\mathbf{w}}) \concat \mathcal{E}_2(z) \concat \mathcal{E}_3(s) \concat \mathbf{o} \concat \mathbf{w} \concat \mathcal{E}_4(\len{\mathbf{c}}) \concat \mathbf{c} = \mathbf{p}\\
   &\mathsf{Z}_Z = 2^{16}\ ,\quad\mathsf{Z}_I = 2^{24}\\
   &\using \rnp{x \in \N} \equiv \mathsf{Z}_P\left\lceil \frac{x}{\mathsf{Z}_P} \right\rceil\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_Z\left\lceil \frac{x}{\mathsf{Z}_Z} \right\rceil\\
-  &5\mathsf{Z}_Z + \rnq{|\mathbf{o}|} + \rnq{|\mathbf{w}| + z\mathsf{Z}_P} + \rnq{s} + \mathsf{Z}_I \leq 2^{32}
+  &5\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}} + \rnq{\len{\mathbf{w}} + z\mathsf{Z}_P} + \rnq{s} + \mathsf{Z}_I \leq 2^{32}
 \end{align}
 Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\mathbf{c}$ as above and $\mem$, $\registers$ such that:
 \begin{equation}\label{eq:memlayout}
   \forall i \in \N_{2^{32}} : ((\mem_\mathbf{V})_i, (\mem_\mathbf{A})_{\floor{\nicefrac{i}{\mathsf{Z}_P}}}) = \left\{\begin{alignedat}{5}
-    &\tup{\is{\mathbf{V}}{\mathbf{o}_{i - \mathsf{Z}_Z}}\ts\is{\mathbf{A}}{R}} &&\ \when
+    &\tup{\is{\mathbf{V}}{\mathbf{o}_{i - \mathsf{Z}_Z}},\,\is{\mathbf{A}}{R}} &&\ \when
         \mathsf{Z}_Z
             &\ \leq i < \ &&
-                \mathsf{Z}_Z + |\mathbf{o}|\\
+                \mathsf{Z}_Z + \len{\mathbf{o}}\\
     &(0, R) &&\ \when
-        \mathsf{Z}_Z + |\mathbf{o}|
+        \mathsf{Z}_Z + \len{\mathbf{o}}
             &\ \leq i < \ &&
-                \mathsf{Z}_Z + \rnp{|\mathbf{o}|} \\
-    &(\mathbf{w}_{i - (2\mathsf{Z}_Z + \rnq{|\mathbf{o}|})}, W) &&\ \when
-        2\mathsf{Z}_Z + \rnq{|\mathbf{o}|}
+                \mathsf{Z}_Z + \rnp{\len{\mathbf{o}}} \\
+    &(\mathbf{w}_{i - (2\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}})}, W) &&\ \when
+        2\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}}
             &\ \leq i < \ &&
-                2\mathsf{Z}_Z + \rnq{|\mathbf{o}|} + |\mathbf{w}|\\
+                2\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}} + \len{\mathbf{w}}\\
     &(0, W) &&\ \when
-        2\mathsf{Z}_Z + \rnq{|\mathbf{o}|} + |\mathbf{w}|
+        2\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}} + \len{\mathbf{w}}
             &\ \leq i < \ &&
-                2\mathsf{Z}_Z + \rnq{|\mathbf{o}|} + \rnp{|\mathbf{w}|} + z\mathsf{Z}_P\\
+                2\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}} + \rnp{\len{\mathbf{w}}} + z\mathsf{Z}_P\\
     &(0, W) &&\ \when
         2^{32} - 2\mathsf{Z}_Z - \mathsf{Z}_I - \rnp{s}
             &\ \leq i < \ &&
@@ -810,11 +810,11 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
     &(\mathbf{a}_{i - (2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I)}, R) &&\ \when
         2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I
             &\ \leq i < \ &&
-                2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + |\mathbf{a}|\\
+                2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + \len{\mathbf{a}}\\
     &(0, R) &&\ \when
-        2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + |\mathbf{a}|
+        2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + \len{\mathbf{a}}
             &\ \leq i < \ &&
-                2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + \rnp{|\mathbf{a}|}\\
+                2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + \rnp{\len{\mathbf{a}}}\\
     &(0, \none) &&\otherwise&&&
   \end{alignedat}\right.\\
 \end{equation}
@@ -823,7 +823,7 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
       2^{32} - 2^{16} &\when i = 0\\
       2^{32} - 2\mathsf{Z}_Z - \mathsf{Z}_I &\when i = 1\\
       2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I &\when i = 7\\
-      |\mathbf{a}|&\when i = 8\\
+      \len{\mathbf{a}}&\when i = 8\\
       0 &\otherwise
     \end{cases}
 \end{equation}
@@ -834,7 +834,7 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
 \begin{equation}
   \Psi_M\colon \left\{\begin{aligned}
     \left(
-      \blob, \N_R, \gas, \blob_{:\mathsf{Z}_I}, \Omega\langle X \rangle, X
+      \blob, \pvmreg, \gas, \blob_{:\mathsf{Z}_I}, \Omega\langle X \rangle, X
     \right) &\to (\gas, \blob \cup \{\panic, \oog\}, X)\\
     (\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}) &\mapsto \begin{cases}
       (0, \panic, \mathbf{x}) &\when Y(\mathbf{p}, \mathbf{a}) = \none\\

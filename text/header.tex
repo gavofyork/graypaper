@@ -44,18 +44,18 @@ The parent state root $\H_\¬priorstateroot$ is the root of a Merkle trie compos
 
 We assume the state-Merklization function $\merklizestate$ is capable of transforming our state $\thestate$ into a 32-octet commitment. See appendix \ref{sec:statemerklization} for a full definition of these two functions.
 
-All blocks have an associated public key to identify the author of the block. We identify this as an index into the posterior current validator set $\kappa'$. We denote the Bandersnatch key of the author as $\H_\¬authorbanderkey$ though note that this is merely an equivalence, and is not serialized as part of the header.
+All blocks have an associated public key to identify the author of the block. We identify this as an index into the posterior current validator set $\activeset'$. We denote the Bandersnatch key of the author as $\H_\¬authorbskey$ though note that this is merely an equivalence, and is not serialized as part of the header.
 \begin{equation}
-  \H_\¬authorindex \in \valindex \,,\quad \H_\¬authorbanderkey \equiv \kappa'[\H_\¬authorindex]_b
+  \H_\¬authorindex \in \valindex \,,\quad \H_\¬authorbskey \equiv \activeset'[\H_\¬authorindex]_\vk¬bs
 \end{equation}
 
 \subsection{The Markers}\label{sec:markers}
 
 If not $\none$, then the epoch marker specifies key and entropy relevant to the following epoch in case the ticket contest does not complete adequately (a very much unexpected eventuality). Similarly, the winning-tickets marker, if not $\none$, provides the series of 600 slot sealing ``tickets'' for the next epoch (see the next section). Finally, the offenders marker is the sequence of Ed25519 keys of newly misbehaving validators, to be fully explained in section \ref{sec:disputes}. Formally:
 \begin{equation}
-  \H_\¬epochmark \in \optional{\tuple{\hash\ts\hash\ts\lseq\tup{\hash_B, \hash_E}\rseq_{\mathsf{V}}}}\,,\quad
+  \H_\¬epochmark \in \optional{\tuple{\hash, \hash, \seq{\tuple{\bskey, \edkey}}_{\valcount}}}\,,\quad
   \H_\¬winnersmark \in \optional{\seq{\mathbb{C}}_{\mathsf{E}}}\,,\quad
-  \H_\¬offendersmark \in \seq{\hash_E}
+  \H_\¬offendersmark \in \seq{\edkey}
 \end{equation}
 
 The terms are fully defined in sections \ref{sec:epochmarker} and \ref{sec:disputes}.

@@ -16,8 +16,8 @@ The validator statistics are made on a per-epoch basis and we retain one record 
     \isa{d}{\N}\,,
     \isa{g}{\N}\,,
     \isa{a}{\N}
-%    \isa{\mathbf{u}}{\seq{\N}_\mathsf{V}}
-  }}_\mathsf{V}^2\!\!\!\!\!\!\!\!\!\!
+%    \isa{\mathbf{u}}{\seq{\N}_\valcount}
+  }}_\valcount^2\!\!\!\!\!\!\!\!\!\!
 \end{align}
 
 The six validator statistics we track are:
@@ -35,7 +35,7 @@ The six validator statistics we track are:
 
 The objective statistics are updated in line with their description, formally:
 \begin{align}
-    \using e =\; &\ffrac{\tau}{\mathsf{E}} \ ,\quad e' = \ffrac{\tau'}{\mathsf{E}}\\
+    \using e =\; &\ffrac{\thetime}{\mathsf{E}} \ ,\quad e' = \ffrac{\thetime'}{\mathsf{E}}\\
     \!(\mathbf{a}, \pi'_L) \equiv\;&\begin{cases}
         (\pi_V, \pi_L) &\when e' = e \\
         (\sq{\tuple{0, \dots, [0, \dots]}, \dots}, \pi_V)\!\!\!\! &\otherwise
@@ -43,18 +43,18 @@ The objective statistics are updated in line with their description, formally:
     \forall v \in \valindex :&\; \left\{\begin{aligned}
         \pi'_V[v]_b &\equiv \mathbf{a}[v]_b + (v = \H_\¬authorindex)\\
         \pi'_V[v]_t &\equiv \mathbf{a}[v]_t + \begin{cases}
-            |\xttickets| &\when v = \H_\¬authorindex \\
+            \len{\xttickets} &\when v = \H_\¬authorindex \\
             0 &\otherwise
         \end{cases}\\
         \pi'_V[v]_p &\equiv \mathbf{a}[v]_p + \begin{cases}
-            |\xtpreimages| &\when v = \H_\¬authorindex \\
+            \len{\xtpreimages} &\when v = \H_\¬authorindex \\
             0 &\otherwise
         \end{cases}\\
         \pi'_V[v]_d &\equiv \mathbf{a}[v]_d + \begin{cases}
             \sum_{d \in \xtpreimages}|d| &\when v = \H_\¬authorindex \\
             0 &\otherwise
         \end{cases}\\
-        \pi'_V[v]_g &\equiv \mathbf{a}[v]_g + (\kappa'_v \in \mathbf{R})\\
+        \pi'_V[v]_g &\equiv \mathbf{a}[v]_g + (\activeset'_v \in \mathbf{R})\\
         \pi'_V[v]_a &\equiv \mathbf{a}[v]_a + (\exists a \in \xtassurances : a_v = v)
     \end{aligned}\right.\!\!\!\!\!
 \end{align}
@@ -76,7 +76,7 @@ The other two components of statistics are the core and service activity statist
       \isa{&b&}{\N}\,,\;  % bundle_size: u32
       \isa{&u&}{\gas}% gas used
     \end{alignedat}
-  }}_\mathsf{C}\\
+  }}_\corecount\\
   \pi_S &\in \dict{\N_S}{\tuple{
     \begin{alignedat}{3}
       \isa{p&}{(\N, \N)}\,,\;  % provided_count: u16; provided_size: u32
@@ -120,7 +120,7 @@ Finally, the service statistics are updated using the same intermediate values a
       \is{&z&}{R(s)_z}\,,\\
       \is{e&}{R(s)_e}\,,\;
       \is{&r&}{\span\span\tup{R(s)_n, R(s)_u}}\,,\;\\
-      \is{p&}{\span\span \textstyle \sum_{\tup{s, \mathbf{p}} \in \mathbf{E}_P} \tup{1, |\mathbf{p}|}}\,,\;\\
+      \is{p&}{\span\span \textstyle \sum_{\tup{s, \mathbf{p}} \in \mathbf{E}_P} \tup{1, \len{\mathbf{p}}}}\,,\;\\
       \is{a&}{\span\span \subifnone(\mathbf{I}[s], \tup{0, 0})}\,,\; \ \ \\
       \is{t&}{\span\span \subifnone(\mathbf{X}[s], \tup{0, 0})} \quad\\
     \end{alignedat}

@@ -28,13 +28,13 @@ The \emph{disputes} state includes four items, three of which concern verdicts: 
 
 \subsection{Extrinsic}
 
-The disputes extrinsic, $\xtdisputes$, may contain one or more verdicts $\xtverdicts$ as a compilation of judgments coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\kappa$ or $\lambda$. Additionally, it may contain proofs of the misbehavior of one or more validators, either by guaranteeing a work-report found to be invalid (\emph{culprits}, $\xtculprits$), or by signing a judgment found to be contradiction to a work-report's validity (\emph{faults}, $\xtfaults$). Both are considered a kind of \emph{offense}. Formally:
+The disputes extrinsic, $\xtdisputes$, may contain one or more verdicts $\xtverdicts$ as a compilation of judgments coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\activeset$ or $\previousset$. Additionally, it may contain proofs of the misbehavior of one or more validators, either by guaranteeing a work-report found to be invalid (\emph{culprits}, $\xtculprits$), or by signing a judgment found to be contradiction to a work-report's validity (\emph{faults}, $\xtfaults$). Both are considered a kind of \emph{offense}. Formally:
 \begin{equation}
   \begin{aligned}
     \xtdisputes &\equiv (\xtverdicts, \xtculprits, \xtfaults) \\
-    \where \xtverdicts &\in \seq{\tup{\hash, \ffrac{\tau}{\mathsf{E}} - \N_2, \seq{\tup{\{\top, \bot\}, \N_{\mathsf{V}}, \mathbb{E}}}_{\floor{\nicefrac{2}{3}\mathsf{V}} + 1}}}\\
-    \also \xtculprits &\in \seq{\hash, \hash_E, \mathbb{E}} \,,\quad
-    \xtfaults \in \seq{\hash, \{\top,\bot\}, \hash_E, \mathbb{E}}
+    \where \xtverdicts &\in \seq{\tup{\hash, \ffrac{\thetime}{\mathsf{E}} - \N_2, \seq{\tup{\{\top, \bot\}, \N_{\valcount}, \mathbb{E}}}_{\floor{\nicefrac{2}{3}\valcount} + 1}}}\\
+    \also \xtculprits &\in \seq{\hash, \edkey, \mathbb{E}} \,,\quad
+    \xtfaults \in \seq{\hash, \{\top,\bot\}, \edkey, \mathbb{E}}
   \end{aligned}
 \end{equation}
 
@@ -43,8 +43,8 @@ The signatures of all judgments must be valid in terms of one of the two allowed
   &\begin{aligned}
     &\forall (r, a, \mathbf{j}) \in \xtverdicts, \forall (v, i, s) \in \mathbf{j} : s \in \sig{\mathbf{k}[i]_e}{\mathsf{X}_v \concat r}\\
     &\quad\where \mathbf{k} = \begin{cases}
-      \kappa &\when a = \displaystyle \ffrac{\tau}{\mathsf{E}}\\
-      \lambda &\otherwise\\
+      \activeset &\when a = \displaystyle \ffrac{\thetime}{\mathsf{E}}\\
+      \previousset &\otherwise\\
     \end{cases}
   \end{aligned}\\
   &\mathsf{X}_\top \equiv \text{{\small \texttt{\$jam\_valid}}}\,,\ \mathsf{X}_\bot \equiv \text{{\small \texttt{\$jam\_invalid}}}
@@ -63,7 +63,7 @@ Offender signatures must be similarly valid and reference work-reports with judg
     &k \in \mathbf{k} \,,\\
     &s \in \sig{k}{\mathsf{X}_v \concat r}\\
   \end{aligned}\right.\\
-  \nonumber\where \mathbf{k} &= \{k_e \mid k \in \lambda \cup \kappa\} \setminus \offenders
+  \nonumber\where \mathbf{k} &= \{k_e \mid k \in \previousset \cup \activeset\} \setminus \offenders
 \end{align}
 
 Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
@@ -82,29 +82,29 @@ The judgments of all verdicts must be ordered by validator index and there may b
 
 We define $\verdicts$ to derive from the sequence of verdicts introduced in the block's extrinsic, containing only the report hash and the sum of positive judgments. We require this total to be either exactly two-thirds-plus-one, zero or one-third of the validator set indicating, respectively, that the report is good, that it's bad, or that it's wonky.\footnote{This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{cryptoeprint:2024/961} discusses the security implications in depth).} Formally:
 \begin{align}\label{eq:verdicts}
-  \verdicts &\in \seq{\tup{\hash, \{0, \floor{\nicefrac{1}{3}\mathsf{V}}, \floor{\nicefrac{2}{3}\mathsf{V}} + 1\}}} \\
+  \verdicts &\in \seq{\tup{\hash, \{0, \floor{\nicefrac{1}{3}\valcount}, \floor{\nicefrac{2}{3}\valcount} + 1\}}} \\
   \verdicts &= \sq{\tup{r, \sum_{\tup{v, i, s} \in \mathbf{j}}\!\!\!\! v}\ \middle\mid\ \tup{r, a, \mathbf{j}} \orderedin \xtverdicts}
 \end{align}
 
 There are some constraints placed on the composition of this extrinsic: any verdict containing solely valid judgments implies the same report having at least one valid entry in the faults sequence $\xtfaults$. Any verdict containing solely invalid judgments implies the same report having at least two valid entries in the culprits sequence $\xtculprits$. Formally:
 \begin{align}
-  \forall (r, \floor{\nicefrac{2}{3}\mathsf{V}} + 1) \in \verdicts &: \exists (r, \dots) \in \xtfaults \\
-  \forall (r, 0) \in \verdicts &: |\{(r, \dots) \in \xtculprits\}| \ge 2
+  \forall (r, \floor{\nicefrac{2}{3}\valcount} + 1) \in \verdicts &: \exists (r, \dots) \in \xtfaults \\
+  \forall (r, 0) \in \verdicts &: \len{\{(r, \dots) \in \xtculprits\}} \ge 2
 \end{align}
 
 We clear any work-reports which we judged as uncertain or invalid from their core:
 \begin{equation}\label{eq:removenonpositive}
   \forall c \in \coreindex : \rho^\dagger[c] = \begin{cases}
-    \none &\!\!\!\!\when \{ (\blake(\rho[c]_w), t) \in \verdicts, t < \floor{\nicefrac{2}{3}\mathsf{V}} \} \\
+    \none &\!\!\!\!\when \{ (\blake(\rho[c]_w), t) \in \verdicts, t < \floor{\nicefrac{2}{3}\valcount} \} \\
     \rho[c] &\!\!\!\!\otherwise
   \end{cases}\!\!\!\!\!\!\!
 \end{equation}
 
 The state's good-set, bad-set and wonky-set assimilate the hashes of the reports from each verdict. Finally, the punish-set accumulates the keys of any validators who have been found guilty of offending. Formally:
 \begin{align}
-  \goodset' &\equiv \goodset \cup \{r \mid \tup{r, \floor{\nicefrac{2}{3}\mathsf{V}} + 1} \in \verdicts \} \\
+  \goodset' &\equiv \goodset \cup \{r \mid \tup{r, \floor{\nicefrac{2}{3}\valcount} + 1} \in \verdicts \} \\
   \badset' &\equiv \badset \cup \{r \mid \tup{r, 0} \in \verdicts \} \\
-  \wonkyset' &\equiv \wonkyset \cup \{r \mid \tup{r, \floor{\nicefrac{1}{3}\mathsf{V}}} \in \verdicts \} \\
+  \wonkyset' &\equiv \wonkyset \cup \{r \mid \tup{r, \floor{\nicefrac{1}{3}\valcount}} \in \verdicts \} \\
   \offenders' &\equiv \offenders \cup \{ k \mid (r, k, s) \in \xtculprits \}\cup \{ k \mid (r, v, k, s) \in \xtfaults \}
 \end{align}
 

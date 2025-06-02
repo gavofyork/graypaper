@@ -34,7 +34,7 @@ Thus, \eg $\mathcal{U}(\none, 1, \none, 2) = 1$ and $\mathcal{U}(\none, \none) =
 
 \subsection{Sets}\label{sec:sets}
 
-Given some set $\mathbf{s}$, its power set and cardinality are denoted as the usual $\powset{\mathbf{s}}$ and $|\mathbf{s}|$. When forming a power set, we may use a numeric subscript in order to restrict the resultant expansion to a particular cardinality. \Eg $\powset[2]{\{1, 2, 3\}} = \{ \{1, 2\}, \{1, 3\}, \{2, 3\} \}$.
+Given some set $\mathbf{s}$, its power set and cardinality are denoted as the usual $\powset{\mathbf{s}}$ and $\len{\mathbf{s}}$. When forming a power set, we may use a numeric subscript in order to restrict the resultant expansion to a particular cardinality. \Eg $\powset[2]{\{1, 2, 3\}} = \{ \{1, 2\}, \{1, 3\}, \{2, 3\} \}$.
 
 Sets may be operated on with scalars, in which case the result is a set with the operation applied to each element, \eg $\{1, 2, 3\} + 3 = \{4, 5, 6\}$. Functions may also be applied to all members of a set to yield a new set, but for clarity we denote this with a $\#$ superscript, \eg $f^{\#}(\{1, 2\}) \equiv \{f(1), f(2)\}$.
 
@@ -105,15 +105,15 @@ Dictionaries may be combined through the union operator $\cup$, which priorities
 
 Tuples are groups of values where each item may belong to a different set. They are denoted with parentheses, \eg the tuple $t$ of the naturals $3$ and $5$ is denoted $t = (3, 5)$, and it exists in the set of natural pairs sometimes denoted $\N \times \N$, but denoted in the present work as $(\N, \N)$.
 
-We have frequent need to refer to a specific item within a tuple value and as such find it convenient to declare a name for each item. \Eg we may denote a tuple with two named natural components $a$ and $b$ as $T = \ltuple\isa{a}{\N}\ts\isa{b}{\N}\rtuple$. We would denote an item $t \in T$ through subscripting its name, thus for some $t = \ltup\is{a}{3}\ts\is{b}{5}\rtup$, $t_a = 3$ and $t_b = 5$.
+We have frequent need to refer to a specific item within a tuple value and as such find it convenient to declare a name for each item. \Eg we may denote a tuple with two named natural components $a$ and $b$ as $T = \tuple{\isa{a}{\N},\,\isa{b}{\N}}$. We would denote an item $t \in T$ through subscripting its name, thus for some $t = \tup{\is{a}{3},\,\is{b}{5}}$, $t_a = 3$ and $t_b = 5$.
 
 \subsection{Sequences}\label{sec:sequences}
 
 A sequence is a series of elements with particular ordering not dependent on their values. The set of sequences of elements all of which are drawn from some set $T$ is denoted $\seq{T}$, and it defines a partial mapping $\N \to T$. The set of sequences containing exactly $n$ elements each a member of the set $T$ may be denoted $\seq{T}_n$ and accordingly defines a complete mapping $\N_n \to T$. Similarly, sets of sequences of at most $n$ elements and at least $n$ elements may be denoted $\seq{T}_{:n}$ and $\seq{T}_{n:}$ respectively.
 
-Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}[i]$, or where unambiguous, $\mathbf{s}_i$. A range may be denoted using an ellipsis for example: $[0, 1, 2, 3]_{\dots2} = [0, 1]$ and $[0, 1, 2, 3]_{1\dots+2} = [1, 2]$. The length of such a sequence may be denoted $|\mathbf{s}|$.
+Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}[i]$, or where unambiguous, $\mathbf{s}_i$. A range may be denoted using an ellipsis for example: $[0, 1, 2, 3]_{\dots2} = [0, 1]$ and $[0, 1, 2, 3]_{1\dots+2} = [1, 2]$. The length of such a sequence may be denoted $\len{\mathbf{s}}$.
 
-We denote modulo subscription as $\mathbf{s}[i]^\circlearrowleft \equiv \mathbf{s}[\,i \rem |\mathbf{s}|\,]$. We denote the final element $x$ of a sequence $\mathbf{s} = \sq{..., x}$ through the function $\text{last}(\mathbf{s}) \equiv x$.
+We denote modulo subscription as $\mathbf{s}[i]^\circlearrowleft \equiv \mathbf{s}[\,i \rem \len{\mathbf{s}}\,]$. We denote the final element $x$ of a sequence $\mathbf{s} = \sq{..., x}$ through the function $\text{last}(\mathbf{s}) \equiv x$.
 
 \subsubsection{Construction}
 We may wish to define a sequence in terms of incremental subscripts of other values: $[\mathbf{x}_0, \mathbf{x}_1, \dots ]_n$ denotes a sequence of $n$ values beginning $\mathbf{x}_0$ continuing up to $\mathbf{x}_{n-1}$. Furthermore, we may also wish to define a sequence as elements each of which are a function of their index $i$; in this case we denote $[f(i) \mid i \orderedin \N_n] \equiv [f(0), f(1), \dots, f(n - 1)]$. Thus, when the ordering of elements matters we use $\orderedin$ rather than the unordered notation $\in$. The latter may also be written in short form $[f(i \orderedin \N_n)]$. This applies to any set which has an unambiguous ordering, particularly sequences, thus $[\,i^2 \mid i \orderedin [1, 2, 3]\,] = [1, 4, 9]$. Multiple sequences may be combined, thus $[\,i\cdot j \mid i \orderedin [1, 2, 3], j \orderedin [2, 3, 4]\,] = [2, 6, 12]$.
@@ -158,13 +158,13 @@ We may sometimes wish to take only the first $x$ octets of a hash, in which case
 
 \subsubsection{Signing Schemes}\label{sec:signing}
 
-$\sig{k}{m} \subset \blob_{64}$ is the set of valid Ed25519 signatures, defined by \cite{rfc8032}, made through knowledge of a secret key whose public key counterpart is $k \in \blob_{32}$ and whose message is $m$. To aid readability, we denote the set of valid public keys $\hash_E$.
+$\sig{k}{m} \subset \blob_{64}$ is the set of valid Ed25519 signatures, defined by \cite{rfc8032}, made through knowledge of a secret key whose public key counterpart is $k \in \blob_{32}$ and whose message is $m$. To aid readability, we denote the set of valid public keys $\edkey$.
 
 We use $\blob_{BLS} \subset \blob_{144}$ to denote the set of public keys for the \textsc{bls} signature scheme, described by \cite{jofc-2004-14130}, on curve \textsc{bls}\oldstylenums{12}-\oldstylenums{381} defined by \cite{bls12-381}.
 
-We denote the set of valid Bandersnatch public keys as $\hash_B$, defined in appendix \ref{sec:bandersnatch}. $\bandersig{k \in \hash_B}{x \in \blob}{m \in \blob} \subset \blob_{96}$ is the set of valid singly-contextualized signatures of utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
+We denote the set of valid Bandersnatch public keys as $\bskey$, defined in appendix \ref{sec:bandersnatch}. $\bandersig{k \in \bskey}{x \in \blob}{m \in \blob} \subset \blob_{96}$ is the set of valid singly-contextualized signatures of utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
 
-$\bandersnatch{r \in \blob_R}{x \in \blob}{m \in \blob} \subset \blob_{784}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\blob_R \subset \blob_{144}$. We denote $\mathcal{O}(\mathbf{s} \in \seq{\hash_B}) \in \blob_R$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
+$\bandersnatch{r \in \blob_R}{x \in \blob}{m \in \blob} \subset \blob_{784}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\blob_R \subset \blob_{144}$. We denote $\mathcal{O}(\mathbf{s} \in \seq{\bskey}) \in \blob_R$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
 
 Both the Bandersnatch signature and Ring\textsc{vrf} proof strictly imply that a member utilized their secret key in combination with both the context $x$ and the message $m$; the difference is that the member is identified in the former and is anonymous in the latter. Furthermore, both define a \textsc{vrf} \emph{output}, a high entropy hash influenced by $x$ but not by $m$, formally denoted $\banderout{\bandersnatch{r}{x}{m}} \subset \hash$ and $\banderout{\bandersig{k}{x}{m}} \subset \hash$.
 

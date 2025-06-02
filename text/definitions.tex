@@ -10,7 +10,7 @@
     \item[$\balance$] The set of balance values. Equivalent to $\N_{2^{64}}$. See equation \ref{eq:balance}.
     \item[$\gas$] The set of unsigned gas values. Equivalent to $\mathbb{N}_{2^{64}}$. See equation \ref{eq:gasregentry}.
     \item[$\N_L$] The set of blob length values. Equivalent to $\N_{2^{32}}$. See section \ref{sec:numbers}.
-    \item[$\N_R$] The set of register values. Equivalent to $\N_{2^{64}}$. See equation \ref{eq:gasregentry}.
+    \item[$\pvmreg$] The set of register values. Equivalent to $\N_{2^{64}}$. See equation \ref{eq:gasregentry}.
     \item[$\N_S$] The set from which service indices are drawn. Equivalent to $\N_{2^{32}}$. See section \ref{eq:serviceaccounts}.
     \item[$\timeslot$] The set of timeslot values. Equivalent to $\N_{2^{32}}$. See equation \ref{eq:time}.
   \end{description}
@@ -44,12 +44,12 @@
   \item[$\mathbb{G}$] The set of data segments, equivalent to octet sequences of length $\mathsf{W}_G$. See equation \ref{eq:segment}.
   \item[$\hash$] The set of 32-octet cryptographic values. A subset of $\blob_{32}$. $\hash$ without a subscript generally implies a hash function result. See section \ref{sec:cryptography}. \emph{NOTE: Not used as quaternions.}
   \begin{description}
-    \item[$\hash_B$] The set of Bandersnatch public keys. A subset of $\blob_{32}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
-    \item[$\hash_E$] The set of Ed25519 public keys. A subset of $\blob_{32}$. See section \ref{sec:signing}.
+    \item[$\bskey$] The set of Bandersnatch public keys. A subset of $\blob_{32}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+    \item[$\edkey$] The set of Ed25519 public keys. A subset of $\blob_{32}$. See section \ref{sec:signing}.
   \end{description}
   \item[$\workitem$] The set of work items. See equation \ref{eq:workitem}.
   \item[$\mathbb{J}$] The set of work execution errors.
-  \item[$\mathbb{K}$] The set of validator key-sets. See equation \ref{eq:validatorkeys}.
+  \item[$\valkey$] The set of validator key-sets. See equation \ref{eq:validatorkeys}.
   \item[$\mathbb{L}$] The set of work-digests.
   \item[$\mathbb{M}$] The set of \textsc{pvm} \textsc{ram} states. See equation \ref{eq:pvmmemory}.
   \item[$\operandtuple$] The accumulation operand element, corresponding to a single work-item.
@@ -201,29 +201,29 @@ Here, the prime annotation indicates posterior state. Individual components may 
     \item[$\recenthistory$] Information on the most recent blocks.
     \item[$\beefybelt$] The Merkle mountain belt for accumulating Accumulation outputs.
   \end{description}
-  \item[$\gamma$] State concerning Safrole. See equation \ref{eq:consensusstatecomposition}. %	γ
+  \item[$\safrole$] State concerning Safrole. See equation \ref{eq:consensusstatecomposition}. %	γ
   \begin{description}
-    \item[$\gamma_\mathbf{a}$] The sealing lottery ticket accumulator.
-    \item[$\gamma_\mathbf{k}$] The keys for the validators of the next epoch, equivalent to those keys which constitute $\gamma_z$.
-    \item[$\gamma_\mathbf{s}$] The sealing-key sequence of the current epoch.
-    \item[$\gamma_z$] The Bandersnatch root for the current epoch's ticket submissions.
+    \item[$\ticketaccumulator$] The sealing lottery ticket accumulator.
+    \item[$\pendingset$] The keys for the validators of the next epoch, equivalent to those keys which constitute $\epochroot$.
+    \item[$\sealtickets$] The sealing-key sequence of the current epoch.
+    \item[$\epochroot$] The Bandersnatch root for the current epoch's ticket submissions.
   \end{description}
   \item[$\accountspre$] The (prior) state of the service accounts. %	δ
   \begin{description}
     \item[$\accountspostacc$] The post-accumulation, pre-transfer intermediate state. %	δ
     \item[$\accountspostxfer$] The post-transfer, pre-preimage integration intermediate state. %	δ
   \end{description}
-  \item[$\eta$] The e$\eta$tropy accumulator and epochal ra$\eta$domness. %	η
-  \item[$\iota$] The validator keys and metadata to be drawn from next. %	ι
-  \item[$\kappa$] The validator $\kappa$eys and metadata currently active. %	κ
-  \item[$\lambda$] The validator keys and metadata which were active in the prior epoch. %	λ
+  \item[$\entropy$] The e$\entropy$tropy accumulator and epochal ra$\entropy$domness. %	η
+  \item[$\stagingset$] The validator keys and metadata to be drawn from next. %	ι
+  \item[$\activeset$] The validator $\activeset$eys and metadata currently active. %	κ
+  \item[$\previousset$] The validator keys and metadata which were active in the prior epoch. %	λ
   \item[$\rho$] The $\rho$ending reports, per core, which are being made available prior to accumulation. %	ρ
   \begin{description}
     \item[$\rho^\dagger$] The post-judgment, pre-guarantees-extrinsic intermediate state. %	δ
     \item[$\rho^\ddagger$] The post-guarantees-extrinsic, pre-assurances-extrinsic, intermediate state. %	δ
   \end{description}
   \item[$\thestate$] The $\thestate$verall state of the system. See equations \ref{eq:statetransition}, \ref{eq:statecomposition}. %	σ
-  \item[$\tau$] The most recent block's $\tau$imeslot. %	τ
+  \item[$\thetime$] The most recent block's $\thetime$imeslot. %	τ
   \item[$\varphi$] The authorization queue. %	ϕ
   \item[$\psi$] Past judgments on work-reports and validators. %	ψ
   \begin{description}
@@ -265,14 +265,14 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{B}_I = 10$] The additional minimum balance required per item of elective service state.
   \item[$\mathsf{B}_L = 1$] The additional minimum balance required per octet of elective service state.
   \item[$\mathsf{B}_S = 100$] The basic minimum balance which all services require.
-  \item[$\mathsf{C} = 341$] The total number of cores.
+  \item[$\corecount = 341$] The total number of cores.
   \item[$\mathsf{D} = 19,200$] The period in timeslots after which an unreferenced preimage may be expunged.
   \item[$\mathsf{E} = 600$] The length of an epoch in timeslots.
   \item[$\mathsf{F} = 2$] The audit bias factor, the expected number of additional validators who will audit a work-report in the following tranche for each no-show in the previous.
   \item[$\mathsf{G}_A = 10,000,000$] The gas allocated to invoke a work-report's Accumulation logic.
   \item[$\mathsf{G}_I = 50,000,000$] The gas allocated to invoke a work-package's Is-Authorized logic.
   \item[$\mathsf{G}_R = 5,000,000,000$] The gas allocated to invoke a work-package's Refine logic.
-  \item[$\mathsf{G}_T = 3,500,000,000$] The total gas allocated across for all Accumulation. Should be no smaller than $\mathsf{G}_A\cdot\mathsf{C} + \sum_{g \in \mathcal{V}(\alwaysaccers)}(g)$.
+  \item[$\mathsf{G}_T = 3,500,000,000$] The total gas allocated across for all Accumulation. Should be no smaller than $\mathsf{G}_A\cdot\corecount + \sum_{g \in \mathcal{V}(\alwaysaccers)}(g)$.
   \item[$\mathsf{H} = 8$] The size of recent history, in blocks.
   \item[$\mathsf{I} = 16$] The maximum amount of work items in a package.
   \item[$\mathsf{J} = 8$] The maximum sum of dependency items in a work-report.
@@ -285,7 +285,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{R} = 10$] The rotation period of validator-core assignments, in timeslots.
   \item[$\mathsf{T} = 128$] The maximum number of extrinsics in a work-package.
   \item[$\mathsf{U} = 5$] The period in timeslots after which reported but unavailable work may be replaced.
-  \item[$\mathsf{V} = 1023$] The total number of validators.
+  \item[$\valcount = 1023$] The total number of validators.
   \item[$\mathsf{W}_A = 64,000$] The maximum size of is-authorized code in octets.
   \item[$\mathsf{W}_B = 13,794,305$] The maximum size of an encoded work-package together with its extrinsic data and import implications, in octets.
   \item[$\mathsf{W}_C = 4,000,000$] The maximum size of service code in octets.
