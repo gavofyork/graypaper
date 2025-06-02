@@ -86,7 +86,8 @@
 \newcommand*{\orderby}[2]{\left[#1\,\middle\lwavy\,#2\right]}
 \newcommand*{\orderuniqby}[2]{\left[#1\,\middle\lWavy\,#2\right]}
 \newcommand*{\token}[1]{\text{{\small \texttt{#1}}}}
-\renewcommand*{\H}{\mathbb{H}}
+\renewcommand*{\hash}{\mathbb{H}}
+\newcommand*{\zerohash}{\hash_0}
 \newcommand*{\N}{\mathbb{N}}
 \newcommand*{\blob}{\mathbb{Y}}
 \newcommand*{\Z}{\mathbb{Z}}
@@ -119,6 +120,7 @@
 \renewcommand{\right}{\aftergroup\egroup\originalright}
 \newcommand*{\var}[1]{\left\updownarrow#1\right.\!}
 \newcommand*{\maybe}[1]{\mathord{\text{¿}}#1}
+\newcommand*{\optional}[1]{#1\bm{?}}
 \newcommand*{\se}{\mathcal{E}}
 \newcommand*{\de}{\mathcal{E}^{-1}}
 \newcommand*{\tricolon}{\!\mathrel{\vcenter{\offinterlineskip%
@@ -147,19 +149,17 @@
 \newcommand*{\transpose}{{}^\text{T}}
 \newcommand*{\joined}{\wideparen}
 \newcommand*{\ang}[1]{\langle#1\rangle}
-\renewcommand*{\blake}{\mathcal{H}}
+\newcommand*{\blake}{\mathcal{H}}
+\newcommand*{\keccak}{\mathcal{H}_K}
 \newcommand*{\sub}[1]{_{#1}}
 \newcommand*{\subb}[1]{[#1]}
 
 % GP terms
-\newcommand*{\goodset}{\psi_\mathbf{g}}
-\newcommand*{\badset}{\psi_\mathbf{b}}
-\newcommand*{\wonkyset}{\psi_\mathbf{w}}
-\newcommand*{\offenders}{\psi_\mathbf{o}}
-\newcommand*{\xttickets}{\mathbf{E}_T}
-\newcommand*{\xtdisputes}{\mathbf{E}_D}
-\newcommand*{\xtassurances}{\mathbf{E}_A}
-\newcommand*{\xtpreimages}{\mathbf{E}_P}
+\newcommand*{\timeslot}{\N_T}
+\newcommand*{\balance}{\balance}
+\newcommand*{\gas}{\N_G}
+\newcommand*{\coreindex}{\N_\mathsf{C}}
+\newcommand*{\valindex}{\N_\mathsf{V}}
 
 % TODO: Use non-prefixed items for common fields:
 \newcommand*{\¬gaslimit}{g}
@@ -174,11 +174,6 @@
 \newcommand*{\¬codehash}{h} % O/L \ot¬packagehash
 \newcommand*{\¬exportcount}{e}
 \newcommand*{\¬importcount}{i}
-
-\newcommand*{\xtguarantees}{\mathbf{E}_G}
-\newcommand*{\xg¬workreport}{w}
-\newcommand*{\xg¬timeslot}{t}
-\newcommand*{\xg¬credential}{a}
 
 \newcommand*{\workpackage}{\mathbb{P}}
 \newcommand*{\wp¬authtoken}{\mathbf{j}}
@@ -264,19 +259,60 @@
 \newcommand*{\sa¬octets}{o}
 \newcommand*{\sa¬minbalance}{f}
 
+% Blocks.
+\newcommand*{\block}{\mathbf{B}}
+\newcommand*{\theblock}{\block}
+\newcommand*{\B}{\theblock}
+
+% Extrinsics.
+\newcommand*{\extrinsic}{\mathbf{E}}
+\newcommand*{\theextrinsic}{\extrinsic}
+\newcommand*{\XT}{\theextrinsic}
+
+\newcommand*{\xttickets}{\XT_T}
+\newcommand*{\xtdisputes}{\XT_D}
+\newcommand*{\xtassurances}{\XT_A}
+\newcommand*{\xtpreimages}{\XT_P}
+\newcommand*{\xtguarantees}{\XT_G}
+
+\newcommand*{\xg¬workreport}{w}
+\newcommand*{\xg¬timeslot}{t}
+\newcommand*{\xg¬credential}{a}
+
+% Headers.
+\newcommand*{\header}{\mathbf{H}}
+\newcommand*{\theheader}{\header} % "THE header" is overloaded with "prototype header" for now.
+\newcommand*{\seunsignedheader}{\mathcal{E}_U}
+\newcommand*{\parentheader}[1]{{#1}^-}
+\newcommand*{\genesisheader}{\header^0}
+\renewcommand*{\H}{\theheader} % short-hand for \theheader, used in equations when subscripting to a field.
+% Header fields.
+\newcommand*{\¬parent}{p}
+\newcommand*{\¬priorstateroot}{r}
+\newcommand*{\¬timeslot}{t}
+\newcommand*{\¬extrinsichash}{x}
+\newcommand*{\¬epochmark}{e}
+\newcommand*{\¬winnersmark}{w}
+\newcommand*{\¬offendersmark}{o}
+\newcommand*{\¬authorindex}{i}
+\newcommand*{\¬vrfsig}{v}
+\newcommand*{\¬sealsig}{s}
+% Derived fields
+\newcommand*{\¬authorbanderkey}{a}
+
 % MISC - These need tidying.
 \newcommand*{\vk¬ed}{e}
-\newcommand*{\header}{\mathbf{H}}
-\newcommand*{\h¬timeslot}{\header_t}
 
 \newcommand*{\histlookup}{\Lambda}
-
 
 \newcommand*{\partialstate}{\mathbb{U}}
 \newcommand*{\defxfer}{\mathbb{T}}
 \newcommand*{\defxfers}{\seq{\defxfer}}
 
 \newcommand*{\thestate}{\sigma}
+\newcommand*{\genesisstate}{\sigma^0}
+\newcommand*{\merklizestate}{\mathcal{M}_\sigma}
+
 \newcommand*{\privileges}{\chi}
 \newcommand*{\manager}{\privileges_m}
 \newcommand*{\delegator}{\privileges_v}
@@ -289,11 +325,17 @@
 \newcommand*{\recenthistory}{\beta_H}
 \newcommand*{\beefybelt}{\beta_B}
 
+\newcommand*{\goodset}{\psi_\mathbf{g}}
+\newcommand*{\badset}{\psi_\mathbf{b}}
+\newcommand*{\wonkyset}{\psi_\mathbf{w}}
+\newcommand*{\offenders}{\psi_\mathbf{o}}
+
 \newcommand*{\accounts}{\delta}
 \newcommand*{\accountspre}{\accounts}
 \newcommand*{\accountspostacc}{\accounts^\dagger}
 \newcommand*{\accountspostxfer}{\accounts^\ddagger}
 \newcommand*{\accountspostpreimage}{\accounts'}
+\newcommand*{\accountspost}{\accounts'}
 
 % PVM stuff
 \newcommand*{\gascounter}{\varrho}

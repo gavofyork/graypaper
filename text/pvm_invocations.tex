@@ -39,7 +39,7 @@ Note return codes for a host-call-request exit are any non-zero value less than 
 The Is-Authorized invocation is the first and simplest of the four, being totally stateless. It provides only host-call functions for inspecting its environment and parameters. It accepts as arguments only the core on which it should be executed, $c$. Formally, it is defined as $\Psi_I$:
 \begin{align}
   \Psi_I &\colon \left\{\begin{aligned}
-    (\workpackage, \N_\mathsf{C}) &\to \tuple{\blob \cup \mathbb{J}, \N_G} \\
+    (\workpackage, \coreindex) &\to \tuple{\blob \cup \mathbb{J}, \gas} \\
     (\wpX, c) &\mapsto \begin{cases}
       \tup{\token{BAD}, 0} &\when \wpX_\mathbf{c} = \none \\
       \tup{\token{BIG}, 0} &\otherwhen |\wpX_\mathbf{c}| > \mathsf{W}_A \\
@@ -76,7 +76,7 @@ The Export host-call depends on two pieces of context; one sequence of segments 
 Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\accounts$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work-package $p$ and the index of the work item to be refined, $i$. Additionally, the authorizer trace $\mathbf{r}$ is provided together with all work items' import segments $\overline{\mathbf{i}}$ and an export segment offset $\segoff$. It results in either some error $\mathbb{J}$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   &\Psi_R \colon \left\{\begin{aligned}
-    (\N, \workpackage, \blob, \seq{\seq{\G}}, \N) &\to (\blob \cup \mathbb{J}, \seq{\G}, \N_G) \\
+    (\N, \workpackage, \blob, \seq{\seq{\G}}, \N) &\to (\blob \cup \mathbb{J}, \seq{\G}, \gas) \\
     (i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
       (\token{BAD}, [], 0) &\when w_s \not\in \keys{\accounts} \vee \histlookup(\accounts[w_s], (p_\mathbf{x})_t, w_\wi¬codehash) = \none \\
       (\token{BIG}, [], 0) &\otherwhen |\histlookup(\accounts[w_s], (p_\mathbf{x})_t, w_\wi¬codehash)| > \mathsf{W}_C \\
@@ -92,7 +92,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &F \in \Omega\ang{(\dict{\N}{\pvm}, \seq{\G})} \colon
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{gas} \\
-      \Omega_Y(\gascounter, \registers, \memory, p, \H_0, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \none, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
+      \Omega_Y(\gascounter, \registers, \memory, p, \zerohash, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \none, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
       \Omega_H(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), w_s, \accounts, (p_\mathbf{x})_t) &\when n = \mathtt{historical\_lookup}\\
       \Omega_E(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e}), \segoff) &\when n = \mathtt{export}\\
       \Omega_M(\gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{machine}\\
@@ -118,7 +118,7 @@ Formally, we define our result context to be $\mathbf{X}$, and our invocation co
     \isa{\mathbf{u}}{\partialstate},
     \isa{i}{\N_S},
     \isa{\mathbf{t}}{\seq{\mathbb{T}}},
-    \isa{y}{\H\bm{?}},
+    \isa{y}{\optional{\hash}},
     \isa{\mathbf{p}}{\{\tuple{\N_S, \blob}\}}
   }\\
   \forall \mathbf{x} \in \mathbf{X} : \mathbf{x}_\mathbf{s} &\equiv (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]
@@ -132,10 +132,10 @@ We define $\Psi_A$, the Accumulation invocation function as:
 \begin{align}
   \Psi_A& \colon\left\{\begin{aligned}
     \tuple{
-      \partialstate, \N_T, \N_S, \N_G, \seq{\operandtuple}
+      \partialstate, \timeslot, \N_S, \gas, \seq{\operandtuple}
     }
     &\to
-    \tuple{\partialstate, \defxfers, \H\bm{?}, \N_G, \seq{\tuple{\N_S, \blob}}} \\
+    \tuple{\partialstate, \defxfers, \optional{\hash}, \gas, \seq{\tuple{\N_S, \blob}}} \\
     (\mathbf{u}, t, s, g, \mathbf{o}) &\mapsto \begin{cases}
       \tup{\mathbf{u}, [], \none, 0, \sq{}} &\when \mathbf{c} = \none \vee |\mathbf{c}| > \mathsf{W}_C \\
       C(\Psi_M(\mathbf{c}, 5, g, \se(t, s, |\mathbf{o}|), F, I(\mathbf{u}, s)^2)) &\otherwise \\
@@ -152,7 +152,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
       \is{y}{\none},
       \is{\mathbf{p}}{\sq{}}
     }\\
-    &\qquad\where i = \text{check}((\de_4(\blake(\se(s, \eta'_0, \h¬timeslot))) \bmod (2^{32}-2^9)) + 2^8) \\
+    &\qquad\where i = \text{check}((\de_4(\blake(\se(s, \eta'_0, \H_\¬timeslot))) \bmod (2^{32}-2^9)) + 2^8) \\
   \end{aligned}\right.\\
   F \in \Omega\ang{(\mathbf{X}, \mathbf{X})} &\colon (n, \gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) \mapsto \begin{cases}
     \Omega_G(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
@@ -165,25 +165,25 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_A(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{assign}\\
     \Omega_D(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{designate}\\
     \Omega_C(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{checkpoint} \\
-    \Omega_N(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \h¬timeslot) &\when n = \mathtt{new} \\
+    \Omega_N(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \H_\¬timeslot) &\when n = \mathtt{new} \\
     \Omega_U(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{upgrade} \\
     \Omega_T(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{transfer} \\
-    \Omega_J(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \h¬timeslot) &\when n = \mathtt{eject} \\
+    \Omega_J(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \H_\¬timeslot) &\when n = \mathtt{eject} \\
     \Omega_Q(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{query} \\
-    \Omega_S(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \h¬timeslot) &\when n = \mathtt{solicit} \\
-    \Omega_F(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \h¬timeslot) &\when n = \mathtt{forget} \\
+    \Omega_S(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \H_\¬timeslot) &\when n = \mathtt{solicit} \\
+    \Omega_F(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \H_\¬timeslot) &\when n = \mathtt{forget} \\
     \Omega_\Taurus(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{yield} \\
     \Omega_\Aries(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y}), \mathbf{x}_s) &\when n = \mathtt{provide} \\
     (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{x}) &\otherwise\\
     \quad \where \mathbf{d} = (\mathbf{x}_\mathbf{u})_\mathbf{d}\;,\ \mathbf{s} = (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!& \\
   \end{cases} \\
   G&\colon\left\{\begin{aligned}
-    ((\{\continue, \halt, \panic, \oog\}, \N_G, \regs, \ram, \serviceaccount), (\mathbf{X}, \mathbf{X})) &\to (\{\continue, \halt, \panic, \oog\}, \N_G, \regs, \ram, (\mathbf{X}, \mathbf{X})) \\
+    ((\{\continue, \halt, \panic, \oog\}, \gas, \regs, \ram, \serviceaccount), (\mathbf{X}, \mathbf{X})) &\to (\{\continue, \halt, \panic, \oog\}, \gas, \regs, \ram, (\mathbf{X}, \mathbf{X})) \\
     ((\execst, \gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\mapsto (\execst, \gascounter, \registers, \memory, (\mathbf{x}^*, \mathbf{y})) \\
     &\qquad \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[\mathbf{x}^*_s] = \mathbf{s}
   \end{aligned}\right.\\
   C&\colon\left\{\begin{aligned}
-    (\N_G, \blob \cup \{\oog, \panic\}, (\mathbf{X}, \mathbf{X})) &\to (\partialstate, \defxfers, \H\bm{?}, \N_G, \seq{\tuple{\N_S, \blob}}) \\
+    (\gas, \blob \cup \{\oog, \panic\}, (\mathbf{X}, \mathbf{X})) &\to (\partialstate, \defxfers, \optional{\hash}, \gas, \seq{\tuple{\N_S, \blob}}) \\
     (u, \mathbf{o}, (\mathbf{x}, \mathbf{y})) &\mapsto \begin{cases}
       \tup{
         \mathbf{y}_\mathbf{u},
@@ -198,7 +198,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
         \mathbf{o},
         u,
         \mathbf{x}_\mathbf{p}
-        } & \otherwhen \mathbf{o} \in \H \\
+        } & \otherwhen \mathbf{o} \in \hash \\
       \tup{
         \mathbf{x}_\mathbf{u},
         \mathbf{x}_\mathbf{t},
@@ -212,7 +212,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
 
 The mutator $F$ governs how this context will alter for any given parameterization, and the collapse function $C$ selects one of the two dimensions of context depending on whether the virtual machine's halt was regular or exceptional.
 
-The initializer function $I$ maps some service account $\mathbf{s}$ along with its index $s$ to yield a mutator context such that no alterations to state are implied (beyond those already inherent in $\mathbf{s}$) in either exit scenario. Note that the component $a$ utilizes the random accumulator $\eta'_0$ and the block's timeslot $\h¬timeslot$ to create a deterministic sequence of identifiers which are extremely likely to be unique.
+The initializer function $I$ maps some service account $\mathbf{s}$ along with its index $s$ to yield a mutator context such that no alterations to state are implied (beyond those already inherent in $\mathbf{s}$) in either exit scenario. Note that the component $a$ utilizes the random accumulator $\eta'_0$ and the block's timeslot $\H_\¬timeslot$ to create a deterministic sequence of identifiers which are extremely likely to be unique.
 
 Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\eta'_0$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
 \begin{equation}
@@ -229,7 +229,7 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
 \begin{align}
   \Psi_T &: \begin{cases}
-    (\dict{\N_S}{\serviceaccount}, \N_T, \N_S, \seq{\mathbb{T}}) &\to \tuple{\serviceaccount, \N_G} \\
+    (\dict{\N_S}{\serviceaccount}, \timeslot, \N_S, \seq{\mathbb{T}}) &\to \tuple{\serviceaccount, \gas} \\
     (\mathbf{d}, t, s, \mathbf{t}) &\mapsto \begin{cases}
     \tup{\mathbf{s}, 0} &\when \mathbf{s}_\mathbf{c} = \none \vee |\mathbf{s}_\mathbf{c}| > \mathsf{W}_C \vee \mathbf{t} = [] \\
     \tup{\mathbf{s}', u} &\otherwise \\
@@ -262,7 +262,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
 
 We come now to defining the host functions which are utilized by the \textsc{pvm} invocations. Generally, these map some \textsc{pvm} state, including invocation context, possibly together with some additional parameters, to a new \textsc{pvm} state.
 
-The general functions are all broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory' \in \ram) = \Omega_\square(\gascounter \in \N_G, \registers \in \regs, \memory \in \ram)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+The general functions are all broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory' \in \ram) = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
 Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \serviceaccount$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
@@ -663,7 +663,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
 
 \subsection{Accumulate Functions}\label{sec:accumulatefunctions}
 
-This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\gascounter \in \N_G, \registers \in \regs, \memory \in \ram, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
 Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
@@ -727,7 +727,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using o &= \registers_7 \\
     \using \mathbf{v} &= \begin{cases}
-      \left[\memory_{o + 336i \dots+ 336} \mid i \orderedin \N_\mathsf{V}\right] &\when \mathbb{N}_{o \dots+ 336\mathsf{V}} \subseteq \mathbb{V}_{\memory} \\
+      \left[\memory_{o + 336i \dots+ 336} \mid i \orderedin \valindex\right] &\when \mathbb{N}_{o \dots+ 336\mathsf{V}} \subseteq \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{i}) &= \begin{cases}

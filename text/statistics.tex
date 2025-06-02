@@ -40,18 +40,18 @@ The objective statistics are updated in line with their description, formally:
         (\pi_V, \pi_L) &\when e' = e \\
         (\sq{\tuple{0, \dots, [0, \dots]}, \dots}, \pi_V)\!\!\!\! &\otherwise
     \end{cases}\!\!\!\!\\
-    \forall v \in \N_\mathsf{V} :&\; \left\{\begin{aligned}
-        \pi'_V[v]_b &\equiv \mathbf{a}[v]_b + (v = \mathbf{H}_i)\\
+    \forall v \in \valindex :&\; \left\{\begin{aligned}
+        \pi'_V[v]_b &\equiv \mathbf{a}[v]_b + (v = \H_\¬authorindex)\\
         \pi'_V[v]_t &\equiv \mathbf{a}[v]_t + \begin{cases}
-            |\xttickets| &\when v = \mathbf{H}_i \\
+            |\xttickets| &\when v = \H_\¬authorindex \\
             0 &\otherwise
         \end{cases}\\
         \pi'_V[v]_p &\equiv \mathbf{a}[v]_p + \begin{cases}
-            |\xtpreimages| &\when v = \mathbf{H}_i \\
+            |\xtpreimages| &\when v = \H_\¬authorindex \\
             0 &\otherwise
         \end{cases}\\
         \pi'_V[v]_d &\equiv \mathbf{a}[v]_d + \begin{cases}
-            \sum_{d \in \xtpreimages}|d| &\when v = \mathbf{H}_i \\
+            \sum_{d \in \xtpreimages}|d| &\when v = \H_\¬authorindex \\
             0 &\otherwise
         \end{cases}\\
         \pi'_V[v]_g &\equiv \mathbf{a}[v]_g + (\kappa'_v \in \mathbf{R})\\
@@ -74,26 +74,26 @@ The other two components of statistics are the core and service activity statist
       \isa{z&}{\N}\,,\;  % extrinsic_size: u32
       \isa{&x&}{\N}\,,\;  % exports: u16
       \isa{&b&}{\N}\,,\;  % bundle_size: u32
-      \isa{&u&}{\N_G}% gas used
+      \isa{&u&}{\gas}% gas used
     \end{alignedat}
   }}_\mathsf{C}\\
   \pi_S &\in \dict{\N_S}{\tuple{
     \begin{alignedat}{3}
       \isa{p&}{(\N, \N)}\,,\;  % provided_count: u16; provided_size: u32
-      \isa{&r&}{(\N, \N_G)}\,,\;\\% refinement_count: u32; refinement_gas_used: UnsignedGas
+      \isa{&r&}{(\N, \gas)}\,,\;\\% refinement_count: u32; refinement_gas_used: UnsignedGas
       \isa{i&}{\N}\,,\;  % imports: u16
       \isa{e}{\N}\,,\;  % extrinsic_count: u16
       \isa{&z&}{\N}\,,\;  % extrinsic_size: u32
       \isa{x}{\N}\,,\;\\  % exports: u16
-      \isa{a&}{(\N, \N_G)}\,,\;% accumulate_count: u32; accumulate_gas_used: UnsignedGas
-      \isa{&t&}{(\N, \N_G)}% on_transfers_count: u32; on_transfers_gas_used: UnsignedGas
+      \isa{a&}{(\N, \gas)}\,,\;% accumulate_count: u32; accumulate_gas_used: UnsignedGas
+      \isa{&t&}{(\N, \gas)}% on_transfers_count: u32; on_transfers_gas_used: UnsignedGas
     \end{alignedat}
   }}
 \end{align}
 
 The core statistics are updated using several intermediate values from across the overall state-transition function; $\mathbf{w}$, the incoming work-reports, as defined in \ref{eq:incomingworkreports} and $\mathbf{W}$, the newly available work-reports, as defined in \ref{eq:availableworkreports}. We define the statistics as follows:
 \begin{align}
-  \forall c \in \N_\mathsf{C} : \pi'_C[c] &\equiv \tup{
+  \forall c \in \coreindex : \pi'_C[c] &\equiv \tup{
     \begin{alignedat}{5}
       \is{i&}{R(c)_i}\,,\;
       \is{&x&}{R(c)_x}\,,\;
@@ -105,9 +105,9 @@ The core statistics are updated using several intermediate values from across th
       \is{&p&}{\span\span \textstyle \sum_{a \in \mathbf{E}_A} a_f[c]\qquad}
     \end{alignedat}
   }\!\!\!\!\\
-  \where R(c \in \N_\mathsf{C}) &\equiv \!\!\!\!\!\!\!\!\!\!\!\sum_{r \in w_\mathbf{r}, w \in \mathbf{w}, w_c = c}
+  \where R(c \in \coreindex) &\equiv \!\!\!\!\!\!\!\!\!\!\!\sum_{r \in w_\mathbf{r}, w \in \mathbf{w}, w_c = c}
   \!\!\!\!\!\!\!\!\!\!\!(r_i, r_x, r_z, r_e, r_u, \is{b}{(w_s)_l})\\
-  \also D(c \in \N_\mathsf{C}) &\equiv \!\!\!\!\!\!\sum_{w \in \mathbf{W}, w_c = c}
+  \also D(c \in \coreindex) &\equiv \!\!\!\!\!\!\sum_{w \in \mathbf{W}, w_c = c}
   \!\!\!\!\!\!(w_s)_l + \mathsf{W}_G\ceil{(w_s)_n\nicefrac{65}{64}}
 \end{align}
 

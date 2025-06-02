@@ -7,12 +7,12 @@
   \item[$\N$] The set of non-negative integers. Subscript denotes one greater than the maximum. See section \ref{sec:numbers}.
   \begin{description}
     \item[$\N^+$] The set of positive integers (not including zero).
-    \item[$\N_B$] The set of balance values. Equivalent to $\N_{2^{64}}$. See equation \ref{eq:balance}.
-    \item[$\N_G$] The set of unsigned gas values. Equivalent to $\mathbb{N}_{2^{64}}$. See equation \ref{eq:gasregentry}.
+    \item[$\balance$] The set of balance values. Equivalent to $\N_{2^{64}}$. See equation \ref{eq:balance}.
+    \item[$\gas$] The set of unsigned gas values. Equivalent to $\mathbb{N}_{2^{64}}$. See equation \ref{eq:gasregentry}.
     \item[$\N_L$] The set of blob length values. Equivalent to $\N_{2^{32}}$. See section \ref{sec:numbers}.
     \item[$\N_R$] The set of register values. Equivalent to $\N_{2^{64}}$. See equation \ref{eq:gasregentry}.
     \item[$\N_S$] The set from which service indices are drawn. Equivalent to $\N_{2^{32}}$. See section \ref{eq:serviceaccounts}.
-    \item[$\N_T$] The set of timeslot values. Equivalent to $\N_{2^{32}}$. See equation \ref{eq:time}.
+    \item[$\timeslot$] The set of timeslot values. Equivalent to $\N_{2^{32}}$. See equation \ref{eq:time}.
   \end{description}
   \item[$\mathbb{Q}$] The set of rational numbers. Unused.
   \item[$\mathbb{R}$] The set of real numbers. Unused.
@@ -42,10 +42,10 @@
     \item[$\bandersnatch{R}{C}{M}$] The set of Bandersnatch Ring\textsc{vrf} proofs of the root $R$, context $C$ and message $M$. A subset of $\bar{\mathbb{F}}$. See section \ref{sec:cryptography}.
   \end{description}
   \item[$\mathbb{G}$] The set of data segments, equivalent to octet sequences of length $\mathsf{W}_G$. See equation \ref{eq:segment}.
-  \item[$\H$] The set of 32-octet cryptographic values. A subset of $\blob_{32}$. $\H$ without a subscript generally implies a hash function result. See section \ref{sec:cryptography}. \emph{NOTE: Not used as quaternions.}
+  \item[$\hash$] The set of 32-octet cryptographic values. A subset of $\blob_{32}$. $\hash$ without a subscript generally implies a hash function result. See section \ref{sec:cryptography}. \emph{NOTE: Not used as quaternions.}
   \begin{description}
-    \item[$\H_B$] The set of Bandersnatch public keys. A subset of $\blob_{32}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
-    \item[$\H_E$] The set of Ed25519 public keys. A subset of $\blob_{32}$. See section \ref{sec:signing}.
+    \item[$\hash_B$] The set of Bandersnatch public keys. A subset of $\blob_{32}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+    \item[$\hash_E$] The set of Ed25519 public keys. A subset of $\blob_{32}$. See section \ref{sec:signing}.
   \end{description}
   \item[$\workitem$] The set of work items. See equation \ref{eq:workitem}.
   \item[$\mathbb{J}$] The set of work execution errors.
@@ -137,7 +137,7 @@
   \item[$\se(\dots)$] The octet-sequence encode function. Superscripted ${}^{-1}$ to denote the inverse. See appendix \ref{sec:serialization}.
   \item[$\mathcal{F}(\dots)$] The Fisher-Yates shuffle function. See equation \ref{eq:suffle}.
   \item[$\blake(\dots)$] The Blake 2b 256-bit hash function. See section \ref{sec:cryptography}.
-  \item[$\blake_K(\dots)$] The Keccak 256-bit hash function. See section \ref{sec:cryptography}.
+  \item[$\keccak(\dots)$] The Keccak 256-bit hash function. See section \ref{sec:cryptography}.
   %  \item[$\mathcal{G}$] Unused.
   %  \item[$\mathcal{I}$] Unused.
   \item[$\mathcal{J}_x$] The justification path to a specific $2^x$ size page of a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerklejust}.
@@ -145,7 +145,7 @@
   \item[$\mathcal{L}_x$] The $2^x$ size page function for a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerkleleafpage}.
   \item[$\mathcal{M}(\dots)$] The constant-depth binary Merklization function. See appendix \ref{sec:merklization}.
   \item[$\mathcal{M}_B(\dots)$] The well-balanced binary Merklization function. See appendix \ref{sec:merklization}.
-  \item[$\mathcal{M}_\thestate(\dots)$] The state Merklization function. See appendix \ref{sec:statemerklization}.
+  \item[$\merklizestate(\dots)$] The state Merklization function. See appendix \ref{sec:statemerklization}.
   \item[$\mathcal{N}(\dots)$] The erasure-coding chunks function. See appendix \ref{sec:erasurecoding}.
   \item[$\mathcal{O}(\dots)$] The Bandersnatch ring root function. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
   \item[$\mathcal{P}_n(\dots)$] The octet-array zero-padding function. See equation \ref{eq:zeropadding}.
@@ -173,7 +173,7 @@ These terms are all contextualized to a single block. They may be superscripted 
   \item[$\mathbf{F}_v$] The \textsc{Beefy} signed commitment of validator $v$. See equation \ref{eq:beefysignedcommitment}.
   \item[$\mathbf{G}$] The mapping from cores to guarantor keys. See section \ref{sec:coresandvalidators}.
   \item[$\mathbf{G^*}$] The mapping from cores to guarantor keys for the previous rotation. See section \ref{sec:coresandvalidators}.
-  \item[$\mathbf{H}$] The block header. See equation \ref{eq:header}.
+  \item[$\H$] The block header. See equation \ref{eq:header}.
   \item[$\mathbf{I}$] The sequence of work-reports which were accumulated this in this block. See equation \ref{eq:accumulatedreports}.
   \item[$\mathbf{Q}$] The selection of ready work-reports which a validator determined they must audit. See equation \ref{eq:auditselection}.
   \item[$\mathbf{R}$] The set of Ed25519 guarantor keys who made a work-report. See equation \ref{eq:guarantorsig}.

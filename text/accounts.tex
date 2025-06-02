@@ -12,15 +12,15 @@ The service account is defined as the tuple of storage dictionary $\mathbf{s}$, 
 \begin{align}\label{eq:serviceaccount}
   \serviceaccount \equiv \tuple{\ \begin{aligned}
     \sa¬storage &\in \dict{\blob}{\blob}\,,\ 
-    \sa¬preimages \in \dict{\H}{\blob}\,,\\
-    \sa¬requests &\in \dict{\tuple{\H,\N_L}}{\seq{\N_T}_{:3}}\,,\\
-    \sa¬gratis &\in \N_B\,,\ 
-    \sa¬codehash \in \H\,,\ 
-    \sa¬balance \in \N_B\,,\ 
-    \sa¬minaccgas \in \N_G\,,\\
-    \sa¬minmemogas &\in \N_G\,,\ 
-    \sa¬created \in \N_T\,,\ 
-    \sa¬lastacc \in \N_T\,,\ 
+    \sa¬preimages \in \dict{\hash}{\blob}\,,\\
+    \sa¬requests &\in \dict{\tuple{\hash,\N_L}}{\seq{\timeslot}_{:3}}\,,\\
+    \sa¬gratis &\in \balance\,,\ 
+    \sa¬codehash \in \hash\,,\ 
+    \sa¬balance \in \balance\,,\ 
+    \sa¬minaccgas \in \gas\,,\\
+    \sa¬minmemogas &\in \gas\,,\ 
+    \sa¬created \in \timeslot\,,\ 
+    \sa¬lastacc \in \timeslot\,,\ 
     \sa¬parent \in \N_S\\
     %i, o, f
   \end{aligned}\,}
@@ -54,7 +54,7 @@ There are three entry-points in the code:
 
 Whereas the first, executing in-core, is described in more detail in section \ref{sec:packagesanditems}, the latter two are defined in the present section.
 
-As stated in appendix \ref{sec:virtualmachine}, execution time in the \Jam virtual machine is measured deterministically in units of \emph{gas}, represented as a natural number less than $2^{64}$ and formally denoted $\N_G$. We may also use $\Z_G$ to denote the set $\Z_{-2^{63}\dots2^{63}}$ if the quantity may be negative. There are two limits specified in the account, $g$, the minimum gas required in order to execute the \emph{Accumulate} entry-point of the service's code, and $m$, the minimum required for the \emph{On Transfer} entry-point.
+As stated in appendix \ref{sec:virtualmachine}, execution time in the \Jam virtual machine is measured deterministically in units of \emph{gas}, represented as a natural number less than $2^{64}$ and formally denoted $\gas$. We may also use $\Z_G$ to denote the set $\Z_{-2^{63}\dots2^{63}}$ if the quantity may be negative. There are two limits specified in the account, $g$, the minimum gas required in order to execute the \emph{Accumulate} entry-point of the service's code, and $m$, the minimum required for the \emph{On Transfer} entry-point.
 
 
 
@@ -81,7 +81,7 @@ Restated, we must be able to define some \emph{historical} lookup function $\his
 \begin{equation}
 \begin{aligned}
   \histlookup\colon \left\{\ \begin{aligned}
-    (\serviceaccount, \N_{\h¬timeslot - \mathsf{D} \dots \h¬timeslot}, \H) &\to \blob\bm{?} \\
+    (\serviceaccount, \N_{\H_\¬timeslot - \mathsf{D} \dots \H_\¬timeslot}, \hash) &\to \optional{\blob} \\
     (\mathbf{a}, t, \blake(\mathbf{p})) &\mapsto v : v \in \{ \mathbf{p}, \none \}
   \end{aligned}\right.
 \end{aligned}
@@ -102,18 +102,18 @@ The state of the lookup system naturally satisfies a number of invariants. First
 
 \subsubsection{Semantics}
 
-The historical status component $h \in \seq{\N_T}_{:3}$ is a sequence of up to three time slots and the cardinality of this sequence implies one of four modes:
+The historical status component $h \in \seq{\timeslot}_{:3}$ is a sequence of up to three time slots and the cardinality of this sequence implies one of four modes:
 \begin{itemize}
   \item{$h = \seq{}$}: The preimage is \emph{requested}, but has not yet been supplied.
-  \item{$h \in \seq{\N_T}_1$}: The preimage is \emph{available} and has been from time $h_0$.
-  \item{$h \in \seq{\N_T}_2$}: The previously available preimage is now \emph{unavailable} since time $h_1$. It had been available from time $h_0$.
-  \item{$h \in \seq{\N_T}_3$}: The preimage is \emph{available} and has been from time $h_2$. It had previously been available from time $h_0$ until time $h_1$.
+  \item{$h \in \seq{\timeslot}_1$}: The preimage is \emph{available} and has been from time $h_0$.
+  \item{$h \in \seq{\timeslot}_2$}: The previously available preimage is now \emph{unavailable} since time $h_1$. It had been available from time $h_0$.
+  \item{$h \in \seq{\timeslot}_3$}: The preimage is \emph{available} and has been from time $h_2$. It had previously been available from time $h_0$ until time $h_1$.
 \end{itemize}
 
 The historical lookup function $\histlookup$ may now be defined as:
 \begin{equation}
   \begin{aligned}\label{eq:historicallookup}
-    &\histlookup\colon (\serviceaccount, \N_T, \H) \to \blob\bm{?} \\
+    &\histlookup\colon (\serviceaccount, \timeslot, \hash) \to \optional{\blob} \\
     &\histlookup(\mathbf{a}, t, h) \equiv \begin{cases}
       \mathbf{a}_\sa¬preimages[h]\!\!\!\! &\when h \in \keys{\mathbf{a}_\sa¬preimages} \wedge I(\mathbf{a}_\sa¬requests\subb{h, \len{\mathbf{a}_\sa¬preimages[h]}}, t) \!\!\!\!\! \\
       \none &\otherwise
@@ -145,7 +145,7 @@ We may then define a third dependent term $\sa¬minbalance$, the minimum, or \em
     \mathbf{a}_\sa¬items \in \N_{2^{32}} &\equiv 2\cdot\len{\,\mathbf{a}_\sa¬requests\,} + \len{\,\mathbf{a}_\sa¬storage\,} \\
     \mathbf{a}_\sa¬octets \in \N_{2^{64}} &\equiv \sum\limits_{\,(h, z) \in \keys{\mathbf{a}_\sa¬requests}\,} \!\!\!\!81 + z \\
     &\phantom{\equiv\ } + \sum\limits_{(x, y) \in \mathbf{a}_\sa¬storage} 34 + \len{y} + \len{x} \\
-    \mathbf{a}_\sa¬minbalance \in \N_B &\equiv \max(0, \mathsf{B}_S + \mathsf{B}_I \cdot \mathbf{a}_\sa¬items + \mathsf{B}_L \cdot \mathbf{a}_\sa¬octets - \mathbf{a}_\sa¬gratis)
+    \mathbf{a}_\sa¬minbalance \in \balance &\equiv \max(0, \mathsf{B}_S + \mathsf{B}_I \cdot \mathbf{a}_\sa¬items + \mathsf{B}_L \cdot \mathbf{a}_\sa¬octets - \mathbf{a}_\sa¬gratis)
   \end{aligned}\right.
 \end{align}
 
@@ -161,6 +161,6 @@ Finally, $\alwaysaccers$ is a small dictionary containing the indices of service
     \isa{\manager}{\N_S} ,
     \isa{\assigners}{\seq{\N_S}_\mathsf{C}} ,
     \isa{\delegator}{\N_S} ,
-    \isa{\alwaysaccers}{\dict{\N_S}{\N_G}}
+    \isa{\alwaysaccers}{\dict{\N_S}{\gas}}
   }
 \end{align}

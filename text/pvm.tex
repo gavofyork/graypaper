@@ -13,7 +13,7 @@
 \newcommand*{\rnp}[1]{P(#1)}
 \newcommand*{\rnq}[1]{Z(#1)}
 \newcommand*{\continue}{\blacktriangleright}
-\newcommand*{\gas}{\gascounter_\Delta}
+\newcommand*{\gascost}{\gascounter_\Delta}
 \newcommand*{\instrlen}{\ell}
 \newcommand*{\revbitsfunc}[1]{\overleftarrow{\mathcal{B}}_{#1}}
 \newcommand*{\revunbitsfunc}[1]{\revbitsfunc{#1}^{-1}}
@@ -48,7 +48,7 @@
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
   \Psi&\colon \left\{\begin{aligned}
-    (\blob, \N_R, \N_G, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
+    (\blob, \N_R, \gas, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
     (\mathbf{p}, \imath, \gascounter, \registers, \mem) &\mapsto \begin{cases}
       \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
       (\oog, \imath', \gascounter', \registers', \mem') &\when \gascounter' < 0\\
@@ -136,7 +136,7 @@ We denote this set, as opcode indices rather than names, as $T$, which is a subs
 We must now define the single-step \textsc{pvm} state-transition function $\Psi_1$:
 \begin{equation}
   \Psi_1\colon \left\{\begin{aligned}
-    (\blob, \mathbb{B}, \seq{\N_R}, \N_R, \N_G, \regs, \ram) &\to (\{\panic, \halt, \continue \} \cup \{\fault, \host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
+    (\blob, \mathbb{B}, \seq{\N_R}, \N_R, \gas, \regs, \ram) &\to (\{\panic, \halt, \continue \} \cup \{\fault, \host\} \times \N_R, \N_R, \Z_G, \regs, \ram)\\
     (\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\mapsto (\varepsilon, \imath', \gascounter', \registers', \mem')
   \end{aligned}\right.
 \end{equation}
@@ -151,7 +151,7 @@ We define $\varepsilon$ together with the posterior values (denoted as prime) of
 
 In general, when transitioning machine state for an instruction a number of conditions hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one, the gas remaining is reduced by the amount corresponding to the instruction type and \textsc{ram} \& registers are unchanged. Formally:
 \begin{equation}
-  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \gascounter' = \gascounter - \gas,\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
+  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \gascounter' = \gascounter - \gascost,\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
 \end{equation}
 
 During the course of executing instructions, \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
@@ -253,7 +253,7 @@ We assume the skip length $\ell$ is well-defined:
 \newcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{20mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   0&\token{trap}&1&$\varepsilon = \panic$\\
@@ -273,7 +273,7 @@ We assume the skip length $\ell$ is well-defined:
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   10&\token{ecalli}&1&$\varepsilon = \host \times \immed_X$\\
@@ -290,7 +290,7 @@ We assume the skip length $\ell$ is well-defined:
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   20&\token{load\_imm\_64}&1&$\reg'_A = \immed_X$\\
@@ -310,7 +310,7 @@ We assume the skip length $\ell$ is well-defined:
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   30&\token{store\_imm\_u8}&1&$\memwr_{\immed_X} = \immed_Y \bmod 2^8 $\\ \mrule
@@ -331,7 +331,7 @@ We assume the skip length $\ell$ is well-defined:
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   40&\token{jump}&1&$\token{branch}(\immed_X, \top)$\\
@@ -352,7 +352,7 @@ We assume the skip length $\ell$ is well-defined:
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   50&\token{jump\_ind}&1&$\token{djump}((\reg_A + \immed_X) \bmod 2^{32})$\\ \mrule
@@ -387,7 +387,7 @@ We assume the skip length $\ell$ is well-defined:
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   70&\token{store\_imm\_ind\_u8}&1&$\memwr_{\reg_A + \immed_X} = \immed_Y \bmod 2^8$\\ \mrule
@@ -413,7 +413,7 @@ We assume the skip length $\ell$ is well-defined:
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   80&\token{load\_imm\_jump}&1&$\token{branch}(\immed_Y, \top)\ ,\qquad \reg_A' = \immed_X$\\ \mrule
@@ -445,7 +445,7 @@ We assume the skip length $\ell$ is well-defined:
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{32mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   100&\token{move\_reg}&1&$\reg'_D = \reg_A$\\ \mrule
@@ -488,7 +488,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{35mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   120&\token{store\_ind\_u8}&1&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
@@ -560,7 +560,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   170&\token{branch\_eq}&1&$\token{branch}(\immed_X, \reg_A = \reg_B)$\\ \mrule
@@ -592,7 +592,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   180&\token{load\_imm\_jump\_ind}&1&$
@@ -620,7 +620,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
 \begin{longtable}[t]{p{8mm} p{20mm} p{5mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gas$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
   190&\token{add\_32}&1&$\reg'_D = \sext_4((\reg_A + \reg_B) \bmod 2^{32})$\\ \mrule
@@ -731,7 +731,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
 \begin{align}
   &\Psi_H\colon \left\{\begin{aligned}
     \tuple{\begin{aligned}
-      &\blob, \N_R, \N_G, \regs,\\&\ram, \Omega\langle X \rangle, X
+      &\blob, \N_R, \gas, \regs,\\&\ram, \Omega\langle X \rangle, X
     \end{aligned}
     }
     &\to
@@ -755,7 +755,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
       \end{aligned}\right.\\[8pt]
     \end{cases} \\
     \end{aligned}\right.\!\!\!\!\!\!\!\!\\
-    &\Omega\langle X \rangle \equiv (\N, \N_G, \regs, \ram, X) \to \tuple{\{\continue, \halt, \panic, \oog\}, \N_G, \regs, \ram, X} \cup \{\fault\} \times \N_R
+    &\Omega\langle X \rangle \equiv (\N, \gas, \regs, \ram, X) \to \tuple{\{\continue, \halt, \panic, \oog\}, \gas, \regs, \ram, X} \cup \{\fault\} \times \N_R
 \end{align}
 
 On exit, the instruction counter $\imath'$ references the instruction \emph{which caused the exit}. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed. This is sensible when the instruction is one which necessarily needs re-executing such as in the case of an out-of-gas or page fault reason.
@@ -834,8 +834,8 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
 \begin{equation}
   \Psi_M\colon \left\{\begin{aligned}
     \left(
-      \blob, \N_R, \N_G, \blob_{:\mathsf{Z}_I}, \Omega\langle X \rangle, X
-    \right) &\to (\N_G, \blob \cup \{\panic, \oog\}, X)\\
+      \blob, \N_R, \gas, \blob_{:\mathsf{Z}_I}, \Omega\langle X \rangle, X
+    \right) &\to (\gas, \blob \cup \{\panic, \oog\}, X)\\
     (\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}) &\mapsto \begin{cases}
       (0, \panic, \mathbf{x}) &\when Y(\mathbf{p}, \mathbf{a}) = \none\\
       R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}, \mathbf{a}) = (\mathbf{c}, \registers, \mem)\\

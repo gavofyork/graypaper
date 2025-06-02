@@ -25,7 +25,7 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(3) &\mapsto \se(\var{[(h, b, s, \var{\mathbf{p}})\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \se_M(\beefybelt)) \;, \\
     &&C(4) &\mapsto \se\left(\tup{\gamma_\mathbf{k}, \gamma_z, \left\{\,\begin{aligned}
       0\ &\when \gamma_\mathbf{s} \in \seq{\mathbb{C}}_\mathsf{E}\\
-      1\ &\when \gamma_\mathbf{s} \in \seq{\H_B}_\mathsf{E}\\
+      1\ &\when \gamma_\mathbf{s} \in \seq{\hash_B}_\mathsf{E}\\
     \end{aligned}\right\}, \gamma_\mathbf{s},
     \var{\gamma_\mathbf{a}}}\right) \;, \\
     &&C(5) &\mapsto \se(\var{\orderby{x}{x \in \goodset}}, \var{\orderby{x}{x \in \badset}}, \var{\orderby{x}{x \in \wonkyset}}, \var{\orderby{x}{x \in \offenders}}) \;, \\
@@ -55,10 +55,10 @@ Finally, be aware that \Jam does not allow service storage keys to be directly i
 
 \subsection{Merklization}
 
-With $T$ defined, we now define the rest of $\mathcal{M}_\thestate$ which primarily involves transforming the serialized mapping into a cryptographic commitment. We define this commitment as the root of the binary Patricia Merkle Trie with a format optimized for modern compute hardware, primarily by optimizing sizes to fit succinctly into typical memory layouts and reducing the need for unpredictable branching.
+With $T$ defined, we now define the rest of $\merklizestate$ which primarily involves transforming the serialized mapping into a cryptographic commitment. We define this commitment as the root of the binary Patricia Merkle Trie with a format optimized for modern compute hardware, primarily by optimizing sizes to fit succinctly into typical memory layouts and reducing the need for unpredictable branching.
 
 \subsubsection{Node Encoding and Trie Identification}
-We identify (sub-)tries as the hash of their root node, with one exception: empty (sub-)tries are identified as the zero-hash, $\H^0$.
+We identify (sub-)tries as the hash of their root node, with one exception: empty (sub-)tries are identified as the zero-hash, $\zerohash$.
 
 Nodes are fixed in size at 512 bit (64 bytes). Each node is either a branch or a leaf. The first bit discriminate between these two types.
 
@@ -73,7 +73,7 @@ In the case of a regular leaf, the remaining 6 bits of the first byte are zeroed
 Formally, we define the encoding functions $B$ and $L$:
 \begin{align}
   B&\colon\left\{\begin{aligned}
-    (\H, \H) &\to \mathbb{B}_{512}\\
+    (\hash, \hash) &\to \mathbb{B}_{512}\\
     (l, r) &\mapsto [0] \frown \text{bits}(l)_{1\dots} \frown \text{bits}(r)
   \end{aligned}\right.\\
   L&\colon\left\{\begin{aligned}
@@ -85,11 +85,11 @@ Formally, we define the encoding functions $B$ and $L$:
   \end{aligned}\right.
 \end{align}
 
-We may then define the basic Merklization function $\mathcal{M}_\thestate$ as:
+We may then define the basic Merklization function $\merklizestate$ as:
 \begin{align}
-  \mathcal{M}_\thestate(\thestate) &\equiv M(\{ (\text{bits}(k) \mapsto \tup{k, v}) \mid (k \mapsto v) \in T(\thestate) \})\\
+  \merklizestate(\thestate) &\equiv M(\{ (\text{bits}(k) \mapsto \tup{k, v}) \mid (k \mapsto v) \in T(\thestate) \})\\
   M(d: \dict{\mathbb{B}}{(\blob_{31}, \blob)}) &\equiv \begin{cases}
-    \H^0 &\when |d| = 0\\
+    \zerohash &\when |d| = 0\\
     \blake(\text{bits}^{-1}(L(k, v))) &\when \mathcal{V}(d) = \{ (k, v) \}\\
     \blake(\text{bits}^{-1}(B(M(l), M(r)))) &\otherwise\\
     \multicolumn{2}{l}{\quad\where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b_{1\dots} \mapsto p) \in \begin{cases}
@@ -108,21 +108,21 @@ The Merkle tree is a cryptographic data structure yielding a hash commitment to 
 The underlying function for our Merkle trees is the \emph{node} function $N$, which accepts some sequence of blobs of some length $n$ and provides either such a blob back or a hash:
 \begin{equation}
   N\colon\left\{\begin{aligned}
-    (\seq{\blob_n}, \blob \to \H) &\to \blob_n \cup \H \\
+    (\seq{\blob_n}, \blob \to \hash) &\to \blob_n \cup \hash \\
     (\mathbf{v}, H) &\mapsto \begin{cases}
-      \H^0 &\when |\mathbf{v}| = 0 \\
+      \zerohash &\when |\mathbf{v}| = 0 \\
       \mathbf{v}_0 &\when |\mathbf{v}| = 1 \\
       H(\token{\$node} \concat N(\mathbf{v}_{\dots\ceil{\nicefrac{|\mathbf{v}|}{2}}}, H) \concat N(\mathbf{v}_{\ceil{\nicefrac{|\mathbf{v}|}{2}}\dots}, H)) &\otherwise
     \end{cases}
   \end{aligned}\right.\label{eq:merklenode}
 \end{equation}
 
-The astute reader will realize that if our $\blob_n$ happens to be equivalent $\H$ then this function will always evaluate into $\H$. That said, for it to be secure care must be taken to ensure there is no possibility of preimage collision. For this purpose we include the hash prefix $\token{\$node}$ to minimize the chance of this; simply ensure any items are hashed with a different prefix and the system can be considered secure.
+The astute reader will realize that if our $\blob_n$ happens to be equivalent $\hash$ then this function will always evaluate into $\hash$. That said, for it to be secure care must be taken to ensure there is no possibility of preimage collision. For this purpose we include the hash prefix $\token{\$node}$ to minimize the chance of this; simply ensure any items are hashed with a different prefix and the system can be considered secure.
 
 We also define the \emph{trace} function $T$, which returns each opposite node from top to bottom as the tree is navigated to arrive at some leaf corresponding to the item of a given index into the sequence. It is useful in creating justifications of data inclusion.
 \begin{equation}
   T\colon\left\{\begin{aligned}
-    (\seq{\blob_n}, \N_{|\mathbf{v}|}, \blob \to \H)\ &\to \seq{\blob_n \cup \H}\\
+    (\seq{\blob_n}, \N_{|\mathbf{v}|}, \blob \to \hash)\ &\to \seq{\blob_n \cup \hash}\\
     (\mathbf{v}, i, H) &\mapsto \begin{cases}
       [N(P^\bot(\mathbf{v}, i), H)] \concat T(P^\top(\mathbf{v}, i), i - P_I(\mathbf{v}, i), H) &\when |\mathbf{v}| > 1\\
       [] &\otherwise\\
@@ -148,7 +148,7 @@ From this we define our other Merklization functions.
 We define the well-balanced binary Merkle function as $\mathcal{M}_B$:
 \begin{equation}
     \mathcal{M}_B\colon \left\{\begin{aligned}\label{eq:simplemerkleroot}
-      (\seq{\blob}, \blob \to \H) &\to \H \\
+      (\seq{\blob}, \blob \to \hash) &\to \hash \\
       (\mathbf{v}, H) &\mapsto \begin{cases}
         H(\mathbf{v}_0) &\when |\mathbf{v}| = 1 \\
         N(\mathbf{v}, H) &\otherwise
@@ -165,17 +165,17 @@ We define the constant-depth binary Merkle function as $\mathcal{M}$. We define 
 \begin{align}
   \label{eq:constantdepthmerkleroot}
   \mathcal{M}&\colon \left\{\begin{aligned}
-    (\seq{\blob}, \blob \to \H) &\to \H\\
+    (\seq{\blob}, \blob \to \hash) &\to \hash\\
     (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}, H), H)
   \end{aligned}\right.\\
   \label{eq:constantdepthsubtreemerklejust}
   \mathcal{J}_x&\colon \left\{\begin{aligned}
-    (\seq{\blob}, \N_{|\mathbf{v}|}, \blob \to \H) &\to \seq{\H}\\
+    (\seq{\blob}, \N_{|\mathbf{v}|}, \blob \to \hash) &\to \seq{\hash}\\
     (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), 2^xi, H)_{\dots\max(0, \ceil{\log_2(\max(1, |\mathbf{v}|)) - x})}
   \end{aligned}\right.\\
   \label{eq:constantdepthsubtreemerkleleafpage}
   \mathcal{L}_x&\colon \left\{\begin{aligned}
-    (\seq{\blob}, \N_{|\mathbf{v}|}, \blob \to \H) &\to \seq{\H}\\
+    (\seq{\blob}, \N_{|\mathbf{v}|}, \blob \to \hash) &\to \seq{\hash}\\
     (\mathbf{v}, i, H) &\mapsto [H(\token{\$leaf} \concat l) \mid l \orderedin \mathbf{v}_{2^xi \dots \min(2^xi+2^x, |\mathbf{v}|)}]
   \end{aligned}\right.
 \end{align}
@@ -187,7 +187,7 @@ As above, we may assume a default value for $H$ of the Blake 2b hash function, $
 For justifications and Merkle root calculations, a constancy preprocessor function $C$ is applied which hashes all data items with a fixed prefix ``leaf'' and then pads the overall size to the next power of two with the zero hash $\mathbb{H}_0$:
 \begin{equation}
   C\colon\left\{\begin{aligned}
-    (\seq{\blob}, \blob \to \H) &\to \seq{\H}\\
+    (\seq{\blob}, \blob \to \hash) &\to \seq{\hash}\\
     (\mathbf{v}, H) &\mapsto \mathbf{v}' \ \where \left\{\; \begin{aligned}
       |\mathbf{v}'| &= 2^{\ceil{\log_2(\max(1, |\mathbf{v}|))}}\\
       \mathbf{v}'_i &= \begin{cases}
@@ -202,7 +202,7 @@ For justifications and Merkle root calculations, a constancy preprocessor functi
 
 The Merkle Mountain Range (\textsc{mmr}) is an append-only cryptographic data structure which yields a commitment to a sequence of values. Appending to an \textsc{mmr} and proof of inclusion of some item within it are both $O(\log(N))$ in time and space for the size of the set.
 
-We define a Merkle Mountain Range as being within the set $\seq{\H?}$, a sequence of peaks, each peak the root of a Merkle tree containing $2^i$ items where $i$ is the index in the sequence. Since we support set sizes which are not always powers-of-two-minus-one, some peaks may be empty, $\none$ rather than a Merkle root.
+We define a Merkle Mountain Range as being within the set $\seq{\hash?}$, a sequence of peaks, each peak the root of a Merkle tree containing $2^i$ items where $i$ is the index in the sequence. Since we support set sizes which are not always powers-of-two-minus-one, some peaks may be empty, $\none$ rather than a Merkle root.
 
 Since the sequence of hashes is somewhat unwieldy as a commitment, Merkle Mountain Ranges are themselves generally hashed before being published. Hashing them removes the possibility of further appending so the range itself is kept on the system which needs to generate future proofs.
 
@@ -213,11 +213,11 @@ We define the append function $\mathcal{A}$ as:
   \begin{aligned}
     \label{eq:mmrappend}
     \mathcal{A}&\colon\deffunc{
-      (\seq{\H?}, \H, \blob\to\H) &\to \seq{\H?}\\
+      (\seq{\hash?}, \hash, \blob\to\hash) &\to \seq{\hash?}\\
       (\mathbf{r}, l, H) &\mapsto P(\mathbf{r}, l, 0, H)
     }\\
     \where P&\colon\deffunc{
-      (\seq{\H?}, \H, \N, \blob\to\H) &\to \seq{\H?}\\
+      (\seq{\hash?}, \hash, \N, \blob\to\hash) &\to \seq{\hash?}\\
       (\mathbf{r}, l, n, H) &\mapsto \begin{cases}
         \mathbf{r} \doubleplus l &\when n \ge |\mathbf{r}|\\
         R(\mathbf{r}, n, l) &\when n < |\mathbf{r}| \wedge \mathbf{r}_n = \none\\
@@ -234,7 +234,7 @@ We define the append function $\mathcal{A}$ as:
 We define the \textsc{mmr} encoding function as $\se_M$:
 \begin{equation}
   \se_M\colon\deffunc{
-    \seq{\H?} &\to \blob \\
+    \seq{\hash?} &\to \blob \\
     \mathbf{b} &\mapsto \se(\var{[\maybe{x}\mid x \orderedin \mathbf{b}]})
   }
 \end{equation}
@@ -242,11 +242,11 @@ We define the \textsc{mmr} encoding function as $\se_M$:
 We define the \textsc{mmr} super-peak function as $\mathcal{M}_R$:
 \begin{equation}
   \mathcal{M}_R\colon\deffunc{
-    \seq{\H?} &\to \H \\
+    \seq{\hash?} &\to \hash \\
     \mathbf{b} &\mapsto \begin{cases}
-      \H^0 &\when |\mathbf{h}| = 0\\
+      \zerohash &\when |\mathbf{h}| = 0\\
       \mathbf{h}_0 &\when |\mathbf{h}| = 1\\
-      \blake_K(\token{\$peak} \concat \mathcal{M}_R(\mathbf{h}_{\dots|\mathbf{h}|-1}) \concat \mathbf{h}_{|\mathbf{h}|-1}) &\otherwise \\
+      \keccak(\token{\$peak} \concat \mathcal{M}_R(\mathbf{h}_{\dots|\mathbf{h}|-1}) \concat \mathbf{h}_{|\mathbf{h}|-1}) &\otherwise \\
       \multicolumn{2}{l}{\where \mathbf{h} = \sq{h \mid h \orderedin \mathbf{b}, h \ne \none}}
     \end{cases}
   }

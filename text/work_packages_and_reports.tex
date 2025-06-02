@@ -66,7 +66,7 @@ We begin by defining a \emph{work-package}, of set $\workpackage$, and its const
   \workpackage \equiv \tuple{
     \isa{\wp¬authtoken}{\blob},\ 
     \isa{\wp¬authcodehost}{\N_S},\ 
-    \isa{\wp¬authcodehash}{\H},\ 
+    \isa{\wp¬authcodehash}{\hash},\ 
     \isa{\wp¬authconfig}{\blob},\ 
     \isa{\wp¬context}{\mathbb{X}},\ 
     \isa{\wp¬workitems}{\seq{\workitem}_{1:\mathsf{I}}}
@@ -77,17 +77,17 @@ A work item includes: $\wi¬service$ the identifier of the service to which it r
 \begin{equation}\label{eq:workitem}
   \workitem \equiv \tuple{\begin{aligned}
     &\isa{\wi¬service}{\N_S},
-    \isa{\wi¬codehash}{\H},
+    \isa{\wi¬codehash}{\hash},
     \isa{\wi¬payload}{\blob},
-    \isa{\wi¬refgaslimit}{\N_G},
-    \isa{\wi¬accgaslimit}{\N_G},
+    \isa{\wi¬refgaslimit}{\gas},
+    \isa{\wi¬accgaslimit}{\gas},
     \isa{\wi¬exportcount}{\N}, \\
-    &\isa{\wi¬importsegments}{\seq{\tuple{\H \cup (\H^\boxplus),\N}}},
-    \isa{\wi¬extrinsics}{\seq{(\H, \N)}}
+    &\isa{\wi¬importsegments}{\seq{\tuple{\hash \cup (\hash^\boxplus),\N}}},
+    \isa{\wi¬extrinsics}{\seq{(\hash, \N)}}
   \end{aligned}}
 \end{equation}
 
-Note that an imported data segment's work-package is identified through the union of sets $\H$ and a tagged variant $\H^\boxplus$. A value drawn from the regular $\H$ implies the hash value is of the segment-root containing the export, whereas a value drawn from $\H^\boxplus$ implies the hash value is the hash of the exporting work-package. In the latter case it must be converted into a segment-root by the guarantor and this conversion reported in the work-report for on-chain validation.
+Note that an imported data segment's work-package is identified through the union of sets $\hash$ and a tagged variant $\hash^\boxplus$. A value drawn from the regular $\hash$ implies the hash value is of the segment-root containing the export, whereas a value drawn from $\hash^\boxplus$ implies the hash value is the hash of the exporting work-package. In the latter case it must be converted into a segment-root by the guarantor and this conversion reported in the work-report for on-chain validation.
 
 We limit the total number of exported items to $\mathsf{W}_X = 3072$, the total number of imported items to $\mathsf{W}_M = 3072$, and the total number of extrinsics to $\mathsf{T} = 128$:
 \begin{equation}
@@ -126,7 +126,7 @@ We limit the sums of each of the two gas limits to be at most the maximum gas al
 Given the result $\wl¬result$ and gas used $\wl¬gasused$ of some work-item, we define the item-to-digest function $\itemtodigest$ as:
 \begin{equation}
   \itemtodigest\colon\left\{\begin{aligned}
-    (\workitem, \blob \cup \mathbb{J}, \N_G) &\to \mathbb{L}\\
+    (\workitem, \blob \cup \mathbb{J}, \gas) &\to \mathbb{L}\\
     \tup{\tup{\begin{aligned}
       &\¬service, \¬codehash, \¬payload,\\
       &\wi¬accgaslimit, \¬exportcount, \wi¬importsegments, \wi¬extrinsics
@@ -182,7 +182,7 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
 We now come to the work-report computation function $\Xi$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $\¬core$ and results in either an error $\error$ or the work-report and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization. Formally:
 \begin{equation}\label{eq:workdigestfunction}
   \Xi \colon \left\{\begin{aligned}
-    (\workpackage, \N_\mathsf{C}) &\to \workreport \\
+    (\workpackage, \coreindex) &\to \workreport \\
     (\wpX, \¬core) &\mapsto \begin{cases}
         \error &\when \wr¬authtrace \not\in \blob_{:\mathsf{W}_R} \\
         \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
@@ -222,15 +222,15 @@ Initially we constrain the segment-root dictionary $\wr¬srlookup$: It should co
 
 We immediately define the segment-root lookup function $\segrootlookup$, dependent on this dictionary, which collapses a union of segment-roots and work-package hashes into segment-roots using the dictionary:
 \begin{equation}
-  \segrootlookup(r \in \H\cup\H^\boxplus) \equiv \begin{cases}
-    r &\when r \in \H \\
-    \wr¬srlookup[h] &\when \exists h \in \H: r = h^\boxplus
+  \segrootlookup(r \in \hash\cup\hash^\boxplus) \equiv \begin{cases}
+    r &\when r \in \hash \\
+    \wr¬srlookup[h] &\when \exists h \in \hash: r = h^\boxplus
   \end{cases}
 \end{equation}
 
 In order to expect to be compensated for a work-report they are building, guarantors must compose a value for $\wr¬srlookup$ to ensure not only the above but also a further constraint that all pairs of work-package hashes and segment-roots do properly correspond:
 \begin{equation}
-  \forall (h \mapsto e) \in \wr¬srlookup : \exists \wpX, \¬core \in \workpackage, \N_\mathsf{C} : \blake(\wpX) = h \wedge (\Xi(\wpX, \¬core)_s)_e = e\!\!\!\!
+  \forall (h \mapsto e) \in \wr¬srlookup : \exists \wpX, \¬core \in \workpackage, \coreindex : \blake(\wpX) = h \wedge (\Xi(\wpX, \¬core)_s)_e = e\!\!\!\!
 \end{equation}
 
 As long as the guarantor is unable to satisfy the above constraints, then it should consider the work-package unable to be guaranteed. Auditors are not expected to populate this but rather to reuse the value in the work-report they are auditing.
@@ -276,7 +276,7 @@ Validators, in their role as availability assurers, should index such chunks acc
 We define the availability specifier function $\newavailabilityspecifier$, which creates an availability specifier from the package hash, an octet sequence of the audit-friendly work-package bundle (comprising the work-package itself, the extrinsic data and the concatenated import segments along with their proofs of correctness), and the sequence of exported segments:
 \begin{equation}
   \!\!\!\newavailabilityspecifier\colon\left\{\,\begin{aligned}
-    \tuple{\H, \blob, \seq{\G}} &\to \avspec\\
+    \tuple{\hash, \blob, \seq{\G}} &\to \avspec\\
     \tup{h, \mathbf{b},\,\mathbf{s}} &\mapsto \tup{
       h,\,
       \is{l}{|\mathbf{b}|},\,

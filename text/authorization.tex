@@ -14,15 +14,15 @@ Authorizers are identified as the hash of their \textsc{pvm} code concatenated w
 
 We define the set of authorizers allowable for a particular core $\¬core$ as the \emph{authorizer pool} $\authpool[\¬core]$. To maintain this value, a further portion of state is tracked for each core: the core's current \emph{authorizer queue} $\varphi[\¬core]$, from which we draw values to fill the pool. Formally:
 \begin{equation}\label{eq:authstatecomposition}
-  \authpool \in \seq{\seq{\H}_{:\mathsf{O}}}_\mathsf{C}\ , \qquad
-  \varphi \in \seq{\seq{\H}_{\mathsf{Q}}}_\mathsf{C}
+  \authpool \in \seq{\seq{\hash}_{:\mathsf{O}}}_\mathsf{C}\ , \qquad
+  \varphi \in \seq{\seq{\hash}_{\mathsf{Q}}}_\mathsf{C}
 \end{equation}
 
 Note: The portion of state $\varphi$ may be altered only through an exogenous call made from the accumulate logic of an appropriately privileged service.
 
 The state transition of a block involves placing a new authorization into the pool from the queue:
 \begin{align}
-  &\forall \¬core \in \N_\mathsf{C} : \authpool'[\¬core] \equiv {\overleftarrow{F(\¬core) \doubleplus \varphi'[\¬core] [ \h¬timeslot ]^{\circlearrowleft}}}^{\mathsf{O}} \\
+  &\forall \¬core \in \coreindex : \authpool'[\¬core] \equiv {\overleftarrow{F(\¬core) \doubleplus \varphi'[\¬core] [ \H_\¬timeslot ]^{\circlearrowleft}}}^{\mathsf{O}} \\
   &F(\¬core) \equiv \begin{cases} \authpool[\¬core] \seqminusl \{(g_w)_a\} &\when \exists g \in \xtguarantees : (g_w)_\¬core = \¬core \\ \authpool[\¬core] & \otherwise \end{cases}
 \end{align}
 

@@ -8,7 +8,7 @@ To achieve this, Safrole limits the possible author of any block within any give
 
 Because of its tightly scoped role, the core of Safrole's state, $\gamma$, is independent of the rest of the protocol. It interacts with other portions of the protocol through $\iota$ and $\kappa$, the prospective and active sets of validator keys respectively; $\tau$, the most recent block's timeslot; and $\eta$, the entropy accumulator.
 
-The Safrole protocol generates, once per epoch, a sequence of $\mathsf{E}$ \emph{sealing keys}, one for each potential block within a whole epoch. Each block header includes its timeslot index $\h¬timeslot$ (the number of six-second periods since the \Jam Common Era began) and a valid seal signature $\mathbf{H}_s$, signed by the sealing key corresponding to the timeslot within the aforementioned sequence. Each sealing key is in fact a pseudonym for some validator which was agreed the privilege of authoring a block in the corresponding timeslot.
+The Safrole protocol generates, once per epoch, a sequence of $\mathsf{E}$ \emph{sealing keys}, one for each potential block within a whole epoch. Each block header includes its timeslot index $\H_\¬timeslot$ (the number of six-second periods since the \Jam Common Era began) and a valid seal signature $\H_\¬sealsig$, signed by the sealing key corresponding to the timeslot within the aforementioned sequence. Each sealing key is in fact a pseudonym for some validator which was agreed the privilege of authoring a block in the corresponding timeslot.
 
 In order to generate this sequence of sealing keys in regular operation, and in particular to do so without making public the correspondence relation between them and the validator set, we use a novel cryptographic structure known as a Ring\textsc{vrf}, utilizing the Bandersnatch curve. Bandersnatch Ring\textsc{vrf} allows for a proof to be provided which simultaneously guarantees the author controlled a key within a set (in our case validators), and secondly provides an output, an unbiasable deterministic hash giving us a secure verifiable random function (\textsc{vrf}). This anonymous and secure random output is a \emph{ticket} and validators' tickets with the best score define the new sealing keys allowing the chosen validators to exercise their privilege and create a new block at the appropriate time.
 
@@ -21,8 +21,8 @@ In order to generate this sequence of sealing keys in regular operation, and in 
 
 Here, $\tau$ defines the most recent block's slot index, which we transition to the slot index as defined in the block's header:
 \begin{equation}\label{eq:timeslotindex}
-  \tau \in \N_T \ ,\quad
-  \tau' \equiv \h¬timeslot
+  \tau \in \timeslot \ ,\quad
+  \tau' \equiv \H_\¬timeslot
 \end{equation}
 
 We track the slot index in state as $\tau$ in order that we are able to easily both identify a new epoch and determine the slot at which the prior block was authored. We denote $e$ as the prior's epoch index and $m$ as the prior's slot phase index within that epoch and $e'$ and $m'$ are the corresponding values for the present block:
@@ -54,15 +54,15 @@ $\gamma_z$ is the epoch's root, a Bandersnatch ring root composed with the one B
 Finally, $\gamma_\mathbf{a}$ is the ticket accumulator, a series of highest-scoring ticket identifiers to be used for the next epoch. $\gamma_\mathbf{s}$ is the current epoch's slot-sealer series, which is either a full complement of $\mathsf{E}$ tickets or, in the case of a fallback mode, a series of $\mathsf{E}$ Bandersnatch keys:
 \begin{align}
   \gamma_\mathbf{a} \in \lseq \mathbb{C} \rseq_{:\mathsf{E}} \,,\quad
-  \gamma_\mathbf{s} \in \lseq \mathbb{C} \rseq_{\mathsf{E}} \cup \seq{\H_B}_\mathsf{E}
+  \gamma_\mathbf{s} \in \lseq \mathbb{C} \rseq_{\mathsf{E}} \cup \seq{\hash_B}_\mathsf{E}
 \end{align}
 
 Here, $\mathbb{C}$ is used to denote the set of \emph{tickets}, a combination of a verifiably random ticket identifier $\mathbf{y}$ and the ticket's entry-index $r$:
 \begin{align}\label{eq:ticket}
-  \mathbb{C} &\equiv \ltuple\isa{\mathbf{y}}{\H}\ts\isa{r}{\N_\mathsf{N}}\rtuple
+  \mathbb{C} &\equiv \ltuple\isa{\mathbf{y}}{\hash}\ts\isa{r}{\N_\mathsf{N}}\rtuple
 \end{align}
 
-As we state in section \ref{sec:sealandentropy}, Safrole requires that every block header $\mathbf{H}$ contain a valid seal $\mathbf{H}_s$, which is a Bandersnatch signature for a public key at the appropriate index $m$ of the current epoch's seal-key series, present in state as $\gamma_\mathbf{s}$.
+As we state in section \ref{sec:sealandentropy}, Safrole requires that every block header $\H$ contain a valid seal $\H_\¬sealsig$, which is a Bandersnatch signature for a public key at the appropriate index $m$ of the current epoch's seal-key series, present in state as $\gamma_\mathbf{s}$.
 
 
 
@@ -86,8 +86,8 @@ We must introduce $\mathbb{K}$, the set of validator key tuples. This is a combi
 The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_b$, and is equivalent to the first 32-octets; the Ed25519 key, $k_e$, is the second 32 octets; the \textsc{bls} key denoted $k_{BLS}$ is equivalent to the following 144 octets, and finally the metadata $k_m$ is the last 128 octets. Formally:
 \begin{align}
   \mathbb{K} &\equiv \blob_{336} \\
-  \forall k \in \mathbb{K} : k_b \in \H_B &\equiv k_{0\dots+32} \\
-  \forall k \in \mathbb{K} : k_e \in \H_E &\equiv k_{32\dots+32} \\
+  \forall k \in \mathbb{K} : k_b \in \hash_B &\equiv k_{0\dots+32} \\
+  \forall k \in \mathbb{K} : k_e \in \hash_E &\equiv k_{32\dots+32} \\
   \forall k \in \mathbb{K} : k_{BLS} \in \blob_{BLS} &\equiv k_{64\dots+144} \\
   \forall k \in \mathbb{K} : k_m \in \blob_{128} &\equiv k_{208\dots+128}
 \end{align}
@@ -114,22 +114,22 @@ Note that on epoch changes the posterior queued validator key set $\gamma'_k$ is
 
 \subsection{Sealing and Entropy Accumulation}\label{sec:sealandentropy}
 
-The header must contain a valid seal and valid \textsc{vrf} output. These are two signatures both using the current slot's seal key; the message data of the former is the header's serialization omitting the seal component $\mathbf{H}_s$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
+The header must contain a valid seal and valid \textsc{vrf} output. These are two signatures both using the current slot's seal key; the message data of the former is the header's serialization omitting the seal component $\H_\¬sealsig$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
 \begin{align}
-    \nonumber \using i = \gamma'_\mathbf{s}[\h¬timeslot]^\circlearrowleft\colon \\
+    \nonumber \using i = \gamma'_\mathbf{s}[\H_\¬timeslot]^\circlearrowleft\colon \\
     \label{eq:ticketconditiontrue}
     \gamma'_\mathbf{s} \in \seq{\mathbb{C}} &\implies \left\{\,\begin{aligned}
-        &i_\mathbf{y} = \banderout{\mathbf{H}_s}\,,\\
-        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_T \concat \eta'_3 \doubleplus i_r}{\mathcal{E}_U(\mathbf{H})}\,,\\
+        &i_\mathbf{y} = \banderout{\H_\¬sealsig}\,,\\
+        &\H_\¬sealsig \in \bandersig{\H_\¬authorbanderkey}{\mathsf{X}_T \concat \eta'_3 \doubleplus i_r}{\seunsignedheader(\H)}\,,\\
         &\mathbf{T} = 1
     \end{aligned}\right.\\
     \label{eq:ticketconditionfalse}
-    \gamma'_\mathbf{s} \in \seq{\H_B} &\implies \left\{\,\begin{aligned}
-        &i = \mathbf{H}_a\,,\\
-        &\mathbf{H}_s \in \bandersig{\mathbf{H}_a}{\mathsf{X}_F \concat \eta'_3}{\mathcal{E}_U(\mathbf{H})}\,,\\
+    \gamma'_\mathbf{s} \in \seq{\hash_B} &\implies \left\{\,\begin{aligned}
+        &i = \H_\¬authorbanderkey\,,\\
+        &\H_\¬sealsig \in \bandersig{\H_\¬authorbanderkey}{\mathsf{X}_F \concat \eta'_3}{\seunsignedheader(\H)}\,,\\
         &\mathbf{T} = 0
     \end{aligned}\right.\\
-  \mathbf{H}_v &\in \bandersig{\mathbf{H}_a}{\mathsf{X}_E\frown \banderout{\mathbf{H}_s}}{[]} \\
+  \H_\¬vrfsig &\in \bandersig{\H_\¬authorbanderkey}{\mathsf{X}_E\frown \banderout{\H_\¬sealsig}}{[]} \\
   \mathsf{X}_E &= \token{\$jam\_entropy}\\
   \mathsf{X}_F &= \token{\$jam\_fallback\_seal}\\
   \mathsf{X}_T &= \token{\$jam\_ticket\_seal}
@@ -139,12 +139,12 @@ Sealing using the ticket is of greater security, and we utilize this knowledge w
 
 In addition to the entropy accumulator $\eta_0$, we retain three additional historical values of the accumulator at the point of each of the three most recently ended epochs, $\eta_1$, $\eta_2$ and $\eta_3$. The second-oldest of these $\eta_2$ is utilized to help ensure future entropy is unbiased (see equation \ref{eq:ticketsextrinsic}) and seed the fallback seal-key generation function with randomness (see equation \ref{eq:slotkeysequence}). The oldest is used to regenerate this randomness when verifying the seal above (see equations \ref{eq:ticketconditionfalse} and \ref{eq:ticketconditiontrue}).
 \begin{align}\label{eq:entropycomposition}
-  \eta &\in \lseq\H\rseq_4
+  \eta &\in \lseq\hash\rseq_4
 \end{align}
 
 $\eta_0$ defines the state of the randomness accumulator to which the provably random output of the \textsc{vrf}, the signature over some unbiasable input, is combined each block. $\eta_1$, $\eta_2$ and $\eta_3$ meanwhile retain the state of this accumulator at the end of the three most recently ended epochs in order.
 \begin{align}
-  \eta'_0 &\equiv \blake(\eta_0 \frown \banderout{\mathbf{H}_v})
+  \eta'_0 &\equiv \blake(\eta_0 \frown \banderout{\H_\¬vrfsig})
 \end{align}
 
 On an epoch transition (identified as the condition $e' > e$), we therefore rotate the accumulator value into the history $\eta_1$, $\eta_2$ and $\eta_3$:
@@ -188,7 +188,7 @@ Here, we use $Z$ as the outside-in sequencer function, defined as follows:
 Finally, $F$ is the fallback key sequence function which selects an epoch's worth of validator Bandersnatch keys ($\seq{\mathbb{H}_B}_{\mathsf{E}}$) from the validator key set $\mathbf{k}$ using the entropy collected on-chain $r$:
 \begin{equation}\label{eq:fallbackkeysequence}
   F\colon \left\{\ \begin{aligned}
-    \tuple{\H \ts \seq{\mathbb{K}}} &\to \seq{\mathbb{H}_B}_{\mathsf{E}}\\
+    \tuple{\hash \ts \seq{\mathbb{K}}} &\to \seq{\mathbb{H}_B}_{\mathsf{E}}\\
     \tup{r \ts \mathbf{k}} &\mapsto \left[
     \mathbf{k}[\de(\blake_4(r \frown \mathcal{E}_4(i)))]^\circlearrowleft_b
     \middle\vert\; i \in \N_\mathsf{E}
@@ -211,17 +211,17 @@ Finally, $F$ is the fallback key sequence function which selects an epoch's wort
 
 The epoch and winning-tickets markers are information placed in the header in order to minimize data transfer necessary to determine the validator keys associated with any given epoch. They are particularly useful to nodes which do not synchronize the entire state for any given block since they facilitate the secure tracking of changes to the validator key sets using only the chain of headers.
 
-As mentioned earlier, the header's epoch marker $\mathbf{H}_e$ is either empty or, if the block is the first in a new epoch, then a tuple of the next and current epoch randomness, along with a sequence of tuples containing both Bandersnatch keys and Ed25519 keys for each validator defining the validator keys beginning in the next epoch. Formally:
+As mentioned earlier, the header's epoch marker $\H_\¬epochmark$ is either empty or, if the block is the first in a new epoch, then a tuple of the next and current epoch randomness, along with a sequence of tuples containing both Bandersnatch keys and Ed25519 keys for each validator defining the validator keys beginning in the next epoch. Formally:
 \begin{align}\label{eq:epochmarker}
-  \mathbf{H}_e &\equiv \begin{cases}
+  \H_\¬epochmark &\equiv \begin{cases}
     ( \eta_0, \eta_1, [ \tup{k_b, k_e} \mid k \orderedin \gamma'_\mathbf{k} ] )\qquad\qquad &\when e' > e \\
     \none & \otherwise
   \end{cases}
 \end{align}
 
-The winning-tickets marker $\mathbf{H}_w$ is either empty or, if the block is the first after the end of the submission period for tickets and if the ticket accumulator is saturated, then the final sequence of ticket identifiers. Formally:
+The winning-tickets marker $\H_\¬winnersmark$ is either empty or, if the block is the first after the end of the submission period for tickets and if the ticket accumulator is saturated, then the final sequence of ticket identifiers. Formally:
 \begin{align}\label{eq:winningticketsmarker}
-  \mathbf{H}_w &\equiv \begin{cases}
+  \H_\¬winnersmark &\equiv \begin{cases}
     Z(\gamma_\mathbf{a}) &\when e' = e \wedge m < \mathsf{Y} \le m' \wedge |\gamma_\mathbf{a}| = \mathsf{E} \\
     \none & \otherwise
   \end{cases}
