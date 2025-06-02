@@ -176,7 +176,7 @@ These terms are all contextualized to a single block. They may be superscripted 
   \item[$\H$] The block header. See equation \ref{eq:header}.
   \item[$\mathbf{I}$] The sequence of work-reports which were accumulated this in this block. See equation \ref{eq:accumulatedreports}.
   \item[$\mathbf{Q}$] The selection of ready work-reports which a validator determined they must audit. See equation \ref{eq:auditselection}.
-  \item[$\mathbf{R}$] The set of Ed25519 guarantor keys who made a work-report. See equation \ref{eq:guarantorsig}.
+  \item[$\reporters$] The set of Ed25519 guarantor keys who made a work-report. See equation \ref{eq:guarantorsig}.
   \item[$\mathbf{S}$] The set of indices of services which have been accumulated (``progressed'') in the block. See equation \ref{eq:servicestoaccumulate}.
   \item[$\mathbf{T}$] The ticketed condition, true if the block was sealed with a ticket signature rather than a fallback. See equations \ref{eq:ticketconditiontrue} and \ref{eq:ticketconditionfalse}.
   \item[$\mathbf{U}$] The audit condition, equal to $\top$ once the block is audited. See section \ref{sec:auditing}.
@@ -213,17 +213,17 @@ Here, the prime annotation indicates posterior state. Individual components may 
     \item[$\accountspostacc$] The post-accumulation, pre-transfer intermediate state. %	δ
     \item[$\accountspostxfer$] The post-transfer, pre-preimage integration intermediate state. %	δ
   \end{description}
-  \item[$\entropy$] The e$\entropy$tropy accumulator and epochal ra$\entropy$domness. %	η
+  \item[$\entropy$] The entropy accumulator and epochal randomness. %	η
   \item[$\stagingset$] The validator keys and metadata to be drawn from next. %	ι
-  \item[$\activeset$] The validator $\activeset$eys and metadata currently active. %	κ
+  \item[$\activeset$] The validator keys and metadata currently active. %	κ
   \item[$\previousset$] The validator keys and metadata which were active in the prior epoch. %	λ
-  \item[$\rho$] The $\rho$ending reports, per core, which are being made available prior to accumulation. %	ρ
+  \item[$\reports$] The pending reports, per core, which are being made available prior to accumulation. %	ρ
   \begin{description}
-    \item[$\rho^\dagger$] The post-judgment, pre-guarantees-extrinsic intermediate state. %	δ
-    \item[$\rho^\ddagger$] The post-guarantees-extrinsic, pre-assurances-extrinsic, intermediate state. %	δ
+    \item[$\reportspostjudgement$] The post-judgment, pre-guarantees-extrinsic intermediate state. %	δ
+    \item[$\reportspostguarantees$] The post-guarantees-extrinsic, pre-assurances-extrinsic, intermediate state. %	δ
   \end{description}
-  \item[$\thestate$] The $\thestate$verall state of the system. See equations \ref{eq:statetransition}, \ref{eq:statecomposition}. %	σ
-  \item[$\thetime$] The most recent block's $\thetime$imeslot. %	τ
+  \item[$\thestate$] The overall state of the system. See equations \ref{eq:statetransition}, \ref{eq:statecomposition}. %	σ
+  \item[$\thetime$] The most recent block's timeslot. %	τ
   \item[$\authqueue$] The authorization queue. %	ϕ
   \item[$\disputes$] Past judgments on work-reports and validators. %	ψ
   \begin{description}
@@ -239,9 +239,9 @@ Here, the prime annotation indicates posterior state. Individual components may 
     \item[$\assigners$] The indices of the services able to assign each core's authorizer queue.
     \item[$\alwaysaccers$] The always-accumulate service indices and their basic gas allowance.
   \end{description}
-  \item[$\pi$] The activity statistics for the validators. % π
-  \item[$\vartheta$] The accumulation queue. % ϑ
-  \item[$\xi$] The accumulation history. % ξ
+  \item[$\activity$] The activity statistics for the validators. % π
+  \item[$\ready$] The accumulation queue. % ϑ
+  \item[$\accumulated$] The accumulation history. % ξ
   \item[$\lastaccout$] The most recent Accumulation outputs. See equation \ref{eq:lastaccout}. % θ
 \end{description}
 
@@ -267,7 +267,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{B}_S = 100$] The basic minimum balance which all services require.
   \item[$\corecount = 341$] The total number of cores.
   \item[$\mathsf{D} = 19,200$] The period in timeslots after which an unreferenced preimage may be expunged.
-  \item[$\mathsf{E} = 600$] The length of an epoch in timeslots.
+  \item[$\epochlen = 600$] The length of an epoch in timeslots.
   \item[$\mathsf{F} = 2$] The audit bias factor, the expected number of additional validators who will audit a work-report in the following tranche for each no-show in the previous.
   \item[$\mathsf{G}_A = 10,000,000$] The gas allocated to invoke a work-report's Accumulation logic.
   \item[$\mathsf{G}_I = 50,000,000$] The gas allocated to invoke a work-package's Is-Authorized logic.

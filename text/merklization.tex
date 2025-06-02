@@ -24,8 +24,8 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(2) &\mapsto \se(\authqueue) \;, \\
     &&C(3) &\mapsto \se(\var{[(h, b, s, \var{\mathbf{p}})\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \Fmmrencode{\beefybelt}) \;, \\
     &&C(4) &\mapsto \se\left(\tup{\pendingset, \epochroot, \left\{\,\begin{aligned}
-      0\ &\when \sealtickets \in \seq{\mathbb{C}}_\mathsf{E}\\
-      1\ &\when \sealtickets \in \seq{\bskey}_\mathsf{E}\\
+      0\ &\when \sealtickets \in \seq{\mathbb{C}}_\epochlen\\
+      1\ &\when \sealtickets \in \seq{\bskey}_\epochlen\\
     \end{aligned}\right\}, \sealtickets,
     \var{\ticketaccumulator}}\right) \;, \\
     &&C(5) &\mapsto \se(\var{\orderby{x}{x \in \goodset}}, \var{\orderby{x}{x \in \badset}}, \var{\orderby{x}{x \in \wonkyset}}, \var{\orderby{x}{x \in \offenders}}) \;, \\
@@ -33,10 +33,10 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(7) &\mapsto \se(\stagingset) \;, \\
     &&C(8) &\mapsto \se(\activeset) \;, \\
     &&C(9) &\mapsto \se(\previousset) \;, \\
-    &&C(10) &\mapsto \se([\maybe{(w, \se_4(t))} \mid (w, t) \orderedin \rho]) \;, \\
+    &&C(10) &\mapsto \se([\maybe{(w, \se_4(t))} \mid (w, t) \orderedin \reports]) \;, \\
     &&C(11) &\mapsto \se_4(\thetime) \;, \\
     &&C(12) &\mapsto \se_4(\manager, \assigners, \delegator) \concat \se(\alwaysaccers) \;, \\
-    &&C(13) &\mapsto \se_4(\pi_V, \pi_L), \pi_C, \pi_S \;, \\
+    &&C(13) &\mapsto \se_4(\valstatsaccumulator, \valstatsprevious), \corestats, \servicestats \;, \\
     &&C(14) &\mapsto \se([\var{(\mathbf{w}, \var{\mathbf{d}})} \mid (\mathbf{w}, \mathbf{d}) \orderedin \mathbf{i} \mid \mathbf{i} \orderedin \ready]) \;, \\
     &&C(15) &\mapsto \se([\var{\mathbf{i}} \mid \mathbf{i} \orderedin \accumulated]) \;, \\
     &&C(16) &\mapsto \se(\var{[(\se_4(s), \se(h)) \mid (s, h) \orderedin \lastaccout]}) \;, \\

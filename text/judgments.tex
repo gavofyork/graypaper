@@ -32,7 +32,7 @@ The disputes extrinsic, $\xtdisputes$, may contain one or more verdicts $\xtverd
 \begin{equation}
   \begin{aligned}
     \xtdisputes &\equiv (\xtverdicts, \xtculprits, \xtfaults) \\
-    \where \xtverdicts &\in \seq{\tup{\hash, \ffrac{\thetime}{\mathsf{E}} - \N_2, \seq{\tup{\{\top, \bot\}, \valindex, \mathbb{E}}}_{\floor{\nicefrac{2}{3}\valcount} + 1}}}\\
+    \where \xtverdicts &\in \seq{\tup{\hash, \ffrac{\thetime}{\epochlen} - \N_2, \seq{\tup{\{\top, \bot\}, \valindex, \mathbb{E}}}_{\floor{\nicefrac{2}{3}\valcount} + 1}}}\\
     \also \xtculprits &\in \seq{\hash, \edkey, \mathbb{E}} \,,\quad
     \xtfaults \in \seq{\hash, \{\top,\bot\}, \edkey, \mathbb{E}}
   \end{aligned}
@@ -43,7 +43,7 @@ The signatures of all judgments must be valid in terms of one of the two allowed
   &\begin{aligned}
     &\forall (r, a, \mathbf{j}) \in \xtverdicts, \forall (v, i, s) \in \mathbf{j} : s \in \sig{\mathbf{k}[i]_\vk¬ed}{\mathsf{X}_v \concat r}\\
     &\quad\where \mathbf{k} = \begin{cases}
-      \activeset &\when a = \displaystyle \ffrac{\thetime}{\mathsf{E}}\\
+      \activeset &\when a = \displaystyle \ffrac{\thetime}{\epochlen}\\
       \previousset &\otherwise\\
     \end{cases}
   \end{aligned}\\
@@ -94,9 +94,9 @@ There are some constraints placed on the composition of this extrinsic: any verd
 
 We clear any work-reports which we judged as uncertain or invalid from their core:
 \begin{equation}\label{eq:removenonpositive}
-  \forall c \in \coreindex : \rho^\dagger[c] = \begin{cases}
-    \none &\!\!\!\!\when \{ (\blake(\rho[c]_w), t) \in \verdicts, t < \floor{\nicefrac{2}{3}\valcount} \} \\
-    \rho[c] &\!\!\!\!\otherwise
+  \forall c \in \coreindex : \reportspostjudgement[c] = \begin{cases}
+    \none &\!\!\!\!\when \{ (\blake(\reports[c]_w), t) \in \verdicts, t < \floor{\nicefrac{2}{3}\valcount} \} \\
+    \reports[c] &\!\!\!\!\otherwise
   \end{cases}\!\!\!\!\!\!\!
 \end{equation}
 

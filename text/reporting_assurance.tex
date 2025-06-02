@@ -2,7 +2,7 @@
 
 Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make their way into the state of service accounts, $\accounts$. A \emph{work-package}, which comprises several \emph{work-items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work-digests} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After enough assurances the work-report is considered \emph{available}, and the work-digests transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}. The report may also be \emph{timed-out}, implying it may be replaced by another report without accumulation.
 
-From the perspective of the work-report, therefore, the guarantee happens first and the assurance afterwards. However, from the perspective of a block's state-transition, the assurances are best processed first since each core may only have a single work-report pending its package becoming available at a time. Thus, we will first cover the transition arising from processing the availability assurances followed by the work-report guarantees. This synchroneity can be seen formally through the requirement of an intermediate state $\rho^\ddagger$, utilized later in equation \ref{eq:reportcoresareunusedortimedout}.
+From the perspective of the work-report, therefore, the guarantee happens first and the assurance afterwards. However, from the perspective of a block's state-transition, the assurances are best processed first since each core may only have a single work-report pending its package becoming available at a time. Thus, we will first cover the transition arising from processing the availability assurances followed by the work-report guarantees. This synchroneity can be seen formally through the requirement of an intermediate state $\reportspostguarantees$, utilized later in equation \ref{eq:reportcoresareunusedortimedout}.
 
 
 
@@ -13,9 +13,9 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 
 
 \subsection{State}
-The state of the reporting and availability portion of the protocol is largely contained within $\rho$, which tracks the work-reports which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
+The state of the reporting and availability portion of the protocol is largely contained within $\reports$, which tracks the work-reports which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
 \begin{equation}\label{eq:reportingstate}
-  \rho \in \seq{
+  \reports \in \seq{
     \optional{\tuple{
       \isa{w}{\workreport} ,
       \isa{t}{\timeslot}
@@ -23,7 +23,7 @@ The state of the reporting and availability portion of the protocol is largely c
   }_\corecount
 \end{equation}
 
-As usual, intermediate and posterior values ($\rho^\dagger$, $\rho^\ddagger$, $\rho'$) are held under the same constraints as the prior value.
+As usual, intermediate and posterior values ($\reportspostjudgement$, $\reportspostguarantees$, $\reportspostassurances$) are held under the same constraints as the prior value.
 
 \subsubsection{Work Report}\label{sec:workreport}
 A work-report, of the set $\workreport$, is defined as a tuple of the work-package specification, $\wr¬avspec$; the refinement context, $\wr¬context$; the core-index (\ie on which the work is done), $\wr¬core$; as well as the authorizer hash $\wr¬authorizer$ and trace $\wr¬authtrace$; a segment-root lookup dictionary $\wr¬srlookup$; the gas consumed during the Is-Authorized invocation, $\wr¬authgasused$; and finally the work-digests $\wr¬digests$ which comprise the results of the evaluation of each of the items in the package together with some associated data. Formally:
@@ -124,7 +124,7 @@ In order to ensure fair use of a block's extrinsic space, work-reports are limit
 
 \subsection{Package Availability Assurances}
 
-We first define $\rho^\ddagger$, the intermediate state to be utilized next in section \ref{sec:workreportguarantees} as well as $\mathbf{W}$, the set of available work-reports, which will we utilize later in section \ref{sec:accumulation}. Both require the integration of information from the assurances extrinsic $\xtassurances$.
+We first define $\reportspostguarantees$, the intermediate state to be utilized next in section \ref{sec:workreportguarantees} as well as $\mathbf{W}$, the set of available work-reports, which will we utilize later in section \ref{sec:accumulation}. Both require the integration of information from the assurances extrinsic $\xtassurances$.
 
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
@@ -147,22 +147,22 @@ The signature must be one whose public key is that of the validator assuring and
 A bit may only be set if the corresponding core has a report pending availability on it:
 \begin{equation}
   \forall a \in \xtassurances, c \in \coreindex :
-  \quad a_f[c] \Rightarrow \rho^\dagger[c] \ne \none
+  \quad a_f[c] \Rightarrow \reportspostjudgement[c] \ne \none
 \end{equation}
 
 \subsubsection{Available Reports}
 A work-report is said to become \emph{available} if and only if there are a clear \nicefrac{2}{3} super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\mathbf{W}$ as:
 \begin{align}\label{eq:availableworkreports}
-  \mathbf{W} &\equiv \left[\rho^\dagger[c]_w\,\middle\vert\,c \orderedin \coreindex,\;\sum_{a \in \xtassurances}\!a_f[c]\,>\,\nicefrac{2}{3}\,\valcount\right]
+  \mathbf{W} &\equiv \left[\reportspostjudgement[c]_w\,\middle\vert\,c \orderedin \coreindex,\;\sum_{a \in \xtassurances}\!a_f[c]\,>\,\nicefrac{2}{3}\,\valcount\right]
 \end{align}
 
-% TODO: Rename $\mathbf{W}$ to \mathbf{V} or whatever and `\mathbf{w}` becomes `\mathbf{R}` and `\mathbf{R}` becomes `\mathbf{G}`. `\mathbf{G}` would become something else.
+% TODO: Rename $\mathbf{W}$ to \mathbf{V} or whatever and `\mathbf{w}` becomes `\reporters` and `\reporters` becomes `\mathbf{G}`. `\mathbf{G}` would become something else.
 
-This value is utilized in the definition of both $\accountspost$ and $\rho^\ddagger$ which we will define presently as equivalent to $\rho^\dagger$ except for the removal of items which are either now available or have timed out:
+This value is utilized in the definition of both $\accountspost$ and $\reportspostguarantees$ which we will define presently as equivalent to $\reportspostjudgement$ except for the removal of items which are either now available or have timed out:
 \begin{align}
-  \forall c \in \coreindex: \rho^\ddagger[c] \equiv \begin{cases}
-    \none &\when\rho[c]_w \in \mathbf{W} \vee \H_\¬timeslot \ge \rho^\dagger[c]_t + \mathsf{U}\\
-    \rho^\dagger[c] &\otherwise
+  \forall c \in \coreindex: \reportspostguarantees[c] \equiv \begin{cases}
+    \none &\when\reports[c]_w \in \mathbf{W} \vee \H_\¬timeslot \ge \reportspostjudgement[c]_t + \mathsf{U}\\
+    \reportspostjudgement[c] &\otherwise
   \end{cases}
 \end{align}
 
@@ -188,7 +188,7 @@ We determine the core to which any given validator is assigned through a shuffle
 We define the permute function $P$, the rotation function $R$ and finally the guarantor assignments  $\mathbf{G}$ as follows:
 \begin{align}
   R(\mathbf{c}, n) &\equiv \sq{\build{ (x + n) \bmod \corecount}{x \orderedin \mathbf{c}}}\\
-  P(e, t) &\equiv R\left(\Ffyshuffle{\sq{\build{\ffrac{\corecount \cdot i}{\valcount}}{i \orderedin \valindex}}, e}, \ffrac{t \bmod \mathsf{E}}{\mathsf{R}}\right)\\
+  P(e, t) &\equiv R\left(\Ffyshuffle{\sq{\build{\ffrac{\corecount \cdot i}{\valcount}}{i \orderedin \valindex}}, e}, \ffrac{t \bmod \epochlen}{\mathsf{R}}\right)\\
   \mathbf{G} &\equiv (P(\entropy_2', \thetime'), \Phi(\activeset'))
 \end{align}
 
@@ -197,7 +197,7 @@ We also define $\mathbf{G}^*$, which is equivalent to the value $\mathbf{G}$ as 
   \label{eq:priorassignments}
   \begin{aligned}
     \using (e, \mathbf{k}) &= \begin{cases}
-      (\entropy'_2, \activeset') &\when \displaystyle\ffrac{\thetime' - \mathsf{R}}{\mathsf{E}} = \ffrac{\thetime'}{\mathsf{E}}\\
+      (\entropy'_2, \activeset') &\when \displaystyle\ffrac{\thetime' - \mathsf{R}}{\epochlen} = \ffrac{\thetime'}{\epochlen}\\
       (\entropy'_3, \previousset') &\otherwise
     \end{cases} \\
     \mathbf{G}^* &\equiv (P(e, \thetime' - \mathsf{R}), \Phi(\mathbf{k}))
@@ -245,7 +245,7 @@ The signature must be one whose public key is that of the validator identified i
         &s \in \sig{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\concat\blake(w)}\\
         &\mathbf{c}\sub{v} = w_\wr¬core \wedge \mathsf{R}(\floor{\nicefrac{\thetime'}{\mathsf{R}}} - 1) \le t \le \thetime'\\
       \end{aligned}\right.\\
-      &k \in \mathbf{R} \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists (v, s) \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
+      &k \in \reporters \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists (v, s) \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
       &\quad\where (\mathbf{c}, \mathbf{k}) = \begin{cases}
         \mathbf{G} &\when \displaystyle \ffrac{\thetime'}{\mathsf{R}} = \ffrac{t}{\mathsf{R}} \\
         \mathbf{G}^* &\otherwise
@@ -254,7 +254,7 @@ The signature must be one whose public key is that of the validator identified i
   &\mathsf{X}_G \equiv \token{\$jam\_guarantee}
 \end{align}
 
-We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\mathbf{R}$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
+We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\reporters$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
 
 We denote $\mathbf{w}$ to be the set of work-reports in the present extrinsic $\mathbf{E}$:
 \begin{align}\label{eq:incomingworkreports}
@@ -264,7 +264,7 @@ We denote $\mathbf{w}$ to be the set of work-reports in the present extrinsic $\
 No reports may be placed on cores with a report pending availability on it. A report is valid only if the authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
 \begin{equation}\label{eq:reportcoresareunusedortimedout}
   \forall w \in \mathbf{w} :
-    \rho^\ddagger[w_\wr¬core] = \none \wedge w_\wr¬authorizer \in \authpool_{w_\wr¬core}
+    \reportspostguarantees[w_\wr¬core] = \none \wedge w_\wr¬authorizer \in \authpool_{w_\wr¬core}
 \end{equation}
 
 We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\mathsf{G}_A$:
@@ -316,7 +316,7 @@ We also require that we have a record of it; this is one of the few conditions w
 We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:
 \begin{align}
   &\using \mathbf{q} = \{(w_x)_p \mid \mathbf{q} \in \ready, (w, \mathbf{d}) \in \mathbf{q}\} \\
-  &\using \mathbf{a} = \{((i_w)_x)_p \mid i \in \rho, i \ne \none\}\\
+  &\using \mathbf{a} = \{((i_w)_x)_p \mid i \in \reports, i \ne \none\}\\
   &\forall p \in \mathbf{p}, p \not\in \bigcup_{x \in \recenthistory}\Fkeys{x_\mathbf{p}} \cup \bigcup_{x \in \accumulated}x \cup \mathbf{q} \cup \mathbf{a}
 \end{align}
 
@@ -351,12 +351,12 @@ Finally, we require that all work-digests within the extrinsic predicted the cor
 
 \subsection{Transitioning for Reports}
 
-We define $\rho'$ as being equivalent to $\rho^\ddagger$, except where the extrinsic replaced an entry. In the case an entry is replaced, the new value includes the present time $\thetime'$ allowing for the value to be replaced without respect to its availability once sufficient time has elapsed (see equation \ref{eq:reportcoresareunusedortimedout}).
+We define $\reportspostassurances$ as being equivalent to $\reportspostguarantees$, except where the extrinsic replaced an entry. In the case an entry is replaced, the new value includes the present time $\thetime'$ allowing for the value to be replaced without respect to its availability once sufficient time has elapsed (see equation \ref{eq:reportcoresareunusedortimedout}).
 \begin{equation}
-    \forall c \in \coreindex : \rho'[c] \equiv \begin{cases}
+    \forall c \in \coreindex : \reportspostassurances[c] \equiv \begin{cases}
       \tup{w,\,\is{t}{\thetime'}} &\when \exists \tup{c,\,w,\,a} \in \xtguarantees \\
-      \rho^\ddagger[c] &\otherwise
+      \reportspostguarantees[c] &\otherwise
     \end{cases}
 \end{equation}
 
-This concludes the section on reporting and assurance. We now have a complete definition of $\rho'$ together with $\mathbf{W}$ to be utilized in section \ref{sec:accumulation}, describing the portion of the state transition happening once a work-report is guaranteed and made available.
+This concludes the section on reporting and assurance. We now have a complete definition of $\reportspostassurances$ together with $\mathbf{W}$ to be utilized in section \ref{sec:accumulation}, describing the portion of the state transition happening once a work-report is guaranteed and made available.
