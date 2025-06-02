@@ -9,9 +9,9 @@ The serialization of state primarily involves placing all the various components
 We define the state-key constructor functions $C$ as:
 \begin{equation}
   C\colon\left\{\begin{aligned}
-    \N_{2^8} \cup (\N_{2^8}, \N_S) \cup \tup{\N_S, \blob} &\to \blob_{31} \\
+    \N_{2^8} \cup (\N_{2^8}, \serviceid) \cup \tup{\serviceid, \blob} &\to \blob_{31} \\
     i \in \N_{2^8} &\mapsto [i, 0, 0, \dots] \\
-    (i, s \in \N_S) &\mapsto [i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots]\ \where n = \se_4(s) \\
+    (i, s \in \serviceid) &\mapsto [i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots]\ \where n = \se_4(s) \\
     (s, h) &\mapsto [n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}]\ \where n = \se_4(s), a = \blake(h)_{0\dots 27}
   \end{aligned}
   \right.
@@ -21,7 +21,7 @@ The state serialization is then defined as the dictionary built from the amalgam
 \begin{equation}
   T(\thestate) \equiv \left\{\begin{aligned}
     &&C(1) &\mapsto \se([\var{x}\mid x\orderedin \authpool]) \;, \\
-    &&C(2) &\mapsto \se(\varphi) \;, \\
+    &&C(2) &\mapsto \se(\authqueue) \;, \\
     &&C(3) &\mapsto \se(\var{[(h, b, s, \var{\mathbf{p}})\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \Fmmrencode{\beefybelt}) \;, \\
     &&C(4) &\mapsto \se\left(\tup{\pendingset, \epochroot, \left\{\,\begin{aligned}
       0\ &\when \sealtickets \in \seq{\mathbb{C}}_\mathsf{E}\\

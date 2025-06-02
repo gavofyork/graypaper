@@ -2,7 +2,7 @@
 
 We retain in state information on the most recent $\mathsf{H}$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
 \begin{align}
-  \beta &\in (\recenthistory, \beefybelt) \label{eq:recenthistory} \\
+  \recent &\in (\recenthistory, \beefybelt) \label{eq:recenthistory} \\
   \recenthistory &\in \seq{\tuple{
     \isa{h}{\hash},
     \isa{b}{\hash},
@@ -10,7 +10,7 @@ We retain in state information on the most recent $\mathsf{H}$ blocks. This is u
     \isa{\mathbf{p}}{\dict{\hash}{\hash}}
   }}_{:\mathsf{H}}\\
   \beefybelt &\in \seq{\optional{\hash}} \\
-  \lastaccout &\in \seq{\tup{\N_S, \hash}}
+  \lastaccout &\in \seq{\tup{\serviceid, \hash}}
 \end{align}
 
 For each recent block, we retain its header hash, its state root, its accumulation-result \textsc{mmb} and the corresponding work-package hashes of each item reported (which is no more than the total number of cores, $\corecount = 341$).

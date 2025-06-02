@@ -28,7 +28,7 @@ Passing multiple arguments to the serialization functions is equivalent to passi
 %We also define the variable-size prefix 29-bit natural serialization function $\se_{4*}$:
 %\begin{equation}
 %  \se_{4*}\colon\left\{\begin{aligned}
-%    \N_{2^{29}} &\to \blob_{1:4} \\
+%    \Nbits{29} &\to \blob_{1:4} \\
 %    x &\mapsto \begin{cases}
 %      [0] &\when x = 0 \\
 %      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \se_l(x \bmod 2^{8l}) &\when \exists l \in \N_3 : 2^{7l} \le x < 2^{7(l+1)} \\
@@ -40,7 +40,7 @@ Passing multiple arguments to the serialization functions is equivalent to passi
 We define general natural number serialization, able to encode naturals of up to $2^{64}$, as:
 \begin{equation}
   \se\colon\left\{\begin{aligned}
-    \N_{2^{64}} &\to \blob_{1:9} \\
+    \Nbits{64} &\to \blob_{1:9} \\
     x &\mapsto \begin{cases}
       [0] &\when x = 0 \\
       \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \se_l(x \bmod 2^{8l}) &\when \exists l \in \N_8 : 2^{7l} \le x < 2^{7(l+1)} \\
@@ -175,7 +175,7 @@ A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, 
     5 &\when o = \token{BAD} \\
     6 &\when o = \token{BIG} \\
   \end{cases}\\
-  \se_I(h \in \hash \cup \hash^\boxplus, i \in \N_{2^{15}}) &\equiv \begin{cases}
+  \se_I(h \in \hash \cup \hash^\boxplus, i \in \Nbits{15}) &\equiv \begin{cases}
     (h, \se_2(i)) &\when h \in \hash\\
     (r, \se_2(i + 2^{15})) &\when \exists r \in \hash, h = r^\boxplus\\
   \end{cases}

@@ -41,10 +41,10 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
   \Psi_I &\colon \left\{\begin{aligned}
     (\workpackage, \coreindex) &\to \tuple{\blob \cup \mathbb{J}, \gas} \\
     (\wpX, c) &\mapsto \begin{cases}
-      \tup{\token{BAD}, 0} &\when \wpX_\mathbf{c} = \none \\
-      \tup{\token{BIG}, 0} &\otherwhen \len{\wpX_\mathbf{c}} > \mathsf{W}_A \\
+      \tup{\token{BAD}, 0} &\when \wpX_\wp¬authcode = \none \\
+      \tup{\token{BIG}, 0} &\otherwhen \len{\wpX_\wp¬authcode} > \mathsf{W}_A \\
       \tup{\mathbf{r}, u} &\otherwise \\
-      \multicolumn{2}{l}{\where (u, \mathbf{r}, \none) = \Psi_M(\wpX_\mathbf{c}, 0, \mathsf{G}_I, \se_2(c), F, \none)}\\
+      \multicolumn{2}{l}{\where (u, \mathbf{r}, \none) = \Psi_M(\wpX_\wp¬authcode, 0, \mathsf{G}_I, \se_2(c), F, \none)}\\
     \end{cases}\\
   \end{aligned}\right. \\
   \label{eq:isauthorizedmutator}F \in \Omega\ang{\{\}} &\colon
@@ -114,12 +114,12 @@ Since this is a transition which can directly affect a substantial amount of on-
 Formally, we define our result context to be $\mathbf{X}$, and our invocation context to be a pair of these contexts, $\mathbf{X} \times \mathbf{X}$ (and thus for any value $\mathbf{x} \in \mathbf{X}$ there exists $\mathbf{x}^2 \in \mathbf{X} \times \mathbf{X}$), with one dimension being the regular dimension and generally named $\mathbf{x}$ and the other being the exceptional dimension and being named $\mathbf{y}$. The only function which actually alters this second dimension is $\mathtt{checkpoint}$, $\Omega_C$ and so it is rarely seen.
 \begin{align}
   \mathbf{X} &\equiv \tuple{
-    \isa{s}{\N_S},
+    \isa{s}{\serviceid},
     \isa{\mathbf{u}}{\partialstate},
-    \isa{i}{\N_S},
+    \isa{i}{\serviceid},
     \isa{\mathbf{t}}{\seq{\mathbb{T}}},
     \isa{y}{\optional{\hash}},
-    \isa{\mathbf{p}}{\{\tuple{\N_S, \blob}\}}
+    \isa{\mathbf{p}}{\{\tuple{\serviceid, \blob}\}}
   }\\
   \forall \mathbf{x} \in \mathbf{X} : \mathbf{x}_\mathbf{s} &\equiv (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]
 \end{align}
@@ -132,18 +132,18 @@ We define $\Psi_A$, the Accumulation invocation function as:
 \begin{align}
   \Psi_A& \colon\left\{\begin{aligned}
     \tuple{
-      \partialstate, \timeslot, \N_S, \gas, \seq{\operandtuple}
+      \partialstate, \timeslot, \serviceid, \gas, \seq{\operandtuple}
     }
     &\to
-    \tuple{\partialstate, \defxfers, \optional{\hash}, \gas, \seq{\tuple{\N_S, \blob}}} \\
+    \tuple{\partialstate, \defxfers, \optional{\hash}, \gas, \seq{\tuple{\serviceid, \blob}}} \\
     (\mathbf{u}, t, s, g, \mathbf{o}) &\mapsto \begin{cases}
       \tup{\mathbf{u}, [], \none, 0, \sq{}} &\when \mathbf{c} = \none \vee \len{\mathbf{c}} > \mathsf{W}_C \\
       C(\Psi_M(\mathbf{c}, 5, g, \se(t, s, \len{\mathbf{o}}), F, I(\mathbf{u}, s)^2)) &\otherwise \\
-      \where \mathbf{c} = \mathbf{u}_\mathbf{d}[s]_\mathbf{c}&
+      \where \mathbf{c} = \mathbf{u}_\mathbf{d}[s]_\sa¬code&
     \end{cases} \\
   \end{aligned}\right.\\
   I&\colon\left\{\begin{aligned}
-    (\mathbb{U}, \N_S) &\to \mathbf{X}\\
+    (\mathbb{U}, \serviceid) &\to \mathbf{X}\\
     (\mathbf{u}, s) &\mapsto \tup{
       s,
       \mathbf{u},
@@ -183,7 +183,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     &\qquad \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[\mathbf{x}^*_s] = \mathbf{s}
   \end{aligned}\right.\\
   C&\colon\left\{\begin{aligned}
-    (\gas, \blob \cup \{\oog, \panic\}, (\mathbf{X}, \mathbf{X})) &\to (\partialstate, \defxfers, \optional{\hash}, \gas, \seq{\tuple{\N_S, \blob}}) \\
+    (\gas, \blob \cup \{\oog, \panic\}, (\mathbf{X}, \mathbf{X})) &\to (\partialstate, \defxfers, \optional{\hash}, \gas, \seq{\tuple{\serviceid, \blob}}) \\
     (u, \mathbf{o}, (\mathbf{x}, \mathbf{y})) &\mapsto \begin{cases}
       \tup{
         \mathbf{y}_\mathbf{u},
@@ -216,7 +216,7 @@ The initializer function $I$ maps some service account $\mathbf{s}$ along with i
 
 Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\entropyaccumulator'$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
 \begin{equation}
-  \text{check}(i \in \N_S) \equiv \begin{cases}
+  \text{check}(i \in \serviceid) \equiv \begin{cases}
     i &\when i \not\in \Fkeys{\mathbf{u}_\mathbf{d}} \\
     \text{check}((i - 2^8 + 1) \bmod (2^{32}-2^9) + 2^8)&\otherwise
   \end{cases}
@@ -229,13 +229,13 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
 \begin{align}
   \Psi_T &: \begin{cases}
-    (\dict{\N_S}{\serviceaccount}, \timeslot, \N_S, \seq{\mathbb{T}}) &\to \tuple{\serviceaccount, \gas} \\
+    (\dict{\serviceid}{\serviceaccount}, \timeslot, \serviceid, \seq{\mathbb{T}}) &\to \tuple{\serviceaccount, \gas} \\
     (\mathbf{d}, t, s, \mathbf{t}) &\mapsto \begin{cases}
-    \tup{\mathbf{s}, 0} &\when \mathbf{s}_\mathbf{c} = \none \vee \len{\mathbf{s}}\mathbf{c}| > \mathsf{W}_C \vee \mathbf{t} = [] \\
+    \tup{\mathbf{s}, 0} &\when \mathbf{s}_\sa¬code = \none \vee \len{\mathbf{s}}\mathbf{c}| > \mathsf{W}_C \vee \mathbf{t} = [] \\
     \tup{\mathbf{s}', u} &\otherwise \\
     \multicolumn{2}{l}{
       \begin{aligned}
-        \quad\where (u, \mathbf{r}, \mathbf{s}') &= \Psi_M(\mathbf{s}_\mathbf{c}, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \se(t, s, \len{\mathbf{t}}), F, \mathbf{s}) \\
+        \quad\where (u, \mathbf{r}, \mathbf{s}') &= \Psi_M(\mathbf{s}_\sa¬code, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \se(t, s, \len{\mathbf{t}}), F, \mathbf{s}) \\
         \quad\also \mathbf{s} &= \mathbf{d}[s]\exc\mathbf{s}_\sa¬balance = \mathbf{d}[s]_\sa¬balance + \sum_{r \in \mathbf{t}}{r_a}
       \end{aligned}
     }
@@ -262,7 +262,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
 
 We come now to defining the host functions which are utilized by the \textsc{pvm} invocations. Generally, these map some \textsc{pvm} state, including invocation context, possibly together with some additional parameters, to a new \textsc{pvm} state.
 
-The general functions are all broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory' \in \ram) = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+The general functions are all broadly of the form $(\gascounter' \in \signedgas, \registers' \in \regs, \memory' \in \ram) = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
 Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \serviceaccount$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
@@ -663,7 +663,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
 
 \subsection{Accumulate Functions}\label{sec:accumulatefunctions}
 
-This defines a number of functions broadly of the form $(\gascounter' \in \Z_G, \registers' \in \regs, \memory', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+This defines a number of functions broadly of the form $(\gascounter' \in \signedgas, \registers' \in \regs, \memory', (\mathbf{x}', \mathbf{y}')) = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram, (\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}), \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
 Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
@@ -697,7 +697,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &= \begin{cases}
       (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\when \{\mathbf{z}, \mathbf{a}\} \ni \error \\
       (\continue, \mathtt{HUH}, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\otherwhen \mathbf{x}_s \ne (\mathbf{x}_\mathbf{u})_m\\
-      (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\otherwhen (m, v) \not\in (\N_S, \N_S) \\
+      (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\otherwhen (m, v) \not\in (\serviceid, \serviceid) \\
       (\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, \mathbf{z}}) &\otherwise \\
     \end{cases}
   \end{aligned}$\\
@@ -753,7 +753,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using [o, l, g&, m, f] = \registers_{7 \dots+ 5} \\
     \using c &= \begin{cases}
-      \memory_{o\dots+32} &\when \N_{o\dots+32} \subseteq \mathbb{V}_{\memory} \wedge l \in \N_{2^{32}} \\
+      \memory_{o\dots+32} &\when \N_{o\dots+32} \subseteq \mathbb{V}_{\memory} \wedge l \in \Nbits{32} \\
       \error &\otherwise
     \end{cases}\\
     \using \mathbf{a} \in \serviceaccount \cup \{\error\} &= \begin{cases}

@@ -130,13 +130,13 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
     \safroleticket \in \seq{\safroleticket} &\implies \left\{\,\begin{aligned}
         &i_\st¬id = \banderout{\H_\¬sealsig}\,,\\
         &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entry}{\seunsignedheader(\H)}\,,\\
-        &\mathbf{T} = 1
+        &\isticketed = 1
     \end{aligned}\right.\\
     \label{eq:ticketconditionfalse}
     \safroleticket \in \seq{\bskey} &\implies \left\{\,\begin{aligned}
         &i = \H_\¬authorbskey\,,\\
         &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_F \concat \entropy'_3}{\seunsignedheader(\H)}\,,\\
-        &\mathbf{T} = 0
+        &\isticketed = 0
     \end{aligned}\right.\\
   \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E\concat \banderout{\H_\¬sealsig}}{[]} \\
   \mathsf{X}_E &= \token{\$jam\_entropy}\\
@@ -144,7 +144,7 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
   \mathsf{X}_T &= \token{\$jam\_ticket\_seal}
   \end{align}
 
-Sealing using the ticket is of greater security, and we utilize this knowledge when determining a candidate block on which to extend the chain, detailed in section \ref{sec:bestchain}. We thus note that the block was sealed under the regular security with the boolean marker $\mathbf{T}$. We define this only for the purpose of ease of later specification.
+Sealing using the ticket is of greater security, and we utilize this knowledge when determining a candidate block on which to extend the chain, detailed in section \ref{sec:bestchain}. We thus note that the block was sealed under the regular security with the boolean marker $\isticketed$. We define this only for the purpose of ease of later specification.
 
 In addition to the entropy accumulator $\entropyaccumulator$, we retain three additional historical values of the accumulator at the point of each of the three most recently ended epochs, $\entropy_1$, $\entropy_2$ and $\entropy_3$. The second-oldest of these $\entropy_2$ is utilized to help ensure future entropy is unbiased (see equation \ref{eq:ticketsextrinsic}) and seed the fallback seal-key generation function with randomness (see equation \ref{eq:slotkeysequence}). The oldest is used to regenerate this randomness when verifying the seal above (see equations \ref{eq:ticketconditionfalse} and \ref{eq:ticketconditiontrue}).
 \begin{align}\label{eq:entropycomposition}

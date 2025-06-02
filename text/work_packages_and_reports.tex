@@ -65,7 +65,7 @@ We begin by defining a \emph{work-package}, of set $\workpackage$, and its const
 \begin{equation}\label{eq:workpackage}
   \workpackage \equiv \tuple{
     \isa{\wp¬authtoken}{\blob},\ 
-    \isa{\wp¬authcodehost}{\N_S},\ 
+    \isa{\wp¬authcodehost}{\serviceid},\ 
     \isa{\wp¬authcodehash}{\hash},\ 
     \isa{\wp¬authconfig}{\blob},\ 
     \isa{\wp¬context}{\mathbb{X}},\ 
@@ -76,7 +76,7 @@ We begin by defining a \emph{work-package}, of set $\workpackage$, and its const
 A work item includes: $\wi¬service$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $\wi¬codehash$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\wi¬payload$, gas limits for Refinement and Accumulation $\wi¬refgaslimit$ \& $\wi¬accgaslimit$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportcount$ the number of data segments exported by this work item.
 \begin{equation}\label{eq:workitem}
   \workitem \equiv \tuple{\begin{aligned}
-    &\isa{\wi¬service}{\N_S},
+    &\isa{\wi¬service}{\serviceid},
     \isa{\wi¬codehash}{\hash},
     \isa{\wi¬payload}{\blob},
     \isa{\wi¬refgaslimit}{\gas},

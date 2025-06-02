@@ -132,14 +132,14 @@
 % Typical operations.
 \newcommand*{\floor}[1]{\left\lfloor#1\right\rfloor}
 \newcommand*{\ceil}[1]{\left\lceil#1\right\rceil}
-\newcommand*{\len}[1]{\left|#1\right|}
+\newcommand*{\len}[1]{\left\vert#1\right\vert}
 \newcommand*{\fnfrac}[2]{\left\lfloor\nicefrac{#1}{#2}\right\rfloor}
 \newcommand*{\ffrac}[2]{\left\lfloor\frac{#1}{#2}\right\rfloor}
 \newcommand*{\transpose}{{}^\text{T}}
 \newcommand*{\joined}{\wideparen}
-\newcommand*{\ang}[1]{\langle#1\rangle}
+\newcommand*{\ang}[1]{\left\langle#1\right\rangle}
 \newcommand*{\sub}[1]{_{#1}}
-\newcommand*{\subb}[1]{[#1]}
+\newcommand*{\subb}[1]{\left[#1\right]}
 \newcommand*{\cyclic}[1]{{#1}^\circlearrowleft}
 
 % Bits of text
@@ -180,7 +180,7 @@
 \newcommand*{\sext}{\mathcal{X}}
 \newcommand*{\banderout}{\mathcal{Y}}
 \newcommand*{\tosigned}{\mathcal{Z}}
-\newcommand*{\powset}[2][{}]{\wp\left\langle#2\right\rangle_{#1}} % TODO: Make it take a parameter.
+\newcommand*{\powset}[2][{}]{\wp\ang{#2}_{#1}} % TODO: Make it take a parameter.
 
 % F prefix implies these are "proper" latex functions, not just simple names.
 \newcommand*{\Fmmrappend}[1]{\mmrappend\left(#1\right)}
@@ -214,23 +214,14 @@
 \newcommand*{\ticketentries}{\mathsf{N}}
 \newcommand*{\valcount}{\mathsf{V}}
 
-% Numeric
-\newcommand*{\timeslot}{\N_T}
-\newcommand*{\balance}{\N_B}
-\newcommand*{\gas}{\N_G}
-\newcommand*{\coreindex}{\N_\corecount}
-\newcommand*{\valindex}{\N_\valcount}
-\newcommand*{\ticketentryindex}{\N_\ticketentries}
-\newcommand*{\epochindex}{\N_\epochlen}
-
 % Big Functions
 \newcommand*{\histlookup}{\Lambda}
 
 % Primitive types
-\newcommand*{\dict}[2]{\mathbb{D}\langle #1\to#2\rangle}
-\newcommand*{\sig}[2]{\mathbb{E}_{#1}\langle#2\rangle}
-\newcommand*{\bandersnatch}[3]{\bar{\mathbb{F}}_{#1}^{#3}\langle#2\rangle}
-\newcommand*{\bandersig}[3]{\mathbb{F}_{#1}^{#3}\langle#2\rangle}
+\newcommand*{\dict}[2]{\mathbb{D}\ang{#1\to#2}}
+\newcommand*{\sig}[2]{\mathbb{E}_{#1}\ang{#2}}
+\newcommand*{\bandersnatch}[3]{\bar{\mathbb{F}}_{#1}^{#3}\ang{#2}}
+\newcommand*{\bandersig}[3]{\mathbb{F}_{#1}^{#3}\ang{#2}}
 \renewcommand*{\hash}{\mathbb{H}}
 \newcommand*{\N}{\mathbb{N}}
 \newcommand*{\G}{\mathbb{G}}
@@ -239,6 +230,19 @@
 \newcommand*{\partialstate}{\mathbb{U}}
 \newcommand*{\blob}{\mathbb{Y}}
 \newcommand*{\Z}{\mathbb{Z}}
+
+% Numeric
+\newcommand*{\timeslot}{\N_T}
+\newcommand*{\balance}{\N_B}
+\newcommand*{\serviceid}{\N_S}
+\newcommand*{\bloblength}{\N_L}
+\newcommand*{\gas}{\N_G}
+\newcommand*{\signedgas}{\Z_G}
+\newcommand*{\coreindex}{\N_\corecount}
+\newcommand*{\valindex}{\N_\valcount}
+\newcommand*{\ticketentryindex}{\N_\ticketentries}
+\newcommand*{\epochindex}{\N_\epochlen}
+\newcommand*{\Nbits}[1]{\N_{2^{#1}}}
 
 % The hash & blob types have a bunch of peripheral definitions.
 \newcommand*{\zerohash}{\hash_0}
@@ -351,6 +355,8 @@
 \newcommand*{\sa¬items}{i}
 \newcommand*{\sa¬octets}{o}
 \newcommand*{\sa¬minbalance}{f}
+\newcommand*{\sa¬metadata}{\mathbf{m}}
+\newcommand*{\sa¬code}{\mathbf{c}}
 
 % Derived fields of validator keys.
 \newcommand*{\valkey}{\mathbb{K}}
@@ -364,6 +370,11 @@
 \newcommand*{\block}{\mathbf{B}}
 \newcommand*{\theblock}{\block}
 \newcommand*{\B}{\theblock}
+
+\newcommand*{\ancestors}{\mathbf{A}}
+\newcommand*{\theancestors}{\ancestors}
+
+\newcommand*{\isticketed}{\mathbf{T}}
 
 % Extrinsics.
 \newcommand*{\extrinsic}{\mathbf{E}}
@@ -417,8 +428,10 @@
 \newcommand*{\ready}{\vartheta}
 \newcommand*{\lastaccout}{\theta}
 \newcommand*{\authpool}{\alpha}
-\newcommand*{\recenthistory}{\beta_H}
-\newcommand*{\beefybelt}{\beta_B}
+\newcommand*{\authqueue}{\varphi}
+\newcommand*{\recent}{\beta}
+\newcommand*{\recenthistory}{\recent_H}
+\newcommand*{\beefybelt}{\recent_B}
 
 \newcommand*{\disputes}{\psi}
 \newcommand*{\goodset}{\disputes_\mathbf{g}}

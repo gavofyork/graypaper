@@ -31,14 +31,14 @@ The header is a collection of metadata primarily concerned with cryptographic re
 
 Our state may be logically partitioned into several largely independent segments which can both help avoid visual clutter within our protocol description and provide formality over elements of computation which may be simultaneously calculated (i.e. parallelized). We therefore pronounce an equivalence between $\thestate$ (some complete state) and a tuple of partitioned segments of that state:
 \begin{align}\label{eq:statecomposition}
-  \thestate &\equiv (\authpool, \recenthistory, \safrole, \accounts, \entropy, \stagingset, \activeset, \previousset, \rho, \thetime, \varphi, \privileges, \disputes, \pi, \ready, \accumulated)
+  \thestate &\equiv (\authpool, \recenthistory, \safrole, \accounts, \entropy, \stagingset, \activeset, \previousset, \rho, \thetime, \authqueue, \privileges, \disputes, \pi, \ready, \accumulated)
 \end{align}
 
 In summary, $\accounts$ is the portion of state dealing with \emph{services}, analogous in \Jam to the Yellow Paper's (smart contract) \emph{accounts}, the only state of the \emph{YP}'s Ethereum. The identities of services which hold some privileged status are tracked in $\privileges$.
 
 Validators, who are the set of economic actors uniquely privileged to help build and maintain the \Jam chain, are identified within $\activeset$, archived in $\previousset$ and enqueued from $\stagingset$. All other state concerning the determination of these keys is held within $\safrole$. Note this is a departure from the \emph{YP} proof-of-work definitions which were mostly stateless, and this set was not enumerated but rather limited to those with sufficient compute power to find a partial hash-collision in the \textsc{sha}\oldstylenums{2}-\oldstylenums{256} cryptographic hash function. An on-chain entropy pool is retained in $\entropy$.
 
-Our state also tracks two aspects of each core: $\authpool$, the authorization requirement which work done on that core must satisfy at the time of being reported on-chain, together with the queue which fills this, $\varphi$; and $\rho$, each of the cores' currently assigned \emph{report}, the availability of whose \emph{work-package} must yet be assured by a super-majority of validators.
+Our state also tracks two aspects of each core: $\authpool$, the authorization requirement which work done on that core must satisfy at the time of being reported on-chain, together with the queue which fills this, $\authqueue$; and $\rho$, each of the cores' currently assigned \emph{report}, the availability of whose \emph{work-package} must yet be assured by a super-majority of validators.
 
 Finally, details of the most recent blocks and timeslot index are tracked in $\recenthistory$ and $\thetime$ respectively, work-reports which are ready to be accumulated and work-packages which were recently accumulated are tracked in $\ready$ and $\accumulated$ respectively and, judgments are tracked in $\disputes$ and validator statistics are tracked in $\pi$.
 
@@ -57,10 +57,10 @@ Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulatin
   \rho^\ddagger &\prec (\xtassurances, \rho^\dagger) \label{eq:rhoddagger} \\
   \rho' &\prec (\xtguarantees, \rho^\ddagger, \activeset, \thetime') \label{eq:rhoprime} \\
   \mathbf{W}^* &\prec (\xtassurances, \rho') \\
-  (\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \varphi', \lastaccout', \mathbf{I}, \mathbf{X}) &\prec (\mathbf{W}^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \varphi, \thetime, \thetime') \label{eq:accountspostxfer} \\
+  (\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \authqueue', \lastaccout', \mathbf{I}, \mathbf{X}) &\prec (\mathbf{W}^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \authqueue, \thetime, \thetime') \label{eq:accountspostxfer} \\
   \recenthistory' &\prec (\theheader, \xtguarantees, \recenthistory^\dagger, \lastaccout') \label{eq:betaprime} \\
   \accountspostpreimage &\prec (\xtpreimages, \accountspostxfer, \thetime') \label{eq:accountspostpreimage} \\
-  \authpool' &\prec (\theheader, \xtguarantees, \varphi', \authpool) \\
+  \authpool' &\prec (\theheader, \xtguarantees, \authqueue', \authpool) \\
   \pi' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \thetime, \activeset', \pi, \theheader, \mathbf{I}, \mathbf{X})\!\!\!\!\!\!\!\!
 \end{align}
 
@@ -104,7 +104,7 @@ The present work describes a crypto-economic system, \ie one combining elements 
 
 A value of tokens is generally referred to as a \emph{balance}, and such a value is said to be a member of the set of balances, $\balance$, which is exactly equivalent to the set of naturals less than $2^{64}$ (\ie 64-bit unsigned integers in coding parlance). Formally:
 \begin{align}\label{eq:balance}
-  \balance \equiv \N_{2^{64}}
+  \balance \equiv \Nbits{64}
 \end{align}
 
 Though unimportant for the present work, we presume that there be a standard named denomination for $10^{9}$ tokens. This is different to both Ethereum (which uses a denomination of $10^{18}$), Polkadot (which uses a denomination of $10^{10}$) and Polkadot's experimental cousin Kusama (which uses $10^{12}$).
@@ -157,16 +157,16 @@ The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for 
   \tuple{\,
     \begin{aligned}
       &\{\halt, \panic, \oog\} \cup \{\fault,\host\} \times \pvmreg,\\
-      &\pvmreg,\ \ \Z_G,\ \ \seq{\pvmreg}_{13},\ \ \mathbb{M}
+      &\pvmreg,\ \ \signedgas,\ \ \seq{\pvmreg}_{13},\ \ \mathbb{M}
     \end{aligned}
   \,}
 \end{equation}
 
-We refer to the time-proportional computational steps as \emph{gas} (much like in the \emph{YP}) and limit it to a 64-bit quantity. We may use either $\gas$ or $\Z_G$ to bound it, the first as a prior argument since it is known to be positive, the latter as a result where a negative value indicates an attempt to execute beyond the gas limit. Within the context of the \textsc{pvm}, $\gascounter \in \gas$ is typically used to denote gas.
+We refer to the time-proportional computational steps as \emph{gas} (much like in the \emph{YP}) and limit it to a 64-bit quantity. We may use either $\gas$ or $\signedgas$ to bound it, the first as a prior argument since it is known to be positive, the latter as a result where a negative value indicates an attempt to execute beyond the gas limit. Within the context of the \textsc{pvm}, $\gascounter \in \gas$ is typically used to denote gas.
 \begin{equation}\label{eq:gasregentry}
-  \Z_G \equiv \mathbb{Z}_{-2^{63}\dots2^{63}}\ ,\quad
+  \signedgas \equiv \mathbb{Z}_{-2^{63}\dots2^{63}}\ ,\quad
   \gas \equiv \mathbb{N}_{2^{64}}\ ,\quad
-  \pvmreg \equiv \N_{2^{64}}
+  \pvmreg \equiv \Nbits{64}
 \end{equation}
 
 It is left as a rather important implementation detail to ensure that the amount of time taken while computing the function $\Psi(\dots, \gascounter, \dots)$ has a maximum computation time approximately proportional to the value of $\gascounter$ regardless of other operands.
@@ -225,7 +225,7 @@ This six-second slot period represents the minimum time between \Jam blocks, and
 
 Formally when identifying a timeslot index, we use a natural less than $2^{32}$ (in compute parlance, a 32-bit unsigned integer) indicating the number of six-second timeslots from the \Jam Common Era. For use in this context we introduce the set $\timeslot$:
 \begin{align}\label{eq:time}
-  \timeslot \equiv \N_{2^{32}}
+  \timeslot \equiv \Nbits{32}
 \end{align}
 
 This implies that the lifespan of the proposed protocol takes us to mid-August of the year 2840, which with the current course that humanity is on should be ample.

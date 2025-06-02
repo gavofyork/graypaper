@@ -77,7 +77,7 @@ The other two components of statistics are the core and service activity statist
       \isa{&u&}{\gas}% gas used
     \end{alignedat}
   }}_\corecount\\
-  \pi_S &\in \dict{\N_S}{\tuple{
+  \pi_S &\in \dict{\serviceid}{\tuple{
     \begin{alignedat}{3}
       \isa{p&}{(\N, \N)}\,,\;  % provided_count: u16; provided_size: u32
       \isa{&r&}{(\N, \gas)}\,,\;\\% refinement_count: u32; refinement_gas_used: UnsignedGas
@@ -128,7 +128,7 @@ Finally, the service statistics are updated using the same intermediate values a
   \where \mathbf{s} &= \mathbf{r} \cup \mathbf{p} \cup \Fkeys{\mathbf{I}} \cup \Fkeys{\mathbf{X}}\\
   \also \mathbf{r} &= \{r_s \mid r \in w_\mathbf{r}, w \in \mathbf{w} \}\\
   \also \mathbf{p} &= \{s \mid \exists x: \tup{s, x} \in \mathbf{E}_P \}\\
-  \also R(s \in \N_S) &\equiv \!\!\!\!\!\!\!\!\!\!\!
+  \also R(s \in \serviceid) &\equiv \!\!\!\!\!\!\!\!\!\!\!
     \sum_{r \in w_\mathbf{r}, w \in \mathbf{w}, r_s = s}\!\!\!\!\!\!\!\!\!\!\!
     \tup{\is{n}{1}, r_u, r_i, r_x, r_z, r_e}
 \end{align}

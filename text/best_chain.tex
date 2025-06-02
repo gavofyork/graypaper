@@ -5,7 +5,7 @@ Nodes take part in the \textsc{Grandpa} protocol as defined by \cite{stewart2020
 \newcommand*{\final}{\natural}
 \newcommand*{\best}{\flat}
 
-We define the latest finalized block as $\mathbf{B}^\final$. All associated terms concerning block and state are similarly superscripted. We consider the \emph{best block}, $\mathbf{B}^\best$ to be that which is drawn from the set of acceptable blocks of the following criteria:
+We define the latest finalized block as $\block^\final$. All associated terms concerning block and state are similarly superscripted. We consider the \emph{best block}, $\block^\best$ to be that which is drawn from the set of acceptable blocks of the following criteria:
 
 \begin{itemize}
   \item Has the finalized block as an ancestor.
@@ -27,12 +27,12 @@ Formally:
 
 Of these acceptable blocks, that which contains the most ancestor blocks whose author used a seal-key ticket, rather than a fallback key should be selected as the best head, and thus the chain on which the participant should make \textsc{Grandpa} votes.
 
-Formally, we aim to select $\mathbf{B}^\best$ to maximize the value $m$ where:
+Formally, we aim to select $\block^\best$ to maximize the value $m$ where:
 \begin{equation}
-  m = \sum_{\header^A \in \mathbf{A}^\best} \mathbf{T}^A
+  m = \sum_{\header^A \in \ancestors^\best} \isticketed^A
 \end{equation}
 
-The specific data to be voted on in \textsc{Grandpa} shall be the block header of the best block, $\mathbf{B}^\best$ together with its \emph{posterior} state root, $\merklizestate(\sigma')$. The state root has no direct relevance to the \textsc{Grandpa} protocol, but is included alongside the header during voting/signing into order to ensure that systems utilizing the output of \textsc{Grandpa} are able to verify the most recent chain state as possible.
+The specific data to be voted on in \textsc{Grandpa} shall be the block header of the best block, $\block^\best$ together with its \emph{posterior} state root, $\merklizestate(\thestate')$. The state root has no direct relevance to the \textsc{Grandpa} protocol, but is included alongside the header during voting/signing into order to ensure that systems utilizing the output of \textsc{Grandpa} are able to verify the most recent chain state as possible.
 
 This implies that the posterior state must be known at the time that \textsc{Grandpa} voting occurs in order to finalize the block. However, since \textsc{Grandpa} is relied on primarily for state-root verification it makes little sense to finalize a block without an associated commitment to the posterior state.
 
