@@ -41,7 +41,7 @@ The disputes extrinsic, $\xtdisputes$, may contain one or more verdicts $\xtverd
 The signatures of all judgments must be valid in terms of one of the two allowed validator key-sets, identified by the verdict's second term which must be either the epoch index of the prior state or one less. Formally:
 \begin{align}
   &\begin{aligned}
-    &\forall (r, a, \mathbf{j}) \in \xtverdicts, \forall (v, i, s) \in \mathbf{j} : s \in \sig{\mathbf{k}[i]_e}{\mathsf{X}_v \concat r}\\
+    &\forall (r, a, \mathbf{j}) \in \xtverdicts, \forall (v, i, s) \in \mathbf{j} : s \in \sig{\mathbf{k}[i]_\vk¬ed}{\mathsf{X}_v \concat r}\\
     &\quad\where \mathbf{k} = \begin{cases}
       \activeset &\when a = \displaystyle \ffrac{\thetime}{\mathsf{E}}\\
       \previousset &\otherwise\\
@@ -56,7 +56,7 @@ Offender signatures must be similarly valid and reference work-reports with judg
   \begin{aligned}
     &r \in \badset' \,,\\
     &k \in \mathbf{k} \,,\\
-    &s \in \sig{k}{\mathsf{X}_G \frown r}
+    &s \in \sig{k}{\mathsf{X}_G \concat r}
   \end{aligned}\right.\\
   \forall (r, v, k, s) &\in \xtfaults : \bigwedge \left\{ \begin{aligned}
     &r \in \badset' \Leftrightarrow r \not\in \goodset' \Leftrightarrow v \,,\\
@@ -112,5 +112,5 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
 
 The offenders markers must contain exactly the keys of all new offenders, respectively. Formally:
 \begin{align}
-  \H_\¬offendersmark &\equiv \sq{ k \mid (r, k, s) \in \xtculprits} \frown \sq{ k \mid (r, v, k, s) \in \xtfaults }
+  \H_\¬offendersmark &\equiv \sq{ k \mid (r, k, s) \in \xtculprits} \concat \sq{ k \mid (r, v, k, s) \in \xtfaults }
 \end{align}

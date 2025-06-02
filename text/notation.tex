@@ -26,11 +26,11 @@ We define the precedes relation to indicate that one term is defined in terms of
 %  \end{cases}
 %\end{align}
 
-The substitute-if-nothing function $\mathcal{U}$ is equivalent to the first argument which is not $\none$, or $\none$ if no such argument exists:
+The substitute-if-nothing function $\subifnone$ is equivalent to the first argument which is not $\none$, or $\none$ if no such argument exists:
 \begin{align}\label{eq:substituteifnothing}
-  \mathcal{U}(a_0, \dots a_n ) \equiv a_x : (a_x \ne \none \vee x = n), \bigwedge_{i=0}^{x-1} a_i = \none
+  \subifnone(a_0, \dots a_n ) \equiv a_x : (a_x \ne \none \vee x = n), \bigwedge_{i=0}^{x-1} a_i = \none
 \end{align}
-Thus, \eg $\mathcal{U}(\none, 1, \none, 2) = 1$ and $\mathcal{U}(\none, \none) = \none$.
+Thus, \eg $\subifnone(\none, 1, \none, 2) = 1$ and $\subifnone(\none, \none) = \none$.
 
 \subsection{Sets}\label{sec:sets}
 
@@ -88,17 +88,17 @@ It is typically useful to limit the sets from which the keys and values may be d
   \dict{K}{V} &\equiv \big \{ \{ (k \mapsto v) \mid k \in K \wedge v \in V \} \big \}
 \end{align}
 
-To denote the active domain (\ie set of keys) of a dictionary $\mathbf{d} \in \dict{K}{V}$, we use $\keys{\mathbf{d}} \subseteq K$ and for the range (\ie set of values), $\mathcal{V}(\mathbf{d}) \subseteq V$. Formally:
+To denote the active domain (\ie set of keys) of a dictionary $\mathbf{d} \in \dict{K}{V}$, we use $\Fkeys{\mathbf{d}} \subseteq K$ and for the range (\ie set of values), $\Fvalues{\mathbf{d}} \subseteq V$. Formally:
 \begin{align}
-  \keys{\mathbf{d} \in \mathbb{D}} &\equiv \{\ k \mid \exists v : (k \mapsto v) \in \mathbf{d}\ \} \\
-  \mathcal{V}(\mathbf{d} \in \mathbb{D}) &\equiv \{\ v \mid \exists k : (k \mapsto v) \in \mathbf{d}\ \}
+  \Fkeys{\mathbf{d} \in \mathbb{D}} &\equiv \{\ k \mid \exists v : (k \mapsto v) \in \mathbf{d}\ \} \\
+  \Fvalues{\mathbf{d} \in \mathbb{D}} &\equiv \{\ v \mid \exists k : (k \mapsto v) \in \mathbf{d}\ \}
 \end{align}
 
-Note that since the co-domain of $\mathcal{V}$ is a set, should different keys with equal values appear in the dictionary, the set will only contain one such value.
+Note that since the co-domain of $\values$ is a set, should different keys with equal values appear in the dictionary, the set will only contain one such value.
 
 Dictionaries may be combined through the union operator $\cup$, which priorities the right-side operand in the case of a key-collision:
 \begin{equation}
-  \forall \mathbf{d} \in \mathbb{D}, \mathbf{e} \in \mathbb{D}: \mathbf{d} \cup \mathbf{e} \equiv (\mathbf{d} \setminus \keys{\mathbf{e}}) \cup \mathbf{e}
+  \forall \mathbf{d} \in \mathbb{D}, \mathbf{e} \in \mathbb{D}: \mathbf{d} \cup \mathbf{e} \equiv (\mathbf{d} \setminus \Fkeys{\mathbf{e}}) \cup \mathbf{e}
 \end{equation}
 
 \subsection{Tuples}\label{sec:tuples}
@@ -113,7 +113,7 @@ A sequence is a series of elements with particular ordering not dependent on the
 
 Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}[i]$, or where unambiguous, $\mathbf{s}_i$. A range may be denoted using an ellipsis for example: $[0, 1, 2, 3]_{\dots2} = [0, 1]$ and $[0, 1, 2, 3]_{1\dots+2} = [1, 2]$. The length of such a sequence may be denoted $\len{\mathbf{s}}$.
 
-We denote modulo subscription as $\mathbf{s}[i]^\circlearrowleft \equiv \mathbf{s}[\,i \rem \len{\mathbf{s}}\,]$. We denote the final element $x$ of a sequence $\mathbf{s} = \sq{..., x}$ through the function $\text{last}(\mathbf{s}) \equiv x$.
+We denote modulo subscription as $\cyclic{\mathbf{s}[i]} \equiv \mathbf{s}[\,i \rem \len{\mathbf{s}}\,]$. We denote the final element $x$ of a sequence $\mathbf{s} = \sq{..., x}$ through the function $\text{last}(\mathbf{s}) \equiv x$.
 
 \subsubsection{Construction}
 We may wish to define a sequence in terms of incremental subscripts of other values: $[\mathbf{x}_0, \mathbf{x}_1, \dots ]_n$ denotes a sequence of $n$ values beginning $\mathbf{x}_0$ continuing up to $\mathbf{x}_{n-1}$. Furthermore, we may also wish to define a sequence as elements each of which are a function of their index $i$; in this case we denote $[f(i) \mid i \orderedin \N_n] \equiv [f(0), f(1), \dots, f(n - 1)]$. Thus, when the ordering of elements matters we use $\orderedin$ rather than the unordered notation $\in$. The latter may also be written in short form $[f(i \orderedin \N_n)]$. This applies to any set which has an unambiguous ordering, particularly sequences, thus $[\,i^2 \mid i \orderedin [1, 2, 3]\,] = [1, 4, 9]$. Multiple sequences may be combined, thus $[\,i\cdot j \mid i \orderedin [1, 2, 3], j \orderedin [2, 3, 4]\,] = [2, 6, 12]$.
@@ -129,7 +129,7 @@ Sets may be constructed from sequences with the regular set construction syntax,
 Sequences of values which themselves have a defined ordering have an implied ordering akin to a regular dictionary, thus $[1, 2, 3] < [1, 2, 4]$ and $[1, 2, 3] < [1, 2, 3, 1]$.
 
 \subsubsection{Editing}
-We define the sequence concatenation operator $\frown$ such that $[\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{y}_0, \mathbf{y}_1, \dots] \equiv \mathbf{x} \frown \mathbf{y}$. For sequences of sequences, we define a unary concatenate-all operator: $\wideparen{\mathbf{x}}\equiv\mathbf{x}_0 \frown \mathbf{x}_1 \frown \dots$. Further, we denote element concatenation as $x \doubleplus i \equiv x \frown [i]$. We denote the sequence made up of the first $n$ elements of sequence $\mathbf{s}$ to be ${\overrightarrow{\mathbf{s}}}^n \equiv [\mathbf{s}_0, \mathbf{s}_1, \dots, \mathbf{s}_{n-1}]$, and only the final elements as ${\overleftarrow{\mathbf{s}}}^n$.
+We define the sequence concatenation operator $\concat$ such that $[\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{y}_0, \mathbf{y}_1, \dots] \equiv \mathbf{x} \concat \mathbf{y}$. For sequences of sequences, we define a unary concatenate-all operator: $\wideparen{\mathbf{x}}\equiv\mathbf{x}_0 \concat \mathbf{x}_1 \concat \dots$. Further, we denote element concatenation as $x \append i \equiv x \concat [i]$. We denote the sequence made up of the first $n$ elements of sequence $\mathbf{s}$ to be ${\overrightarrow{\mathbf{s}}}^n \equiv [\mathbf{s}_0, \mathbf{s}_1, \dots, \mathbf{s}_{n-1}]$, and only the final elements as ${\overleftarrow{\mathbf{s}}}^n$.
 
 We define ${}^\text{T}\mathbf{x}$ as the transposition of the sequence-of-sequences $\mathbf{x}$, fully defined in equation \ref{eq:transpose}. We may also apply this to sequences-of-tuples to yield a tuple of sequences.
 
@@ -146,7 +146,7 @@ $\blob$ denotes the set of octet strings (``blobs'') of arbitrary length. As mig
 
 \subsubsection{Shuffling}
 
-We define the sequence-shuffle function $\mathcal{F}$, originally introduced by \cite{fisheryates1938statistical}, with an efficient in-place algorithm described by \cite{wikipedia2024fisheryates}. This accepts a sequence and some entropy and returns a sequence of the same length with the same elements but in an order determined by the entropy. The entropy may be provided as either an indefinite sequence of naturals or a hash. For a full definition see appendix \ref{sec:shuffle}.
+We define the sequence-shuffle function $\fyshuffle$, originally introduced by \cite{fisheryates1938statistical}, with an efficient in-place algorithm described by \cite{wikipedia2024fisheryates}. This accepts a sequence and some entropy and returns a sequence of the same length with the same elements but in an order determined by the entropy. The entropy may be provided as either an indefinite sequence of naturals or a hash. For a full definition see appendix \ref{sec:shuffle}.
 
 \subsection{Cryptography}\label{sec:cryptography}
 
@@ -164,8 +164,8 @@ We use $\blob_{BLS} \subset \blob_{144}$ to denote the set of public keys for th
 
 We denote the set of valid Bandersnatch public keys as $\bskey$, defined in appendix \ref{sec:bandersnatch}. $\bandersig{k \in \bskey}{x \in \blob}{m \in \blob} \subset \blob_{96}$ is the set of valid singly-contextualized signatures of utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
 
-$\bandersnatch{r \in \blob_R}{x \in \blob}{m \in \blob} \subset \blob_{784}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\blob_R \subset \blob_{144}$. We denote $\mathcal{O}(\mathbf{s} \in \seq{\bskey}) \in \blob_R$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
+$\bandersnatch{r \in \blob_R}{x \in \blob}{m \in \blob} \subset \blob_{784}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\blob_R \subset \blob_{144}$. We denote $\getringroot(\mathbf{s} \in \seq{\bskey}) \in \blob_R$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
 
 Both the Bandersnatch signature and Ring\textsc{vrf} proof strictly imply that a member utilized their secret key in combination with both the context $x$ and the message $m$; the difference is that the member is identified in the former and is anonymous in the latter. Furthermore, both define a \textsc{vrf} \emph{output}, a high entropy hash influenced by $x$ but not by $m$, formally denoted $\banderout{\bandersnatch{r}{x}{m}} \subset \hash$ and $\banderout{\bandersig{k}{x}{m}} \subset \hash$.
 
-We define the function $\mathcal{S}$ as the signature function, such that $\mathcal{S}_{k}(m) \in \bandersig{k}{[]}{m} \cup \sig{k}{m}$. We assert that the ability to compute a result for this function relies on knowledge of a secret key.
+We define the function $\signdata$ as the signature function, such that $\signdata_{k}(m) \in \bandersig{k}{[]}{m} \cup \sig{k}{m}$. We assert that the ability to compute a result for this function relies on knowledge of a secret key.

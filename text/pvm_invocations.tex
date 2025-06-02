@@ -78,7 +78,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &\Psi_R \colon \left\{\begin{aligned}
     (\N, \workpackage, \blob, \seq{\seq{\G}}, \N) &\to (\blob \cup \mathbb{J}, \seq{\G}, \gas) \\
     (i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
-      (\token{BAD}, [], 0) &\when w_s \not\in \keys{\accounts} \vee \histlookup(\accounts[w_s], (p_\mathbf{x})_t, w_\wi¬codehash) = \none \\
+      (\token{BAD}, [], 0) &\when w_s \not\in \Fkeys{\accounts} \vee \histlookup(\accounts[w_s], (p_\mathbf{x})_t, w_\wi¬codehash) = \none \\
       (\token{BIG}, [], 0) &\otherwhen \len{\histlookup(\accounts[w_s], (p_\mathbf{x})_t, w_\wi¬codehash)} > \mathsf{W}_C \\
       &\otherwise: \\
       &\quad\using a = \se(i, w_s, \var{w_\mathbf{y}}, \blake(p))\;,\ \se(\var{\mathbf{z}}, \mathbf{c}) = \histlookup(\accounts[w_s], (p_\wp¬context)_t, w_\wi¬codehash)\\
@@ -217,7 +217,7 @@ The initializer function $I$ maps some service account $\mathbf{s}$ along with i
 Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\entropyaccumulator'$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
 \begin{equation}
   \text{check}(i \in \N_S) \equiv \begin{cases}
-    i &\when i \not\in \keys{\mathbf{u}_\mathbf{d}} \\
+    i &\when i \not\in \Fkeys{\mathbf{u}_\mathbf{d}} \\
     \text{check}((i - 2^8 + 1) \bmod (2^{32}-2^9) + 2^8)&\otherwise
   \end{cases}
 \end{equation}
@@ -236,7 +236,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     \multicolumn{2}{l}{
       \begin{aligned}
         \quad\where (u, \mathbf{r}, \mathbf{s}') &= \Psi_M(\mathbf{s}_\mathbf{c}, 10, \sum_{r \in \mathbf{t}}{(r_g)}, \se(t, s, \len{\mathbf{t}}), F, \mathbf{s}) \\
-        \quad\also \mathbf{s} &= \mathbf{d}[s]\exc\mathbf{s}_b = \mathbf{d}[s]_b + \sum_{r \in \mathbf{t}}{r_a}
+        \quad\also \mathbf{s} &= \mathbf{d}[s]\exc\mathbf{s}_\sa¬balance = \mathbf{d}[s]_\sa¬balance + \sum_{r \in \mathbf{t}}{r_a}
       \end{aligned}
     }
     \end{cases} \\
@@ -346,9 +346,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       p_\wp¬authtoken &\when p \ne \none \wedge \registers_{10} = 9 \\
       \se(p_\wp¬context) &\when p \ne \none \wedge \registers_{10} = 10 \\
       \se(\var{\sq{S(w) \mid w \orderedin p_\wp¬workitems}}) &\when p \ne \none \wedge \registers_{10} = 11 \\
-      S(p_\wp¬workitems[\registers_{11}]) &\when p \ne \none \wedge \registers_{10} = 12 \wedge \registers_{11} < |p_\wp¬workitems| \\
-      \multicolumn{2}{l}{\where S(w) \equiv \se(\se_4(w_\wi¬service), w_\wi¬codehash, \se_8(w_\wi¬refgaslimit, w_\wi¬accgaslimit), \se_2(w_\wi¬exportcount, |w_\wi¬importsegments|, |w_\wi¬extrinsics|), \se_4(|w_\wi¬payload|))} \\
-      p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when p \ne \none \wedge \registers_{10} = 13 \wedge \registers_{11} < |p_\wp¬workitems| \\
+      S(p_\wp¬workitems[\registers_{11}]) &\when p \ne \none \wedge \registers_{10} = 12 \wedge \registers_{11} < \len{p_\wp¬workitems} \\
+      \multicolumn{2}{l}{\where S(w) \equiv \se(\se_4(w_\wi¬service), w_\wi¬codehash, \se_8(w_\wi¬refgaslimit, w_\wi¬accgaslimit), \se_2(w_\wi¬exportcount, \len{w_\wi¬importsegments}, \len{w_\wi¬extrinsics}), \se_4(\len{w_\wi¬payload}))} \\
+      p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when p \ne \none \wedge \registers_{10} = 13 \wedge \registers_{11} < \len{p_\wp¬workitems} \\
       \se(\var{\mathbf{o}}) &\when \mathbf{o} \ne \none \wedge \registers_{10} = 14 \\
       \se(\mathbf{o}[\registers_{11}]) &\when \mathbf{o} \ne \none \wedge \registers_{10} = 15 \wedge \registers_{11} < \len{\mathbf{o}} \\
       \se(\var{\mathbf{t}}) &\when \mathbf{t} \ne \none \wedge \registers_{10} = 16 \\
@@ -372,13 +372,13 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
       \mathbf{s} &\when \registers_7 \in \{ s, 2^{64} - 1 \} \\
-      \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \keys{\mathbf{d}} \\
+      \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \Fkeys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
     \using [h, o] &= \registers_{8\dots+2} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \mathbb{N}_{h \dots+ 32} \not\subseteq \mathbb{V}_{\memory} \\
-      \none &\otherwhen \mathbf{a} = \none \vee \memory_{h\dots+32} \not\in \keys{\mathbf{a}_\mathbf{p}} \\
+      \none &\otherwhen \mathbf{a} = \none \vee \memory_{h\dots+32} \not\in \Fkeys{\mathbf{a}_\mathbf{p}} \\
       \mathbf{a}_\mathbf{p}[\memory_{h\dots+32}] &\otherwise \\
     \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
@@ -402,13 +402,13 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
       \mathbf{s} &\when s^* = s \\
-      \mathbf{d}[s^*] &\otherwhen s^* \in \keys{\mathbf{d}} \\
+      \mathbf{d}[s^*] &\otherwhen s^* \in \Fkeys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
     \using [k_o, k_z, o] &= \registers_{8\dots+3} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \mathbb{N}_{k_o \dots+ k_z} \not\subseteq \mathbb{V}_{\memory} \\
-      \mathbf{a}_\mathbf{s}[\mathbf{k}] &\otherwhen \mathbf{a} \ne \none \wedge \mathbf{k} \in \keys{\mathbf{a}_\mathbf{s}}\,,\ \where \mathbf{k} = \memory_{k_o\dots+k_z} \\
+      \mathbf{a}_\mathbf{s}[\mathbf{k}] &\otherwhen \mathbf{a} \ne \none \wedge \mathbf{k} \in \Fkeys{\mathbf{a}_\mathbf{s}}\,,\ \where \mathbf{k} = \memory_{k_o\dots+k_z} \\
       \none &\otherwise
     \end{cases} \\
     \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
@@ -432,12 +432,12 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s}\,,\ \exc \keys{\mathbf{a}_\mathbf{s}} = \keys{\mathbf{a}_\mathbf{s}} \setminus \{k\} & \when v_z = 0 \\
+      \mathbf{s}\,,\ \exc \Fkeys{\mathbf{a}_\mathbf{s}} = \Fkeys{\mathbf{a}_\mathbf{s}} \setminus \{k\} & \when v_z = 0 \\
       \mathbf{s}\,,\ \exc \mathbf{a}_\mathbf{s}[\mathbf{k}] = \memory_{v_o\dots+v_z} &\otherwhen \N_{v_o \dots+ v_z} \subseteq \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using l &= \begin{cases}
-      \len{\mathbf{s}}\mathbf{s}[k]| &\when \mathbf{k} \in \keys{\mathbf{s}_\mathbf{s}} \\
+      \len{\mathbf{s}}\mathbf{s}[k]| &\when \mathbf{k} \in \Fkeys{\mathbf{s}_\mathbf{s}} \\
       \mathtt{NONE} &\otherwise
     \end{cases} \\
     (\execst', \registers'_7, \mathbf{s}') &\equiv \begin{cases}
@@ -501,8 +501,8 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{d}[s] &\when \registers_7 = 2^{64} - 1 \wedge s \in \keys{\mathbf{d}} \\
-      \mathbf{d}[\registers_7] &\when \registers_7 \in \keys{\mathbf{d}} \\
+      \mathbf{d}[s] &\when \registers_7 = 2^{64} - 1 \wedge s \in \Fkeys{\mathbf{d}} \\
+      \mathbf{d}[\registers_7] &\when \registers_7 \in \Fkeys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
     \using [h, o] &= \registers_{8\dots+2} \\
@@ -528,13 +528,13 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using p &= \registers_7 \\
     \using z &= \min(\registers_8, \mathsf{W}_G) \\
     \using \mathbf{x} &= \begin{cases}
-      \mathcal{P}_{\mathsf{W}_G}(\mem_{p\dots+z}) &\when \N_{p\dots+z} \subseteq \mathbb{V}_\memory\\
+      \zeropad_{\mathsf{W}_G}(\mem_{p\dots+z}) &\when \N_{p\dots+z} \subseteq \mathbb{V}_\memory\\
       \error &\otherwise
     \end{cases}\\
     (\execst', \registers'_7, \mathbf{e}') &\equiv \begin{cases}
       (\panic, \registers_7, \mathbf{e}) &\when \mathbf{x} = \error \\
       (\continue, \mathtt{FULL}, \mathbf{e}) &\otherwhen \segoff+\len{\mathbf{e}} \ge \mathsf{W}_X \\
-      (\continue, \segoff + \len{\mathbf{e}}, \mathbf{e} \doubleplus \mathbf{x}) &\otherwise
+      (\continue, \segoff + \len{\mathbf{e}}, \mathbf{e} \append \mathbf{x}) &\otherwise
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -548,7 +548,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \memory_{p_o\dots+p_z} &\when \mathbb{N}_{p_o \dots+ p_z} \subseteq \mathbb{V}_{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using n &= \min(n \in \N, n \not\in \keys{\mathbf{m}}) \\
+    \using n &= \min(n \in \N, n \not\in \Fkeys{\mathbf{m}}) \\
     \using \mathbf{u} &= \tup{\is{\mathbf{V}}{[0, 0, \dots]},\is{\mathbf{A}}{[\none, \none, \dots]}} \\
     (\execst', \registers'_7, \mathbf{m}) &\equiv \begin{cases}
       (\panic, \registers_7, \mathbf{m}) &\when \mathbf{p} = \error \\
@@ -565,7 +565,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using [n, o, s, z] &= \registers_{7 \dots+ 4} \\
     (\execst', \registers'_7, \mem') &\equiv \begin{cases}
       (\panic, \registers_7, \mem) &\when \N_{o\dots+z} \not\subseteq \mathbb{V}^*_\memory \\
-      (\continue, \mathtt{WHO}, \mem) &\otherwhen n \not\in \keys{\mathbf{m}} \\
+      (\continue, \mathtt{WHO}, \mem) &\otherwhen n \not\in \Fkeys{\mathbf{m}} \\
       (\continue, \mathtt{OOB}, \mem) &\otherwhen \N_{s\dots+z} \not\subseteq \mathbb{V}_{\mathbf{m}[n]_\mathbf{u}} \\
       (\continue, \mathtt{OK}, \mem') &\otherwise \\
       \multicolumn{2}{l}{\where \mem' = \mem \exc \mem_{o\dots+z} = (\mathbf{m}[n]_\mathbf{u})_{s\dots+z}}
@@ -580,7 +580,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \using [n, s, o, z] &= \registers_{7 \dots+ 4} \\
     (\execst', \registers'_7, \mathbf{m}') &\equiv \begin{cases}
       (\panic, \registers_7, \mathbf{m}) &\when \N_{s\dots+z} \not\subseteq \mathbb{V}_\memory \\
-      (\continue, \mathtt{WHO}, \mathbf{m}) &\otherwhen n \not\in \keys{\mathbf{m}} \\
+      (\continue, \mathtt{WHO}, \mathbf{m}) &\otherwhen n \not\in \Fkeys{\mathbf{m}} \\
       (\continue, \mathtt{OOB}, \mathbf{m}) &\otherwhen \N_{o\dots+z} \not\subseteq \mathbb{V}^*_{\mathbf{m}[n]_\mathbf{u}} \\
       (\continue, \mathtt{OK}, \mathbf{m}')  &\otherwise \\
       \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'[n]_\mathbf{u})_{o\dots+z} = \mem_{s\dots+z}}
@@ -594,7 +594,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $\begin{aligned}
     \using [n, p, c, r] &= \registers_{7 \dots+ 4} \\
     \using \mathbf{u} &= \begin{cases}
-      \mathbf{m}[n]_\mathbf{u} &\when n \in \keys{\mathbf{m}} \\
+      \mathbf{m}[n]_\mathbf{u} &\when n \in \Fkeys{\mathbf{m}} \\
       \error &\otherwise\\
     \end{cases} \\
     \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
@@ -654,7 +654,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $\begin{aligned}
     \using n &= \registers_7 \\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
-      (\mathtt{WHO}, \mathbf{m}) &\when n \not\in \keys{\mathbf{m}} \\
+      (\mathtt{WHO}, \mathbf{m}) &\when n \not\in \Fkeys{\mathbf{m}} \\
       (\mathbf{m}[n]_i, \mathbf{m} \setminus n) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
@@ -802,10 +802,10 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using b &= (\mathbf{x}_\mathbf{s})_b - a \\
     (\execst', \registers'_7, \mathbf{x}'_\mathbf{t}, (\mathbf{x}'_\mathbf{s})_b) &\equiv \begin{cases}
       (\panic, \registers_7, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\when \mathbf{t} = \error \\
-      (\continue, \mathtt{WHO}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen d \not \in \keys{\mathbf{d}} \\
+      (\continue, \mathtt{WHO}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen d \not \in \Fkeys{\mathbf{d}} \\
       (\continue, \mathtt{LOW}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen l < \mathbf{d}[d]_m \\
       (\continue, \mathtt{CASH}, \mathbf{x}_\mathbf{t}, (\mathbf{x}_\mathbf{s})_b) &\otherwhen b < (\mathbf{x}_\mathbf{s})_t \\
-      (\continue, \mathtt{OK}, \mathbf{x}_\mathbf{t} \doubleplus \mathbf{t}, b) &\otherwise
+      (\continue, \mathtt{OK}, \mathbf{x}_\mathbf{t} \append \mathbf{t}, b) &\otherwise
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -820,11 +820,11 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{d} &= \begin{cases}
-      ((\mathbf{x}_\mathbf{u})_\mathbf{d})[d] &\when d \ne \mathbf{x}_s \wedge d \in \keys{(\mathbf{x}_\mathbf{u})_\mathbf{d}} \\
+      ((\mathbf{x}_\mathbf{u})_\mathbf{d})[d] &\when d \ne \mathbf{x}_s \wedge d \in \Fkeys{(\mathbf{x}_\mathbf{u})_\mathbf{d}} \\
       \error &\otherwise \\
     \end{cases} \\
     \using l &= \max(81, \mathbf{d}_o) - 81 \\
-    \using \mathbf{s}' &= ((\mathbf{x}_\mathbf{u})_\mathbf{d})[\mathbf{x}_s] \exc \mathbf{s}'_b = ((\mathbf{x}_\mathbf{u})_\mathbf{d})[\mathbf{x}_s]_b + \mathbf{d}_b \\
+    \using \mathbf{s}' &= ((\mathbf{x}_\mathbf{u})_\mathbf{d})[\mathbf{x}_s] \exc \mathbf{s}'_b = ((\mathbf{x}_\mathbf{u})_\mathbf{d})[\mathbf{x}_s]_\sa¬balance + \mathbf{d}_b \\
     (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{d}) &\equiv \begin{cases}
       (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\when h = \error \\
       (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen \mathbf{d} = \error \vee \mathbf{d}_c \ne \se_{32}(\mathbf{x}_s) \\
@@ -845,7 +845,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] &\when (h, z) \in \keys{(\mathbf{x}_\mathbf{s})_\mathbf{l}}\\
+      (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] &\when (h, z) \in \Fkeys{(\mathbf{x}_\mathbf{s})_\mathbf{l}}\\
       \error &\otherwise\\
     \end{cases} \\
     (\execst', \registers'_7, \registers'_8) &\equiv \begin{cases}
@@ -870,8 +870,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
       \mathbf{x}_\mathbf{s} \text{ except: } &\\
-      \quad \mathbf{a}_\mathbf{l}[\tup{h, z}] = [] &\when h \ne \error \wedge (h, z) \not\in \keys{(\mathbf{x}_\mathbf{s})_\mathbf{l}} \\
-      \quad \mathbf{a}_\mathbf{l}[\tup{h, z}] = (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] \doubleplus t &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] = [x, y] \\
+      \quad \mathbf{a}_\mathbf{l}[\tup{h, z}] = [] &\when h \ne \error \wedge (h, z) \not\in \Fkeys{(\mathbf{x}_\mathbf{s})_\mathbf{l}} \\
+      \quad \mathbf{a}_\mathbf{l}[\tup{h, z}] = (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] \append t &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[\tup{h, z}] = [x, y] \\
       \error &\otherwise\\
     \end{cases} \\
     (\execst', \registers'_7, \mathbf{x}'_\mathbf{s}) &\equiv \begin{cases}
@@ -896,8 +896,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \mathbf{x}_\mathbf{s} \text{ except:} &\\
       \quad \left.
         \begin{aligned}
-          \keys{\mathbf{a}_\mathbf{l}} &= \keys{(\mathbf{x}_\mathbf{s})_\mathbf{l}} \setminus \{\tup{h, z}\}\ ,\\[2pt]
-          \keys{\mathbf{a}_\mathbf{p}} &= \keys{(\mathbf{x}_\mathbf{s})_\mathbf{p}} \setminus \{h\}
+          \Fkeys{\mathbf{a}_\mathbf{l}} &= \Fkeys{(\mathbf{x}_\mathbf{s})_\mathbf{l}} \setminus \{\tup{h, z}\}\ ,\\[2pt]
+          \Fkeys{\mathbf{a}_\mathbf{p}} &= \Fkeys{(\mathbf{x}_\mathbf{s})_\mathbf{p}} \setminus \{h\}
         \end{aligned}
       \ \right\} &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] \in \{[], [x, y]\},\ y < t - \mathsf{D} \\
       \quad \mathbf{a}_\mathbf{l}[h, z] = [x, t] &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] = [x] \\
@@ -943,7 +943,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{d}[s^*] &\when s^* \in \keys{\mathbf{d}} \\
+      \mathbf{d}[s^*] &\when s^* \in \Fkeys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
     (\execst', \registers'_7, \mathbf{x}'_\mathbf{p}) &\equiv \begin{cases}

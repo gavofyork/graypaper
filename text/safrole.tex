@@ -106,7 +106,7 @@ With a new epoch under regular conditions, validator keys get rotated and the ep
   (\pendingset', \activeset', \previousset', \epochroot') &\equiv \begin{cases}
     (\Phi(\stagingset), \pendingset, \activeset, z) &\when e' > e \\ (\pendingset, \activeset, \previousset, \epochroot) &\otherwise
   \end{cases} \\
-  \nonumber \where z &= \mathcal{O}([k_b \mid k \orderedin \pendingset']) \\
+  \nonumber \where z &= \getringroot([k_b \mid k \orderedin \pendingset']) \\
   \label{eq:blacklistfilter} \Phi(\mathbf{k}) &\equiv \sq{
     \begin{rcases}[0, 0, \dots] &\when k_e \in \offenders' \\ k &\otherwise \end{rcases}
     \,\middle\mid\, k \orderedin \mathbf{k}
@@ -129,7 +129,7 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
     \label{eq:ticketconditiontrue}
     \safroleticket \in \seq{\safroleticket} &\implies \left\{\,\begin{aligned}
         &i_\st¬id = \banderout{\H_\¬sealsig}\,,\\
-        &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \doubleplus i_\st¬entry}{\seunsignedheader(\H)}\,,\\
+        &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entry}{\seunsignedheader(\H)}\,,\\
         &\mathbf{T} = 1
     \end{aligned}\right.\\
     \label{eq:ticketconditionfalse}
@@ -138,7 +138,7 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
         &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_F \concat \entropy'_3}{\seunsignedheader(\H)}\,,\\
         &\mathbf{T} = 0
     \end{aligned}\right.\\
-  \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E\frown \banderout{\H_\¬sealsig}}{[]} \\
+  \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E\concat \banderout{\H_\¬sealsig}}{[]} \\
   \mathsf{X}_E &= \token{\$jam\_entropy}\\
   \mathsf{X}_F &= \token{\$jam\_fallback\_seal}\\
   \mathsf{X}_T &= \token{\$jam\_ticket\_seal}
@@ -153,7 +153,7 @@ In addition to the entropy accumulator $\entropyaccumulator$, we retain three ad
 
 $\entropyaccumulator$ defines the state of the randomness accumulator to which the provably random output of the \textsc{vrf}, the signature over some unbiasable input, is combined each block. $\entropy_1$, $\entropy_2$ and $\entropy_3$ meanwhile retain the state of this accumulator at the end of the three most recently ended epochs in order.
 \begin{align}
-  \entropyaccumulator' &\equiv \blake(\entropyaccumulator \frown \banderout{\H_\¬vrfsig})
+  \entropyaccumulator' &\equiv \blake(\entropyaccumulator \concat \banderout{\H_\¬vrfsig})
 \end{align}
 
 On an epoch transition (identified as the condition $e' > e$), we therefore rotate the accumulator value into the history $\entropy_1$, $\entropy_2$ and $\entropy_3$:
@@ -199,7 +199,7 @@ Finally, $F$ is the fallback key sequence function which selects an epoch's wort
   F\colon \left\{\ \begin{aligned}
     \tuple{\hash,\,\seq{\valkey}} &\to \seq{\bskey}_\epochlen\\
     \tup{r,\, \mathbf{k}} &\mapsto \left[
-    \cyclic{\mathbf{k}[\de(\blake_4(r \frown \mathcal{E}_4(i)))]}_\vk¬bs
+    \cyclic{\mathbf{k}[\de(\blake_4(r \concat \mathcal{E}_4(i)))]}_\vk¬bs
     \middle\vert\; i \in \epochindex
     \right]
   \end{aligned} \right.\!\!\!
@@ -223,7 +223,7 @@ The epoch and winning-tickets markers are information placed in the header in or
 As mentioned earlier, the header's epoch marker $\H_\¬epochmark$ is either empty or, if the block is the first in a new epoch, then a tuple of the next and current epoch randomness, along with a sequence of tuples containing both Bandersnatch keys and Ed25519 keys for each validator defining the validator keys beginning in the next epoch. Formally:
 \begin{align}\label{eq:epochmarker}
   \H_\¬epochmark &\equiv \begin{cases}
-    \tup{ \entropyaccumulator, \entropy_1, [ \tup{k_b, k_e} \mid k \orderedin \pendingset' ] } \qquad\qquad &\when e' > e \\
+    \tup{ \entropyaccumulator, \entropy_1, \sq{ \tup{k_\vk¬bs, k_\vk¬ed} \mid k \orderedin \pendingset' } } \qquad\qquad &\when e' > e \\
     \none & \otherwise
   \end{cases}
 \end{align}
@@ -258,7 +258,7 @@ We define the extrinsic as a sequence of proofs of valid tickets, each of which 
 \begin{align}\label{eq:ticketsextrinsic}
   \xttickets &\in \seq{\tuple{
     \isa{r}{\N_{\ticketentries}},\,
-    \isa{p}{\bandersnatch{\epochroot'}{\mathsf{X}_T \frown \entropy'_2 \doubleplus r}{[]}}
+    \isa{p}{\bandersnatch{\epochroot'}{\mathsf{X}_T \concat \entropy'_2 \append r}{[]}}
   }} \\
   \len{\xttickets} &\le \begin{cases}
       \mathsf{K} &\when m' < \mathsf{Y} \\

@@ -22,7 +22,7 @@ The state serialization is then defined as the dictionary built from the amalgam
   T(\thestate) \equiv \left\{\begin{aligned}
     &&C(1) &\mapsto \se([\var{x}\mid x\orderedin \authpool]) \;, \\
     &&C(2) &\mapsto \se(\varphi) \;, \\
-    &&C(3) &\mapsto \se(\var{[(h, b, s, \var{\mathbf{p}})\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \se_M(\beefybelt)) \;, \\
+    &&C(3) &\mapsto \se(\var{[(h, b, s, \var{\mathbf{p}})\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \Fmmrencode{\beefybelt}) \;, \\
     &&C(4) &\mapsto \se\left(\tup{\pendingset, \epochroot, \left\{\,\begin{aligned}
       0\ &\when \sealtickets \in \seq{\mathbb{C}}_\mathsf{E}\\
       1\ &\when \sealtickets \in \seq{\bskey}_\mathsf{E}\\
@@ -41,8 +41,8 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(15) &\mapsto \se([\var{\mathbf{i}} \mid \mathbf{i} \orderedin \accumulated]) \;, \\
     &&C(16) &\mapsto \se(\var{[(\se_4(s), \se(h)) \mid (s, h) \orderedin \lastaccout]}) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \accounts: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_o, \mathbf{a}_f) \concat \se_4(\mathbf{a}_i, \mathbf{a}_r, \mathbf{a}_a, \mathbf{a}_p) \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts, (\mathbf{k} \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \frown \mathbf{k}) &\mapsto \mathbf{v} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \se_4(2^{32}-2) \frown h) &\mapsto \mathbf{p} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \accounts, (\mathbf{k} \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \concat \mathbf{k}) &\mapsto \mathbf{v} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \accounts, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \se_4(2^{32}-2) \concat h) &\mapsto \mathbf{p} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \accounts, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat h) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
   \end{aligned}\right.
 \end{equation}
@@ -74,13 +74,13 @@ Formally, we define the encoding functions $B$ and $L$:
 \begin{align}
   B&\colon\left\{\begin{aligned}
     (\hash, \hash) &\to \mathbb{B}_{512}\\
-    (l, r) &\mapsto [0] \frown \text{bits}(l)_{1\dots} \frown \text{bits}(r)
+    (l, r) &\mapsto [0] \concat \text{bits}(l)_{1\dots} \concat \text{bits}(r)
   \end{aligned}\right.\\
   L&\colon\left\{\begin{aligned}
     (\blob_{31}, \blob) &\to \mathbb{B}_{512}\\
     (k, v) &\mapsto \begin{cases}
-      [1, 0] \frown \text{bits}(\se_1(|v|))_{2\dots} \frown \text{bits}(k) \frown \text{bits}(v) \frown [0, 0, \dots] &\when |v| \le 32\\
-      [1, 1, 0, 0, 0, 0, 0, 0] \frown \text{bits}(k) \frown \text{bits}(\blake(v)) &\otherwise
+      [1, 0] \concat \text{bits}(\se_1(\len{v}))_{2\dots} \concat \text{bits}(k) \concat \text{bits}(v) \concat [0, 0, \dots] &\when \len{v} \le 32\\
+      [1, 1, 0, 0, 0, 0, 0, 0] \concat \text{bits}(k) \concat \text{bits}(\blake(v)) &\otherwise
     \end{cases}
   \end{aligned}\right.
 \end{align}
@@ -89,8 +89,8 @@ We may then define the basic Merklization function $\merklizestate$ as:
 \begin{align}
   \merklizestate(\thestate) &\equiv M(\{ (\text{bits}(k) \mapsto \tup{k, v}) \mid (k \mapsto v) \in T(\thestate) \})\\
   M(d: \dict{\mathbb{B}}{(\blob_{31}, \blob)}) &\equiv \begin{cases}
-    \zerohash &\when |d| = 0\\
-    \blake(\text{bits}^{-1}(L(k, v))) &\when \mathcal{V}(d) = \{ (k, v) \}\\
+    \zerohash &\when \len{d} = 0\\
+    \blake(\text{bits}^{-1}(L(k, v))) &\when \Fvalues{d} = \set{ \tup{k, v} }\\
     \blake(\text{bits}^{-1}(B(M(l), M(r)))) &\otherwise\\
     \multicolumn{2}{l}{\quad\where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b_{1\dots} \mapsto p) \in \begin{cases}
       l &\when b_0 = 0 \\
@@ -145,9 +145,9 @@ We also define the \emph{trace} function $T$, which returns each opposite node f
 From this we define our other Merklization functions.
 
 \subsubsection{Well-Balanced Tree}
-We define the well-balanced binary Merkle function as $\mathcal{M}_B$:
+We define the well-balanced binary Merkle function as $\merklizewb$:
 \begin{equation}
-    \mathcal{M}_B\colon \left\{\begin{aligned}\label{eq:simplemerkleroot}
+    \merklizewb\colon \left\{\begin{aligned}\label{eq:simplemerkleroot}
       (\seq{\blob}, \blob \to \hash) &\to \hash \\
       (\mathbf{v}, H) &\mapsto \begin{cases}
         H(\mathbf{v}_0) &\when \len{\mathbf{v}} = 1 \\
@@ -161,26 +161,26 @@ This is suitable for creating proofs on data which is not much greater than 32 o
 Note: In the case that no hash function argument $H$ is supplied, we may assume the Blake 2b hash function, $\blake$.
 
 \subsubsection{Constant-Depth Tree}
-We define the constant-depth binary Merkle function as $\mathcal{M}$. We define two corresponding functions for working with subtree pages, $\mathcal{J}_x$ and $\mathcal{L}_x$. The latter provides a single page of leaves, themselves hashed, prefixed data. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices.
+We define the constant-depth binary Merkle function as $\merklizecd$. We define two corresponding functions for working with subtree pages, $\merklejustsubpath_x$ and $\merklesubtreepage_x$. The latter provides a single page of leaves, themselves hashed, prefixed data. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices.
 \begin{align}
   \label{eq:constantdepthmerkleroot}
-  \mathcal{M}&\colon \left\{\begin{aligned}
+  \merklizecd&\colon \left\{\begin{aligned}
     (\seq{\blob}, \blob \to \hash) &\to \hash\\
     (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}, H), H)
   \end{aligned}\right.\\
   \label{eq:constantdepthsubtreemerklejust}
-  \mathcal{J}_x&\colon \left\{\begin{aligned}
+  \merklejustsubpath_x&\colon \left\{\begin{aligned}
     (\seq{\blob}, \N_{\len{\mathbf{v}}}, \blob \to \hash) &\to \seq{\hash}\\
     (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), 2^xi, H)_{\dots\max(0, \ceil{\log_2(\max(1, \len{\mathbf{v}})) - x})}
   \end{aligned}\right.\\
   \label{eq:constantdepthsubtreemerkleleafpage}
-  \mathcal{L}_x&\colon \left\{\begin{aligned}
+  \merklesubtreepage_x&\colon \left\{\begin{aligned}
     (\seq{\blob}, \N_{\len{\mathbf{v}}}, \blob \to \hash) &\to \seq{\hash}\\
     (\mathbf{v}, i, H) &\mapsto [H(\token{\$leaf} \concat l) \mid l \orderedin \mathbf{v}_{2^xi \dots \min(2^xi+2^x, \len{\mathbf{v}})}]
   \end{aligned}\right.
 \end{align}
 
-For the latter justification $\mathcal{J}_x$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\mathcal{L}_x$.
+For the latter justification $\merklejustsubpath_x$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\merklesubtreepage_x$.
 
 As above, we may assume a default value for $H$ of the Blake 2b hash function, $\blake$.
 
@@ -198,7 +198,7 @@ For justifications and Merkle root calculations, a constancy preprocessor functi
   \end{aligned}\right.
 \end{equation}
 
-\subsection{Merkle Mountain Ranges}\label{sec:mmr}
+\subsection{Merkle Mountain Ranges and Belts}\label{sec:mmr}
 
 The Merkle Mountain Range (\textsc{mmr}) is an append-only cryptographic data structure which yields a commitment to a sequence of values. Appending to an \textsc{mmr} and proof of inclusion of some item within it are both $O(\log(N))$ in time and space for the size of the set.
 
@@ -208,18 +208,18 @@ Since the sequence of hashes is somewhat unwieldy as a commitment, Merkle Mounta
 
 \newcommand*{\deffunc}[1]{\left\{\,\begin{aligned}#1\vphantom{x'_i}\end{aligned}\right.}
 
-We define the append function $\mathcal{A}$ as:
+We define the \textsc{mmb} append function $\mmrappend$ as:
 \begin{equation}
   \begin{aligned}
     \label{eq:mmrappend}
-    \mathcal{A}&\colon\deffunc{
+    \mmrappend&\colon\deffunc{
       (\seq{\optional{\hash}}, \hash, \blob\to\hash) &\to \seq{\optional{\hash}}\\
       (\mathbf{r}, l, H) &\mapsto P(\mathbf{r}, l, 0, H)
     }\\
     \where P&\colon\deffunc{
       (\seq{\optional{\hash}}, \hash, \N, \blob\to\hash) &\to \seq{\optional{\hash}}\\
       (\mathbf{r}, l, n, H) &\mapsto \begin{cases}
-        \mathbf{r} \doubleplus l &\when n \ge \len{\mathbf{r}}\\
+        \mathbf{r} \append l &\when n \ge \len{\mathbf{r}}\\
         R(\mathbf{r}, n, l) &\when n < \len{\mathbf{r}} \wedge \mathbf{r}_n = \none\\
         P(R(\mathbf{r}, n, \none), H(\mathbf{r}_n \concat l), n + 1, H) &\otherwise
       \end{cases}
@@ -231,22 +231,22 @@ We define the append function $\mathcal{A}$ as:
   \end{aligned}
 \end{equation}
 
-We define the \textsc{mmr} encoding function as $\se_M$:
+We define the \textsc{mmr} encoding function as $\mmrencode$:
 \begin{equation}
-  \se_M\colon\deffunc{
+  \mmrencode\colon\deffunc{
     \seq{\optional{\hash}} &\to \blob \\
     \mathbf{b} &\mapsto \se(\var{[\maybe{x}\mid x \orderedin \mathbf{b}]})
   }
 \end{equation}
 
-We define the \textsc{mmr} super-peak function as $\mathcal{M}_R$:
+We define the \textsc{mmr} super-peak function as $\mmrsuperpeak$:
 \begin{equation}
-  \mathcal{M}_R\colon\deffunc{
+  \mmrsuperpeak\colon\deffunc{
     \seq{\optional{\hash}} &\to \hash \\
     \mathbf{b} &\mapsto \begin{cases}
       \zerohash &\when \len{\mathbf{h}} = 0\\
       \mathbf{h}_0 &\when \len{\mathbf{h}} = 1\\
-      \keccak(\token{\$peak} \concat \mathcal{M}_R(\mathbf{h}_{\dots\len{\mathbf{h}}-1}) \concat \mathbf{h}_{\len{\mathbf{h}}-1}) &\otherwise \\
+      \keccak(\token{\$peak} \concat \mmrsuperpeak(\mathbf{h}_{\dots\len{\mathbf{h}}-1}) \concat \mathbf{h}_{\len{\mathbf{h}}-1}) &\otherwise \\
       \multicolumn{2}{l}{\where \mathbf{h} = \sq{h \mid h \orderedin \mathbf{b}, h \ne \none}}
     \end{cases}
   }

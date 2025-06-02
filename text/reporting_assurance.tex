@@ -44,7 +44,7 @@ A work-report, of the set $\workreport$, is defined as a tuple of the work-packa
 
 We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\mathsf{J} = 8$:
 \begin{equation}
-  \forall w \in \workreport : |w_\wr¬srlookup| + |(w_x)_\mathbf{p}| \le \mathsf{J}
+  \forall w \in \workreport : \len{w_\wr¬srlookup} + \len{(w_\wr¬context)_\mathbf{p}} \le \mathsf{J}
 \end{equation}
 
 \subsubsection{Refinement Context}
@@ -110,7 +110,7 @@ Finally, we have five fields describing the level of activity which this workloa
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful refinement output blobs together with the authorizer trace, effectively limiting their overall size:
 \begin{align}
   &\forall w \in \workreport:
-    |w_\wr¬authtrace| + \sum_{r \in w_\wr¬digests \cap \blob} |r_\wl¬result| \le \mathsf{W}_R \\
+    \len{w_\wr¬authtrace} + \sum_{r \in w_\wr¬digests \cap \blob} \len{r_\wl¬result} \le \mathsf{W}_R \\
   &\mathsf{W}_R \equiv 48\cdot2^{10}
 \end{align}
 
@@ -140,7 +140,7 @@ The assurances must all be anchored on the parent and ordered by validator index
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\H_\¬parent$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \xtassurances : a_s \in \sig{\activeset[a_v]_e}{\mathsf{X}_A\frown \blake(\se(\H_\¬parent, a_f))} \\
+  &\forall a \in \xtassurances : a_s \in \sig{\activeset[a_v]_\vk¬ed}{\mathsf{X}_A\concat \blake(\se(\H_\¬parent, a_f))} \\
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
@@ -187,8 +187,8 @@ We determine the core to which any given validator is assigned through a shuffle
 
 We define the permute function $P$, the rotation function $R$ and finally the guarantor assignments  $\mathbf{G}$ as follows:
 \begin{align}
-  R(\mathbf{c}, n) &\equiv [(x + n) \bmod \corecount \mid x \orderedin \mathbf{c}]\\
-  P(e, t) &\equiv R\left(\mathcal{F}\left(\left[\ffrac{\corecount \cdot i}{\valcount} \,\middle\mid\, i \orderedin \valindex\right], e\right), \ffrac{t \bmod \mathsf{E}}{\mathsf{R}}\right)\\
+  R(\mathbf{c}, n) &\equiv \sq{\build{ (x + n) \bmod \corecount}{x \orderedin \mathbf{c}}}\\
+  P(e, t) &\equiv R\left(\Ffyshuffle{\sq{\build{\ffrac{\corecount \cdot i}{\valcount}}{i \orderedin \valindex}}, e}, \ffrac{t \bmod \mathsf{E}}{\mathsf{R}}\right)\\
   \mathbf{G} &\equiv (P(\entropy_2', \thetime'), \Phi(\activeset'))
 \end{align}
 
@@ -242,7 +242,7 @@ The signature must be one whose public key is that of the validator identified i
       \forall (v, s) &\in \xg¬credential
     \end{aligned}
       : \left\{\,\begin{aligned}
-        &s \in \sig{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\frown\blake(w)}\\
+        &s \in \sig{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\concat\blake(w)}\\
         &\mathbf{c}\sub{v} = w_\wr¬core \wedge \mathsf{R}(\floor{\nicefrac{\thetime'}{\mathsf{R}}} - 1) \le t \le \thetime'\\
       \end{aligned}\right.\\
       &k \in \mathbf{R} \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists (v, s) \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
@@ -317,14 +317,14 @@ We require that the work-package of the report not be the work-package of some o
 \begin{align}
   &\using \mathbf{q} = \{(w_x)_p \mid \mathbf{q} \in \ready, (w, \mathbf{d}) \in \mathbf{q}\} \\
   &\using \mathbf{a} = \{((i_w)_x)_p \mid i \in \rho, i \ne \none\}\\
-  &\forall p \in \mathbf{p}, p \not\in \bigcup_{x \in \recenthistory}\keys{x_\mathbf{p}} \cup \bigcup_{x \in \accumulated}x \cup \mathbf{q} \cup \mathbf{a}
+  &\forall p \in \mathbf{p}, p \not\in \bigcup_{x \in \recenthistory}\Fkeys{x_\mathbf{p}} \cup \bigcup_{x \in \accumulated}x \cup \mathbf{q} \cup \mathbf{a}
 \end{align}
 
 We require that the prerequisite work-packages, if present, and any work-packages mentioned in the segment-root lookup, be either in the extrinsic or in our recent history.
 \begin{align}
   &\begin{aligned}
-    &\forall w \in \mathbf{w}, \forall p \in (w_x)_\mathbf{p} \cup \keys{w_\mathbf{l}} :\\
-    &\quad p \in \mathbf{p} \cup \{ x \mid x \in \keys{b_\mathbf{p}} ,\, b \in \recenthistory \}
+    &\forall w \in \mathbf{w}, \forall p \in (w_x)_\mathbf{p} \cup \Fkeys{w_\mathbf{l}} :\\
+    &\quad p \in \mathbf{p} \cup \{ x \mid x \in \Fkeys{b_\mathbf{p}} ,\, b \in \recenthistory \}
   \end{aligned}
 \end{align}
 

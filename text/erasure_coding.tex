@@ -3,7 +3,7 @@
 \newcommand{\join}{\text{join}}
 \newcommand{\spl}{\text{split}}
 
-The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\blob_2$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\se_2$. From this we may assume the encoding function $\mathcal{C}: \seq{\blob_2}_{342} \to \seq{\blob_2}_{1023}$ and the recovery function $\mathcal{R}: \powset[342]{\tuple{\blob_2, \N_{1023}}} \to \seq{\blob_2}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\mathcal{C}$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
+The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\blob_2$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\se_2$. From this we may assume the encoding function $\erasurecode: \seq{\blob_2}_{342} \to \seq{\blob_2}_{1023}$ and the recovery function $\ecrecover: \powset[342]{\tuple{\blob_2, \N_{1023}}} \to \seq{\blob_2}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\erasurecode$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
 
 Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of 684 octets. Data whose length is not divisible by 684 must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit \textsc{da} and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import \textsc{da} system.
 
@@ -14,7 +14,7 @@ For the Import \textsc{da} system, we deal with an input size of 4,104 octets re
 \newcommand*{\unzip}{\text{unzip}}
 \newcommand*{\lace}{\text{lace}}
 
-We assume some data blob $\mathbf{d} \in \blob_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\blob_{684}} = \unzip_{684}(\mathbf{d})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $\mathcal{C}$ as above to give 1,023 octet pairs per piece.
+We assume some data blob $\mathbf{d} \in \blob_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\blob_{684}} = \unzip_{684}(\mathbf{d})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $\erasurecode$ as above to give 1,023 octet pairs per piece.
 
 The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
@@ -33,24 +33,24 @@ We define the transposition operator hence:
 
 We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 684 octets and results in 1,023 sequences of sequences each of smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
-  \mathcal{C}_{k \in \N}\colon\left\{\begin{aligned}
+  \erasurecode_{k \in \N}\colon\left\{\begin{aligned}
     \blob_{684k} &\to \seq{\blob_{2k}}_{1023} \\
-    \mathbf{d} &\mapsto [ \join(\mathbf{c}) \mid \mathbf{c} \orderedin {}^{\text{T}}[\mathcal{C}(\mathbf{p}) \mid \mathbf{p} \orderedin \text{unzip}_{684}(\mathbf{d})] ]
+    \mathbf{d} &\mapsto [ \join(\mathbf{c}) \mid \mathbf{c} \orderedin {}^{\text{T}}[\Ferasurecode{\mathbf{p}} \mid \mathbf{p} \orderedin \text{unzip}_{684}(\mathbf{d})] ]
   \end{aligned}\right.
 \end{equation}
 
 The original data may be reconstructed with any 342 of the 1,023 resultant items (along with their indices). If the original 342 items are known then reconstruction is just their concatenation.
 \begin{equation}\label{eq:erasurecodinginv}
-  \mathcal{R}_{k \in \N}\colon\left\{\begin{aligned}
+  \ecrecover_{k \in \N}\colon\left\{\begin{aligned}
     \{(\blob_{2k}, \N_{1023})\}_{342} &\to \blob_{684k} \\
     \mathbf{c} &\mapsto \begin{cases}
       \se([\mathbf{x} \mid (\mathbf{x}, i) \orderedin \mathbf{c}]) &\when [i \mid (\mathbf{x}, i) \orderedin \mathbf{c}] = [0, 1, \dots 341]\\
       \lace_k([
-        \mathcal{R}([(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \orderedin \mathbf{c}])
+        \ecrecover([(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \orderedin \mathbf{c}])
       \mid p \in \N_k &\text{always}\\
     \end{cases}
     ])
-%      [ \mathcal{R}(\mathbf{y}, i) \mid \mathbf{y} \orderedin \transpose[ \spl_2(\mathbf{x}) \mid (\mathbf{x}, i) \orderedin \mathbf{c}] ]
+%      [ \ecrecover(\mathbf{y}, i) \mid \mathbf{y} \orderedin \transpose[ \spl_2(\mathbf{x}) \mid (\mathbf{x}, i) \orderedin \mathbf{c}] ]
   \end{aligned}\right.
 \end{equation}
 
@@ -156,7 +156,7 @@ We then distribute the message words and the extra code words among the validato
 
 %Define Reed-Soloman, the base, the 341 and the 1024.
 
-%We divide the WP $\mathbf{p}$ into $c$ chunks of $n*2$ bytes where $c = \ceil{|p| / n*2}$ bytes (appending with zeroes as needed for the last chunk), and $c$ chunks each encoded of size $2*3n$ bytes, with each chunk requiring $n*2$ bytes to reconstruct and thus a total of $2cn$ to reconstruct $p$, assuming $2n$ bytes for each decoded chunk (\ie there is correspondance).
+%We divide the WP $\mathbf{p}$ into $c$ chunks of $n*2$ bytes where $c = \ceil{\len{p} / n*2}$ bytes (appending with zeroes as needed for the last chunk), and $c$ chunks each encoded of size $2*3n$ bytes, with each chunk requiring $n*2$ bytes to reconstruct and thus a total of $2cn$ to reconstruct $p$, assuming $2n$ bytes for each decoded chunk (\ie there is correspondance).
 
 %We would send $3 * 2$ bytes to every validator (with $3 * 2$ bytes unsent). Then $1023/3+1$ validators could give us $(1023/3+1)*3*2$ bytes = 1023* 2 bytes, which is enough to reconstruct. In practice of course we'll batch this a lot to divide the $3*(unencoded size)$ data into 1024 chunks, 1 of which we send to each validator.
 

@@ -74,6 +74,7 @@
       %Poor man's typography
 \newcommand*{\doubleplus}{\mathrel{\drawplusplus {7pt}{0.6pt}{5pt}}}
 \newcommand*{\concat}{\ensuremath{\frown}}
+\newcommand*{\append}{\ensuremath{\doubleplus}}
 \newcommand*{\seqminusl}{\nwspoon}
 \newcommand*{\seqminusr}{\sespoon}
 \newcommand*{\disjoint}{\downspoon}
@@ -108,11 +109,12 @@
 \newcommand*{\maybe}[1]{\mathord{\text{¿}}#1}
 \newcommand*{\optional}[1]{#1\bm{?}}
 
-% Tuples
+% Tuples, sequences, and sets.
 \let\originalleft\left
 \let\originalright\right
-\renewcommand{\left}{\mathopen{}\mathclose\bgroup\originalleft}
-\renewcommand{\right}{\aftergroup\egroup\originalright}
+\renewcommand*{\left}{\mathopen{}\mathclose\bgroup\originalleft}
+\renewcommand*{\right}{\aftergroup\egroup\originalright}
+\newcommand*{\with}{\;\middle\vert\;}
 \newcommand*{\tricolon}{\!\mathrel{\vcenter{\offinterlineskip%
 \hbox{\scalebox{0.5}[0.5]{${\scriptscriptstyle \blacktriangleright}$}}
 \vskip.15ex
@@ -124,6 +126,8 @@
 \newcommand*{\isa}[2]{#1\in #2}
 \newcommand*{\sq}[1]{\left[#1\right]}
 \newcommand*{\seq}[1]{\left\lsem#1\right\rsem}
+\newcommand*{\set}[1]{\left\{\,#1\,\right\}}
+\newcommand*{\build}[2]{#1 \with #2}
 
 % Typical operations.
 \newcommand*{\floor}[1]{\left\lfloor#1\right\rfloor}
@@ -149,15 +153,60 @@
 \newcommand*{\exc}{\text{ except }}
 
 % Special constants/functions
-\newcommand*{\se}{\mathcal{E}}  % TODO: Make them all take a parameter.
+\newcommand*{\mmrappend}{\mathcal{A}}
+\newcommand*{\octetstobits}{\mathcal{B}}
+\newcommand*{\erasurecode}{\mathcal{C}}
+\newcommand*{\se}{\mathcal{E}}
 \newcommand*{\de}{\mathcal{E}^{-1}}
+\newcommand*{\mmrencode}{\se_M}
+\newcommand*{\fyshuffle}{\mathcal{F}}
 \newcommand*{\blake}{\mathcal{H}}
 \newcommand*{\keccak}{\mathcal{H}_K}
-\newcommand*{\keys}[1]{\mathcal{K}(#1)}
+\newcommand*{\merklejustsubpath}{\mathcal{J}}
+\newcommand*{\keys}{\mathcal{K}}
+\newcommand*{\merklesubtreepage}{\mathcal{L}}
+\newcommand*{\merklizecd}{\mathcal{M}}
+\newcommand*{\merklizewb}{\mathcal{M}_B}
+\newcommand*{\merklizestate}{\mathcal{M}_\sigma}
+\newcommand*{\mmrsuperpeak}{\mathcal{M}_R}
+\newcommand*{\getringroot}{\mathcal{O}}
+\newcommand*{\zeropad}{\mathcal{P}}
+\newcommand*{\seqfromhash}{\mathcal{Q}}
+\newcommand*{\ecrecover}{\mathcal{R}}
+\newcommand*{\signdata}{\mathcal{S}}
 \newcommand*{\wallclock}{\mathcal{T}}
 \newcommand*{\subifnone}{\mathcal{U}}
-\newcommand*{\banderout}[1]{\mathcal{Y}(#1)}
-\newcommand*{\powset}[2][{}]{\wp\left\langle#2\right\rangle_{#1}}
+\newcommand*{\values}{\mathcal{V}}
+\newcommand*{\sext}{\mathcal{X}}
+\newcommand*{\banderout}{\mathcal{Y}}
+\newcommand*{\tosigned}{\mathcal{Z}}
+\newcommand*{\powset}[2][{}]{\wp\left\langle#2\right\rangle_{#1}} % TODO: Make it take a parameter.
+
+% F prefix implies these are "proper" latex functions, not just simple names.
+\newcommand*{\Fmmrappend}[1]{\mmrappend\left(#1\right)}
+\newcommand*{\Ferasurecode}[2][]{\erasurecode_{#1}\left(#2\right)}
+\newcommand*{\Ferasurecodeplex}[2][]{\erasurecode^\#_{#1}\left(#2\right)}
+\newcommand*{\Fmmrencode}[1]{\mmrencode\left(#1\right)}
+\newcommand*{\Ffyshuffle}[1]{\fyshuffle\left(#1\right)}
+\newcommand*{\Fmerklejustsubpath}[2]{\merklejustsubpath_{#1}\left(#2\right)}
+\newcommand*{\Fkeys}[1]{\keys\left(#1\right)}
+\newcommand*{\Fmerklesubtreepage}[2]{\merklesubtreepage_{#1}\left(#2\right)}
+\newcommand*{\Fmerklizecd}[1]{\merklizecd\left(#1\right)}
+\newcommand*{\Fmerklizewb}[1]{\merklizewb\left(#1\right)}
+\newcommand*{\Fmerklizestate}[1]{\merklizestate\left(#1\right)} % TODO: Make it take a parameter.
+\newcommand*{\Fmmrsuperpeak}[1]{\mmrsuperpeak\left(#1\right)}
+\newcommand*{\Fgetringroot}[1]{\getringroot\left(#1\right)}
+\newcommand*{\Fzeropad}[2]{\zeropad_{#1}\left(#2\right)}
+\newcommand*{\Fseqfromhash}[1]{\seqfromhash\left(#1\right)}
+\newcommand*{\Fecrecover}[1]{\ecrecover\left(#1\right)}
+\newcommand*{\Fsigndata}[2]{\signdata_{#1}\left(#2\right)}
+\newcommand*{\Fwallclock}{\wallclock}
+\newcommand*{\Fsubifnone}[1]{\subifnone\left(#1\right)} % TODO: Make it take a parameter.
+\newcommand*{\Fvalues}[1]{\values\left(#1\right)}
+\newcommand*{\Fsignext}[2]{\signext_{#1}\left(#2\right)}
+\newcommand*{\Fbanderout}[1]{\banderout\left(#1\right)}
+\newcommand*{\Ftosigned}[2]{\tosigned_{#1}\left(#2\right)}
+\newcommand*{\Ffromsigned}[2]{\fromsigned^{-1}_{#1}\left(#2\right)}
 
 % Constants
 \newcommand*{\corecount}{\mathsf{C}}
@@ -174,7 +223,7 @@
 \newcommand*{\ticketentryindex}{\N_\ticketentries}
 \newcommand*{\epochindex}{\N_\epochlen}
 
-% Functions
+% Big Functions
 \newcommand*{\histlookup}{\Lambda}
 
 % Primitive types
@@ -354,7 +403,6 @@
 
 \newcommand*{\thestate}{\sigma}
 \newcommand*{\genesisstate}{\sigma^0}
-\newcommand*{\merklizestate}{\mathcal{M}_\sigma}
 
 \newcommand*{\entropy}{\eta}
 \newcommand*{\entropyaccumulator}{\eta_0}

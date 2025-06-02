@@ -60,9 +60,9 @@ Thus, conveniently, fixed length octet sequences (\eg hashes $\hash$ and its var
 \subsubsection{Discriminator Encoding}
 When we have sets of heterogeneous items such as a union of different kinds of tuples or sequences of different length, we require a discriminator to determine the nature of the encoded item for successful deserialization. Discriminators are encoded as a natural and are encoded immediately prior to the item.
 
-We generally use a \emph{length discriminator} when serializing sequence terms which have variable length (\eg general blobs $\blob$ or unbound numeric sequences $\seq{\N}$) (though this is omitted in the case of fixed-length terms such as hashes $\hash$).\footnote{Note that since specific values may belong to both sets which would need a discriminator and those that would not then we are sadly unable to introduce a function capable of serializing corresponding to the \emph{term}'s limitation. A more sophisticated formalism than basic set-theory would be needed, capable of taking into account not simply the value but the term from which or to which it belongs in order to do this succinctly.} In this case, we simply prefix the term its length prior to encoding. Thus, for some term $y \in \tup{x \in \blob, \dots}$, we would generally define its serialized form to be $\se(|x|)\concat\se(x)\concat\dots$. To avoid repetition of the term in such cases, we define the notation $\var{x}$ to mean that the term of value $x$ is variable in size and requires a length discriminator. Formally:
+We generally use a \emph{length discriminator} when serializing sequence terms which have variable length (\eg general blobs $\blob$ or unbound numeric sequences $\seq{\N}$) (though this is omitted in the case of fixed-length terms such as hashes $\hash$).\footnote{Note that since specific values may belong to both sets which would need a discriminator and those that would not then we are sadly unable to introduce a function capable of serializing corresponding to the \emph{term}'s limitation. A more sophisticated formalism than basic set-theory would be needed, capable of taking into account not simply the value but the term from which or to which it belongs in order to do this succinctly.} In this case, we simply prefix the term its length prior to encoding. Thus, for some term $y \in \tup{x \in \blob, \dots}$, we would generally define its serialized form to be $\se(\len{x})\concat\se(x)\concat\dots$. To avoid repetition of the term in such cases, we define the notation $\var{x}$ to mean that the term of value $x$ is variable in size and requires a length discriminator. Formally:
 \begin{equation}
-  \var{x} \equiv \tup{|x|, x}\text{ thus }\se(\var{x}) \equiv \se(|x|)\concat\se(x)
+  \var{x} \equiv \tup{\len{x}, x}\text{ thus }\se(\var{x}) \equiv \se(\len{x})\concat\se(x)
 \end{equation}
 
 We also define a convenient discriminator operator $\maybe{x}$ specifically for terms defined by some serializable set in union with $\none$ (generally denoted for some set $S$ as $\optional{S}$):
@@ -78,22 +78,22 @@ A sequence of bits $b \in \mathbb{B}$ is a special case since encoding each indi
 \begin{align}
   \se(b \in \mathbb{B}) &\equiv \begin{cases}
     [] &\when b = [] \\
-    \left[\sum\limits_{i=0}^{\min(8, |b|)}{b_i\cdot 2^i}\right] \concat \se(b_{8\dots}) &\otherwise\\
+    \left[\sum\limits_{i=0}^{\min(8, \len{b})}{b_i\cdot 2^i}\right] \concat \se(b_{8\dots}) &\otherwise\\
   \end{cases}
 \end{align}
 
 \subsubsection{Dictionary Encoding}
 In general, dictionaries are placed in the Merkle trie directly (see appendix \ref{sec:merklization} for details). However, small dictionaries may reasonably be encoded as a sequence of pairs ordered by the key. Formally:
 \begin{equation}
-  \forall K, V: \se(d \in \dict{K}{V}) \equiv \se(\var{\orderby{k}{\tup{\se(k), \se(d[k])} \mid k \in \keys{d}}})
+  \forall K, V: \se(d \in \dict{K}{V}) \equiv \se(\var{\orderby{k}{\tup{\se(k), \se(d[k])} \mid k \in \Fkeys{d}}})
 \end{equation}
 
 %The second is as a sequence of encoded values only, with each entry having an implicit key according to an enumeration over its domain. This is typically used when the domain is small in magnitude and typically similar in magnitude to the active domain. In order to account for the possibility of a key not existing in the dictionary (\ie the domain and the active domain not being equal) we prefix each value with an octet of one to indicate that the key is indeed present in the dictionary and place an octet of zero if the implied key is not.
 %
-%We provide a function $\mathcal{S}$ to deliver this from a regular dictionary:
+%We provide a function $\signdata$ to deliver this from a regular dictionary:
 %\begin{equation}
-%  \forall K, V: \mathcal{S}(d \in \dict{K}{V}) \equiv \var{\orderby{k}{\begin{aligned}
-%    &[1] \frown \se(d[k]) &&\ \when k \in \keys{d} \\
+%  \forall K, V: \signdata(d \in \dict{K}{V}) \equiv \var{\orderby{k}{\begin{aligned}
+%    &[1] \concat \se(d[k]) &&\ \when k \in \Fkeys{d} \\
 %    &[0] &&\ \otherwise
 %  \end{aligned}
 %  \,\middle\mid\, k \in K}}
@@ -101,7 +101,7 @@ In general, dictionaries are placed in the Merkle trie directly (see appendix \r
 
 %Finally, we may also encode a dictionary only insofar as we encode the keys and encode the values; in this case the result is not a sequence of octets but rather a mapping of octet-sequences to octet-sequences. This is useful in defining the process of Merklization. We define the function $\se_D$ to deliver this from a regular dictionary:
 %\begin{equation}
-%  \forall K, V: \se_D(d \in \dict{K}{V}) \equiv r \suchthat k \in \keys{d} \Leftrightarrow \se(k) \in \keys{r} \wedge \forall k \in \keys{d} : r[\se(k)] = \se(d[k])
+%  \forall K, V: \se_D(d \in \dict{K}{V}) \equiv r \suchthat k \in \Fkeys{d} \Leftrightarrow \se(k) \in \Fkeys{r} \wedge \forall k \in \Fkeys{d} : r[\se(k)] = \se(d[k])
 %\end{equation}
 
 \subsubsection{Set Encoding}

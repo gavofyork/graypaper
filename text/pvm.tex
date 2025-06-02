@@ -7,23 +7,23 @@
 \newcommand*{\regs}{\seq{\pvmreg}_{13}}
 \newcommand*{\reg}{{\registers}}
 \newcommand*{\mem}{{\memory}}
-\newcommand*{\memr}{\mem^{\circlearrowleft}}
-\newcommand*{\memwr}{{\mem'}^{\circlearrowleft}}
+\newcommand*{\memr}{\cyclic{\mem}}
+\newcommand*{\memwr}{\cyclic{\mem'}}
 \newcommand*{\ram}{\mathbb{M}}
 \newcommand*{\rnp}[1]{P(#1)}
 \newcommand*{\rnq}[1]{Z(#1)}
 \newcommand*{\continue}{\blacktriangleright}
 \newcommand*{\gascost}{\gascounter_\Delta}
 \newcommand*{\instrlen}{\ell}
-\newcommand*{\revbitsfunc}[1]{\overleftarrow{\mathcal{B}}_{#1}}
+\newcommand*{\revbitsfunc}[1]{\overleftarrow{\octetstobits}_{#1}}
 \newcommand*{\revunbitsfunc}[1]{\revbitsfunc{#1}^{-1}}
-\newcommand*{\bitsfunc}[1]{\mathcal{B}_{#1}}
+\newcommand*{\bitsfunc}[1]{\octetstobits_{#1}}
 \newcommand*{\unbitsfunc}[1]{\bitsfunc{#1}^{-1}}
 \newcommand*{\bits}[1]{\bitsn{8}{#1}}
 \newcommand*{\unbits}[1]{\unbitsn{8}{#1}}
 \newcommand*{\bitsn}[2]{\bitsfunc{#1}(#2)}
 \newcommand*{\unbitsn}[2]{\unbitsfunc{#1}(#2)}
-\newcommand*{\signfunc}[1]{\mathcal{Z}_{#1}}
+\newcommand*{\signfunc}[1]{\tosigned_{#1}}
 \newcommand*{\unsignfunc}[1]{\signfunc{#1}^{-1} }
 \newcommand*{\signed}[1]{\signedn{8}{#1}}
 \newcommand*{\unsigned}[1]{\unsignedn{8}{#1}}
@@ -63,7 +63,7 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
   \deblob&\colon\left\{\begin{aligned}
     \blob &\to \tuple{\blob, \mathbb{B}, \seq{\pvmreg}} \cup \error \\
     \mathbf{p} &\mapsto \begin{cases}
-      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \se(\len{\mathbf{j}}) \frown \se_1(z) \frown \se(\len{\mathbf{c}}) \frown \se_z(\mathbf{j}) \frown \se(\mathbf{c}) \frown \se(\mathbf{k})\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \se(\len{\mathbf{j}}) \concat \se_1(z) \concat \se(\len{\mathbf{c}}) \concat \se_z(\mathbf{j}) \concat \se(\mathbf{c}) \concat \se(\mathbf{k})\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
       \error &\otherwise
     \end{cases} \\
   \end{aligned}\right.
@@ -85,7 +85,7 @@ We define the Skip function $\Fskip$ which provides the number of octets, minus 
 \begin{equation}
   \Fskip\colon\left\{\begin{aligned}
     \N &\to \N\\
-    i &\mapsto \min(24,\ j \in \N : (\mathbf{k} \frown [1, 1, \dots])_{i + 1 + j} = 1)
+    i &\mapsto \min(24,\ j \in \N : (\mathbf{k} \concat [1, 1, \dots])_{i + 1 + j} = 1)
   \end{aligned}\right.
 \end{equation}
 
@@ -199,8 +199,6 @@ We define signed/unsigned transitions for various octet widths:
     \mathbf{x} &\mapsto y: \sum_{i \in \N_{8n}} \mathbf{x}_{8n - 1 - i} \cdot 2^i
   \end{aligned}\right.
 \end{align}
-
-\newcommand{\sext}{\mathcal{X}}
 
 Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values. We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
 \begin{align}\label{eq:signedextension}
@@ -709,7 +707,7 @@ Note that the two signed modulo operations have an idiosyncratic definition, ope
     (\mathbb{Z}, \mathbb{Z}) &\to \mathbb{Z}\\
     (a, b) &\mapsto \begin{cases}
       a &\when b = 0\\
-      \text{sgn}(a)(|a| \bmod |b|) &\otherwise \\
+      \text{sgn}(a)(\len{a} \bmod \len{b}) &\otherwise \\
     \end{cases}
   \end{aligned}\right.
 \end{equation}

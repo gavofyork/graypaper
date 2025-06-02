@@ -129,35 +129,35 @@
 \subsection{Utilities, Externalities and Standard Functions}
 
 \begin{description}
-  \item[$\mathcal{A}(\dots)$] The Merkle mountain range append function. See equation \ref{eq:mmrappend}.
-  \item[$\mathcal{B}_n(\dots)$] The octets-to-bits function for $n$ octets. Superscripted ${}^{-1}$ to denote the inverse. See equation \ref{eq:bitsfunc}.
-  \item[$\mathcal{C}(\dots)$] The group of erasure-coding functions.
-  \item[$\mathcal{C}_n(\dots)$] The erasure-coding functions for $n$ chunks. See equation \ref{eq:erasurecoding}.
+  \item[$\mmrappend(\dots)$] The Merkle mountain range append function. See equation \ref{eq:mmrappend}.
+  \item[$\octetstobits_n(\dots)$] The octets-to-bits function for $n$ octets. Superscripted ${}^{-1}$ to denote the inverse. See equation \ref{eq:bitsfunc}.
+  \item[$\erasurecode(\dots)$] The group of erasure-coding functions.
+  \item[$\erasurecode_n(\dots)$] The erasure-coding functions for $n$ chunks. See equation \ref{eq:erasurecoding}.
 %  \item[$\mathcal{D}$] Unused.
   \item[$\se(\dots)$] The octet-sequence encode function. Superscripted ${}^{-1}$ to denote the inverse. See appendix \ref{sec:serialization}.
-  \item[$\mathcal{F}(\dots)$] The Fisher-Yates shuffle function. See equation \ref{eq:suffle}.
+  \item[$\fyshuffle(\dots)$] The Fisher-Yates shuffle function. See equation \ref{eq:suffle}.
   \item[$\blake(\dots)$] The Blake 2b 256-bit hash function. See section \ref{sec:cryptography}.
   \item[$\keccak(\dots)$] The Keccak 256-bit hash function. See section \ref{sec:cryptography}.
   %  \item[$\mathcal{G}$] Unused.
   %  \item[$\mathcal{I}$] Unused.
-  \item[$\mathcal{J}_x$] The justification path to a specific $2^x$ size page of a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerklejust}.
-  \item[$\mathcal{K}(\dots)$] The domain, or set of keys, of a dictionary. See section \ref{sec:dictionaries}.
-  \item[$\mathcal{L}_x$] The $2^x$ size page function for a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerkleleafpage}.
-  \item[$\mathcal{M}(\dots)$] The constant-depth binary Merklization function. See appendix \ref{sec:merklization}.
-  \item[$\mathcal{M}_B(\dots)$] The well-balanced binary Merklization function. See appendix \ref{sec:merklization}.
+  \item[$\merklejustsubpath_x$] The justification path to a specific $2^x$ size page of a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerklejust}.
+  \item[$\keys(\dots)$] The domain, or set of keys, of a dictionary. See section \ref{sec:dictionaries}.
+  \item[$\merklesubtreepage_x$] The $2^x$ size page function for a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerkleleafpage}.
+  \item[$\merklizecd(\dots)$] The constant-depth binary Merklization function. See appendix \ref{sec:merklization}.
+  \item[$\merklizewb(\dots)$] The well-balanced binary Merklization function. See appendix \ref{sec:merklization}.
   \item[$\merklizestate(\dots)$] The state Merklization function. See appendix \ref{sec:statemerklization}.
-  \item[$\mathcal{N}(\dots)$] The erasure-coding chunks function. See appendix \ref{sec:erasurecoding}.
-  \item[$\mathcal{O}(\dots)$] The Bandersnatch ring root function. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
-  \item[$\mathcal{P}_n(\dots)$] The octet-array zero-padding function. See equation \ref{eq:zeropadding}.
-  \item[$\mathcal{Q}(\dots)$] The numeric-sequence-from-hash function. See equation \ref{eq:sequencefromhash}.
-  \item[$\mathcal{R}$] The group of erasure-coding piece-recovery functions.
-  \item[$\mathcal{S}_k(\dots)$] The general signature function. See section \ref{sec:cryptography}.
+  %  \item[$\mathcal{N}$] Unused.
+  \item[$\getringroot(\dots)$] The Bandersnatch ring root function. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+  \item[$\zeropad_n(\dots)$] The octet-array zero-padding function. See equation \ref{eq:zeropadding}.
+  \item[$\seqfromhash(\dots)$] The numeric-sequence-from-hash function. See equation \ref{eq:sequencefromhash}.
+  \item[$\ecrecover$] The group of erasure-coding piece-recovery functions.
+  \item[$\signdata_k(\dots)$] The general signature function. See section \ref{sec:cryptography}.
   \item[$\wallclock$] The current time expressed in seconds after the start of the \Jam Common Era. See section \ref{sec:commonera}.
-  \item[$\mathcal{U}(\dots)$] The substitute-if-nothing function. See equation \ref{eq:substituteifnothing}.
-  \item[$\mathcal{V}(\dots)$] The range, or set of values, of a dictionary or sequence. See section \ref{sec:dictionaries}.
-  \item[$\mathcal{X}_n(\dots)$] The signed-extension function for a value in $\N_{2^{8n}}$. See equation \ref{eq:signedextension}.
-  \item[$\mathcal{Y}(\dots)$] The alias/output/entropy function of a Bandersnatch \textsc{vrf} signature/proof. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
-  \item[$\mathcal{Z}_n(\dots)$] The into-signed function for a value in $\N_{2^{8n}}$. Superscripted with ${}^{-1}$ to denote the inverse. See equation \ref{eq:signedfunc}.
+  \item[$\subifnone(\dots)$] The substitute-if-nothing function. See equation \ref{eq:substituteifnothing}.
+  \item[$\values(\dots)$] The range, or set of values, of a dictionary or sequence. See section \ref{sec:dictionaries}.
+  \item[$\sext_n(\dots)$] The signed-extension function for a value in $\N_{2^{8n}}$. See equation \ref{eq:signedextension}.
+  \item[$\banderout(\dots)$] The alias/output/entropy function of a Bandersnatch \textsc{vrf} signature/proof. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+  \item[$\tosigned_n(\dots)$] The into-signed function for a value in $\N_{2^{8n}}$. Superscripted with ${}^{-1}$ to denote the inverse. See equation \ref{eq:signedfunc}.
   \item[$\powset{\dots}$] Power set function.
 \end{description}
 
@@ -272,7 +272,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{G}_A = 10,000,000$] The gas allocated to invoke a work-report's Accumulation logic.
   \item[$\mathsf{G}_I = 50,000,000$] The gas allocated to invoke a work-package's Is-Authorized logic.
   \item[$\mathsf{G}_R = 5,000,000,000$] The gas allocated to invoke a work-package's Refine logic.
-  \item[$\mathsf{G}_T = 3,500,000,000$] The total gas allocated across for all Accumulation. Should be no smaller than $\mathsf{G}_A\cdot\corecount + \sum_{g \in \mathcal{V}(\alwaysaccers)}(g)$.
+  \item[$\mathsf{G}_T = 3,500,000,000$] The total gas allocated across for all Accumulation. Should be no smaller than $\mathsf{G}_A\cdot\corecount + \sum_{g \in \Fvalues{\alwaysaccers}}(g)$.
   \item[$\mathsf{H} = 8$] The size of recent history, in blocks.
   \item[$\mathsf{I} = 16$] The maximum amount of work items in a package.
   \item[$\mathsf{J} = 8$] The maximum sum of dependency items in a work-report.

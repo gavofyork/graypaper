@@ -97,7 +97,7 @@ The state of the lookup system naturally satisfies a number of invariants. First
 \begin{equation}\label{eq:preimageconstraints}
   \forall \mathbf{a} \in \serviceaccount, (h \mapsto \mathbf{d}) \in \mathbf{a}_\sa¬preimages \Rightarrow
     h = \blake(\mathbf{d})\wedge
-    \tup{h , \len{\mathbf{d}}} \in \keys{\mathbf{a}_\sa¬requests}
+    \tup{h , \len{\mathbf{d}}} \in \Fkeys{\mathbf{a}_\sa¬requests}
 \end{equation}
 
 \subsubsection{Semantics}
@@ -115,7 +115,7 @@ The historical lookup function $\histlookup$ may now be defined as:
   \begin{aligned}\label{eq:historicallookup}
     &\histlookup\colon (\serviceaccount, \timeslot, \hash) \to \optional{\blob} \\
     &\histlookup(\mathbf{a}, t, h) \equiv \begin{cases}
-      \mathbf{a}_\sa¬preimages[h]\!\!\!\! &\when h \in \keys{\mathbf{a}_\sa¬preimages} \wedge I(\mathbf{a}_\sa¬requests\subb{h, \len{\mathbf{a}_\sa¬preimages[h]}}, t) \!\!\!\!\! \\
+      \mathbf{a}_\sa¬preimages[h]\!\!\!\! &\when h \in \Fkeys{\mathbf{a}_\sa¬preimages} \wedge I(\mathbf{a}_\sa¬requests\subb{h, \len{\mathbf{a}_\sa¬preimages[h]}}, t) \!\!\!\!\! \\
       \none &\otherwise
     \end{cases}\\
     &\where I(\mathbf{l}, t) = \begin{cases}
@@ -141,9 +141,9 @@ Furthermore, as we will see in the account serialization function in section \re
 
 We may then define a third dependent term $\sa¬minbalance$, the minimum, or \emph{threshold}, balance needed for any given service account in terms of its storage footprint.
 \begin{align}
-  \forall \mathbf{a} \in \mathcal{V}(\accounts):\left\{\begin{aligned}
+  \forall \mathbf{a} \in \Fvalues{\accounts}:\left\{\begin{aligned}
     \mathbf{a}_\sa¬items \in \N_{2^{32}} &\equiv 2\cdot\len{\,\mathbf{a}_\sa¬requests\,} + \len{\,\mathbf{a}_\sa¬storage\,} \\
-    \mathbf{a}_\sa¬octets \in \N_{2^{64}} &\equiv \sum\limits_{\,(h, z) \in \keys{\mathbf{a}_\sa¬requests}\,} \!\!\!\!81 + z \\
+    \mathbf{a}_\sa¬octets \in \N_{2^{64}} &\equiv \sum\limits_{\,(h, z) \in \Fkeys{\mathbf{a}_\sa¬requests}\,} \!\!\!\!81 + z \\
     &\phantom{\equiv\ } + \sum\limits_{(x, y) \in \mathbf{a}_\sa¬storage} 34 + \len{y} + \len{x} \\
     \mathbf{a}_\sa¬minbalance \in \balance &\equiv \max(0, \mathsf{B}_S + \mathsf{B}_I \cdot \mathbf{a}_\sa¬items + \mathsf{B}_L \cdot \mathbf{a}_\sa¬octets - \mathbf{a}_\sa¬gratis)
   \end{aligned}\right.
