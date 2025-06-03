@@ -61,44 +61,44 @@ We denote the $\rem$ operator as the modulo operator, \eg $5 \rem 3 = 2$. Furthe
 
 A \emph{dictionary} is a possibly partial mapping from some domain into some co-domain in much the same manner as a regular function. Unlike functions however, with dictionaries the total set of pairings are necessarily enumerable, and we represent them in some data structure as the set of all $(key \mapsto value)$ pairs. (In such data-defined mappings, it is common to name the values within the domain a \emph{key} and the values within the co-domain a \emph{value}, hence the naming.)
 
-Thus, we define the formalism $\dict{\mathrm{K}}{\mathrm{V}}$ to denote a dictionary which maps from the domain $\mathrm{K}$ to the range $\mathrm{V}$. We define a dictionary as a member of the set of all dictionaries $\mathbb{D}$ and a set of pairs $p = (k \mapsto v)$:
+Thus, we define the formalism $\dict{\mathrm{K}}{\mathrm{V}}$ to denote a dictionary which maps from the domain $\mathrm{K}$ to the range $\mathrm{V}$. We define a dictionary as a member of the set of all dictionaries $\dictionary$ and a set of pairs $p = (k \mapsto v)$:
 \begin{align}
-  &\mathbb{D} \subset \big \{ \{ (k \mapsto v) \} \big \}
+  &\dictionary \subset \big \{ \{ (k \mapsto v) \} \big \}
 \end{align}
 
 A dictionary's members must associate at most one unique value for any key $k$:
 \begin{align}
-  \forall \mathbf{d} \in\ &\mathbb{D} : \forall (k \mapsto v) \in \mathbf{d} : \exists! v' : (k \mapsto v') \in \mathbf{d}
+  \forall \mathbf{d} \in\ &\dictionary : \forall (k \mapsto v) \in \mathbf{d} : \exists! v' : (k \mapsto v') \in \mathbf{d}
 \end{align}
 
 This assertion allows us to unambiguously define the subscript and subtraction operator for a dictionary $d$:
 \begin{align}
-  \forall \mathbf{d} \in \mathbb{D}&: \mathbf{d}[k] \equiv \begin{cases}
+  \forall \mathbf{d} \in \dictionary&: \mathbf{d}[k] \equiv \begin{cases}
     v & \text{if}\ \exists k : (k \mapsto v) \in \mathbf{d} \\
     \none & \otherwise
   \end{cases}\\
-  \forall \mathbf{d} \in \mathbb{D}&, \mathbf{s} \subseteq K: \mathbf{d} \setminus \mathbf{s} \equiv \{ (k \mapsto v): (k \mapsto v) \in \mathbf{d}, k \not \in \mathbf{s} \}
+  \forall \mathbf{d} \in \dictionary&, \mathbf{s} \subseteq K: \mathbf{d} \setminus \mathbf{s} \equiv \{ (k \mapsto v): (k \mapsto v) \in \mathbf{d}, k \not \in \mathbf{s} \}
 \end{align}
 
 Note that when using a subscript, it is an implicit assertion that the key exists in the dictionary. Should the key not exist, the result is undefined and any block which relies on it must be considered invalid.
 
 It is typically useful to limit the sets from which the keys and values may be drawn. Formally, we define a typed dictionary $\dict{K}{V}$ as a set of pairs $p$ of the form $(k \mapsto v)$:
 \begin{align}
-  \dict{K}{V} &\subset \mathbb{D} \\
+  \dict{K}{V} &\subset \dictionary \\
   \dict{K}{V} &\equiv \big \{ \{ (k \mapsto v) \mid k \in K \wedge v \in V \} \big \}
 \end{align}
 
 To denote the active domain (\ie set of keys) of a dictionary $\mathbf{d} \in \dict{K}{V}$, we use $\Fkeys{\mathbf{d}} \subseteq K$ and for the range (\ie set of values), $\Fvalues{\mathbf{d}} \subseteq V$. Formally:
 \begin{align}
-  \Fkeys{\mathbf{d} \in \mathbb{D}} &\equiv \{\ k \mid \exists v : (k \mapsto v) \in \mathbf{d}\ \} \\
-  \Fvalues{\mathbf{d} \in \mathbb{D}} &\equiv \{\ v \mid \exists k : (k \mapsto v) \in \mathbf{d}\ \}
+  \Fkeys{\mathbf{d} \in \dictionary} &\equiv \{\ k \mid \exists v : (k \mapsto v) \in \mathbf{d}\ \} \\
+  \Fvalues{\mathbf{d} \in \dictionary} &\equiv \{\ v \mid \exists k : (k \mapsto v) \in \mathbf{d}\ \}
 \end{align}
 
 Note that since the co-domain of $\values$ is a set, should different keys with equal values appear in the dictionary, the set will only contain one such value.
 
 Dictionaries may be combined through the union operator $\cup$, which priorities the right-side operand in the case of a key-collision:
 \begin{equation}
-  \forall \mathbf{d} \in \mathbb{D}, \mathbf{e} \in \mathbb{D}: \mathbf{d} \cup \mathbf{e} \equiv (\mathbf{d} \setminus \Fkeys{\mathbf{e}}) \cup \mathbf{e}
+  \forall \mathbf{d} \in \dictionary, \mathbf{e} \in \dictionary: \mathbf{d} \cup \mathbf{e} \equiv (\mathbf{d} \setminus \Fkeys{\mathbf{e}}) \cup \mathbf{e}
 \end{equation}
 
 \subsection{Tuples}\label{sec:tuples}
@@ -136,7 +136,7 @@ We define ${}^\text{T}\mathbf{x}$ as the transposition of the sequence-of-sequen
 We denote sequence subtraction with a slight modification of the set subtraction operator; specifically, some sequence $\mathbf{s}$ excepting the left-most element equal to $v$ would be denoted $\mathbf{s}\seqminusl\{v\}$.
 
 \subsubsection{Boolean values}
-$\mathbb{B}_s$ denotes the set of Boolean strings of length $s$, thus $\mathbb{B}_s = \seq{\{\bot, \top\}}_s$. When dealing with Boolean values we may assume an implicit equivalence mapping to a bit whereby $\top = 1$ and $\bot = 0$, thus $\mathbb{B}_\Box = \seq{\N_2}_\Box$. We use the function $\text{bits}(\blob) \in \mathbb{B}$ to denote the sequence of bits, ordered with the most significant first, which represent the octet sequence $\blob$, thus $\text{bits}([160, 0]) = [1, 0, 1, 0, 0, \dots]$.
+$\bitstring_s$ denotes the set of Boolean strings of length $s$, thus $\bitstring_s = \seq{\{\bot, \top\}}_s$. When dealing with Boolean values we may assume an implicit equivalence mapping to a bit whereby $\top = 1$ and $\bot = 0$, thus $\bitstring_\Box = \seq{\N_2}_\Box$. We use the function $\text{bits}(\blob) \in \bitstring$ to denote the sequence of bits, ordered with the most significant first, which represent the octet sequence $\blob$, thus $\text{bits}([160, 0]) = [1, 0, 1, 0, 0, \dots]$.
 
 The unary-not operator applies to both boolean values and sequences of boolean values, thus $\neg \top = \bot$ and $\neg [ \top, \bot ] = [ \bot, \top ]$.
 

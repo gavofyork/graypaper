@@ -74,9 +74,9 @@ We also define a convenient discriminator operator $\maybe{x}$ specifically for 
 \end{align}
 
 \subsubsection{Bit Sequence Encoding}
-A sequence of bits $b \in \mathbb{B}$ is a special case since encoding each individual bit as an octet would be very wasteful. We instead pack the bits into octets in order of least significant to most, and arrange into an octet stream. In the case of a variable length sequence, then the length is prefixed as in the general case.
+A sequence of bits $b \in \bitstring$ is a special case since encoding each individual bit as an octet would be very wasteful. We instead pack the bits into octets in order of least significant to most, and arrange into an octet stream. In the case of a variable length sequence, then the length is prefixed as in the general case.
 \begin{align}
-  \se(b \in \mathbb{B}) &\equiv \begin{cases}
+  \se(b \in \bitstring) &\equiv \begin{cases}
     [] &\when b = [] \\
     \left[\sum\limits_{i=0}^{\min(8, \len{b})}{b_i\cdot 2^i}\right] \concat \se(b_{8\dots}) &\otherwise\\
   \end{cases}
@@ -163,10 +163,10 @@ A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, 
     \var{\se_I^\#(x_\wi¬importsegments)},
     \var{\sq{\tup{h, \se_4(i)} \mid \tup{h, i} \orderedin x_\wi¬extrinsics}},
   ) \\
-  \se(x \in \mathbb{C}) &\equiv \se(x_\mathbf{y}, x_r) \\
+  \se(x \in \safroleticket) &\equiv \se(x_\mathbf{y}, x_r) \\
   \se(x \in \defxfer) &\equiv \se(\se_4(x_s), \se_4(x_d), \se_8(x_a), \se(x_m), \se_8(x_g)) \\
   \se(x \in \operandtuple) &\equiv \se(x_\ot¬packagehash, x_\ot¬segroot, x_\ot¬authorizer,  x_\ot¬payloadhash, x_\ot¬gaslimit, \seresult(x_\ot¬result), \var{x_\ot¬authtrace}) \\
-  \seresult(o \in \mathbb{J} \cup \blob) &\equiv \begin{cases}
+  \seresult(o \in \workerror \cup \blob) &\equiv \begin{cases}
     (0, \var{o}) &\when o \in \blob \\
     1 &\when o = \infty \\
     2 &\when o = \panic \\

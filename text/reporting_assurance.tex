@@ -84,7 +84,7 @@ We finally come to define a \emph{work-digest}, $\workdigest$, which is the data
       \isa{&\wl¬codehash&}{\hash}\,,\;
       \isa{&\wl¬payloadhash&}{\hash}\,,\;
       \isa{&\wl¬gaslimit&}{\gas}\,,\;
-      \isa{&\wl¬result&}{\blob \cup \mathbb{J}}\,,\;\\
+      \isa{&\wl¬result&}{\blob \cup \workerror}\,,\;\\
       \isa{\wl¬gasused&}{\gas}\,,\; % gas_used: UnsignedGas,
       \isa{&\wl¬importcount&}{\N}\,,\; % imports: u16,
       \isa{&\wl¬xtcount&}{\N}\,,\; % extrinsic_count: u16,
@@ -98,9 +98,9 @@ Work-digests are a tuple comprising several items. Firstly $\wl¬service$, the i
 
 Next, the hash of the payload ($\wl¬payloadhash$) within the work item which was executed in the refine stage to give this result. This has no immediate relevance, but is something provided to the accumulation logic of the service. We follow with the gas limit $\wl¬gaslimit$ for executing this item's accumulate.
 
-There is the work \emph{result}, the output blob or error of the execution of the code, $\wl¬result$, which may be either an octet sequence in case it was successful, or a member of the set $\mathbb{J}$, if not. This latter set is defined as the set of possible errors, formally:
+There is the work \emph{result}, the output blob or error of the execution of the code, $\wl¬result$, which may be either an octet sequence in case it was successful, or a member of the set $\workerror$, if not. This latter set is defined as the set of possible errors, formally:
 \begin{equation}
-  \mathbb{J} \in \{ \oog, \panic, \badexports, \oversize, \token{BAD}, \token{BIG} \}
+  \workerror \in \{ \oog, \panic, \badexports, \oversize, \token{BAD}, \token{BIG} \}
 \end{equation}
 
 The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining four, the first indicates that the number of exports made was invalidly reported, the second that the size of the digest (refinement output) would cross the acceptable limit, the third indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The fourth indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
@@ -129,7 +129,7 @@ We first define $\reportspostguarantees$, the intermediate state to be utilized 
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
 \begin{align}
-  \xtassurances \in \seq{\tuple{\isa{a}{\hash},\,\isa{f}{\mathbb{B}_\corecount},\,\isa{v}{\valindex},\,\isa{s}{\mathbb{E}}}}_\mathsf{:\valcount}
+  \xtassurances \in \seq{\tuple{\isa{a}{\hash},\,\isa{f}{\bitstring_\corecount},\,\isa{v}{\valindex},\,\isa{s}{\signature}}}_\mathsf{:\valcount}
 \end{align}
 
 The assurances must all be anchored on the parent and ordered by validator index:
@@ -224,7 +224,7 @@ We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emp
   \xtguarantees &\in \seq{\tuple{
     \isa{\xg¬workreport}{\workreport},\,
     \isa{\xg¬timeslot}{\timeslot},\,
-    \isa{\xg¬credential}{\seq{\tuple{\valindex, \mathbb{E}}}_{2:3}}
+    \isa{\xg¬credential}{\seq{\tuple{\valindex, \signature}}_{2:3}}
   }}_{:\corecount} \\
   \xtguarantees &= \orderby{(g_\xg¬workreport)_\wr¬core}{g \in \xtguarantees}
 \end{align}

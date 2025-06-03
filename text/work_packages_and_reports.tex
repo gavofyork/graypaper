@@ -40,9 +40,9 @@ Work-packages have two other types of external data associated with them: A cryp
 
 \subsubsection{Segments, Imports and Exports}
 
-The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\G$, is an octet sequence of fixed length $\mathsf{W}_G = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term D$^3$L during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the D$^3$L system.
+The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\segment$, is an octet sequence of fixed length $\mathsf{W}_G = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term D$^3$L during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the D$^3$L system.
 \begin{equation}\label{eq:segment}
-  \G \equiv \blob_{\mathsf{W}_G}
+  \segment \equiv \blob_{\mathsf{W}_G}
 \end{equation}
 
 Exported segments are data which are \emph{generated} through the execution of the Refine logic and thus are a side effect of transforming the work-package into a work-report. Since their data is deterministic based on the execution of the Refine logic, we do not require any particular commitment to them in the work-package beyond knowing how many are associated with each Refine invocation in order that we can supply an exact index.
@@ -126,7 +126,7 @@ We limit the sums of each of the two gas limits to be at most the maximum gas al
 Given the result $\wl¬result$ and gas used $\wl¬gasused$ of some work-item, we define the item-to-digest function $\itemtodigest$ as:
 \begin{equation}
   \itemtodigest\colon\left\{\begin{aligned}
-    (\workitem, \blob \cup \mathbb{J}, \gas) &\to \mathbb{L}\\
+    (\workitem, \blob \cup \workerror, \gas) &\to \mathbb{L}\\
     \tup{\tup{\begin{aligned}
       &\¬service, \¬codehash, \¬payload,\\
       &\wi¬accgaslimit, \¬exportcount, \wi¬importsegments, \wi¬extrinsics
@@ -165,7 +165,7 @@ Guarantors are required to erasure-code and distribute two data sets: one blob, 
 We define the paged-proofs function $\pagedproofs$ which accepts a series of exported segments $\mathbf{s}$ and defines some series of additional segments placed into the D$^3$L via erasure-coding and distribution. The function evaluates to pages of hashes, together with subtree proofs, such that justifications of correctness based on a segments-root may be made from it:
 \begin{equation}\label{eq:pagedproofs}
   \!\!\pagedproofs\colon\left\{\begin{aligned}
-    \seq{\G} \to \,&\seq{\G} \\
+    \seq{\segment} \to \,&\seq{\segment} \\
     \mathbf{s} \mapsto \,&\sq{
       \zeropad_l(\se(
         \var{\merklejustsubpath_6(\mathbf{s}, i)},
@@ -202,9 +202,9 @@ Where:
     j \orderedin \N_{\len{\wpX_\wp¬workitems}}
   ] \\
   \countupexports(\wpX, j) \equiv \,&\begin{cases}
-    (\oversize, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\when \len{r} + z > \mathsf{W}_R\\
-    (\badexports, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen \len{\mathbf{e}} \ne w_e \\
-    (r, u, [\mathbb{G}_0, \mathbb{G}_0, \dots]_{\dots w_e}) &\otherwhen r \not\in \blob \\
+    (\oversize, u, [\segment_0, \segment_0, \dots]_{\dots w_e}) &\when \len{r} + z > \mathsf{W}_R\\
+    (\badexports, u, [\segment_0, \segment_0, \dots]_{\dots w_e}) &\otherwhen \len{\mathbf{e}} \ne w_e \\
+    (r, u, [\segment_0, \segment_0, \dots]_{\dots w_e}) &\otherwhen r \not\in \blob \\
     (r, u, \mathbf{e}) &\otherwise \\
     \multicolumn{2}{l}{\where (r, \mathbf{e}, u) = \Psi_R(
       j, \wpX, \mathbf{o}, [\importsegmentdata(w) \mid w \orderedin \wpX_\wp¬workitems], \ell
@@ -276,7 +276,7 @@ Validators, in their role as availability assurers, should index such chunks acc
 We define the availability specifier function $\newavailabilityspecifier$, which creates an availability specifier from the package hash, an octet sequence of the audit-friendly work-package bundle (comprising the work-package itself, the extrinsic data and the concatenated import segments along with their proofs of correctness), and the sequence of exported segments:
 \begin{equation}
   \!\!\!\newavailabilityspecifier\colon\left\{\,\begin{aligned}
-    \tuple{\hash, \blob, \seq{\G}} &\to \avspec\\
+    \tuple{\hash, \blob, \seq{\segment}} &\to \avspec\\
     \tup{h, \mathbf{b},\,\mathbf{s}} &\mapsto \tup{
       h,\,
       \is{l}{\len{\mathbf{b}}},\,

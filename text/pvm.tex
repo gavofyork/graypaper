@@ -9,7 +9,6 @@
 \newcommand*{\mem}{{\memory}}
 \newcommand*{\memr}{\cyclic{\mem}}
 \newcommand*{\memwr}{\cyclic{\mem'}}
-\newcommand*{\ram}{\mathbb{M}}
 \newcommand*{\rnp}[1]{P(#1)}
 \newcommand*{\rnq}[1]{Z(#1)}
 \newcommand*{\continue}{\blacktriangleright}
@@ -158,7 +157,7 @@ During the course of executing instructions, \textsc{ram} may be accessed. When 
 
 Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\mu$ which shall, if not $\continue$, singly effect the returned return of $\Psi_1$ as following:
 \begin{align}
-  \using \mathbf{x} &= \{ x :\ x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \mathbb{V}_\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \mathbb{V}^*_\mem \} \\
+  \using \mathbf{x} &= \{ x :\ x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \readable\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \writable\mem \} \\
   \varepsilon^\mu &= \begin{cases}
     \continue &\when \mathbf{x} = \{\} \\
     \panic &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
@@ -450,8 +449,8 @@ We assume the skip length $\ell$ is well-defined:
   101&\token{sbrk}&1&$\begin{aligned}
     \reg'_D \equiv &\min(x \in \pvmreg): \\
     &x \ge h\\
-    &\N_{x\dots+\reg_A} \not\subseteq \mathbb{V}_{\memory}\\
-    &\N_{x\dots+\reg_A} \subseteq \mathbb{V}^*_{\memory'}
+    &\N_{x\dots+\reg_A} \not\subseteq \readable{\memory}\\
+    &\N_{x\dots+\reg_A} \subseteq \writable{\memory'}
   \end{aligned}$\\ \mrule
   102&\token{count\_set\_bits\_64}&1&$\displaystyle\reg'_D = \sum_{i = 0}^{63}\bitsfunc{8}(\reg_A)_i$\\ \mrule
   103&\token{count\_set\_bits\_32}&1&$\displaystyle\reg'_D = \sum_{i = 0}^{31}\bitsfunc{4}(\reg_A \bmod 2^{32})_i$\\ \mrule
@@ -844,8 +843,8 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
         \end{alignedat}
         }) \mapsto \begin{cases}
           (u, \oog, \mathbf{x}') &\when \varepsilon = \oog \\
-          (u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \subseteq \mathbb{V}_{\mem'} \\
-          (u, [], \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \not\subseteq \mathbb{V}_{\mem'} \\
+          (u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \subseteq \readable{\mem'} \\
+          (u, [], \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \not\subseteq \readable{\mem'} \\
           (u, \panic, \mathbf{x}') &\otherwise \\
           \multicolumn{2}{l}{\quad \where u = \gascounter - \max(\gascounter', 0)}
         \end{cases}

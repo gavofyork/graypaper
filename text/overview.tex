@@ -144,20 +144,20 @@ In the present work, we presume the definition of a \emph{Polkadot Virtual Machi
 
 The \textsc{pvm} is comparable to the \textsc{evm} defined in the Yellow Paper, but somewhat simpler: the complex instructions for cryptographic operations are missing as are those which deal with environmental interactions. Overall it is far less opinionated since it alters a pre-existing general purpose design, \textsc{risc-v}, and optimizes it for our needs. This gives us excellent pre-existing tooling, since \textsc{pvm} remains essentially compatible with \textsc{risc-v}, including support from the compiler toolkit \textsc{llvm} and languages such as Rust and C++. Furthermore, the instruction set simplicity which \textsc{risc-v} and \textsc{pvm} share, together with the register size (64-bit), active number (13) and endianness (little) make it especially well-suited for creating efficient recompilers on to common hardware architectures.
 
-The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for contextualization we will briefly summarize the basic invocation function $\Psi$ which computes the resultant state of a \textsc{pvm} instance initialized with some registers ($\seq{\pvmreg}_{13}$) and \textsc{ram} ($\mathbb{M}$) and has executed for up to some amount of gas ($\gas$), a number of approximately time-proportional computational steps:
+The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for contextualization we will briefly summarize the basic invocation function $\Psi$ which computes the resultant state of a \textsc{pvm} instance initialized with some registers ($\seq{\pvmreg}_{13}$) and \textsc{ram} ($\ram$) and has executed for up to some amount of gas ($\gas$), a number of approximately time-proportional computational steps:
 \begin{equation}
   \Psi\colon
   \tuple{\,
     \begin{alignedat}{3}
       &\blob,\,\ \ \pvmreg,\,\ \ &&\gas,\,\\
-      &\!\seq{\pvmreg}_{13},\,\ \ &&\mathbb{M}\\
+      &\!\seq{\pvmreg}_{13},\,\ \ &&\ram\\
     \end{alignedat}
   \,}
   \to
   \tuple{\,
     \begin{aligned}
       &\{\halt, \panic, \oog\} \cup \{\fault,\host\} \times \pvmreg,\\
-      &\pvmreg,\ \ \signedgas,\ \ \seq{\pvmreg}_{13},\ \ \mathbb{M}
+      &\pvmreg,\ \ \signedgas,\ \ \seq{\pvmreg}_{13},\ \ \ram
     \end{aligned}
   \,}
 \end{equation}
@@ -173,20 +173,20 @@ It is left as a rather important implementation detail to ensure that the amount
 
 The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 64-bit quantity, denoted as $\pvmreg$, a natural less than $2^{64}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\registers \in \seq{\pvmreg}_{13}$ is typically used to denote the registers.
 \begin{align}\label{eq:pvmmemory}
-  \mathbb{M} &\equiv \tuple{
+  \ram &\equiv \tuple{
     \isa{\mathbf{V}}{\blob_{2^{32}}},
     \isa{\mathbf{A}}{\seq{\{\text{W}, \text{R}, \none\}}_p}
   }\,,\ p = \frac{2^{32}}{\mathsf{Z}_P}\\
   \mathsf{Z}_P &= 2^{12}
 \end{align}
 
-The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\mathsf{Z}_P = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\mathbb{M}$ includes two components: a value $\mathbf{V}$ and access $\mathbf{A}$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \mathbb{M}$ is typically used to denote \textsc{ram}.
+The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\mathsf{Z}_P = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\ram$ includes two components: a value $\mathbf{V}$ and access $\mathbf{A}$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \ram$ is typically used to denote \textsc{ram}.
 \begin{align}
-  \mathbb{V}_{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] \ne \none \} \\
-  \mathbb{V}^*_{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] = \text{W} \}
+  \readable{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] \ne \none \} \\
+  \writable{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] = \text{W} \}
 \end{align}
 
-We define two sets of indices for the \textsc{ram} $\memory$: $\mathbb{V}_{\memory}$ is the set of indices which may be read from; and $\mathbb{V}^*_{\memory}$ is the set of indices which may be written to.
+We define two sets of indices for the \textsc{ram} $\memory$: $\readable{\memory}$ is the set of indices which may be read from; and $\writable{\memory}$ is the set of indices which may be written to.
 
 Invocation of the \textsc{pvm} has an exit-reason as the first item in the resultant tuple. It is either:
 \begin{itemize}
