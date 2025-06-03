@@ -31,16 +31,16 @@ The header is a collection of metadata primarily concerned with cryptographic re
 
 Our state may be logically partitioned into several largely independent segments which can both help avoid visual clutter within our protocol description and provide formality over elements of computation which may be simultaneously calculated (i.e. parallelized). We therefore pronounce an equivalence between $\thestate$ (some complete state) and a tuple of partitioned segments of that state:
 \begin{align}\label{eq:statecomposition}
-  \thestate &\equiv (\authpool, \recenthistory, \safrole, \accounts, \entropy, \stagingset, \activeset, \previousset, \rho, \thetime, \varphi, \privileges, \disputes, \pi, \ready, \accumulated)
+  \thestate &\equiv (\authpool, \recenthistory, \safrole, \accounts, \entropy, \stagingset, \activeset, \previousset, \reports, \thetime, \authqueue, \privileges, \disputes, \activity, \ready, \accumulated)
 \end{align}
 
 In summary, $\accounts$ is the portion of state dealing with \emph{services}, analogous in \Jam to the Yellow Paper's (smart contract) \emph{accounts}, the only state of the \emph{YP}'s Ethereum. The identities of services which hold some privileged status are tracked in $\privileges$.
 
 Validators, who are the set of economic actors uniquely privileged to help build and maintain the \Jam chain, are identified within $\activeset$, archived in $\previousset$ and enqueued from $\stagingset$. All other state concerning the determination of these keys is held within $\safrole$. Note this is a departure from the \emph{YP} proof-of-work definitions which were mostly stateless, and this set was not enumerated but rather limited to those with sufficient compute power to find a partial hash-collision in the \textsc{sha}\oldstylenums{2}-\oldstylenums{256} cryptographic hash function. An on-chain entropy pool is retained in $\entropy$.
 
-Our state also tracks two aspects of each core: $\authpool$, the authorization requirement which work done on that core must satisfy at the time of being reported on-chain, together with the queue which fills this, $\varphi$; and $\rho$, each of the cores' currently assigned \emph{report}, the availability of whose \emph{work-package} must yet be assured by a super-majority of validators.
+Our state also tracks two aspects of each core: $\authpool$, the authorization requirement which work done on that core must satisfy at the time of being reported on-chain, together with the queue which fills this, $\authqueue$; and $\reports$, each of the cores' currently assigned \emph{report}, the availability of whose \emph{work-package} must yet be assured by a super-majority of validators.
 
-Finally, details of the most recent blocks and timeslot index are tracked in $\recenthistory$ and $\thetime$ respectively, work-reports which are ready to be accumulated and work-packages which were recently accumulated are tracked in $\ready$ and $\accumulated$ respectively and, judgments are tracked in $\disputes$ and validator statistics are tracked in $\pi$.
+Finally, details of the most recent blocks and timeslot index are tracked in $\recenthistory$ and $\thetime$ respectively, work-reports which are ready to be accumulated and work-packages which were recently accumulated are tracked in $\ready$ and $\accumulated$ respectively and, judgments are tracked in $\disputes$ and validator statistics are tracked in $\activity$.
 
 \subsubsection{State Transition Dependency Graph}
 
@@ -53,15 +53,15 @@ Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulatin
   \activeset' &\prec (\theheader, \thetime, \activeset, \safrole) \\
   \previousset' &\prec (\theheader, \thetime, \previousset, \activeset) \\
   \disputes' &\prec (\xtdisputes, \disputes) \\
-  \rho^\dagger &\prec (\xtdisputes, \rho) \label{eq:rhodagger} \\
-  \rho^\ddagger &\prec (\xtassurances, \rho^\dagger) \label{eq:rhoddagger} \\
-  \rho' &\prec (\xtguarantees, \rho^\ddagger, \activeset, \thetime') \label{eq:rhoprime} \\
-  \mathbf{W}^* &\prec (\xtassurances, \rho') \\
-  (\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \varphi', \lastaccout', \mathbf{I}, \mathbf{X}) &\prec (\mathbf{W}^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \varphi, \thetime, \thetime') \label{eq:accountspostxfer} \\
+  \reportspostjudgement &\prec (\xtdisputes, \reports) \label{eq:rhodagger} \\
+  \reportspostguarantees &\prec (\xtassurances, \reportspostjudgement) \label{eq:rhoddagger} \\
+  \reports' &\prec (\xtguarantees, \reportspostguarantees, \activeset, \thetime') \label{eq:rhoprime} \\
+  \mathbf{W}^* &\prec (\xtassurances, \reports') \\
+  (\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \authqueue', \lastaccout', \mathbf{I}, \mathbf{X}) &\prec (\mathbf{W}^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \authqueue, \thetime, \thetime') \label{eq:accountspostxfer} \\
   \recenthistory' &\prec (\theheader, \xtguarantees, \recenthistory^\dagger, \lastaccout') \label{eq:betaprime} \\
   \accountspostpreimage &\prec (\xtpreimages, \accountspostxfer, \thetime') \label{eq:accountspostpreimage} \\
-  \authpool' &\prec (\theheader, \xtguarantees, \varphi', \authpool) \\
-  \pi' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \thetime, \activeset', \pi, \theheader, \mathbf{I}, \mathbf{X})\!\!\!\!\!\!\!\!
+  \authpool' &\prec (\theheader, \xtguarantees, \authqueue', \authpool) \\
+  \activity' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \thetime, \activeset', \activity, \theheader, \mathbf{I}, \mathbf{X})\!\!\!\!\!\!\!\!
 \end{align}
 
 The only synchronous entanglements are visible through the intermediate components superscripted with a dagger and defined in equations \ref{eq:betadagger}, \ref{eq:rhodagger}, \ref{eq:rhoddagger}, \ref{eq:rhoprime}, \ref{eq:accountspostxfer}, \ref{eq:betaprime} and \ref{eq:accountspostpreimage}. The latter two mark a merge and join in the dependency graph and, concretely, imply that the availability extrinsic may be fully processed and accumulation of work happen before the preimage lookup extrinsic is folded into state.
@@ -104,7 +104,7 @@ The present work describes a crypto-economic system, \ie one combining elements 
 
 A value of tokens is generally referred to as a \emph{balance}, and such a value is said to be a member of the set of balances, $\balance$, which is exactly equivalent to the set of naturals less than $2^{64}$ (\ie 64-bit unsigned integers in coding parlance). Formally:
 \begin{align}\label{eq:balance}
-  \balance \equiv \N_{2^{64}}
+  \balance \equiv \Nbits{64}
 \end{align}
 
 Though unimportant for the present work, we presume that there be a standard named denomination for $10^{9}$ tokens. This is different to both Ethereum (which uses a denomination of $10^{18}$), Polkadot (which uses a denomination of $10^{10}$) and Polkadot's experimental cousin Kusama (which uses $10^{12}$).
@@ -144,49 +144,49 @@ In the present work, we presume the definition of a \emph{Polkadot Virtual Machi
 
 The \textsc{pvm} is comparable to the \textsc{evm} defined in the Yellow Paper, but somewhat simpler: the complex instructions for cryptographic operations are missing as are those which deal with environmental interactions. Overall it is far less opinionated since it alters a pre-existing general purpose design, \textsc{risc-v}, and optimizes it for our needs. This gives us excellent pre-existing tooling, since \textsc{pvm} remains essentially compatible with \textsc{risc-v}, including support from the compiler toolkit \textsc{llvm} and languages such as Rust and C++. Furthermore, the instruction set simplicity which \textsc{risc-v} and \textsc{pvm} share, together with the register size (64-bit), active number (13) and endianness (little) make it especially well-suited for creating efficient recompilers on to common hardware architectures.
 
-The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for contextualization we will briefly summarize the basic invocation function $\Psi$ which computes the resultant state of a \textsc{pvm} instance initialized with some registers ($\seq{\pvmreg}_{13}$) and \textsc{ram} ($\mathbb{M}$) and has executed for up to some amount of gas ($\gas$), a number of approximately time-proportional computational steps:
+The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for contextualization we will briefly summarize the basic invocation function $\Psi$ which computes the resultant state of a \textsc{pvm} instance initialized with some registers ($\seq{\pvmreg}_{13}$) and \textsc{ram} ($\ram$) and has executed for up to some amount of gas ($\gas$), a number of approximately time-proportional computational steps:
 \begin{equation}
   \Psi\colon
   \tuple{\,
     \begin{alignedat}{3}
       &\blob,\,\ \ \pvmreg,\,\ \ &&\gas,\,\\
-      &\!\seq{\pvmreg}_{13},\,\ \ &&\mathbb{M}\\
+      &\!\seq{\pvmreg}_{13},\,\ \ &&\ram\\
     \end{alignedat}
   \,}
   \to
   \tuple{\,
     \begin{aligned}
       &\{\halt, \panic, \oog\} \cup \{\fault,\host\} \times \pvmreg,\\
-      &\pvmreg,\ \ \Z_G,\ \ \seq{\pvmreg}_{13},\ \ \mathbb{M}
+      &\pvmreg,\ \ \signedgas,\ \ \seq{\pvmreg}_{13},\ \ \ram
     \end{aligned}
   \,}
 \end{equation}
 
-We refer to the time-proportional computational steps as \emph{gas} (much like in the \emph{YP}) and limit it to a 64-bit quantity. We may use either $\gas$ or $\Z_G$ to bound it, the first as a prior argument since it is known to be positive, the latter as a result where a negative value indicates an attempt to execute beyond the gas limit. Within the context of the \textsc{pvm}, $\gascounter \in \gas$ is typically used to denote gas.
+We refer to the time-proportional computational steps as \emph{gas} (much like in the \emph{YP}) and limit it to a 64-bit quantity. We may use either $\gas$ or $\signedgas$ to bound it, the first as a prior argument since it is known to be positive, the latter as a result where a negative value indicates an attempt to execute beyond the gas limit. Within the context of the \textsc{pvm}, $\gascounter \in \gas$ is typically used to denote gas.
 \begin{equation}\label{eq:gasregentry}
-  \Z_G \equiv \mathbb{Z}_{-2^{63}\dots2^{63}}\ ,\quad
+  \signedgas \equiv \mathbb{Z}_{-2^{63}\dots2^{63}}\ ,\quad
   \gas \equiv \mathbb{N}_{2^{64}}\ ,\quad
-  \pvmreg \equiv \N_{2^{64}}
+  \pvmreg \equiv \Nbits{64}
 \end{equation}
 
 It is left as a rather important implementation detail to ensure that the amount of time taken while computing the function $\Psi(\dots, \gascounter, \dots)$ has a maximum computation time approximately proportional to the value of $\gascounter$ regardless of other operands.
 
 The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 64-bit quantity, denoted as $\pvmreg$, a natural less than $2^{64}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\registers \in \seq{\pvmreg}_{13}$ is typically used to denote the registers.
 \begin{align}\label{eq:pvmmemory}
-  \mathbb{M} &\equiv \tuple{
+  \ram &\equiv \tuple{
     \isa{\mathbf{V}}{\blob_{2^{32}}},
     \isa{\mathbf{A}}{\seq{\{\text{W}, \text{R}, \none\}}_p}
   }\,,\ p = \frac{2^{32}}{\mathsf{Z}_P}\\
   \mathsf{Z}_P &= 2^{12}
 \end{align}
 
-The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\mathsf{Z}_P = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\mathbb{M}$ includes two components: a value $\mathbf{V}$ and access $\mathbf{A}$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \mathbb{M}$ is typically used to denote \textsc{ram}.
+The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\mathsf{Z}_P = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\ram$ includes two components: a value $\mathbf{V}$ and access $\mathbf{A}$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \ram$ is typically used to denote \textsc{ram}.
 \begin{align}
-  \mathbb{V}_{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] \ne \none \} \\
-  \mathbb{V}^*_{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] = \text{W} \}
+  \readable{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] \ne \none \} \\
+  \writable{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] = \text{W} \}
 \end{align}
 
-We define two sets of indices for the \textsc{ram} $\memory$: $\mathbb{V}_{\memory}$ is the set of indices which may be read from; and $\mathbb{V}^*_{\memory}$ is the set of indices which may be written to.
+We define two sets of indices for the \textsc{ram} $\memory$: $\readable{\memory}$ is the set of indices which may be read from; and $\writable{\memory}$ is the set of indices which may be written to.
 
 Invocation of the \textsc{pvm} has an exit-reason as the first item in the resultant tuple. It is either:
 \begin{itemize}
@@ -219,13 +219,13 @@ The full definition follows in appendix \ref{sec:virtualmachine}.
 
 Unlike the \emph{YP} Ethereum with its proof-of-work consensus system, \Jam defines a proof-of-authority consensus mechanism, with the authorized validators presumed to be identified by a set of public keys and decided by a \emph{staking} mechanism residing within some system hosted by \Jam. The staking system is out of scope for the present work; instead there is an \textsc{api} which may be utilized to update these keys, and we presume that whatever logic is needed for the staking system will be introduced and utilize this \textsc{api} as needed.
 
-The Safrole mechanism subdivides time following genesis into fixed length \emph{epoch}s with each epoch divided into $\mathsf{E} = 600$ time\emph{slot}s each of uniform length $\mathsf{P} = 6$ seconds, given an epoch period of $\mathsf{E}\cdot\mathsf{P} = 3600$ seconds or one hour.
+The Safrole mechanism subdivides time following genesis into fixed length \emph{epoch}s with each epoch divided into $\epochlen = 600$ time\emph{slot}s each of uniform length $\mathsf{P} = 6$ seconds, given an epoch period of $\epochlen\cdot\mathsf{P} = 3600$ seconds or one hour.
 
 This six-second slot period represents the minimum time between \Jam blocks, and through Safrole we aim to strictly minimize forks arising both due to contention within a slot (where two valid blocks may be produced within the same six-second period) and due to contention over multiple slots (where two valid blocks are produced in different time slots but with the same parent).
 
 Formally when identifying a timeslot index, we use a natural less than $2^{32}$ (in compute parlance, a 32-bit unsigned integer) indicating the number of six-second timeslots from the \Jam Common Era. For use in this context we introduce the set $\timeslot$:
 \begin{align}\label{eq:time}
-  \timeslot \equiv \N_{2^{32}}
+  \timeslot \equiv \Nbits{32}
 \end{align}
 
 This implies that the lifespan of the proposed protocol takes us to mid-August of the year 2840, which with the current course that humanity is on should be ample.

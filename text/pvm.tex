@@ -7,23 +7,22 @@
 \newcommand*{\regs}{\seq{\pvmreg}_{13}}
 \newcommand*{\reg}{{\registers}}
 \newcommand*{\mem}{{\memory}}
-\newcommand*{\memr}{\mem^{\circlearrowleft}}
-\newcommand*{\memwr}{{\mem'}^{\circlearrowleft}}
-\newcommand*{\ram}{\mathbb{M}}
+\newcommand*{\memr}{\cyclic{\mem}}
+\newcommand*{\memwr}{\cyclic{\mem'}}
 \newcommand*{\rnp}[1]{P(#1)}
 \newcommand*{\rnq}[1]{Z(#1)}
 \newcommand*{\continue}{\blacktriangleright}
 \newcommand*{\gascost}{\gascounter_\Delta}
 \newcommand*{\instrlen}{\ell}
-\newcommand*{\revbitsfunc}[1]{\overleftarrow{\mathcal{B}}_{#1}}
+\newcommand*{\revbitsfunc}[1]{\overleftarrow{\octetstobits}_{#1}}
 \newcommand*{\revunbitsfunc}[1]{\revbitsfunc{#1}^{-1}}
-\newcommand*{\bitsfunc}[1]{\mathcal{B}_{#1}}
+\newcommand*{\bitsfunc}[1]{\octetstobits_{#1}}
 \newcommand*{\unbitsfunc}[1]{\bitsfunc{#1}^{-1}}
 \newcommand*{\bits}[1]{\bitsn{8}{#1}}
 \newcommand*{\unbits}[1]{\unbitsn{8}{#1}}
 \newcommand*{\bitsn}[2]{\bitsfunc{#1}(#2)}
 \newcommand*{\unbitsn}[2]{\unbitsfunc{#1}(#2)}
-\newcommand*{\signfunc}[1]{\mathcal{Z}_{#1}}
+\newcommand*{\signfunc}[1]{\tosigned_{#1}}
 \newcommand*{\unsignfunc}[1]{\signfunc{#1}^{-1} }
 \newcommand*{\signed}[1]{\signedn{8}{#1}}
 \newcommand*{\unsigned}[1]{\unsignedn{8}{#1}}
@@ -48,7 +47,7 @@
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
   \Psi&\colon \left\{\begin{aligned}
-    (\blob, \pvmreg, \gas, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \pvmreg, \pvmreg, \Z_G, \regs, \ram)\\
+    (\blob, \pvmreg, \gas, \regs, \ram) &\to (\{\halt, \panic, \oog\} \cup \{\fault, \host\} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram)\\
     (\mathbf{p}, \imath, \gascounter, \registers, \mem) &\mapsto \begin{cases}
       \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
       (\oog, \imath', \gascounter', \registers', \mem') &\when \gascounter' < 0\\
@@ -63,7 +62,7 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
   \deblob&\colon\left\{\begin{aligned}
     \blob &\to \tuple{\blob, \mathbb{B}, \seq{\pvmreg}} \cup \error \\
     \mathbf{p} &\mapsto \begin{cases}
-      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \se(\len{\mathbf{j}}) \frown \se_1(z) \frown \se(\len{\mathbf{c}}) \frown \se_z(\mathbf{j}) \frown \se(\mathbf{c}) \frown \se(\mathbf{k})\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \se(\len{\mathbf{j}}) \concat \se_1(z) \concat \se(\len{\mathbf{c}}) \concat \se_z(\mathbf{j}) \concat \se(\mathbf{c}) \concat \se(\mathbf{k})\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
       \error &\otherwise
     \end{cases} \\
   \end{aligned}\right.
@@ -85,7 +84,7 @@ We define the Skip function $\Fskip$ which provides the number of octets, minus 
 \begin{equation}
   \Fskip\colon\left\{\begin{aligned}
     \N &\to \N\\
-    i &\mapsto \min(24,\ j \in \N : (\mathbf{k} \frown [1, 1, \dots])_{i + 1 + j} = 1)
+    i &\mapsto \min(24,\ j \in \N : (\mathbf{k} \concat [1, 1, \dots])_{i + 1 + j} = 1)
   \end{aligned}\right.
 \end{equation}
 
@@ -136,7 +135,7 @@ We denote this set, as opcode indices rather than names, as $T$, which is a subs
 We must now define the single-step \textsc{pvm} state-transition function $\Psi_1$:
 \begin{equation}
   \Psi_1\colon \left\{\begin{aligned}
-    (\blob, \mathbb{B}, \seq{\pvmreg}, \pvmreg, \gas, \regs, \ram) &\to (\{\panic, \halt, \continue \} \cup \{\fault, \host\} \times \pvmreg, \pvmreg, \Z_G, \regs, \ram)\\
+    (\blob, \mathbb{B}, \seq{\pvmreg}, \pvmreg, \gas, \regs, \ram) &\to (\{\panic, \halt, \continue \} \cup \{\fault, \host\} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram)\\
     (\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\mapsto (\varepsilon, \imath', \gascounter', \registers', \mem')
   \end{aligned}\right.
 \end{equation}
@@ -158,7 +157,7 @@ During the course of executing instructions, \textsc{ram} may be accessed. When 
 
 Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\mu$ which shall, if not $\continue$, singly effect the returned return of $\Psi_1$ as following:
 \begin{align}
-  \using \mathbf{x} &= \{ x :\ x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \mathbb{V}_\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \mathbb{V}^*_\mem \} \\
+  \using \mathbf{x} &= \{ x :\ x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \readable\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \writable\mem \} \\
   \varepsilon^\mu &= \begin{cases}
     \continue &\when \mathbf{x} = \{\} \\
     \panic &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
@@ -199,8 +198,6 @@ We define signed/unsigned transitions for various octet widths:
     \mathbf{x} &\mapsto y: \sum_{i \in \N_{8n}} \mathbf{x}_{8n - 1 - i} \cdot 2^i
   \end{aligned}\right.
 \end{align}
-
-\newcommand{\sext}{\mathcal{X}}
 
 Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values. We thus define the signed extension function operating on an input of $n$ octets as $\sext_n$:
 \begin{align}\label{eq:signedextension}
@@ -452,8 +449,8 @@ We assume the skip length $\ell$ is well-defined:
   101&\token{sbrk}&1&$\begin{aligned}
     \reg'_D \equiv &\min(x \in \pvmreg): \\
     &x \ge h\\
-    &\N_{x\dots+\reg_A} \not\subseteq \mathbb{V}_{\memory}\\
-    &\N_{x\dots+\reg_A} \subseteq \mathbb{V}^*_{\memory'}
+    &\N_{x\dots+\reg_A} \not\subseteq \readable{\memory}\\
+    &\N_{x\dots+\reg_A} \subseteq \writable{\memory'}
   \end{aligned}$\\ \mrule
   102&\token{count\_set\_bits\_64}&1&$\displaystyle\reg'_D = \sum_{i = 0}^{63}\bitsfunc{8}(\reg_A)_i$\\ \mrule
   103&\token{count\_set\_bits\_32}&1&$\displaystyle\reg'_D = \sum_{i = 0}^{31}\bitsfunc{4}(\reg_A \bmod 2^{32})_i$\\ \mrule
@@ -538,8 +535,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   157&\token{shar\_r\_imm\_alt\_64}&1&$\reg'_A = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
   158&\token{rot\_r\_64\_imm}&1&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_A)_i = \bitsfunc{8}(\reg_B)_{(i + \immed_X) \bmod 64}$\\ \mrule
   159&\token{rot\_r\_64\_imm\_alt}&1&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_A)_i = \bitsfunc{8}(\immed_X)_{(i + \reg_B) \bmod 64}$\\ \mrule
-  160&\token{rot\_r\_32\_imm}&1&$\reg'_A = \sext_4(x) \ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_B)_{(i + \immed_X) \bmod 32}$\\ \mrule
-  161&\token{rot\_r\_32\_imm\_alt}&1&$\reg'_A = \sext_4(x) \ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\immed_X)_{(i + \reg_B) \bmod 32}$\\
+  160&\token{rot\_r\_32\_imm}&1&$\reg'_A = \sext_4(x) \ \where x \in \Nbits{32}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_B)_{(i + \immed_X) \bmod 32}$\\ \mrule
+  161&\token{rot\_r\_32\_imm\_alt}&1&$\reg'_A = \sext_4(x) \ \where x \in \Nbits{32}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\immed_X)_{(i + \reg_B) \bmod 32}$\\
   \bottomrule
 \end{longtable}
 
@@ -690,9 +687,9 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \reg_D &\otherwise
   \end{cases}$\\ \mrule
   220&\token{rot\_l\_64}&1&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_D)_{(i + \reg_B) \bmod 64} = \bitsfunc{8}(\reg_A)_i$\\ \mrule
-  221&\token{rot\_l\_32}&1&$\reg'_D = \sext_4(x)\ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_{(i + \reg_B) \bmod 32} = \bitsfunc{4}(\reg_A)_i$\\ \mrule
+  221&\token{rot\_l\_32}&1&$\reg'_D = \sext_4(x)\ \where x \in \Nbits{32}, \forall i \in \N_{32} : \bitsfunc{4}(x)_{(i + \reg_B) \bmod 32} = \bitsfunc{4}(\reg_A)_i$\\ \mrule
   222&\token{rot\_r\_64}&1&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_D)_i = \bitsfunc{8}(\reg_A)_{(i + \reg_B) \bmod 64}$\\ \mrule
-  223&\token{rot\_r\_32}&1&$\reg'_D = \sext_4(x)\ \where x \in \N_{2^{32}}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_A)_{(i + \reg_B) \bmod 32}$\\ \mrule
+  223&\token{rot\_r\_32}&1&$\reg'_D = \sext_4(x)\ \where x \in \Nbits{32}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_A)_{(i + \reg_B) \bmod 32}$\\ \mrule
   224&\token{and\_inv}&1&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \lnot \bits{\reg_B}_i$\\ \mrule
   225&\token{or\_inv}&1&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \lnot \bits{\reg_B}_i$\\ \mrule
   226&\token{xnor}&1&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \lnot ( \bits{\reg_A}_i \oplus \bits{\reg_B}_i )$\\ \mrule
@@ -709,7 +706,7 @@ Note that the two signed modulo operations have an idiosyncratic definition, ope
     (\mathbb{Z}, \mathbb{Z}) &\to \mathbb{Z}\\
     (a, b) &\mapsto \begin{cases}
       a &\when b = 0\\
-      \text{sgn}(a)(|a| \bmod |b|) &\otherwise \\
+      \text{sgn}(a)(\len{a} \bmod \len{b}) &\otherwise \\
     \end{cases}
   \end{aligned}\right.
 \end{equation}
@@ -735,7 +732,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     \end{aligned}
     }
     &\to
-    \tuple{\{\panic, \oog, \halt\} \cup \{\fault\} \times \pvmreg, \pvmreg, \Z_G, \regs, \ram, X}\\
+    \tuple{\{\panic, \oog, \halt\} \cup \{\fault\} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram, X}\\
     (\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}) &\mapsto \begin{cases}
       \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem):} \\[8pt]
       (\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \varepsilon' \in \{ \halt, \panic, \oog \} \cup \{\fault\} \times \pvmreg \\[4pt]
@@ -786,7 +783,7 @@ With conditions:
 \end{align}
 Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\mathbf{c}$ as above and $\mem$, $\registers$ such that:
 \begin{equation}\label{eq:memlayout}
-  \forall i \in \N_{2^{32}} : ((\mem_\mathbf{V})_i, (\mem_\mathbf{A})_{\floor{\nicefrac{i}{\mathsf{Z}_P}}}) = \left\{\begin{alignedat}{5}
+  \forall i \in \Nbits{32} : ((\mem_\mathbf{V})_i, (\mem_\mathbf{A})_{\floor{\nicefrac{i}{\mathsf{Z}_P}}}) = \left\{\begin{alignedat}{5}
     &\tup{\is{\mathbf{V}}{\mathbf{o}_{i - \mathsf{Z}_Z}},\,\is{\mathbf{A}}{R}} &&\ \when
         \mathsf{Z}_Z
             &\ \leq i < \ &&
@@ -846,8 +843,8 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
         \end{alignedat}
         }) \mapsto \begin{cases}
           (u, \oog, \mathbf{x}') &\when \varepsilon = \oog \\
-          (u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \subseteq \mathbb{V}_{\mem'} \\
-          (u, [], \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \not\subseteq \mathbb{V}_{\mem'} \\
+          (u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \subseteq \readable{\mem'} \\
+          (u, [], \mathbf{x}') &\when \varepsilon = \halt \wedge \mathbb{N}_{\registers'_{7}\dots+\registers'_{8}} \not\subseteq \readable{\mem'} \\
           (u, \panic, \mathbf{x}') &\otherwise \\
           \multicolumn{2}{l}{\quad \where u = \gascounter - \max(\gascounter', 0)}
         \end{cases}
