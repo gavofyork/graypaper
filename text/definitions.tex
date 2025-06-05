@@ -56,8 +56,8 @@
   \item[$\mathbb{X}$] The set of refinement contexts.
   \item[$\blob$] The set of octet strings/``blobs''. Subscript denotes length. See section \ref{sec:sequences}.
   \begin{description}
-    \item[$\blob_{BLS}$] The set of BLS public keys. A subset of $\blob_{144}$. See section \ref{sec:signing}.
-    \item[$\blob_R$] The set of Bandersnatch ring roots. A subset of $\blob_{144}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+    \item[$\blskey$] The set of \textsc{bls} public keys. A subset of $\blob_{144}$. See section \ref{sec:signing}.
+    \item[$\ringroot$] The set of Bandersnatch ring roots. A subset of $\blob_{144}$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
   \end{description}
 \end{description}
 
@@ -65,17 +65,17 @@
 
 \begin{description}
 %  \item[$\Gamma$] Unused. %	Γ
-  \item[$\Delta$] The accumulation function; certain subscripts are used to denote helper functions: %	Δ
+  \item[$\accumulate$] The accumulation function; certain subscripts are used to denote helper functions: %	Δ
   \begin{description}
-    \item[$\Delta_1$] The single-step accumulation function.
-    \item[$\Delta_*$] The parallel accumulation function.
-    \item[$\Delta_+$] The full sequential accumulation function.
+    \item[$\accone$] The single-step accumulation function.
+    \item[$\accpar$] The parallel accumulation function.
+    \item[$\accseq$] The full sequential accumulation function.
   \end{description}
 %  \item[$\gascounter$] Unused. %	Θ
 %  \item[$\Pi$] Unused. %	Π
   \item[$\histlookup$] The historical lookup function. See equation \ref{eq:historicallookup}. % Λ
-  \item[$\Xi$] The work-digest computation function. See equation \ref{eq:workdigestfunction}. %	Ξ
-  \item[$\Upsilon$] The general state transition function. See equations \ref{eq:statetransition}, \ref{eq:transitionfunctioncomposition}. %	ϒ
+  \item[$\computedigest$] The work-digest computation function. See equation \ref{eq:workdigestfunction}. %	Ξ
+  \item[$\transitionstate$] The general state transition function. See equations \ref{eq:statetransition}, \ref{eq:transitionfunctioncomposition}. %	ϒ
 %  \item[$\Sigma$] Unused. %	Σ
   \item[$\Phi$] The key-nullifier function. See equation \ref{eq:blacklistfilter}. %	Φ
   \item[$\Psi$] The whole-program \textsc{pvm} machine state-transition function. See equation \ref{sec:virtualmachine}. %	Ψ
@@ -161,13 +161,13 @@
 
 These terms are all contextualized to a single block. They may be superscripted with some other term to alter the context and reference some other block.
 \begin{description}
-  \item[$\mathbf{A}$] The ancestor set of the block. See equation \ref{eq:ancestors}.
-  \item[$\mathbf{B}$] The block. See equation \ref{eq:block}.
+  \item[$\ancestors$] The ancestor set of the block. See equation \ref{eq:ancestors}.
+  \item[$\block$] The block. See equation \ref{eq:block}.
   \item[$\mathbf{E}$] The block extrinsic. See equation \ref{eq:extrinsic}.
   \item[$\mathbf{F}_v$] The \textsc{Beefy} signed commitment of validator $v$. See equation \ref{eq:beefysignedcommitment}.
   \item[$\mathbf{G}$] The mapping from cores to guarantor keys. See section \ref{sec:coresandvalidators}.
   \item[$\mathbf{G^*}$] The mapping from cores to guarantor keys for the previous rotation. See section \ref{sec:coresandvalidators}.
-  \item[$\H$] The block header. See equation \ref{eq:header}.
+  \item[$\header$] The block header. See equation \ref{eq:header}.
   \item[$\mathbf{I}$] The sequence of work-reports which were accumulated this in this block. See equation \ref{eq:accumulatedreports}.
   \item[$\mathbf{Q}$] The selection of ready work-reports which a validator determined they must audit. See equation \ref{eq:auditselection}.
   \item[$\reporters$] The set of Ed25519 guarantor keys who made a work-report. See equation \ref{eq:guarantorsig}.
@@ -181,8 +181,8 @@ These terms are all contextualized to a single block. They may be superscripted 
 
 Without any superscript, the block is assumed to the block being imported or, if no block is being imported, the head of the best chain (see section \ref{sec:bestchain}). Explicit block-contextualizing superscripts include:
 \begin{description}
-  \item[$\mathbf{B}^\natural$] The latest finalized block. See equation \ref{sec:bestchain}.
-  \item[$\mathbf{B}^\flat$] The block at the head of the best chain. See equation \ref{sec:bestchain}.
+  \item[$\block^\natural$] The latest finalized block. See equation \ref{sec:bestchain}.
+  \item[$\block^\flat$] The block at the head of the best chain. See equation \ref{sec:bestchain}.
 \end{description}
 
 \subsubsection{State components}

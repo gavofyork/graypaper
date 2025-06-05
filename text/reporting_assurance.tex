@@ -10,15 +10,13 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 
 
 
-
-
 \subsection{State}
 The state of the reporting and availability portion of the protocol is largely contained within $\reports$, which tracks the work-reports which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
 \begin{equation}\label{eq:reportingstate}
   \reports \in \seq{
     \optional{\tuple{
-      \isa{w}{\workreport} ,
-      \isa{t}{\timeslot}
+      \isa{\rs¬workreport}{\workreport} ,\,
+      \isa{\rs¬timestamp}{\timeslot}
     }}
   }_\corecount
 \end{equation}
@@ -151,9 +149,14 @@ A bit may only be set if the corresponding core has a report pending availabilit
 \end{equation}
 
 \subsubsection{Available Reports}
-A work-report is said to become \emph{available} if and only if there are a clear \nicefrac{2}{3} super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\mathbf{W}$ as:
+A work-report is said to become \emph{available} if and only if there are a clear \twothirds super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\mathbf{W}$ as:
 \begin{align}\label{eq:availableworkreports}
-  \mathbf{W} &\equiv \left[\reportspostjudgement[c]_w\,\middle\vert\,c \orderedin \coreindex,\;\sum_{a \in \xtassurances}\!a_f[c]\,>\,\nicefrac{2}{3}\,\valcount\right]
+  \mathbf{W} &\equiv \sq{\build{
+      \reportspostjudgement[c]_\rs¬workreport
+    }{
+      c \orderedin \coreindex,\;
+      \sum_{a \in \xtassurances}\!a_f[c]\,>\,\twothirds\,\valcount
+    }}
 \end{align}
 
 % TODO: Rename $\mathbf{W}$ to \mathbf{V} or whatever and `\mathbf{w}` becomes `\reporters` and `\reporters` becomes `\mathbf{G}`. `\mathbf{G}` would become something else.
@@ -161,7 +164,7 @@ A work-report is said to become \emph{available} if and only if there are a clea
 This value is utilized in the definition of both $\accountspost$ and $\reportspostguarantees$ which we will define presently as equivalent to $\reportspostjudgement$ except for the removal of items which are either now available or have timed out:
 \begin{align}
   \forall c \in \coreindex: \reportspostguarantees[c] \equiv \begin{cases}
-    \none &\when\reports[c]_w \in \mathbf{W} \vee \H_\¬timeslot \ge \reportspostjudgement[c]_t + \mathsf{U}\\
+    \none &\when\reports[c]_\rs¬workreport \in \mathbf{W} \vee \H_\¬timeslot \ge \reportspostjudgement[c]_\rs¬timestamp + \mathsf{U}\\
     \reportspostjudgement[c] &\otherwise
   \end{cases}
 \end{align}
@@ -308,15 +311,19 @@ We require that each lookup-anchor block be within the last $\mathsf{L}$ timeslo
   \forall x \in \mathbf{x} :\ x_t \ge \H_\¬timeslot - \mathsf{L}
 \end{align}
 
-We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\mathsf{L}$ headers as the ancestor set $\mathbf{A}$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
+We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\mathsf{L}$ headers as the ancestor set $\ancestors$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
 \begin{align}
-  \forall x \in \mathbf{x} :\ \exists h \in \mathbf{A}: h_t = x_t \wedge \blake(h) = x_l
+  \forall x \in \mathbf{x} :\ \exists h \in \ancestors: h_t = x_t \wedge \blake(h) = x_l
 \end{align}
 
 We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:
 \begin{align}
-  &\using \mathbf{q} = \{(w_x)_p \mid \mathbf{q} \in \ready, (w, \mathbf{d}) \in \mathbf{q}\} \\
-  &\using \mathbf{a} = \{((i_w)_x)_p \mid i \in \reports, i \ne \none\}\\
+  &\using \mathbf{q} = \set{\build{
+      (w_x)_p
+    }{
+      \mathbf{q} \in \ready, (w, \mathbf{d}) \in \mathbf{q}
+    }} \\
+  &\using \mathbf{a} = \set{\build{((i_\rs¬workreport)_x)_p}{i \in \reports, i \ne \none}}\\
   &\forall p \in \mathbf{p}, p \not\in \bigcup_{x \in \recenthistory}\Fkeys{x_\mathbf{p}} \cup \bigcup_{x \in \accumulated}x \cup \mathbf{q} \cup \mathbf{a}
 \end{align}
 
@@ -354,7 +361,7 @@ Finally, we require that all work-digests within the extrinsic predicted the cor
 We define $\reportspostassurances$ as being equivalent to $\reportspostguarantees$, except where the extrinsic replaced an entry. In the case an entry is replaced, the new value includes the present time $\thetime'$ allowing for the value to be replaced without respect to its availability once sufficient time has elapsed (see equation \ref{eq:reportcoresareunusedortimedout}).
 \begin{equation}
     \forall c \in \coreindex : \reportspostassurances[c] \equiv \begin{cases}
-      \tup{w,\,\is{t}{\thetime'}} &\when \exists \tup{c,\,w,\,a} \in \xtguarantees \\
+      \tup{\¬workreport,\,\is{\rs¬timestamp}{\thetime'}} &\when \exists \tup{c,\,\¬workreport,\,a} \in \xtguarantees \\
       \reportspostguarantees[c] &\otherwise
     \end{cases}
 \end{equation}

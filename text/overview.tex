@@ -2,19 +2,19 @@
 
 As in the Yellow Paper, we begin our formalisms by recalling that a blockchain may be defined as a pairing of some initial state together with a block-level state-transition function. The latter defines the posterior state given a pairing of some prior state and a block of data applied to it. Formally, we say:
 \begin{align}\label{eq:statetransition}
-\thestate' \equiv \Upsilon(\thestate, \mathbf{B})
+\thestate' \equiv \transitionstate(\thestate, \block)
 \end{align}
 
-Where $\thestate$ is the prior state, $\thestate'$ is the posterior state, $B$ is some valid block and $\Upsilon$ is our block-level state-transition function.
+Where $\thestate$ is the prior state, $\thestate'$ is the posterior state, $B$ is some valid block and $\transitionstate$ is our block-level state-transition function.
 
-Broadly speaking, \Jam (and indeed blockchains in general) may be defined simply by specifying $\Upsilon$ and some \emph{genesis state} $\thestate^0$.\footnote{Practically speaking, blockchains sometimes make assumptions of some fraction of participants whose behavior is simply \emph{honest}, and not provably incorrect nor otherwise economically disincentivized. While the assumption may be reasonable, it must nevertheless be stated apart from the rules of state-transition.} We also make several additional assumptions of agreed knowledge: a universally known clock, and the practical means of sharing data with other systems operating under the same consensus rules. The latter two were both assumptions silently made in the \emph{YP}.
+Broadly speaking, \Jam (and indeed blockchains in general) may be defined simply by specifying $\transitionstate$ and some \emph{genesis state} $\thestate^0$.\footnote{Practically speaking, blockchains sometimes make assumptions of some fraction of participants whose behavior is simply \emph{honest}, and not provably incorrect nor otherwise economically disincentivized. While the assumption may be reasonable, it must nevertheless be stated apart from the rules of state-transition.} We also make several additional assumptions of agreed knowledge: a universally known clock, and the practical means of sharing data with other systems operating under the same consensus rules. The latter two were both assumptions silently made in the \emph{YP}.
 
 \subsection{The Block}
 
-To aid comprehension and definition of our protocol, we partition as many of our terms as possible into their functional components. We begin with the block $\mathbf{B}$ which may be restated as the header $\H$ and some input data external to the system and thus said to be \emph{extrinsic}, $\mathbf{E}$:
+To aid comprehension and definition of our protocol, we partition as many of our terms as possible into their functional components. We begin with the block $\block$ which may be restated as the header $\H$ and some input data external to the system and thus said to be \emph{extrinsic}, $\mathbf{E}$:
 \begin{align}
-  \label{eq:block}\mathbf{B} &\equiv (\theheader, \mathbf{E}) \\
-  \label{eq:extrinsic}\mathbf{E} &\equiv (\xttickets, \xtdisputes, \xtpreimages, \xtassurances, \xtguarantees)
+  \label{eq:block}\block &\equiv (\header, \extrinsic) \\
+  \label{eq:extrinsic}\extrinsic &\equiv (\xttickets, \xtdisputes, \xtpreimages, \xtassurances, \xtguarantees)
 \end{align}
 
 The header is a collection of metadata primarily concerned with cryptographic references to the blockchain ancestors and the operands and result of the present transition. As an immutable known \emph{a priori}, it is assumed to be available throughout the functional components of block transition. The extrinsic data is split into its several portions:
@@ -44,7 +44,7 @@ Finally, details of the most recent blocks and timeslot index are tracked in $\r
 
 \subsubsection{State Transition Dependency Graph}
 
-Much as in the \emph{YP}, we specify $\Upsilon$ as the implication of formulating all items of posterior state in terms of the prior state and block. To aid the architecting of implementations which parallelize this computation, we minimize the depth of the dependency graph where possible. The overall dependency graph is specified here:
+Much as in the \emph{YP}, we specify $\transitionstate$ as the implication of formulating all items of posterior state in terms of the prior state and block. To aid the architecting of implementations which parallelize this computation, we minimize the depth of the dependency graph where possible. The overall dependency graph is specified here:
 \begin{align}\label{eq:transitionfunctioncomposition}
   \thetime' &\prec \theheader \\
   \recenthistory^\dagger &\prec (\theheader, \recenthistory) \label{eq:betadagger} \\
@@ -174,16 +174,16 @@ It is left as a rather important implementation detail to ensure that the amount
 The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 64-bit quantity, denoted as $\pvmreg$, a natural less than $2^{64}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\registers \in \seq{\pvmreg}_{13}$ is typically used to denote the registers.
 \begin{align}\label{eq:pvmmemory}
   \ram &\equiv \tuple{
-    \isa{\mathbf{V}}{\blob_{2^{32}}},
-    \isa{\mathbf{A}}{\seq{\{\text{W}, \text{R}, \none\}}_p}
+    \isa{\ram¬value}{\blob_{2^{32}}},
+    \isa{\ram¬access}{\seq{\{\text{W}, \text{R}, \none\}}_p}
   }\,,\ p = \frac{2^{32}}{\mathsf{Z}_P}\\
   \mathsf{Z}_P &= 2^{12}
 \end{align}
 
-The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\mathsf{Z}_P = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\ram$ includes two components: a value $\mathbf{V}$ and access $\mathbf{A}$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \ram$ is typically used to denote \textsc{ram}.
+The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\mathsf{Z}_P = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\ram$ includes two components: a value $\ram¬value$ and access $\ram¬access$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \ram$ is typically used to denote \textsc{ram}.
 \begin{align}
-  \readable{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] \ne \none \} \\
-  \writable{\memory} &\equiv \{i \mid \memory_\mathbf{A}[\floor{\nicefrac{i}{\mathsf{Z}_P}}] = \text{W} \}
+  \readable{\memory} &\equiv \{i \mid \memory_\ram¬access[\floor{\nicefrac{i}{\mathsf{Z}_P}}] \ne \none \} \\
+  \writable{\memory} &\equiv \{i \mid \memory_\ram¬access[\floor{\nicefrac{i}{\mathsf{Z}_P}}] = \text{W} \}
 \end{align}
 
 We define two sets of indices for the \textsc{ram} $\memory$: $\readable{\memory}$ is the set of indices which may be read from; and $\writable{\memory}$ is the set of indices which may be written to.

@@ -133,12 +133,12 @@ And so on.
 
 \subsection{Block Serialization}
 
-A block $\mathbf{B}$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\se_U$. Formally:
+A block $\block$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\se_U$. Formally:
 
 \newcommand*{\seresult}{O}
 \begin{align}
-  \se(\mathbf{B}) &= \se\,\left\lparen
-    \theheader,\ \se_T(\xttickets),\ \se_P(\xtpreimages),\ \se_G(\xtguarantees),\ \se_A(\xtassurances),\ \se_D(\xtdisputes)
+  \se(\block) &= \se\,\left\lparen
+    \header,\ \se_T(\xttickets),\ \se_P(\xtpreimages),\ \se_G(\xtguarantees),\ \se_A(\xtassurances),\ \se_D(\xtdisputes)
   \right\rparen \\
   \se_T(\xttickets) &= \se(\var{\xttickets}) \\
   \se_P(\xtpreimages) &= \se(\var{[\tup{s, \var{p}} \mid \tup{s, p} \orderedin \xtpreimages]}) \\
