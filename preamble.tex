@@ -65,6 +65,8 @@
 \newcommand*\Ie{I.e.\@\xspace}
 \newcommand*\etc{\&c.\@\xspace}
 \newcommand*\nb{\textsc{nb}\@\xspace}
+\newcommand*\twothirds{\ensuremath{\nicefrac{2}{3}}}
+\newcommand*\onethird{\ensuremath{\nicefrac{1}{3}}}
 
 % Some symbols
 \def\drawplusplus#1#2#3{\hbox to 0pt{\hbox to #1{\hfill\vrule height #3 depth
@@ -152,7 +154,7 @@
 \newcommand*{\when}{\text{if }}
 \newcommand*{\exc}{\text{ except }}
 
-% Special constants/functions
+% Special constants/functions (Upper caligraphic letters)
 \newcommand*{\mmrappend}{\mathcal{A}}
 \newcommand*{\octetstobits}{\mathcal{B}}
 \newcommand*{\erasurecode}{\mathcal{C}}
@@ -208,16 +210,23 @@
 \newcommand*{\Ftosigned}[2]{\tosigned_{#1}\left(#2\right)}
 \newcommand*{\Ffromsigned}[2]{\fromsigned^{-1}_{#1}\left(#2\right)}
 
-% Constants
+% Constants (Sans-serif upper letters)
 \newcommand*{\corecount}{\mathsf{C}}
 \newcommand*{\epochlen}{\mathsf{E}}
 \newcommand*{\ticketentries}{\mathsf{N}}
 \newcommand*{\valcount}{\mathsf{V}}
 
-% Big Functions
+% Big Functions (Upper-greek letters)
+\newcommand*{\accumulate}{\Delta}
+\newcommand*{\accone}{\Delta_1}
+\newcommand*{\accpar}{\Delta_*}
+\newcommand*{\accseq}{\Delta_+}
 \newcommand*{\histlookup}{\Lambda}
+\newcommand*{\computedigest}{\Xi}
+\newcommand*{\transitionstate}{\Upsilon}
 
-% Primitive types
+%%%%%%%%%%%%
+% Named types (blackboard letters)
 \newcommand*{\serviceaccount}{\mathbb{A}}
 \newcommand*{\bitstring}{\mathbb{B}}
 \newcommand*{\safroleticket}{\mathbb{C}}
@@ -251,7 +260,8 @@
 \newcommand*{\blob}{\mathbb{Y}}
 \newcommand*{\Z}{\mathbb{Z}}
 
-% Numeric
+%%%%%%%%%%%%
+% Numeric types (blackboard N subscripts)
 \newcommand*{\timeslot}{\N_T}
 \newcommand*{\balance}{\N_B}
 \newcommand*{\serviceid}{\N_S}
@@ -264,6 +274,8 @@
 \newcommand*{\epochindex}{\N_\epochlen}
 \newcommand*{\Nbits}[1]{\N_{2^{#1}}}
 
+%%%%%%%%%%%%
+% Hash & blob specializations
 % The hash & blob types have a bunch of peripheral definitions.
 \newcommand*{\zerohash}{\hash_0}
 \newcommand*{\edkey}{\hash_E}
@@ -272,6 +284,12 @@
 \newcommand*{\blskey}{\blob_L}
 \newcommand*{\metadatakey}{\blob_{128}}
 \newcommand*{\ringroot}{\blob_R}
+
+%%%%%%%%%%%%
+% FIELDS
+
+%%%%%%%%%%%%
+% Common fields
 
 % TODO: Use non-prefixed items for common fields:
 \newcommand*{\¬gaslimit}{g}
@@ -286,11 +304,23 @@
 \newcommand*{\¬codehash}{h} % O/L \ot¬packagehash
 \newcommand*{\¬exportcount}{e}
 \newcommand*{\¬importcount}{i}
+\newcommand*{\¬workreport}{w}
+\newcommand*{\¬offender}{k}
+\newcommand*{\¬validity}{v}
+\newcommand*{\¬reporthash}{r}
+\newcommand*{\¬signature}{s}
+
+%%%%%%%%%%%%
+% Named types (blackboard)
 
 % TODO make this local.
 %\newcommand*{\safroleticket}{\mathbb{C}}
 \newcommand*{\st¬id}{y}
 \newcommand*{\st¬entry}{r}
+
+%\newcommand*{\ram}{\mathbb{M}}
+\newcommand*{\ram¬value}{\mathbf{V}}
+\newcommand*{\ram¬access}{\mathbf{a}}
 
 %\newcommand*{\workpackage}{\mathbb{P}}
 \newcommand*{\wp¬authtoken}{\mathbf{j}}
@@ -386,6 +416,16 @@
 \newcommand*{\vk¬metadata}{m}
 \newcommand*{\allvalkeys}{\seq{\valkey}_{\valcount}}
 
+%%%%%%%%%%%%
+% State item tuples (fields of lower-greek letters)
+
+% Used for \reports
+\newcommand*{\rs¬workreport}{\¬workreport}
+\newcommand*{\rs¬timestamp}{t}
+
+%%%%%%%%%%%%
+% Incidental item tuples (fields of uppercase bold roman letters)
+
 % Blocks.
 \newcommand*{\block}{\mathbf{B}}
 \newcommand*{\theblock}{\block}
@@ -396,6 +436,7 @@
 
 \newcommand*{\reporters}{\mathbf{R}}
 \newcommand*{\isticketed}{\mathbf{T}}
+\newcommand*{\verdicts}{\mathbf{V}}
 
 % Extrinsics.
 \newcommand*{\extrinsic}{\mathbf{E}}
@@ -404,13 +445,33 @@
 
 \newcommand*{\xttickets}{\XT_T}
 \newcommand*{\xtdisputes}{\XT_D}
+\newcommand*{\xtverdicts}{\XT_V}
+\newcommand*{\xtculprits}{\XT_C}
+\newcommand*{\xtfaults}{\XT_F}
 \newcommand*{\xtassurances}{\XT_A}
 \newcommand*{\xtpreimages}{\XT_P}
 \newcommand*{\xtguarantees}{\XT_G}
 
-\newcommand*{\xg¬workreport}{w}
+\newcommand*{\xg¬workreport}{\¬workreport}
 \newcommand*{\xg¬timeslot}{t}
 \newcommand*{\xg¬credential}{a}
+
+\newcommand*{\xv¬reporthash}{\¬reporthash}
+\newcommand*{\xv¬epochindex}{a}
+\newcommand*{\xv¬judgments}{\mathbf{j}}
+
+\newcommand*{\xvj¬validity}{\¬validity}
+\newcommand*{\xvj¬judgeindex}{i}
+\newcommand*{\xvj¬signature}{\¬signature}
+
+\newcommand*{\xc¬reporthash}{\¬reporthash}
+\newcommand*{\xc¬offender}{\¬offender}
+\newcommand*{\xc¬signature}{\¬signature}
+
+\newcommand*{\xf¬reporthash}{\¬reporthash}
+\newcommand*{\xf¬validity}{\¬validity}
+\newcommand*{\xf¬offender}{\¬offender}
+\newcommand*{\xf¬signature}{\¬signature}
 
 % Headers.
 \newcommand*{\header}{\mathbf{H}}
@@ -433,6 +494,10 @@
 % Derived fields
 \newcommand*{\¬authorbskey}{a}
 
+%%%%%%%%%%%%
+% STATE ITEMS
+% Lower-greek letters
+
 \newcommand*{\thestate}{\sigma}
 \newcommand*{\genesisstate}{\sigma^0}
 
@@ -444,7 +509,6 @@
 \newcommand*{\delegator}{\privileges_v}
 \newcommand*{\assigners}{\privileges_\mathbf{a}}
 \newcommand*{\alwaysaccers}{\privileges_\mathbf{g}}
-
 
 \newcommand*{\accumulated}{\xi}
 \newcommand*{\ready}{\vartheta}
@@ -493,7 +557,9 @@
 \newcommand*{\corestats}{\activity_C}
 \newcommand*{\servicestats}{\activity_S}
 
-% PVM stuff
+%%%%%%%%%%%%
+% PVM-SPECIFIC ITEMS
+
 \newcommand*{\gascounter}{\varrho}
 \newcommand*{\registers}{\omega}
 \newcommand*{\memory}{\mu}
@@ -501,6 +567,9 @@
 
 \newcommand*{\jamdraftversion}{\input{VERSION}\!\!\!\!}
 \newcommand*{\jamdraftversionstring}{\jamdraftversion}
+
+%%%%%%%%%%%%
+% Other stuff
 
 \newcommand*{\makegpbackground}{
   \AddToShipoutPicture{

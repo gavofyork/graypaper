@@ -549,7 +549,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \error &\otherwise
     \end{cases} \\
     \using n &= \min(n \in \N, n \not\in \Fkeys{\mathbf{m}}) \\
-    \using \mathbf{u} &= \tup{\is{\mathbf{V}}{[0, 0, \dots]},\is{\mathbf{A}}{[\none, \none, \dots]}} \\
+    \using \mathbf{u} &= \tup{\is{\ram¬value}{[0, 0, \dots]},\is{\ram¬access}{[\none, \none, \dots]}} \\
     (\execst', \registers'_7, \mathbf{m}) &\equiv \begin{cases}
       (\panic, \registers_7, \mathbf{m}) &\when \mathbf{p} = \error \\
       (\continue, \mathtt{HUH}, \mathbf{m}) &\otherwhen \deblob(\mathbf{p}) = \error \\
@@ -598,11 +598,11 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
       \error &\otherwise\\
     \end{cases} \\
     \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
-      (\mathbf{u}'_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = \begin{cases}
+      (\mathbf{u}'_\ram¬value)_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = \begin{cases}
         [0, 0, \dots] &\when r < 3 \\
-        (\mathbf{u}_\mathbf{V})_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} &\otherwise
+        (\mathbf{u}_\ram¬value)_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} &\otherwise
       \end{cases} \\
-      (\mathbf{u}'_\mathbf{A})_{p\dots+c} = \begin{cases}
+      (\mathbf{u}'_\ram¬access)_{p\dots+c} = \begin{cases}
         [\none, \none, \dots] &\when r = 0 \\
         [\mathrm{R}, \mathrm{R}, \dots] &\when r = 1 \vee r = 3 \\
         [\mathrm{W}, \mathrm{W}, \dots] &\when r = 2 \vee r = 4 \\
@@ -611,7 +611,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     (\registers'_7, \mathbf{m}') &\equiv \begin{cases}
       (\mathtt{WHO}, \mathbf{m}) &\when \mathbf{u} = \error \\
       (\mathtt{HUH}, \mathbf{m}) &\otherwhen r > 4 \vee p < 16 \vee p+c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \\
-      (\mathtt{HUH}, \mathbf{m}) &\otherwhen r > 2 \wedge (\mathbf{u}_\mathbf{A})_{p\dots+c} \ni \none \\
+      (\mathtt{HUH}, \mathbf{m}) &\otherwhen r > 2 \wedge (\mathbf{u}_\ram¬access)_{p\dots+c} \ni \none \\
       (\mathtt{OK}, \mathbf{m}') &\otherwise\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'[n]_\mathbf{u} = \mathbf{u}' \\
     \end{cases} \\
   \end{aligned}$\\

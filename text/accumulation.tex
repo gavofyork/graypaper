@@ -91,7 +91,7 @@ Firstly, while we have a well-known gas-limit for each work-item to be accumulat
 
 Secondly, since \textsc{pvm} setup cannot be expected to be zero-cost, we wish to amortize this cost over as many work-items as possible. This can be done by aggregating work-items associated with the same service into the same \textsc{pvm} invocation. This implies a non-sequential execution pattern.
 
-We resolve this by defining a function $\Delta_+$ which accumulates work-reports sequentially, and which itself utilizes a function $\Delta_*$ which accumulates work-reports in a non-sequential, service-aggregated manner.
+We resolve this by defining a function $\accseq$ which accumulates work-reports sequentially, and which itself utilizes a function $\accpar$ which accumulates work-reports in a non-sequential, service-aggregated manner.
 
 Only once all such accumulation is executed do we integrate the results and thus define the relevant posterior state items. In doing so we also integrate the consequences of any \emph{deferred-transfers} implied by accumulation.
 
@@ -125,9 +125,9 @@ Finally, we denote the set of service/hash pairs, utilized as a service-indexed 
   \servouts \equiv \{(\serviceid, \hash)\} \qquad \gasused \equiv \seq{\tup{\serviceid, \gas}}
 \end{equation}
 
-We define the outer accumulation function $\Delta_+$ which transforms a gas-limit, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the number of work-results accumulated, a posterior state-context, the resultant deferred-transfers and accumulation-output pairings:
+We define the outer accumulation function $\accseq$ which transforms a gas-limit, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the number of work-results accumulated, a posterior state-context, the resultant deferred-transfers and accumulation-output pairings:
 \begin{equation}
-  \Delta_+\colon\left\{\begin{aligned}
+  \accseq\colon\left\{\begin{aligned}
     &(\gas, \seq{\workreport}, \partialstate, \dict{\serviceid}{\gas}) \to (\N, \partialstate, \defxfers, \servouts, \gasused) \\
     &(g, \mathbf{w}, \mathbf{o}, \mathbf{f}) \!\mapsto\! \begin{cases}
       (0, \mathbf{o}, [], \{\}, []) &
@@ -136,31 +136,31 @@ We define the outer accumulation function $\Delta_+$ which transforms a gas-limi
         \text{o/w}\!\!\!\!\!\!\!\! \\
     \end{cases} \\
     &\quad\where i = \max(\N_{\len{\mathbf{w}} + 1}): \sum_{w \in \mathbf{w}_{\dots i}}\sum_{r \in w_\mathbf{r}}(r_g) \le g \\
-    &\quad\also (\mathbf{o}^*, \mathbf{t}^*, \mathbf{b}^*, \mathbf{u}^*) = \Delta_*(\mathbf{o}, \mathbf{w}_{\dots i}, \mathbf{f}) \\
-    &\quad\also (j, \mathbf{o}', \mathbf{t}, \mathbf{b}, \mathbf{u}) = \Delta_+(g - \!\!\!\!\sum_{(s, u) \in \mathbf{u}^*}\!\!\!\!u, \mathbf{w}_{i\dots}, \mathbf{o}^*, \{\})
+    &\quad\also (\mathbf{o}^*, \mathbf{t}^*, \mathbf{b}^*, \mathbf{u}^*) = \accpar(\mathbf{o}, \mathbf{w}_{\dots i}, \mathbf{f}) \\
+    &\quad\also (j, \mathbf{o}', \mathbf{t}, \mathbf{b}, \mathbf{u}) = \accseq(g - \!\!\!\!\sum_{(s, u) \in \mathbf{u}^*}\!\!\!\!u, \mathbf{w}_{i\dots}, \mathbf{o}^*, \{\})
   \end{aligned}\right.
 \end{equation}
 
-We come to define the parallelized accumulation function $\Delta_*$ which, with the help of the single-service accumulation function $\Delta_1$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution $u$, a posterior state-context $(\mathbf{d}', \mathbf{i}', \mathbf{q}', m', \mathbf{a}', v', \mathbf{x}')$ and the resultant accumulation-output pairings $\mathbf{b}$ and deferred-transfers $\wideparen{\mathbf{t}}$:
+We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution $u$, a posterior state-context $(\mathbf{d}', \mathbf{i}', \mathbf{q}', m', \mathbf{a}', v', \mathbf{x}')$ and the resultant accumulation-output pairings $\mathbf{b}$ and deferred-transfers $\wideparen{\mathbf{t}}$:
 \begin{equation}
-  \Delta_*\colon\left\{\;\begin{aligned}
+  \accpar\colon\left\{\;\begin{aligned}
     &(\partialstate, \seq{\workreport}, \dict{\serviceid}{\gas}) \to (\partialstate, \defxfers, \servouts, \gasused) \\
     &(\mathbf{o}, \mathbf{w}, \mathbf{f}) \mapsto ((\mathbf{d}', \mathbf{i}', \mathbf{q}', m', \mathbf{a}', v', \mathbf{z}'), \wideparen{\mathbf{t}}, \mathbf{b}, \mathbf{u})\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
       \mathbf{s} &= \{ \mathbf{r}_s \mid w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r} \} \cup \Fkeys{\mathbf{f}} \\
-      \mathbf{u} &= [(s, \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_u) \mid s \orderedin \mathbf{s}] \\
-      \mathbf{b} &= \{ (s, b) \mid s \in \mathbf{s},\, b = \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_b,\, b \ne \none \} \\
-      \mathbf{t} &= [\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{t} \mid s \orderedin \mathbf{s}] \\
-      \mathbf{d}' &= \fnprovide((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \bigcup_{s \in \mathbf{s}} \Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{p}) \\
+      \mathbf{u} &= [(s, \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_u) \mid s \orderedin \mathbf{s}] \\
+      \mathbf{b} &= \{ (s, b) \mid s \in \mathbf{s},\, b = \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_b,\, b \ne \none \} \\
+      \mathbf{t} &= [\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{t} \mid s \orderedin \mathbf{s}] \\
+      \mathbf{d}' &= \fnprovide((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \bigcup_{s \in \mathbf{s}} \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{p}) \\
       &(\mathbf{d}, \mathbf{i}, \mathbf{q}, m, \mathbf{z}) = \mathbf{o} \\
-      (m', \mathbf{a}^*, v^*, \mathbf{z}') &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, m)_\mathbf{o})_{(m, \mathbf{a}, v, \mathbf{z})} \\
-      \forall c \in \coreindex : \mathbf{a}'_c &= ((\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, \mathbf{a}^*_c)_\mathbf{o})_\mathbf{a})_c \\
-      v' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, v^*)_\mathbf{o})_v \\
-      \mathbf{i}' &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, v)_\mathbf{o})_\mathbf{i} \\
-      \forall c \in \coreindex : \mathbf{q}'_c &= (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, \mathbf{a}_c)_\mathbf{o})_\mathbf{q} \\
-      \mathbf{n} &= \bigcup_{s \in \mathbf{s}}(\{ (\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d} \setminus \Fkeys{\mathbf{d} \setminus \{s\}} \}) \\
-      \mathbf{m} &= \bigcup_{s \in \mathbf{s}}(\Fkeys{\mathbf{d}} \setminus \Fkeys{(\Delta_1(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d}})
+      (m', \mathbf{a}^*, v^*, \mathbf{z}') &= (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, m)_\mathbf{o})_{(m, \mathbf{a}, v, \mathbf{z})} \\
+      \forall c \in \coreindex : \mathbf{a}'_c &= ((\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, \mathbf{a}^*_c)_\mathbf{o})_\mathbf{a})_c \\
+      v' &= (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, v^*)_\mathbf{o})_v \\
+      \mathbf{i}' &= (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, v)_\mathbf{o})_\mathbf{i} \\
+      \forall c \in \coreindex : \mathbf{q}'_c &= (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, \mathbf{a}_c)_\mathbf{o})_\mathbf{q} \\
+      \mathbf{n} &= \bigcup_{s \in \mathbf{s}}(\{ (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d} \setminus \Fkeys{\mathbf{d} \setminus \{s\}} \}) \\
+      \mathbf{m} &= \bigcup_{s \in \mathbf{s}}(\Fkeys{\mathbf{d}} \setminus \Fkeys{(\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d}})
     \end{aligned}
   \end{aligned}\right.
 \end{equation}
@@ -189,7 +189,7 @@ And $\fnprovide$ is the preimage integration function, which transforms a dictio
 
 We note that while forming the union of all altered, newly added service and newly removed indices, defined in the above context as $\Fkeys{\mathbf{n}} \cup \mathbf{m}$, different services may not each contribute the same index for a new, altered or removed service. This cannot happen for the set of removed and altered services since the code hash of removable services has no known preimage and thus cannot execute itself to make an alteration. For new services this should also never happen since new indices are explicitly selected to avoid such conflicts. In the unlikely event it does happen, the block must be considered invalid.
 
-The single-service accumulation function, $\Delta_1$, transforms an initial state-context, sequence of work-reports and a service index into an alterations state-context, a sequence of \emph{transfers}, a possible accumulation-output and the actual \textsc{pvm} gas used. This function wrangles the work-items of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
+The single-service accumulation function, $\accone$, transforms an initial state-context, sequence of work-reports and a service index into an alterations state-context, a sequence of \emph{transfers}, a possible accumulation-output and the actual \textsc{pvm} gas used. This function wrangles the work-items of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
 \begin{equation}
   \operandtuple \equiv \tuple{
     \isa{\ot¬packagehash}{\hash},
@@ -202,7 +202,7 @@ The single-service accumulation function, $\Delta_1$, transforms an initial stat
   }
 \end{equation}
 \begin{align}
-    &\Delta_1 \colon \left\{\;\begin{aligned}
+    &\accone \colon \left\{\;\begin{aligned}
     &\begin{aligned}
       \tup{\begin{aligned}
         &\partialstate, \seq{\workreport},\\
@@ -249,12 +249,12 @@ This introduces $\operandtuple$, the set of wrangled \emph{operand tuples}, used
 
 \newcommand*{\accoutseq}{\mathbf{c}}
 
-Given the result of the top-level $\Delta_+$, we may define the posterior state $\privileges'$, $\authqueue'$ and $\stagingset'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the Accumulation Output Log $\lastaccout'$:
+Given the result of the top-level $\accseq$, we may define the posterior state $\privileges'$, $\authqueue'$ and $\stagingset'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the Accumulation Output Log $\lastaccout'$:
 \begin{align}
   \using &g = \max\left(\mathsf{G}_T, \mathsf{G}_A\cdot \corecount + \textstyle \sum_{x \in \Fvalues{\alwaysaccers}}(x)\right)\\
   \also &\mathbf{o} = (\accountspre, \stagingset, \authqueue, \manager, \assigners, \delegator, \alwaysaccers) \\
   &(n, \mathbf{o}', \mathbf{t}, \lastaccout', \mathbf{u}) \equiv
-    \Delta_+(g, \mathbf{W}^*, \mathbf{o}, \alwaysaccers) \\
+    \accseq(g, \mathbf{W}^*, \mathbf{o}, \alwaysaccers) \\
   &(\accountspostacc, \stagingset', \authqueue', \manager', \assigners', \delegator', \alwaysaccers') \equiv \mathbf{o}'
 \end{align}
 

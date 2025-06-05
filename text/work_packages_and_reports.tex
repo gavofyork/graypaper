@@ -18,7 +18,7 @@
 
 We have so far specified how to recognize blocks for a correctly transitioning \Jam blockchain. Through defining the state transition function and a state Merklization function, we have also defined how to recognize a valid header. While it is not especially difficult to understand how a new block may be authored for any node which controls a key which would allow the creation of the two signatures in the header, nor indeed to fill in the other header fields, readers will note that the contents of the extrinsic remain unclear.
 
-We define not only correct behavior through the creation of correct blocks but also \emph{honest behavior}, which involves the node taking part in several \emph{off-chain} activities. This does have analogous aspects within \emph{YP} Ethereum, though it is not mentioned so explicitly in said document: the creation of blocks along with the gossiping and inclusion of transactions within those blocks would all count as off-chain activities for which honest behavior is helpful. In \Jam's case, honest behavior is well-defined and expected of at least $\nicefrac{2}{3}$ of validators.
+We define not only correct behavior through the creation of correct blocks but also \emph{honest behavior}, which involves the node taking part in several \emph{off-chain} activities. This does have analogous aspects within \emph{YP} Ethereum, though it is not mentioned so explicitly in said document: the creation of blocks along with the gossiping and inclusion of transactions within those blocks would all count as off-chain activities for which honest behavior is helpful. In \Jam's case, honest behavior is well-defined and expected of at least $\twothirds$ of validators.
 
 Beyond the production of blocks, incentivized honest behavior includes:
 \begin{itemize}
@@ -179,9 +179,9 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
 
 \subsection{Computation of Work-Report}\label{sec:computeworkreport}
 
-We now come to the work-report computation function $\Xi$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $\¬core$ and results in either an error $\error$ or the work-report and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization. Formally:
+We now come to the work-report computation function $\computedigest$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $\¬core$ and results in either an error $\error$ or the work-report and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization. Formally:
 \begin{equation}\label{eq:workdigestfunction}
-  \Xi \colon \left\{\begin{aligned}
+  \computedigest \colon \left\{\begin{aligned}
     (\workpackage, \coreindex) &\to \workreport \\
     (\wpX, \¬core) &\mapsto \begin{cases}
         \error &\when \wr¬authtrace \not\in \blob_{:\mathsf{W}_R} \\
@@ -230,7 +230,7 @@ We immediately define the segment-root lookup function $\segrootlookup$, depende
 
 In order to expect to be compensated for a work-report they are building, guarantors must compose a value for $\wr¬srlookup$ to ensure not only the above but also a further constraint that all pairs of work-package hashes and segment-roots do properly correspond:
 \begin{equation}
-  \forall (h \mapsto e) \in \wr¬srlookup : \exists \wpX, \¬core \in \workpackage, \coreindex : \blake(\wpX) = h \wedge (\Xi(\wpX, \¬core)_s)_e = e\!\!\!\!
+  \forall (h \mapsto e) \in \wr¬srlookup : \exists \wpX, \¬core \in \workpackage, \coreindex : \blake(\wpX) = h \wedge (\computedigest(\wpX, \¬core)_s)_e = e\!\!\!\!
 \end{equation}
 
 As long as the guarantor is unable to satisfy the above constraints, then it should consider the work-package unable to be guaranteed. Auditors are not expected to populate this but rather to reuse the value in the work-report they are auditing.

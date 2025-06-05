@@ -14,14 +14,14 @@ Excepting the Genesis header, all block headers $\header$ have an associated par
   \header_\¬parent \in \hash \,,\quad \H_\¬parent \equiv \blake(\se(\parentfn(\header)))
 \end{equation}
 
-$\parentfn$ is thus defined as being the mapping from one block header to its parent block header. With $\parentfn$, we are able to define the set of ancestor headers $\mathbf{A}$:
+$\parentfn$ is thus defined as being the mapping from one block header to its parent block header. With $\parentfn$, we are able to define the set of ancestor headers $\ancestors$:
 \begin{align}\label{eq:ancestors}
-  h \in \mathbf{A} \Leftrightarrow h = \header \vee (\exists i \in \mathbf{A} : h = \parentfn(i))
+  h \in \ancestors \Leftrightarrow h = \header \vee (\exists i \in \ancestors : h = \parentfn(i))
 \end{align}
 
 We only require implementations to store headers of ancestors which were authored in the previous $\mathsf{L} = 24$ hours of any block $\block$ they wish to validate.
 
-The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports to individually have their inclusion proven. Given any block $\mathbf{B} = (\H, \mathbf{E})$, then formally:
+The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports to individually have their inclusion proven. Given any block $\block = (\header, \extrinsic)$, then formally:
 \begin{align}
   \H_\¬extrinsichash &\in \hash \ ,\quad
   \H_\¬extrinsichash \equiv \blake(\se(\blake^\#(\mathbf{a}))) \\
