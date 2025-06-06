@@ -55,18 +55,17 @@ The signatures of all judgments must be valid in terms of one of the two allowed
 
 Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set:
 \begin{align}
-  \forall \tup{\xc¬reporthash, \xc¬offender, \xc¬signature} &\in \xtculprits : \bigwedge \left\{
-  \begin{aligned}
+  \forall \tup{\xc¬reporthash, \xc¬offender, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
     &\xc¬reporthash \in \badset' \,,\\
     &\xc¬offender \in \mathbf{k} \,,\\
     &\xc¬signature \in \sig{\xc¬offender}{\mathsf{X}_G \concat \xc¬reporthash}
-  \end{aligned}\right.\\
-  \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offender, \xf¬signature} &\in \xtfaults : \bigwedge \left\{ \begin{aligned}
+  }\\
+  \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offender, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
     &\xf¬reporthash \in \badset' \Leftrightarrow \xf¬reporthash \not\in \goodset' \Leftrightarrow \xf¬validity \,,\\
     &k \in \mathbf{k} \,,\\
     &s \in \sig{\xf¬offender}{\mathsf{X}_v \concat \xf¬reporthash}\\
-  \end{aligned}\right.\\
-  \nonumber\where \mathbf{k} &= \{i_\vk¬ed \mid i \in \previousset \cup \activeset\} \setminus \offenders
+  }\\
+  \nonumber\where \mathbf{k} &= \set{i_\vk¬ed \mid i \in \previousset \cup \activeset} \setminus \offenders
 \end{align}
 
 Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
@@ -74,7 +73,7 @@ Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtc
   &\xtverdicts = \orderuniqby{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}\\
   &\xtculprits = \orderuniqby{\xc¬offender}{\tup{\xc¬reporthash, \xc¬offender, \xc¬signature} \in \xtculprits} \,,\ 
   \xtfaults = \orderuniqby{\xf¬offender}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offender, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!\\
-  &\{\xv¬reporthash \mid \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts\} \disjoint \goodset \cup \badset \cup \wonkyset
+  &\set{\xv¬reporthash \mid \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts} \disjoint \goodset \cup \badset \cup \wonkyset
 \end{align}
 
 The judgments of all verdicts must be ordered by validator index and there may be no duplicates:

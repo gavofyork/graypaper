@@ -17,12 +17,12 @@ Formally:
 \begin{align}
   \ancestors(\header^\best) &\owns \header^\final \\
   \mathbf{U}^\best &\equiv \top \\
-  \not\exists \header^A, \header^B &: \bigwedge \left\{\,\begin{aligned}
+  \not\exists \header^A, \header^B &: \bigwedge \abracegroup[\,]{
     \header^A &\ne \header^B \\
     \header^A_\¬timeslot &= \header^B_\¬timeslot \\
     \header^A &\in \ancestors(\header^\best) \\
     \header^A &\not\in \ancestors(\header^\final)
-  \end{aligned}\right.
+  }
 \end{align}
 
 Of these acceptable blocks, that which contains the most ancestor blocks whose author used a seal-key ticket, rather than a fallback key should be selected as the best head, and thus the chain on which the participant should make \textsc{Grandpa} votes.

@@ -80,10 +80,10 @@ By retaining historical information on its availability, we become confident tha
 Restated, we must be able to define some \emph{historical} lookup function $\histlookup$ which determines whether the preimage of some hash was available for lookup by some service account at some timeslot, and if so, provide it:
 \begin{equation}
 \begin{aligned}
-  \histlookup\colon \left\{\ \begin{aligned}
+  \histlookup\colon \abracegroup[\ ]{
     (\serviceaccount, \N_{\H_\¬timeslot - \mathsf{D} \dots \H_\¬timeslot}, \hash) &\to \optional{\blob} \\
-    (\mathbf{a}, t, \blake(\mathbf{p})) &\mapsto v : v \in \{ \mathbf{p}, \none \}
-  \end{aligned}\right.
+    (\mathbf{a}, t, \blake(\mathbf{p})) &\mapsto v : v \in \set{ \mathbf{p}, \none }
+  }
 \end{aligned}
 \end{equation}
 
@@ -141,12 +141,20 @@ Furthermore, as we will see in the account serialization function in section \re
 
 We may then define a third dependent term $\sa¬minbalance$, the minimum, or \emph{threshold}, balance needed for any given service account in terms of its storage footprint.
 \begin{align}
-  \forall \mathbf{a} \in \Fvalues{\accounts}:\left\{\begin{aligned}
-    \mathbf{a}_\sa¬items \in \Nbits{32} &\equiv 2\cdot\len{\,\mathbf{a}_\sa¬requests\,} + \len{\,\mathbf{a}_\sa¬storage\,} \\
-    \mathbf{a}_\sa¬octets \in \Nbits{64} &\equiv \sum\limits_{\,(h, z) \in \Fkeys{\mathbf{a}_\sa¬requests}\,} \!\!\!\!81 + z \\
+  \forall \mathbf{a} \in \Fvalues{\accounts}\colon \abracegroup{
+    \mathbf{a}_\sa¬items \in \Nbits{32} &\equiv
+      2\cdot\len{\,\mathbf{a}_\sa¬requests\,} + \len{\,\mathbf{a}_\sa¬storage\,} \\
+    \mathbf{a}_\sa¬octets \in \Nbits{64} &\equiv
+      \sum\limits_{\,(h, z) \in \Fkeys{\mathbf{a}_\sa¬requests}\,} \!\!\!\!81 + z \\
     &\phantom{\equiv\ } + \sum\limits_{(x, y) \in \mathbf{a}_\sa¬storage} 34 + \len{y} + \len{x} \\
-    \mathbf{a}_\sa¬minbalance \in \balance &\equiv \max(0, \mathsf{B}_S + \mathsf{B}_I \cdot \mathbf{a}_\sa¬items + \mathsf{B}_L \cdot \mathbf{a}_\sa¬octets - \mathbf{a}_\sa¬gratis)
-  \end{aligned}\right.
+    \mathbf{a}_\sa¬minbalance \in \balance &\equiv
+      \max(0,
+        \mathsf{B}_S
+        + \mathsf{B}_I \cdot \mathbf{a}_\sa¬items
+        + \mathsf{B}_L \cdot \mathbf{a}_\sa¬octets
+        - \mathbf{a}_\sa¬gratis
+      )
+  }
 \end{align}
 
 

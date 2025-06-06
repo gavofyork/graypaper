@@ -40,7 +40,7 @@ The objective statistics are updated in line with their description, formally:
         (\valstatsaccumulator, \valstatsprevious) &\when e' = e \\
         (\sq{\tuple{0, \dots, [0, \dots]}, \dots}, \valstatsaccumulator)\!\!\!\! &\otherwise
     \end{cases}\!\!\!\!\\
-    \forall v \in \valindex :&\; \left\{\begin{aligned}
+    \forall v \in \valindex :&\; \abracegroup{
         \valstatsaccumulator'[v]_b &\equiv \mathbf{a}[v]_b + (v = \H_\¬authorindex)\\
         \valstatsaccumulator'[v]_t &\equiv \mathbf{a}[v]_t + \begin{cases}
             \len{\xttickets} &\when v = \H_\¬authorindex \\
@@ -56,7 +56,7 @@ The objective statistics are updated in line with their description, formally:
         \end{cases}\\
         \valstatsaccumulator'[v]_g &\equiv \mathbf{a}[v]_g + (\activeset'_v \in \reporters)\\
         \valstatsaccumulator'[v]_a &\equiv \mathbf{a}[v]_a + (\exists a \in \xtassurances : a_v = v)
-    \end{aligned}\right.\!\!\!\!\!
+    }\!\!\!\!\!
 \end{align}
 
 Note that $\reporters$ is the \emph{Reporters} set, as defined in equation \ref{eq:guarantorsig}.
@@ -126,8 +126,8 @@ Finally, the service statistics are updated using the same intermediate values a
     \end{alignedat}
   }\!\!\!\!\\
   \where \mathbf{s} &= \mathbf{r} \cup \mathbf{p} \cup \Fkeys{\mathbf{I}} \cup \Fkeys{\mathbf{X}}\\
-  \also \mathbf{r} &= \{r_s \mid r \in w_\mathbf{r}, w \in \mathbf{w} \}\\
-  \also \mathbf{p} &= \{s \mid \exists x: \tup{s, x} \in \mathbf{E}_P \}\\
+  \also \mathbf{r} &= \set{r_s \mid r \in w_\mathbf{r}, w \in \mathbf{w} }\\
+  \also \mathbf{p} &= \set{s \mid \exists x: \tup{s, x} \in \mathbf{E}_P }\\
   \also R(s \in \serviceid) &\equiv \!\!\!\!\!\!\!\!\!\!\!
     \sum_{r \in w_\mathbf{r}, w \in \mathbf{w}, r_s = s}\!\!\!\!\!\!\!\!\!\!\!
     \tup{\is{n}{1}, r_u, r_i, r_x, r_z, r_e}

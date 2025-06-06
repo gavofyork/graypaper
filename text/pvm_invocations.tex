@@ -38,7 +38,7 @@ Note return codes for a host-call-request exit are any non-zero value less than 
 
 The Is-Authorized invocation is the first and simplest of the four, being totally stateless. It provides only host-call functions for inspecting its environment and parameters. It accepts as arguments only the core on which it should be executed, $c$. Formally, it is defined as $\Psi_I$:
 \begin{align}
-  \Psi_I &\colon \left\{\begin{aligned}
+  \Psi_I &\colon \abracegroup{
     (\workpackage, \coreindex) &\to \tuple{\blob \cup \workerror, \gas} \\
     (\wpX, c) &\mapsto \begin{cases}
       \tup{\token{BAD}, 0} &\when \wpX_\wp¬authcode = \none \\
@@ -46,8 +46,8 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
       \tup{\mathbf{r}, u} &\otherwise \\
       \multicolumn{2}{l}{\where (u, \mathbf{r}, \none) = \Psi_M(\wpX_\wp¬authcode, 0, \mathsf{G}_I, \se_2(c), F, \none)}\\
     \end{cases}\\
-  \end{aligned}\right. \\
-  \label{eq:isauthorizedmutator}F \in \Omega\ang{\{\}} &\colon
+  } \\
+  \label{eq:isauthorizedmutator}F \in \Omega\ang{\emset} &\colon
     (n, \gascounter, \registers, \memory) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
       \Omega_Y(\gascounter, \registers, \memory, \wpX, \none, \none, \none, \none, \none, \none, \none) &\when n = \mathtt{fetch} \\
@@ -75,7 +75,7 @@ The Export host-call depends on two pieces of context; one sequence of segments 
 
 Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\accounts$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work-package $p$ and the index of the work item to be refined, $i$. Additionally, the authorizer trace $\mathbf{r}$ is provided together with all work items' import segments $\overline{\mathbf{i}}$ and an export segment offset $\segoff$. It results in either some error $\workerror$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
-  &\Psi_R \colon \left\{\begin{aligned}
+  &\Psi_R \colon \abracegroup{
     (\N, \workpackage, \blob, \seq{\seq{\segment}}, \N) &\to (\blob \cup \workerror, \seq{\segment}, \gas) \\
     (i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff) &\mapsto \begin{cases}
       (\token{BAD}, [], 0) &\when w_s \not\in \Fkeys{\accounts} \vee \histlookup(\accounts[w_s], (p_\mathbf{x})_t, w_\wi¬codehash) = \none \\
@@ -83,11 +83,11 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       &\otherwise: \\
       &\quad\using a = \se(i, w_s, \var{w_\mathbf{y}}, \blake(p))\;,\ \se(\var{\mathbf{z}}, \mathbf{c}) = \histlookup(\accounts[w_s], (p_\wp¬context)_t, w_\wi¬codehash)\\
       &\quad\also (u, \mathbf{o}, (\mathbf{m}, \mathbf{e})) = \Psi_M(\mathbf{c}, 0, w_g, a, F, (\emptyset, []))\ \colon\\
-      (\mathbf{o}, [], u) &\quad\when \mathbf{o} \in \{ \oog, \panic \}  \\
+      (\mathbf{o}, [], u) &\quad\when \mathbf{o} \in \set{ \oog, \panic }  \\
       (\mathbf{o}, \mathbf{e}, u) &\quad\otherwise \\
       \multicolumn{2}{l}{\where w = p_\wp¬workitems[i]}
     \end{cases} \\
-  \end{aligned}\right. \\
+  } \\
   \label{eq:refinemutator}
   &F \in \Omega\ang{(\dict{\N}{\pvm}, \seq{\segment})} \colon
     (n, \gascounter, \registers, \memory, (\mathbf{m}, \mathbf{e})) \mapsto \begin{cases}
@@ -119,7 +119,7 @@ Formally, we define our result context to be $\mathbf{X}$, and our invocation co
     \isa{i}{\serviceid},
     \isa{\mathbf{t}}{\seq{\mathbb{T}}},
     \isa{y}{\optional{\hash}},
-    \isa{\mathbf{p}}{\{\tuple{\serviceid, \blob}\}}
+    \isa{\mathbf{p}}{\protoset{\tuple{\serviceid, \blob}}}
   }\\
   \forall \mathbf{x} \in \mathbf{X} : \mathbf{x}_\mathbf{s} &\equiv (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]
 \end{align}
@@ -130,7 +130,7 @@ We track both regular and exceptional dimensions within our context mutator, but
 
 We define $\Psi_A$, the Accumulation invocation function as:
 \begin{align}
-  \Psi_A& \colon\left\{\begin{aligned}
+  \Psi_A& \colon\abracegroup{
     \tuple{
       \partialstate, \timeslot, \serviceid, \gas, \seq{\operandtuple}
     }
@@ -141,8 +141,8 @@ We define $\Psi_A$, the Accumulation invocation function as:
       C(\Psi_M(\mathbf{c}, 5, g, \se(t, s, \len{\mathbf{o}}), F, I(\mathbf{u}, s)^2)) &\otherwise \\
       \where \mathbf{c} = \mathbf{u}_\mathbf{d}[s]_\sa¬code&
     \end{cases} \\
-  \end{aligned}\right.\\
-  I&\colon\left\{\begin{aligned}
+  }\\
+  I&\colon\abracegroup{
     (\mathbb{U}, \serviceid) &\to \mathbf{X}\\
     (\mathbf{u}, s) &\mapsto \tup{
       s,
@@ -153,7 +153,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
       \is{\mathbf{p}}{\sq{}}
     }\\
     &\qquad\where i = \text{check}((\de_4(\blake(\se(s, \entropyaccumulator', \H_\¬timeslot))) \bmod (2^{32}-2^9)) + 2^8) \\
-  \end{aligned}\right.\\
+  }\\
   F \in \Omega\ang{(\mathbf{X}, \mathbf{X})} &\colon (n, \gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) \mapsto \begin{cases}
     \Omega_G(\gascounter, \registers, \memory, (\mathbf{x}, \mathbf{y})) &\when n = \mathtt{gas} \\
     \Omega_Y(\gascounter, \registers, \memory, \none, \entropyaccumulator', \none, \none, \none, \none, \mathbf{o}, \none, (\mathbf{m}, \mathbf{e})) &\when n = \mathtt{fetch}\\
@@ -177,13 +177,13 @@ We define $\Psi_A$, the Accumulation invocation function as:
     (\continue, \gascounter - 10, [\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots], \memory, \mathbf{x}) &\otherwise\\
     \quad \where \mathbf{d} = (\mathbf{x}_\mathbf{u})_\mathbf{d}\;,\ \mathbf{s} = (\mathbf{x}_\mathbf{u})_\mathbf{d}[\mathbf{x}_s]\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!\!& \\
   \end{cases} \\
-  G&\colon\left\{\begin{aligned}
-    ((\{\continue, \halt, \panic, \oog\}, \gas, \regs, \ram, \serviceaccount), (\mathbf{X}, \mathbf{X})) &\to (\{\continue, \halt, \panic, \oog\}, \gas, \regs, \ram, (\mathbf{X}, \mathbf{X})) \\
+  G&\colon\abracegroup{
+    ((\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, \serviceaccount), (\mathbf{X}, \mathbf{X})) &\to (\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, (\mathbf{X}, \mathbf{X})) \\
     ((\execst, \gascounter, \registers, \memory, \mathbf{s}), (\mathbf{x}, \mathbf{y})) &\mapsto (\execst, \gascounter, \registers, \memory, (\mathbf{x}^*, \mathbf{y})) \\
     &\qquad \where \mathbf{x}^* = \mathbf{x} \exc (\mathbf{x}^*_\mathbf{u})_\mathbf{d}[\mathbf{x}^*_s] = \mathbf{s}
-  \end{aligned}\right.\\
-  C&\colon\left\{\begin{aligned}
-    (\gas, \blob \cup \{\oog, \panic\}, (\mathbf{X}, \mathbf{X})) &\to (\partialstate, \defxfers, \optional{\hash}, \gas, \seq{\tuple{\serviceid, \blob}}) \\
+  }\\
+  C&\colon\abracegroup{
+    (\gas, \blob \cup \set{\oog, \panic}, (\mathbf{X}, \mathbf{X})) &\to (\partialstate, \defxfers, \optional{\hash}, \gas, \seq{\tuple{\serviceid, \blob}}) \\
     (u, \mathbf{o}, (\mathbf{x}, \mathbf{y})) &\mapsto \begin{cases}
       \tup{
         \mathbf{y}_\mathbf{u},
@@ -191,7 +191,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
         \mathbf{y}_y,
         u,
         \mathbf{y}_\mathbf{p}
-      } & \when \mathbf{o} \in \{\oog, \panic\} \\
+      } & \when \mathbf{o} \in \set{\oog, \panic} \\
       \tup{
         \mathbf{x}_\mathbf{u},
         \mathbf{x}_\mathbf{t},
@@ -207,7 +207,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
         \mathbf{x}_\mathbf{p}
         } & \otherwise \\
     \end{cases}
-  \end{aligned}\right.
+  }
 \end{align}
 
 The mutator $F$ governs how this context will alter for any given parameterization, and the collapse function $C$ selects one of the two dimensions of context depending on whether the virtual machine's halt was regular or exceptional.
@@ -359,7 +359,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using f &= \min(\registers_8, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_9, \len{\mathbf{v}} - f) \\
     (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbb{N}_{o \dots+ l} \not\subseteq \writable{\memory} \\
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \N_{o \dots+ l} \not\subseteq \writable{\memory} \\
       (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
       (\continue, \len{\mathbf{v}}, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
@@ -371,20 +371,20 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s} &\when \registers_7 \in \{ s, 2^{64} - 1 \} \\
+      \mathbf{s} &\when \registers_7 \in \set{ s, 2^{64} - 1 } \\
       \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \Fkeys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
     \using [h, o] &= \registers_{8\dots+2} \\
     \using \mathbf{v} &= \begin{cases}
-      \error &\when \mathbb{N}_{h \dots+ 32} \not\subseteq \readable{\memory} \\
+      \error &\when \N_{h \dots+ 32} \not\subseteq \readable{\memory} \\
       \none &\otherwhen \mathbf{a} = \none \vee \memory_{h\dots+32} \not\in \Fkeys{\mathbf{a}_\mathbf{p}} \\
       \mathbf{a}_\mathbf{p}[\memory_{h\dots+32}] &\otherwise \\
     \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_{11}, \len{\mathbf{v}} - f) \\
     (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subseteq \writable{\memory}\\
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \N_{o \dots+ l} \not\subseteq \writable{\memory}\\
       (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
       (\continue, \len{\mathbf{v}}, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
@@ -407,14 +407,14 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \using [k_o, k_z, o] &= \registers_{8\dots+3} \\
     \using \mathbf{v} &= \begin{cases}
-      \error &\when \mathbb{N}_{k_o \dots+ k_z} \not\subseteq \readable{\memory} \\
+      \error &\when \N_{k_o \dots+ k_z} \not\subseteq \readable{\memory} \\
       \mathbf{a}_\mathbf{s}[\mathbf{k}] &\otherwhen \mathbf{a} \ne \none \wedge \mathbf{k} \in \Fkeys{\mathbf{a}_\mathbf{s}}\,,\ \where \mathbf{k} = \memory_{k_o\dots+k_z} \\
       \none &\otherwise
     \end{cases} \\
     \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_{12}, \len{\mathbf{v}} - f) \\
     (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subseteq \writable{\memory}\\
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \N_{o \dots+ l} \not\subseteq \writable{\memory}\\
       (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
       (\continue, \len{\mathbf{v}}, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
@@ -432,7 +432,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s}\,,\ \exc \Fkeys{\mathbf{a}_\mathbf{s}} = \Fkeys{\mathbf{a}_\mathbf{s}} \setminus \{k\} & \when v_z = 0 \\
+      \mathbf{s}\,,\ \exc \Fkeys{\mathbf{a}_\mathbf{s}} = \Fkeys{\mathbf{a}_\mathbf{s}} \setminus \set{k} & \when v_z = 0 \\
       \mathbf{s}\,,\ \exc \mathbf{a}_\mathbf{s}[\mathbf{k}] = \memory_{v_o\dots+v_z} &\otherwhen \N_{v_o \dots+ v_z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
@@ -470,7 +470,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_{12}, \len{\mathbf{v}} - f) \\
     (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subseteq \writable{\memory}\\
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \N_{o \dots+ l} \not\subseteq \writable{\memory}\\
       (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
       (\continue, \len{\mathbf{v}}, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
@@ -507,14 +507,14 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     \end{cases} \\
     \using [h, o] &= \registers_{8\dots+2} \\
     \using \mathbf{v} &= \begin{cases}
-      \error &\when \mathbb{N}_{h \dots+ 32} \not\subseteq \readable{\memory} \\
+      \error &\when \N_{h \dots+ 32} \not\subseteq \readable{\memory} \\
       \none &\otherwhen \mathbf{a} = \none \\
       \histlookup(\mathbf{a}, t, \memory_{h\dots+32}) &\otherwise \\
     \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_{11}, \len{\mathbf{v}} - f) \\
     (\execst', \registers'_7, \memory'_{o\dots+l}) &\equiv \begin{cases}
-      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \mathbb{N}_{o \dots+ l} \not\subseteq \writable{\memory}\\
+      (\panic, \registers_7, \memory_{o\dots+l}) &\when \mathbf{v} = \error \vee \N_{o \dots+ l} \not\subseteq \writable{\memory}\\
       (\continue, \mathtt{NONE}, \memory_{o\dots+l}) &\otherwhen \mathbf{v} = \none \\
       (\continue, \len{\mathbf{v}}, \mathbf{v}_{f\dots+l}) &\otherwise \\
     \end{cases}
@@ -545,7 +545,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $\begin{aligned}
     \using [p_o, p_z, i] &= \registers_{7 \dots+ 3} \\
     \using \mathbf{p} &= \begin{cases}
-      \memory_{p_o\dots+p_z} &\when \mathbb{N}_{p_o \dots+ p_z} \subseteq \readable{\memory} \\
+      \memory_{p_o\dots+p_z} &\when \N_{p_o \dots+ p_z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using n &= \min(n \in \N, n \not\in \Fkeys{\mathbf{m}}) \\
@@ -553,7 +553,7 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
     (\execst', \registers'_7, \mathbf{m}) &\equiv \begin{cases}
       (\panic, \registers_7, \mathbf{m}) &\when \mathbf{p} = \error \\
       (\continue, \mathtt{HUH}, \mathbf{m}) &\otherwhen \deblob(\mathbf{p}) = \error \\
-      (\continue, n, \mathbf{m} \cup \{ n \mapsto \tup{\mathbf{p}, \mathbf{u}, i} \} ) &\otherwise \\
+      (\continue, n, \mathbf{m} \cup \set{\kv{n}{\tup{\mathbf{p}, \mathbf{u}, i}}} ) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -623,16 +623,16 @@ These assume some refine context pair $(\mathbf{m}, \mathbf{e}) \in (\dict{\N}{\
   $\begin{aligned}
     \using [n, o] &= \registers_{7, 8} \\
     \using (g, \mathbf{w}) &= \begin{cases}
-      (g, \mathbf{w}): \se_8(g) \concat \joined{\se^\#_8(\mathbf{w})} = \mem_{o \dots+ 112} &\when \N_{o \dots+ 112} \subseteq \writable{\mem} \\
+      (g, \mathbf{w}): \se_8(g) \concat \concatall{\se^\#_8(\mathbf{w})} = \mem_{o \dots+ 112} &\when \N_{o \dots+ 112} \subseteq \writable{\mem} \\
       %(\de_8(\memr_{o\dots+8}), [\de_4(\memr_{o+8+8x\dots+8}) \mid x \orderedin \N_{13}]) &\when \N_{o \dots+ 60} \subset \writable_\mem} \\
       (\error, \error) &\otherwise
     \end{cases} \\
     \using (c, i', g', \mathbf{w}', \mathbf{u}') &= \Psi(\mathbf{m}[n]_\mathbf{p}, \mathbf{m}[n]_i, g, \mathbf{w}, \mathbf{m}[n]_\mathbf{u})\\
-    \using \mem^* &= \mem \exc \mem^*_{o \dots+ 112} = \se_8(g') \concat \joined{\se_8^\#(\mathbf{w}')}\\
+    \using \mem^* &= \mem \exc \mem^*_{o \dots+ 112} = \se_8(g') \concat \concatall{\se_8^\#(\mathbf{w}')}\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*[n]_\mathbf{u} = \mathbf{u}'\\
       \mathbf{m}^*[n]_i = \begin{cases}
-        i' + 1 &\when c \in \{ \host \} \times \pvmreg\\
+        i' + 1 &\when c \in \set{ \host } \times \pvmreg\\
         i' &\otherwise
       \end{cases}
     \end{cases}\\
@@ -687,15 +687,15 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using [m, a, v, o, n] &= \registers_{7 \dots+ 5} \\
     \using \mathbf{a} &= \begin{cases}
-      \de_4(\memory_{a\dots+4\corecount}) &\when \mathbb{N}_{a \dots+ 4\corecount} \subseteq \readable{\memory} \\
+      \de_4(\memory_{a\dots+4\corecount}) &\when \N_{a \dots+ 4\corecount} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{z} &= \begin{cases}
-      \left\{ (s \mapsto g) \ \where \se_4(s) \concat \se_8(g) = \memory_{o+12i\dots+12} \mid i \in \N_n \right\} &\when \mathbb{N}_{o \dots+ 12n} \subseteq \readable{\memory} \\
+      \set{\build{\kv{s}{g} \ \where \se_4(s) \concat \se_8(g) = \memory_{o+12i\dots+12}}{i \in \N_n}} &\when \N_{o \dots+ 12n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &= \begin{cases}
-      (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\when \{\mathbf{z}, \mathbf{a}\} \ni \error \\
+      (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
       (\continue, \mathtt{HUH}, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\otherwhen \mathbf{x}_s \ne (\mathbf{x}_\mathbf{u})_m\\
       (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_{(m, \mathbf{a}, v, \mathbf{z})}) &\otherwhen (m, v) \not\in (\serviceid, \serviceid) \\
       (\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, \mathbf{z}}) &\otherwise \\
@@ -709,7 +709,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using [c, o, a] &= \registers_{7\dots+3} \\
     \using \mathbf{q} &= \begin{cases}
-      \left[\memory_{o + 32i \dots+ 32} \mid i \orderedin \N_\mathsf{Q}\right] &\when \mathbb{N}_{o \dots+ 32\mathsf{Q}} \subseteq \readable{\memory} \\
+      \left[\memory_{o + 32i \dots+ 32} \mid i \orderedin \N_\mathsf{Q}\right] &\when \N_{o \dots+ 32\mathsf{Q}} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{q}[c], (\mathbf{x}'_\mathbf{u})_\mathbf{a}[c]) &= \begin{cases}
@@ -727,7 +727,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using o &= \registers_7 \\
     \using \mathbf{v} &= \begin{cases}
-      \left[\memory_{o + 336i \dots+ 336} \mid i \orderedin \valindex\right] &\when \mathbb{N}_{o \dots+ 336\valcount} \subseteq \readable{\memory} \\
+      \left[\memory_{o + 336i \dots+ 336} \mid i \orderedin \valindex\right] &\when \N_{o \dots+ 336\valcount} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     (\execst', \registers'_7, (\mathbf{x}'_\mathbf{u})_\mathbf{i}) &= \begin{cases}
@@ -756,8 +756,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \memory_{o\dots+32} &\when \N_{o\dots+32} \subseteq \readable{\memory} \wedge l \in \Nbits{32} \\
       \error &\otherwise
     \end{cases}\\
-    \using \mathbf{a} \in \serviceaccount \cup \{\error\} &= \begin{cases}
-      \tup{c, \is{\mathbf{s}}{\{\}}, \is{\mathbf{l}}{\{ (c, l) \mapsto [] \}}, \is{b}{\mathbf{a}_t}, g, m, \is{\mathbf{p}}{\{\}}, \is{r}{t}, f, \is{a}{0}, \is{p}{\mathbf{x}_s}} &\when c \ne \error \\
+    \using \mathbf{a} \in \serviceaccount \cup \set{\error} &= \begin{cases}
+      \tup{c, \is{\mathbf{s}}{\emset}, \is{\mathbf{l}}{\set{\kv{\tup{c, l}}{\sq{}}}}, \is{b}{\mathbf{a}_\sa¬minbalance}, g, m, \is{\mathbf{p}}{\emset}, \is{r}{t}, f, \is{a}{0}, \is{p}{\mathbf{x}_s}} &\when c \ne \error \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{s} &= \mathbf{x}_\mathbf{s} \exc \mathbf{s}_b = (\mathbf{x}_\mathbf{s})_b - \mathbf{a}_t \\
@@ -767,7 +767,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       (\continue, \mathtt{CASH}, \mathbf{x}_i, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen \mathbf{s}_b < (\mathbf{x}_\mathbf{s})_t \\
       (\continue, \mathbf{x}_i, i^*, (\mathbf{x}_\mathbf{u})_\mathbf{d} \cup \mathbf{d}) &\otherwise \\
       \multicolumn{2}{l}{\quad \where i^* = \text{check}(2^8 + (\mathbf{x}_i - 2^8 + 42) \bmod (2^{32} - 2^9))}\\
-      \multicolumn{2}{l}{\quad \also \mathbf{d} = \{ \mathbf{x}_i \mapsto \mathbf{a}, \mathbf{x}_s \mapsto \mathbf{s} \}}\\
+      \multicolumn{2}{l}{\quad \also \mathbf{d} = \set{ \kv{\mathbf{x}_i}{\mathbf{a}}, \kv{\mathbf{x}_s}{\mathbf{s}} }}\\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -795,7 +795,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using [d, a, l, o] &= \registers_{7 \dots+ 4},  \\
     \using \mathbf{d} &= (\mathbf{x}_\mathbf{u})_\mathbf{d}\\
-    \using \mathbf{t} \in \mathbb{T} \cup \{\error\} &= \begin{cases}
+    \using \mathbf{t} \in \mathbb{T} \cup \set{\error} &= \begin{cases}
       \tup{\is{s}{\mathbf{x}_s}, d, a, \is{m}{\memory_{o\dots+\mathsf{W}_T}}, \is{g}{l}} &\when \N_{o\dots+\mathsf{W}_T} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
@@ -816,7 +816,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using [d, o] &= \registers_{7, 8} \\
     \using h &= \begin{cases}
-      \memory_{o\dots+32} &\when \mathbb{N}_{o \dots+ 32} \subseteq \readable{\memory} \\
+      \memory_{o\dots+32} &\when \N_{o \dots+ 32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{d} &= \begin{cases}
@@ -829,7 +829,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       (\panic, \registers_7, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\when h = \error \\
       (\continue, \mathtt{WHO}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen \mathbf{d} = \error \vee \mathbf{d}_c \ne \se_{32}(\mathbf{x}_s) \\
       (\continue, \mathtt{HUH}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwhen \mathbf{d}_i \ne 2 \vee (h, l) \not\in \mathbf{d}_\mathbf{l} \\
-      (\continue, \mathtt{OK}, (\mathbf{x}_\mathbf{u})_\mathbf{d} \setminus \{d\} \cup \{ \mathbf{x}_s \mapsto \mathbf{s}' \}) &\otherwhen \mathbf{d}_\mathbf{l}[h, l] = [x, y], y < t - \mathsf{D} \\
+      (\continue, \mathtt{OK}, (\mathbf{x}_\mathbf{u})_\mathbf{d} \setminus \set{d} \cup \set{ \kv{\mathbf{x}_s}{\mathbf{s}'} }) &\otherwhen \mathbf{d}_\mathbf{l}[h, l] = [x, y], y < t - \mathsf{D} \\
       (\continue, \mathtt{HUH}, (\mathbf{x}_\mathbf{u})_\mathbf{d}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
@@ -841,7 +841,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using [o, z] &= \registers_{7, 8} \\
     \using h &= \begin{cases}
-      \memory_{o\dots+32} &\when \mathbb{N}_{o \dots+ 32} \subseteq \readable{\memory} \\
+      \memory_{o\dots+32} &\when \N_{o \dots+ 32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
@@ -865,7 +865,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using [o, z] &= \registers_{7, 8} \\
     \using h &= \begin{cases}
-      \memory_{o\dots+32} &\when \mathbb{N}_{o \dots+ 32} \subseteq \readable{\memory} \\
+      \memory_{o\dots+32} &\when \N_{o \dots+ 32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
@@ -889,17 +889,17 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using [o, z] &= \registers_{7, 8} \\
     \using h &= \begin{cases}
-      \memory_{o\dots+32} &\when \mathbb{N}_{o \dots+ 32} \subseteq \readable{\memory} \\
+      \memory_{o\dots+32} &\when \N_{o \dots+ 32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
       \mathbf{x}_\mathbf{s} \text{ except:} &\\
       \quad \left.
         \begin{aligned}
-          \Fkeys{\mathbf{a}_\mathbf{l}} &= \Fkeys{(\mathbf{x}_\mathbf{s})_\mathbf{l}} \setminus \{\tup{h, z}\}\ ,\\[2pt]
-          \Fkeys{\mathbf{a}_\mathbf{p}} &= \Fkeys{(\mathbf{x}_\mathbf{s})_\mathbf{p}} \setminus \{h\}
+          \Fkeys{\mathbf{a}_\mathbf{l}} &= \Fkeys{(\mathbf{x}_\mathbf{s})_\mathbf{l}} \setminus \set{\tup{h, z}}\ ,\\[2pt]
+          \Fkeys{\mathbf{a}_\mathbf{p}} &= \Fkeys{(\mathbf{x}_\mathbf{s})_\mathbf{p}} \setminus \set{h}
         \end{aligned}
-      \ \right\} &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] \in \{[], [x, y]\},\ y < t - \mathsf{D} \\
+      \ \right\} &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] \in \set{\sq{}, \sq{x, y}},\ y < t - \mathsf{D} \\
       \quad \mathbf{a}_\mathbf{l}[h, z] = [x, t] &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] = [x] \\
       \quad \mathbf{a}_\mathbf{l}[h, z] = [w, t] &\when (\mathbf{x}_\mathbf{s})_\mathbf{l}[h, z] = [x, y, w],\ y < t - \mathsf{D} \\
       \error &\otherwise\\
@@ -918,7 +918,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using o &= \registers_7 \\
     \using h &= \begin{cases}
-      \memory_{o\dots+32} &\when \mathbb{N}_{o \dots+ 32} \subseteq \readable{\memory} \\
+      \memory_{o\dots+32} &\when \N_{o \dots+ 32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     (\execst', \registers'_7, \mathbf{x}'_y) &\equiv \begin{cases}
@@ -951,7 +951,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       (\continue, \mathtt{WHO}, \mathbf{x}_\mathbf{p}) &\otherwhen \mathbf{a} = \none \\
       (\continue, \mathtt{HUH}, \mathbf{x}_\mathbf{p}) &\otherwhen \mathbf{a}_\mathbf{l}[\tup{\blake(\mathbf{i}), z}] \ne \sq{} \\
       (\continue, \mathtt{HUH}, \mathbf{x}_\mathbf{p}) &\otherwhen \tup{s^*, \mathbf{i}} \in \mathbf{x}_\mathbf{p} \\
-      (\continue, \mathtt{OK}, \mathbf{x}_\mathbf{p} \cup \{\tup{s^*, \mathbf{i}}\}) &\otherwise \\
+      (\continue, \mathtt{OK}, \mathbf{x}_\mathbf{p} \cup \set{\tup{s^*, \mathbf{i}}}) &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \bottomrule
