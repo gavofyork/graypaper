@@ -129,7 +129,11 @@
 \newcommand*{\sq}[1]{\left[#1\right]}
 \newcommand*{\seq}[1]{\left\lsem#1\right\rsem}
 \newcommand*{\set}[1]{\left\{\,#1\,\right\}}
+\newcommand*{\emset}{\left\{\right\}}
+\newcommand*{\protoset}[1]{\left\{\mkern-5mu\left[\,#1\,\right]\mkern-5mu\right\}}
 \newcommand*{\build}[2]{#1 \with #2}
+\newcommand*{\kv}[2]{\tup{#1 \mapsto #2}}
+\newcommand*{\keyval}[2]{\tuple{#1 \to #2}}
 
 % Typical operations.
 \newcommand*{\floor}[1]{\left\lfloor#1\right\rfloor}
@@ -138,11 +142,17 @@
 \newcommand*{\fnfrac}[2]{\left\lfloor\nicefrac{#1}{#2}\right\rfloor}
 \newcommand*{\ffrac}[2]{\left\lfloor\frac{#1}{#2}\right\rfloor}
 \newcommand*{\transpose}{{}^\text{T}}
-\newcommand*{\joined}{\wideparen}
 \newcommand*{\ang}[1]{\left\langle#1\right\rangle}
 \newcommand*{\sub}[1]{_{#1}}
 \newcommand*{\subb}[1]{\left[#1\right]}
 \newcommand*{\cyclic}[1]{{#1}^\circlearrowleft}
+\newcommand*{\bracegroup}[1]{\left\{ #1 \right.}
+\newcommand*{\abracegroup}[2][]{\bracegroup{#1\begin{aligned}#2\end{aligned}}}
+\newcommand*{\bracegroupboth}[1]{\left\{ #1 \right\}}
+\newcommand*{\abracegroupboth}[2][]{\bracegroupboth{#1\begin{aligned}#2\end{aligned}}}
+\newcommand*{\bool}{{\set{\bot, \top}}}
+\newcommand*{\concatall}[1]{\wideparen{#1}}
+\newcommand*{\deffunc}[1]{\abracegroup[\,]{#1\vphantom{x'_i}}}
 
 % Bits of text
 \newcommand*{\suchthat}{\text{ such that }}
@@ -182,7 +192,6 @@
 \newcommand*{\sext}{\mathcal{X}}
 \newcommand*{\banderout}{\mathcal{Y}}
 \newcommand*{\tosigned}{\mathcal{Z}}
-\newcommand*{\powset}[2][{}]{\wp\ang{#2}_{#1}} % TODO: Make it take a parameter.
 
 % F prefix implies these are "proper" latex functions, not just simple names.
 \newcommand*{\Fmmrappend}[1]{\mmrappend\left(#1\right)}
@@ -404,9 +413,17 @@
 % Derived fields
 \newcommand*{\sa¬items}{i}
 \newcommand*{\sa¬octets}{o}
-\newcommand*{\sa¬minbalance}{f}
+\newcommand*{\sa¬minbalance}{t}
 \newcommand*{\sa¬metadata}{\mathbf{m}}
 \newcommand*{\sa¬code}{\mathbf{c}}
+
+% Dields of deferred transfer.
+%\newcommand*{\defxfer}{\mathbb{T}}
+\newcommand*{\dx¬source}{s}
+\newcommand*{\dx¬dest}{d}
+\newcommand*{\dx¬amount}{a}
+\newcommand*{\dx¬memo}{m}
+\newcommand*{\dx¬gas}{g}
 
 % Derived fields of validator keys.
 %\newcommand*{\valkey}{\mathbb{K}}

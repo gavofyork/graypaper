@@ -8,25 +8,24 @@ The serialization of state primarily involves placing all the various components
 
 We define the state-key constructor functions $C$ as:
 \begin{equation}
-  C\colon\left\{\begin{aligned}
-    \N_{2^8} \cup (\N_{2^8}, \serviceid) \cup \tup{\serviceid, \blob} &\to \blob_{31} \\
-    i \in \N_{2^8} &\mapsto [i, 0, 0, \dots] \\
+  C\colon\abracegroup{
+    \Nbits{8} \cup (\Nbits{8}, \serviceid) \cup \tup{\serviceid, \blob} &\to \blob_{31} \\
+    i \in \Nbits{8} &\mapsto [i, 0, 0, \dots] \\
     (i, s \in \serviceid) &\mapsto [i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots]\ \where n = \se_4(s) \\
     (s, h) &\mapsto [n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}]\ \where n = \se_4(s), a = \blake(h)_{0\dots 27}
-  \end{aligned}
-  \right.
+  }
 \end{equation}
 
 The state serialization is then defined as the dictionary built from the amalgamation of each of the components. Cryptographic hashing ensures that there will be no duplicate state-keys given that there are no duplicate inputs to $C$. Formally, we define $T$ which transforms some state $\thestate$ into its serialized form:
 \begin{equation}
-  T(\thestate) \equiv \left\{\begin{aligned}
+  T(\thestate) \equiv \abracegroup{
     &&C(1) &\mapsto \se([\var{x}\mid x\orderedin \authpool]) \;, \\
     &&C(2) &\mapsto \se(\authqueue) \;, \\
     &&C(3) &\mapsto \se(\var{[(h, b, s, \var{\mathbf{p}})\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \Fmmrencode{\beefybelt}) \;, \\
-    &&C(4) &\mapsto \se\left(\tup{\pendingset, \epochroot, \left\{\,\begin{aligned}
+    &&C(4) &\mapsto \se\left(\tup{\pendingset, \epochroot, \abracegroupboth{
       0\ &\when \sealtickets \in \seq{\safroleticket}_\epochlen\\
       1\ &\when \sealtickets \in \seq{\bskey}_\epochlen\\
-    \end{aligned}\right\}, \sealtickets,
+    }, \sealtickets,
     \var{\ticketaccumulator}}\right) \;, \\
     &&C(5) &\mapsto \se(\var{\orderby{x}{x \in \goodset}}, \var{\orderby{x}{x \in \badset}}, \var{\orderby{x}{x \in \wonkyset}}, \var{\orderby{x}{x \in \offenders}}) \;, \\
     &&C(6) &\mapsto \se(\entropy) \;, \\
@@ -44,7 +43,7 @@ The state serialization is then defined as the dictionary built from the amalgam
     \forall (s \mapsto \mathbf{a}) \in \accounts, (\mathbf{k} \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \concat \mathbf{k}) &\mapsto \mathbf{v} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \accounts, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \se_4(2^{32}-2) \concat h) &\mapsto \mathbf{p} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \accounts, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat h) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
-  \end{aligned}\right.
+  }
 \end{equation}
 
 Note that most rows describe a single mapping between a key derived from a natural and the serialization of a state component. However, the final four rows each define sets of mappings since these items act over all service accounts and in the case of the final three rows, the keys of a nested dictionary with the service.
@@ -72,22 +71,22 @@ In the case of a regular leaf, the remaining 6 bits of the first byte are zeroed
 
 Formally, we define the encoding functions $B$ and $L$:
 \begin{align}
-  B&\colon\left\{\begin{aligned}
+  B&\colon\abracegroup{
     (\hash, \hash) &\to \bitstring_{512}\\
     (l, r) &\mapsto [0] \concat \text{bits}(l)_{1\dots} \concat \text{bits}(r)
-  \end{aligned}\right.\\
-  L&\colon\left\{\begin{aligned}
+  }\\
+  L&\colon\abracegroup{
     (\blob_{31}, \blob) &\to \bitstring_{512}\\
     (k, v) &\mapsto \begin{cases}
       [1, 0] \concat \text{bits}(\se_1(\len{v}))_{2\dots} \concat \text{bits}(k) \concat \text{bits}(v) \concat [0, 0, \dots] &\when \len{v} \le 32\\
       [1, 1, 0, 0, 0, 0, 0, 0] \concat \text{bits}(k) \concat \text{bits}(\blake(v)) &\otherwise
     \end{cases}
-  \end{aligned}\right.
+  }
 \end{align}
 
 We may then define the basic Merklization function $\merklizestate$ as:
 \begin{align}
-  \merklizestate(\thestate) &\equiv M(\{ (\text{bits}(k) \mapsto \tup{k, v}) \mid (k \mapsto v) \in T(\thestate) \})\\
+  \merklizestate(\thestate) &\equiv M(\set{ (\text{bits}(k) \mapsto \tup{k, v}) \mid (k \mapsto v) \in T(\thestate) })\\
   M(d: \dict{\bitstring}{(\blob_{31}, \blob)}) &\equiv \begin{cases}
     \zerohash &\when \len{d} = 0\\
     \blake(\text{bits}^{-1}(L(k, v))) &\when \Fvalues{d} = \set{ \tup{k, v} }\\
@@ -107,21 +106,21 @@ The Merkle tree is a cryptographic data structure yielding a hash commitment to 
 
 The underlying function for our Merkle trees is the \emph{node} function $N$, which accepts some sequence of blobs of some length $n$ and provides either such a blob back or a hash:
 \begin{equation}
-  N\colon\left\{\begin{aligned}
+  N\colon\abracegroup{
     (\seq{\blob_n}, \blob \to \hash) &\to \blob_n \cup \hash \\
     (\mathbf{v}, H) &\mapsto \begin{cases}
       \zerohash &\when \len{\mathbf{v}} = 0 \\
       \mathbf{v}_0 &\when \len{\mathbf{v}} = 1 \\
       H(\token{\$node} \concat N(\mathbf{v}_{\dots\ceil{\nicefrac{\len{\mathbf{v}}}{2}}}, H) \concat N(\mathbf{v}_{\ceil{\nicefrac{\len{\mathbf{v}}}{2}}\dots}, H)) &\otherwise
     \end{cases}
-  \end{aligned}\right.\label{eq:merklenode}
+  }\label{eq:merklenode}
 \end{equation}
 
 The astute reader will realize that if our $\blob_n$ happens to be equivalent $\hash$ then this function will always evaluate into $\hash$. That said, for it to be secure care must be taken to ensure there is no possibility of preimage collision. For this purpose we include the hash prefix $\token{\$node}$ to minimize the chance of this; simply ensure any items are hashed with a different prefix and the system can be considered secure.
 
 We also define the \emph{trace} function $T$, which returns each opposite node from top to bottom as the tree is navigated to arrive at some leaf corresponding to the item of a given index into the sequence. It is useful in creating justifications of data inclusion.
 \begin{equation}
-  T\colon\left\{\begin{aligned}
+  T\colon\abracegroup{
     (\seq{\blob_n}, \N_{\len{\mathbf{v}}}, \blob \to \hash)\ &\to \seq{\blob_n \cup \hash}\\
     (\mathbf{v}, i, H) &\mapsto \begin{cases}
       [N(P^\bot(\mathbf{v}, i), H)] \concat T(P^\top(\mathbf{v}, i), i - P_I(\mathbf{v}, i), H) &\when \len{\mathbf{v}} > 1\\
@@ -139,7 +138,7 @@ We also define the \emph{trace} function $T$, which returns each opposite node f
         \end{aligned}
       }
     \end{cases}\\
-  \end{aligned}\right.
+  }
 \end{equation}
 
 From this we define our other Merklization functions.
@@ -147,13 +146,14 @@ From this we define our other Merklization functions.
 \subsubsection{Well-Balanced Tree}
 We define the well-balanced binary Merkle function as $\merklizewb$:
 \begin{equation}
-    \merklizewb\colon \left\{\begin{aligned}\label{eq:simplemerkleroot}
+    \merklizewb\colon \abracegroup{
+      \label{eq:simplemerkleroot}
       (\seq{\blob}, \blob \to \hash) &\to \hash \\
       (\mathbf{v}, H) &\mapsto \begin{cases}
         H(\mathbf{v}_0) &\when \len{\mathbf{v}} = 1 \\
         N(\mathbf{v}, H) &\otherwise
       \end{cases} \\
-    \end{aligned}\right.
+    }
 \end{equation}
 
 This is suitable for creating proofs on data which is not much greater than 32 octets in length since it avoids hashing each item in the sequence. For sequences with larger data items, it is better to hash them beforehand to ensure proof-size is minimal since each proof will generally contain a data item.
@@ -164,20 +164,20 @@ Note: In the case that no hash function argument $H$ is supplied, we may assume 
 We define the constant-depth binary Merkle function as $\merklizecd$. We define two corresponding functions for working with subtree pages, $\merklejustsubpath_x$ and $\merklesubtreepage_x$. The latter provides a single page of leaves, themselves hashed, prefixed data. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices.
 \begin{align}
   \label{eq:constantdepthmerkleroot}
-  \merklizecd&\colon \left\{\begin{aligned}
+  \merklizecd&\colon \abracegroup{
     (\seq{\blob}, \blob \to \hash) &\to \hash\\
     (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}, H), H)
-  \end{aligned}\right.\\
+  }\\
   \label{eq:constantdepthsubtreemerklejust}
-  \merklejustsubpath_x&\colon \left\{\begin{aligned}
+  \merklejustsubpath_x&\colon \abracegroup{
     (\seq{\blob}, \N_{\len{\mathbf{v}}}, \blob \to \hash) &\to \seq{\hash}\\
     (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), 2^xi, H)_{\dots\max(0, \ceil{\log_2(\max(1, \len{\mathbf{v}})) - x})}
-  \end{aligned}\right.\\
+  }\\
   \label{eq:constantdepthsubtreemerkleleafpage}
-  \merklesubtreepage_x&\colon \left\{\begin{aligned}
+  \merklesubtreepage_x&\colon \abracegroup{
     (\seq{\blob}, \N_{\len{\mathbf{v}}}, \blob \to \hash) &\to \seq{\hash}\\
     (\mathbf{v}, i, H) &\mapsto [H(\token{\$leaf} \concat l) \mid l \orderedin \mathbf{v}_{2^xi \dots \min(2^xi+2^x, \len{\mathbf{v}})}]
-  \end{aligned}\right.
+  }
 \end{align}
 
 For the latter justification $\merklejustsubpath_x$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\merklesubtreepage_x$.
@@ -186,16 +186,16 @@ As above, we may assume a default value for $H$ of the Blake 2b hash function, $
 
 For justifications and Merkle root calculations, a constancy preprocessor function $C$ is applied which hashes all data items with a fixed prefix ``leaf'' and then pads the overall size to the next power of two with the zero hash $\zerohash$:
 \begin{equation}
-  C\colon\left\{\begin{aligned}
+  C\colon\abracegroup{
     (\seq{\blob}, \blob \to \hash) &\to \seq{\hash}\\
-    (\mathbf{v}, H) &\mapsto \mathbf{v}' \ \where \left\{\; \begin{aligned}
+    (\mathbf{v}, H) &\mapsto \mathbf{v}' \ \where \abracegroup[\;]{
       \len{\mathbf{v}}| &= 2^{\ceil{\log_2(\max(1, \len{\mathbf{v}}))}}\\
       \mathbf{v}'_i &= \begin{cases}
         H(\token{\$leaf} \concat \mathbf{v}_i) &\when i < \len{\mathbf{v}}\\
         \zerohash &\otherwise \\
       \end{cases}
-    \end{aligned}\right.
-  \end{aligned}\right.
+    }
+  }
 \end{equation}
 
 \subsection{Merkle Mountain Ranges and Belts}\label{sec:mmr}
@@ -205,8 +205,6 @@ The Merkle Mountain Range (\textsc{mmr}) is an append-only cryptographic data st
 We define a Merkle Mountain Range as being within the set $\seq{\optional{\hash}}$, a sequence of peaks, each peak the root of a Merkle tree containing $2^i$ items where $i$ is the index in the sequence. Since we support set sizes which are not always powers-of-two-minus-one, some peaks may be empty, $\none$ rather than a Merkle root.
 
 Since the sequence of hashes is somewhat unwieldy as a commitment, Merkle Mountain Ranges are themselves generally hashed before being published. Hashing them removes the possibility of further appending so the range itself is kept on the system which needs to generate future proofs.
-
-\newcommand*{\deffunc}[1]{\left\{\,\begin{aligned}#1\vphantom{x'_i}\end{aligned}\right.}
 
 We define the \textsc{mmb} append function $\mmrappend$ as:
 \begin{equation}
@@ -251,10 +249,3 @@ We define the \textsc{mmr} super-peak function as $\mmrsuperpeak$:
     \end{cases}
   }
 \end{equation}
-
-%\begin{equation}
-%  \left\{\zerohash\right.
-%\end{equation}
-%\begin{equation}
-%  \left\{\,\begin{aligned} & (\mathbb{H}) \\ & \begin{cases}x&y\end{cases} \end{aligned}\right.
-%\end{equation}

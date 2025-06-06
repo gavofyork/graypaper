@@ -156,7 +156,7 @@ The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for 
   \to
   \tuple{\,
     \begin{aligned}
-      &\{\halt, \panic, \oog\} \cup \{\fault,\host\} \times \pvmreg,\\
+      &\set{\halt, \panic, \oog} \cup \set{\fault,\host} \times \pvmreg,\\
       &\pvmreg,\ \ \signedgas,\ \ \seq{\pvmreg}_{13},\ \ \ram
     \end{aligned}
   \,}
@@ -165,7 +165,7 @@ The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for 
 We refer to the time-proportional computational steps as \emph{gas} (much like in the \emph{YP}) and limit it to a 64-bit quantity. We may use either $\gas$ or $\signedgas$ to bound it, the first as a prior argument since it is known to be positive, the latter as a result where a negative value indicates an attempt to execute beyond the gas limit. Within the context of the \textsc{pvm}, $\gascounter \in \gas$ is typically used to denote gas.
 \begin{equation}\label{eq:gasregentry}
   \signedgas \equiv \mathbb{Z}_{-2^{63}\dots2^{63}}\ ,\quad
-  \gas \equiv \mathbb{N}_{2^{64}}\ ,\quad
+  \gas \equiv \Nbits{64}\ ,\quad
   \pvmreg \equiv \Nbits{64}
 \end{equation}
 
@@ -175,15 +175,15 @@ The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as s
 \begin{align}\label{eq:pvmmemory}
   \ram &\equiv \tuple{
     \isa{\ram¬value}{\blob_{2^{32}}},
-    \isa{\ram¬access}{\seq{\{\text{W}, \text{R}, \none\}}_p}
+    \isa{\ram¬access}{\seq{\set{\text{W}, \text{R}, \none}}_p}
   }\,,\ p = \frac{2^{32}}{\mathsf{Z}_P}\\
   \mathsf{Z}_P &= 2^{12}
 \end{align}
 
 The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\mathsf{Z}_P = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\ram$ includes two components: a value $\ram¬value$ and access $\ram¬access$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \ram$ is typically used to denote \textsc{ram}.
 \begin{align}
-  \readable{\memory} &\equiv \{i \mid \memory_\ram¬access[\floor{\nicefrac{i}{\mathsf{Z}_P}}] \ne \none \} \\
-  \writable{\memory} &\equiv \{i \mid \memory_\ram¬access[\floor{\nicefrac{i}{\mathsf{Z}_P}}] = \text{W} \}
+  \readable{\memory} &\equiv \set{i \mid \memory_\ram¬access[\floor{\nicefrac{i}{\mathsf{Z}_P}}] \ne \none } \\
+  \writable{\memory} &\equiv \set{i \mid \memory_\ram¬access[\floor{\nicefrac{i}{\mathsf{Z}_P}}] = \text{W} }
 \end{align}
 
 We define two sets of indices for the \textsc{ram} $\memory$: $\readable{\memory}$ is the set of indices which may be read from; and $\writable{\memory}$ is the set of indices which may be written to.

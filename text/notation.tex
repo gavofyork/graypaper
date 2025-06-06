@@ -34,24 +34,24 @@ Thus, \eg $\subifnone(\none, 1, \none, 2) = 1$ and $\subifnone(\none, \none) = \
 
 \subsection{Sets}\label{sec:sets}
 
-Given some set $\mathbf{s}$, its power set and cardinality are denoted as the usual $\powset{\mathbf{s}}$ and $\len{\mathbf{s}}$. When forming a power set, we may use a numeric subscript in order to restrict the resultant expansion to a particular cardinality. \Eg $\powset[2]{\{1, 2, 3\}} = \{ \{1, 2\}, \{1, 3\}, \{2, 3\} \}$.
+Given some set $\mathbf{s}$, its power set and cardinality are denoted as $\protoset{s}$ and $\len{\mathbf{s}}$. When forming a power set, we may use a numeric subscript in order to restrict the resultant expansion to a particular cardinality. \Eg $\protoset{\set{1, 2, 3}}_2 = \set{ \set{1, 2}, \set{1, 3}, \set{2, 3} }$.
 
-Sets may be operated on with scalars, in which case the result is a set with the operation applied to each element, \eg $\{1, 2, 3\} + 3 = \{4, 5, 6\}$. Functions may also be applied to all members of a set to yield a new set, but for clarity we denote this with a $\#$ superscript, \eg $f^{\#}(\{1, 2\}) \equiv \{f(1), f(2)\}$.
+Sets may be operated on with scalars, in which case the result is a set with the operation applied to each element, \eg $\set{1, 2, 3} + 3 = \set{4, 5, 6}$. Functions may also be applied to all members of a set to yield a new set, but for clarity we denote this with a $\#$ superscript, \eg $f^{\#}(\set{1, 2}) \equiv \set{f(1), f(2)}$.
 
 We denote set-disjointness with the relation $\disjoint$. Formally:
 \begin{equation*}
   A \cap B = \none \Longleftrightarrow A \disjoint B
 \end{equation*}
 
-We commonly use $\none$ to indicate that some term is validly left without a specific value. Its cardinality is defined as zero. We define the operation $\optional{}$ such that $\optional{A} \equiv A \cup \{\none\}$ indicating the same set but with the addition of the $\none$ element.
+We commonly use $\none$ to indicate that some term is validly left without a specific value. Its cardinality is defined as zero. We define the operation $\optional{}$ such that $\optional{A} \equiv A \cup \set{\none}$ indicating the same set but with the addition of the $\none$ element.
 
 The term $\error$ is utilized to indicate the unexpected failure of an operation or that a value is invalid or unexpected. (We try to avoid the use of the more conventional $\bot$ here to avoid confusion with Boolean false, which may be interpreted as some successful result in some contexts.)
 
 \subsection{Numbers}\label{sec:numbers}
 
-$\N$ denotes the set of naturals including zero whereas $\N_n$ implies a restriction on that set to values less than $n$. Formally, $\N = \{0, 1, \dots \}$ and $\N_n = \{ x \mid x \in \N, x < n \}$.
+$\N$ denotes the set of naturals including zero whereas $\N_n$ implies a restriction on that set to values less than $n$. Formally, $\N = \set{0, 1, \dots}$ and $\N_n = \set{\build{x}{x \in \N, x < n}}$.
 
-$\mathbb{Z}$ denotes the set of integers. We denote $\mathbb{Z}_{a \dots b}$ to be the set of integers within the interval $[a, b)$. Formally, $\mathbb{Z}_{a \dots b} = \{ x \mid x \in \mathbb{Z}, a \le x < b \}$. \Eg $\mathbb{Z}_{2 \dots 5} = \{ 2, 3, 4 \}$. We denote the offset/length form of this set as $\mathbb{Z}_{a \dots +b}$, a short form of $\mathbb{Z}_{a \dots a+b}$.
+$\mathbb{Z}$ denotes the set of integers. We denote $\mathbb{Z}_{a \dots b}$ to be the set of integers within the interval $[a, b)$. Formally, $\mathbb{Z}_{a \dots b} = \set{\build{x}{x \in \mathbb{Z}, a \le x < b}}$. \Eg $\mathbb{Z}_{2 \dots 5} = \set{2, 3, 4}$. We denote the offset/length form of this set as $\mathbb{Z}_{a \dots +b}$, a short form of $\mathbb{Z}_{a \dots a+b}$.
 
 It can sometimes be useful to represent lengths of sequences and yet limit their size, especially when dealing with sequences of octets which must be stored practically. Typically, these lengths can be defined as the set $\Nbits{32}$. To improve clarity, we denote $\bloblength$ as the set of lengths of octet sequences and is equivalent to $\Nbits{32}$.
 
@@ -59,39 +59,39 @@ We denote the $\rem$ operator as the modulo operator, \eg $5 \rem 3 = 2$. Furthe
 
 \subsection{Dictionaries}\label{sec:dictionaries}
 
-A \emph{dictionary} is a possibly partial mapping from some domain into some co-domain in much the same manner as a regular function. Unlike functions however, with dictionaries the total set of pairings are necessarily enumerable, and we represent them in some data structure as the set of all $(key \mapsto value)$ pairs. (In such data-defined mappings, it is common to name the values within the domain a \emph{key} and the values within the co-domain a \emph{value}, hence the naming.)
+A \emph{dictionary} is a possibly partial mapping from some domain into some co-domain in much the same manner as a regular function. Unlike functions however, with dictionaries the total set of pairings are necessarily enumerable, and we represent them in some data structure as the set of all $\kv{key}{value}$ pairs. (In such data-defined mappings, it is common to name the values within the domain a \emph{key} and the values within the co-domain a \emph{value}, hence the naming.)
 
-Thus, we define the formalism $\dict{\mathrm{K}}{\mathrm{V}}$ to denote a dictionary which maps from the domain $\mathrm{K}$ to the range $\mathrm{V}$. We define a dictionary as a member of the set of all dictionaries $\dictionary$ and a set of pairs $p = (k \mapsto v)$:
-\begin{align}
-  &\dictionary \subset \big \{ \{ (k \mapsto v) \} \big \}
-\end{align}
+Thus, we define the formalism $\dict{\mathrm{K}}{\mathrm{V}}$ to denote a dictionary which maps from the domain $\mathrm{K}$ to the range $\mathrm{V}$. It is a subset of the power set of pairs $\tuple{K, V}$:
+\begin{equation}
+  \dict{\mathrm{K}}{\mathrm{V}} \subset \protoset{\tuple{\mathrm{K}, \mathrm{V}}}
+\end{equation}
 
-A dictionary's members must associate at most one unique value for any key $k$:
+The subset is caused by a constraint that a dictionary's members must associate at most one unique value for any given key $k$:
+\begin{equation}
+  \forall \mathbf{d} \in\ \dictionary : \forall \tup{k, v} \in \mathbf{d} : \exists! v' : \tup{k, v'} \in \mathbf{d}
+\end{equation}
+
+In the context of a dictionary we denote the pairs with a mapping notation:
 \begin{align}
-  \forall \mathbf{d} \in\ &\dictionary : \forall (k \mapsto v) \in \mathbf{d} : \exists! v' : (k \mapsto v') \in \mathbf{d}
+  &\dict{\mathrm{K}}{\mathrm{V}} \equiv \protoset{\keyval{\mathrm{K}}{\mathrm{V}}}\\
+  &\mathbf{p} \in \keyval{\mathrm{K}}{\mathrm{V}} \Leftrightarrow \exists k \in \mathrm{K}, v \in \mathrm{V}, \mathbf{p} \equiv \kv{k}{v}
 \end{align}
 
 This assertion allows us to unambiguously define the subscript and subtraction operator for a dictionary $d$:
 \begin{align}
   \forall \mathbf{d} \in \dictionary&: \mathbf{d}[k] \equiv \begin{cases}
-    v & \text{if}\ \exists k : (k \mapsto v) \in \mathbf{d} \\
+    v & \text{if}\ \exists k : \kv{k}{v} \in \mathbf{d} \\
     \none & \otherwise
   \end{cases}\\
-  \forall \mathbf{d} \in \dictionary&, \mathbf{s} \subseteq K: \mathbf{d} \setminus \mathbf{s} \equiv \{ (k \mapsto v): (k \mapsto v) \in \mathbf{d}, k \not \in \mathbf{s} \}
+  \forall \mathbf{d} \in \dictionary&, \mathbf{s} \subseteq K: \mathbf{d} \setminus \mathbf{s} \equiv \set{ \kv{k}{v}: \kv{k}{v} \in \mathbf{d}, k \not\in \mathbf{s} }
 \end{align}
 
 Note that when using a subscript, it is an implicit assertion that the key exists in the dictionary. Should the key not exist, the result is undefined and any block which relies on it must be considered invalid.
 
-It is typically useful to limit the sets from which the keys and values may be drawn. Formally, we define a typed dictionary $\dict{K}{V}$ as a set of pairs $p$ of the form $(k \mapsto v)$:
-\begin{align}
-  \dict{K}{V} &\subset \dictionary \\
-  \dict{K}{V} &\equiv \big \{ \{ (k \mapsto v) \mid k \in K \wedge v \in V \} \big \}
-\end{align}
-
 To denote the active domain (\ie set of keys) of a dictionary $\mathbf{d} \in \dict{K}{V}$, we use $\Fkeys{\mathbf{d}} \subseteq K$ and for the range (\ie set of values), $\Fvalues{\mathbf{d}} \subseteq V$. Formally:
 \begin{align}
-  \Fkeys{\mathbf{d} \in \dictionary} &\equiv \{\ k \mid \exists v : (k \mapsto v) \in \mathbf{d}\ \} \\
-  \Fvalues{\mathbf{d} \in \dictionary} &\equiv \{\ v \mid \exists k : (k \mapsto v) \in \mathbf{d}\ \}
+  \Fkeys{\mathbf{d} \in \dictionary} &\equiv \set{\build{k}{\exists v : \kv{k}{v} \in \mathbf{d}}} \\
+  \Fvalues{\mathbf{d} \in \dictionary} &\equiv \set{\build{v}{\exists k : \kv{k}{v} \in \mathbf{d}}}
 \end{align}
 
 Note that since the co-domain of $\values$ is a set, should different keys with equal values appear in the dictionary, the set will only contain one such value.
@@ -103,7 +103,7 @@ Dictionaries may be combined through the union operator $\cup$, which priorities
 
 \subsection{Tuples}\label{sec:tuples}
 
-Tuples are groups of values where each item may belong to a different set. They are denoted with parentheses, \eg the tuple $t$ of the naturals $3$ and $5$ is denoted $t = (3, 5)$, and it exists in the set of natural pairs sometimes denoted $\N \times \N$, but denoted in the present work as $(\N, \N)$.
+Tuples are groups of values where each item may belong to a different set. They are denoted with parentheses, \eg the tuple $t$ of the naturals $3$ and $5$ is denoted $t = \tup{3, 5}$, and it exists in the set of natural pairs sometimes denoted $\N \times \N$, but denoted in the present work as $\tuple{\N, \N}$.
 
 We have frequent need to refer to a specific item within a tuple value and as such find it convenient to declare a name for each item. \Eg we may denote a tuple with two named natural components $a$ and $b$ as $T = \tuple{\isa{a}{\N},\,\isa{b}{\N}}$. We would denote an item $t \in T$ through subscripting its name, thus for some $t = \tup{\is{a}{3},\,\is{b}{5}}$, $t_a = 3$ and $t_b = 5$.
 
@@ -111,34 +111,34 @@ We have frequent need to refer to a specific item within a tuple value and as su
 
 A sequence is a series of elements with particular ordering not dependent on their values. The set of sequences of elements all of which are drawn from some set $T$ is denoted $\seq{T}$, and it defines a partial mapping $\N \to T$. The set of sequences containing exactly $n$ elements each a member of the set $T$ may be denoted $\seq{T}_n$ and accordingly defines a complete mapping $\N_n \to T$. Similarly, sets of sequences of at most $n$ elements and at least $n$ elements may be denoted $\seq{T}_{:n}$ and $\seq{T}_{n:}$ respectively.
 
-Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}[i]$, or where unambiguous, $\mathbf{s}_i$. A range may be denoted using an ellipsis for example: $[0, 1, 2, 3]_{\dots2} = [0, 1]$ and $[0, 1, 2, 3]_{1\dots+2} = [1, 2]$. The length of such a sequence may be denoted $\len{\mathbf{s}}$.
+Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}[i]$, or where unambiguous, $\mathbf{s}_i$. A range may be denoted using an ellipsis for example: $\sq{0, 1, 2, 3}_{\dots2} = \sq{0, 1}$ and $\sq{0, 1, 2, 3}_{1\dots+2} = \sq{1, 2}$. The length of such a sequence may be denoted $\len{\mathbf{s}}$.
 
 We denote modulo subscription as $\cyclic{\mathbf{s}[i]} \equiv \mathbf{s}[\,i \rem \len{\mathbf{s}}\,]$. We denote the final element $x$ of a sequence $\mathbf{s} = \sq{..., x}$ through the function $\text{last}(\mathbf{s}) \equiv x$.
 
 \subsubsection{Construction}
-We may wish to define a sequence in terms of incremental subscripts of other values: $[\mathbf{x}_0, \mathbf{x}_1, \dots ]_n$ denotes a sequence of $n$ values beginning $\mathbf{x}_0$ continuing up to $\mathbf{x}_{n-1}$. Furthermore, we may also wish to define a sequence as elements each of which are a function of their index $i$; in this case we denote $[f(i) \mid i \orderedin \N_n] \equiv [f(0), f(1), \dots, f(n - 1)]$. Thus, when the ordering of elements matters we use $\orderedin$ rather than the unordered notation $\in$. The latter may also be written in short form $[f(i \orderedin \N_n)]$. This applies to any set which has an unambiguous ordering, particularly sequences, thus $[\,i^2 \mid i \orderedin [1, 2, 3]\,] = [1, 4, 9]$. Multiple sequences may be combined, thus $[\,i\cdot j \mid i \orderedin [1, 2, 3], j \orderedin [2, 3, 4]\,] = [2, 6, 12]$.
+We may wish to define a sequence in terms of incremental subscripts of other values: $\sq{\mathbf{x}_0, \mathbf{x}_1, \dots }_n$ denotes a sequence of $n$ values beginning $\mathbf{x}_0$ continuing up to $\mathbf{x}_{n-1}$. Furthermore, we may also wish to define a sequence as elements each of which are a function of their index $i$; in this case we denote $\sq{\build{f(i)}{i \orderedin \N_n}} \equiv \sq{f(0), f(1), \dots, f(n - 1)}$. Thus, when the ordering of elements matters we use $\orderedin$ rather than the unordered notation $\in$. The latter may also be written in short form $\sq{f(i \orderedin \N_n)}$. This applies to any set which has an unambiguous ordering, particularly sequences, thus $\sq{\build{i^2}{i \orderedin \sq{1, 2, 3}}} = \sq{1, 4, 9}$. Multiple sequences may be combined, thus $\sq{\build{i \cdot j}{i \orderedin \sq{1, 2, 3}, j \orderedin \sq{2, 3, 4}}} = \sq{2, 6, 12}$.
 
 As with sets, we use explicit notation $f^{\#}$ to denote a function mapping over all items of a sequence.
 
 Sequences may be constructed from sets or other sequences whose order should be ignored through sequence ordering notation $\orderby{i_k}{i \in X}$, which is defined to result in the set or sequence of its argument except that all elements $i$ are placed in ascending order of the corresponding value $i_k$.
 
-The key component may be elided in which case it is assumed to be ordered by the elements directly; \ie $\order{i \in X} \equiv \orderby{i}{i \in X}$. $\orderuniqby{i_k}{i \in X}$ does the same, but excludes any duplicate values of $i$. \Eg assuming $\mathbf{s} = [1, 3, 2, 3]$, then $\orderuniqby{i}{i \in \mathbf{s}} = [ 1, 2, 3 ]$ and $\orderby{-i}{i \in \mathbf{s}} = [ 3, 3, 2, 1 ]$.
+The key component may be elided in which case it is assumed to be ordered by the elements directly; \ie $\order{i \in X} \equiv \orderby{i}{i \in X}$. $\orderuniqby{i_k}{i \in X}$ does the same, but excludes any duplicate values of $i$. \Eg assuming $\mathbf{s} = \sq{1, 3, 2, 3}$, then $\orderuniqby{i}{i \in \mathbf{s}} = \sq{1, 2, 3}$ and $\orderby{-i}{i \in \mathbf{s}} = \sq{3, 3, 2, 1}$.
 
-Sets may be constructed from sequences with the regular set construction syntax, \eg assuming $\mathbf{s} = [1, 2, 3, 1]$, then $\{ a \mid a \in \mathbf{s} \}$ would be equivalent to $\{ 1, 2, 3 \}$.
+Sets may be constructed from sequences with the regular set construction syntax, \eg assuming $\mathbf{s} = \sq{1, 2, 3, 1}$, then $\set{\build{a}{a \in \mathbf{s}}}$ would be equivalent to $\set{1, 2, 3}$.
 
-Sequences of values which themselves have a defined ordering have an implied ordering akin to a regular dictionary, thus $[1, 2, 3] < [1, 2, 4]$ and $[1, 2, 3] < [1, 2, 3, 1]$.
+Sequences of values which themselves have a defined ordering have an implied ordering akin to a regular dictionary, thus $\sq{1, 2, 3} < \sq{1, 2, 4}$ and $\sq{1, 2, 3} < \sq{1, 2, 3, 1}$.
 
 \subsubsection{Editing}
-We define the sequence concatenation operator $\concat$ such that $[\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{y}_0, \mathbf{y}_1, \dots] \equiv \mathbf{x} \concat \mathbf{y}$. For sequences of sequences, we define a unary concatenate-all operator: $\wideparen{\mathbf{x}}\equiv\mathbf{x}_0 \concat \mathbf{x}_1 \concat \dots$. Further, we denote element concatenation as $x \append i \equiv x \concat [i]$. We denote the sequence made up of the first $n$ elements of sequence $\mathbf{s}$ to be ${\overrightarrow{\mathbf{s}}}^n \equiv [\mathbf{s}_0, \mathbf{s}_1, \dots, \mathbf{s}_{n-1}]$, and only the final elements as ${\overleftarrow{\mathbf{s}}}^n$.
+We define the sequence concatenation operator $\concat$ such that $\sq{\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{y}_0, \mathbf{y}_1, \dots} \equiv \mathbf{x} \concat \mathbf{y}$. For sequences of sequences, we define a unary concatenate-all operator: $\concatall{\mathbf{x}}\equiv\mathbf{x}_0 \concat \mathbf{x}_1 \concat \dots$. Further, we denote element concatenation as $x \append i \equiv x \concat [i]$. We denote the sequence made up of the first $n$ elements of sequence $\mathbf{s}$ to be ${\overrightarrow{\mathbf{s}}}^n \equiv [\mathbf{s}_0, \mathbf{s}_1, \dots, \mathbf{s}_{n-1}]$, and only the final elements as ${\overleftarrow{\mathbf{s}}}^n$.
 
 We define ${}^\text{T}\mathbf{x}$ as the transposition of the sequence-of-sequences $\mathbf{x}$, fully defined in equation \ref{eq:transpose}. We may also apply this to sequences-of-tuples to yield a tuple of sequences.
 
-We denote sequence subtraction with a slight modification of the set subtraction operator; specifically, some sequence $\mathbf{s}$ excepting the left-most element equal to $v$ would be denoted $\mathbf{s}\seqminusl\{v\}$.
+We denote sequence subtraction with a slight modification of the set subtraction operator; specifically, some sequence $\mathbf{s}$ excepting the left-most element equal to $v$ would be denoted $\mathbf{s}\seqminusl\set{v}$.
 
 \subsubsection{Boolean values}
-$\bitstring_s$ denotes the set of Boolean strings of length $s$, thus $\bitstring_s = \seq{\{\bot, \top\}}_s$. When dealing with Boolean values we may assume an implicit equivalence mapping to a bit whereby $\top = 1$ and $\bot = 0$, thus $\bitstring_\Box = \seq{\N_2}_\Box$. We use the function $\text{bits}(\blob) \in \bitstring$ to denote the sequence of bits, ordered with the most significant first, which represent the octet sequence $\blob$, thus $\text{bits}([160, 0]) = [1, 0, 1, 0, 0, \dots]$.
+$\bitstring_s$ denotes the set of Boolean strings of length $s$, thus $\bitstring_s = \seq{\bool}_s$. When dealing with Boolean values we may assume an implicit equivalence mapping to a bit whereby $\top = 1$ and $\bot = 0$, thus $\bitstring_\Box = \seq{\N_2}_\Box$. We use the function $\text{bits}(\blob) \in \bitstring$ to denote the sequence of bits, ordered with the most significant first, which represent the octet sequence $\blob$, thus $\text{bits}(\sq{160, 0}) = \sq{1, 0, 1, 0, 0, \dots}$.
 
-The unary-not operator applies to both boolean values and sequences of boolean values, thus $\neg \top = \bot$ and $\neg [ \top, \bot ] = [ \bot, \top ]$.
+The unary-not operator applies to both boolean values and sequences of boolean values, thus $\neg \top = \bot$ and $\neg \sq{\top, \bot} = \sq{\bot, \top}$.
 
 \subsubsection{Octets and Blobs}
 

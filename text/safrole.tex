@@ -127,17 +127,17 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
 \begin{align}
     \nonumber \using i = \cyclic{\safroleticket[\H_\¬timeslot]}\colon \\
     \label{eq:ticketconditiontrue}
-    \safroleticket \in \seq{\safroleticket} &\implies \left\{\,\begin{aligned}
+    \safroleticket \in \seq{\safroleticket} &\implies \abracegroup[\,]{
         &i_\st¬id = \banderout{\H_\¬sealsig}\,,\\
         &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entry}{\seunsignedheader(\H)}\,,\\
         &\isticketed = 1
-    \end{aligned}\right.\\
+    }\\
     \label{eq:ticketconditionfalse}
-    \safroleticket \in \seq{\bskey} &\implies \left\{\,\begin{aligned}
+    \safroleticket \in \seq{\bskey} &\implies \abracegroup[\,]{
         &i = \H_\¬authorbskey\,,\\
         &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_F \concat \entropy'_3}{\seunsignedheader(\H)}\,,\\
         &\isticketed = 0
-    \end{aligned}\right.\\
+    }\\
   \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E\concat \banderout{\H_\¬sealsig}}{[]} \\
   \mathsf{X}_E &= \token{\$jam\_entropy}\\
   \mathsf{X}_F &= \token{\$jam\_fallback\_seal}\\
@@ -188,21 +188,21 @@ The posterior slot key sequence $\safroleticket$ is one of three expressions dep
 
 Here, we use $Z$ as the outside-in sequencer function, defined as follows:
 \begin{equation}
-  Z\colon\left\{\,\begin{aligned}
+  Z\colon\abracegroup[\,]{
     \seq{\safroleticket}_\epochlen &\to \seq{\safroleticket}_\epochlen\\
     \mathbf{s} &\mapsto [\mathbf{s}_0, \mathbf{s}_{\len{\mathbf{s}} - 1}, \mathbf{s}_1, \mathbf{s}_{\len{\mathbf{s}} - 2}, \dots]\\
-  \end{aligned}\right.
+  }
 \end{equation}
 
 Finally, $F$ is the fallback key sequence function which selects an epoch's worth of validator Bandersnatch keys ($\seq{\bskey}_{\epochlen}$) from the validator key set $\mathbf{k}$ using the entropy collected on-chain $r$:
 \begin{equation}\label{eq:fallbackkeysequence}
-  F\colon \left\{\ \begin{aligned}
+  F\colon \abracegroup[\ ]{
     \tuple{\hash,\,\seq{\valkey}} &\to \seq{\bskey}_\epochlen\\
     \tup{r,\, \mathbf{k}} &\mapsto \left[
     \cyclic{\mathbf{k}[\de(\blake_4(r \concat \mathcal{E}_4(i)))]}_\vk¬bs
     \middle\vert\; i \in \epochindex
     \right]
-  \end{aligned} \right.\!\!\!
+  }\!\!\!
 \end{equation}
 
 
@@ -279,7 +279,7 @@ We define $\mathbf{n}$ as the set of new tickets, with the ticket identifier, a 
 The tickets submitted via the extrinsic must already have been placed in order of their implied identifier. Duplicate identifiers are never allowed lest a validator submit the same ticket multiple times:
 \begin{align}
   \mathbf{n} &= \orderuniqby{x_\st¬id}{x \in \mathbf{n}} \\
-  \{x_\st¬id \mid x \in \mathbf{n}\} &\disjoint \{x_\st¬id \mid x \in \ticketaccumulator\}
+  \set{ x_\st¬id \mid x \in \mathbf{n} } &\disjoint \set{ x_\st¬id \mid x \in \ticketaccumulator }
 \end{align}
 
 The new ticket accumulator $\ticketaccumulator'$ is constructed by merging new tickets into the previous accumulator value (or the empty sequence if it is a new epoch):
