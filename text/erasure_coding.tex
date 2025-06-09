@@ -20,10 +20,10 @@ The resulting matrix is grouped by its pair-index and concatenated to form 1,023
 
 Formally we begin by defining four utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
 \begin{align}
-  \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \blob_{k:n}) \in \seq{\blob_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
-  \forall n \in \N, k \in \N :\ &\join_n(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{k:n} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots \\
-  \forall n \in \N, k \in \N :\ &\unzip_n(\mathbf{d} \in \blob_{k:n}) \in \seq{\blob_n}_k \equiv \sq{ \sq{ \mathbf{d}_{j\cdot k + i} \mid j \orderedin \N_n } \mid i \orderedin \N_k} \\
-  \forall n \in \N, k \in \N :\ &\lace_n(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{k:n} \equiv \mathbf{d} \ \where \forall i \in \N_k, j \in \N_n: \mathbf{d}_{j\cdot k + i} = (\mathbf{c}_i)_j
+  \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \blob_{kn}) \in \seq{\blob_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
+  \forall n \in \N, k \in \N :\ &\join_n(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{kn} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots \\
+  \forall n \in \N, k \in \N :\ &\unzip_n(\mathbf{d} \in \blob_{kn}) \in \seq{\blob_n}_k \equiv \sq{ \sq{ \mathbf{d}_{j\cdot k + i} \mid j \orderedin \N_n } \mid i \orderedin \N_k} \\
+  \forall n \in \N, k \in \N :\ &\lace_n(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{kn} \equiv \mathbf{d} \ \where \forall i \in \N_k, j \in \N_n: \mathbf{d}_{j\cdot k + i} = (\mathbf{c}_i)_j
 \end{align}
 
 We define the transposition operator hence:
