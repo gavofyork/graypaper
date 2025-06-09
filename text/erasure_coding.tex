@@ -17,8 +17,8 @@ The resulting matrix is grouped by its pair-index and concatenated to form 1,023
 
 Formally we begin by defining two utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
 \begin{align}
-  \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \seq{T}_{kn}) \in \seq{\seq{T}_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
-  \forall n \in \N, k \in \N :\ &\join(\mathbf{c} \in \seq{\seq{T}_n}_k) \in \seq{T}_{kn} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots
+  \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \blob_{kn}) \in \seq{\blob_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
+  \forall n \in \N, k \in \N :\ &\join(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{kn} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots
 \end{align}
 
 We define the transposition operator hence:
@@ -30,7 +30,7 @@ We may then define our erasure-code chunking function which accepts an arbitrary
 \begin{equation}\label{eq:erasurecoding}
   \erasurecode_{k \in \N}\colon\abracegroup{
     \blob_{684k} &\to \seq{\blob_{2k}}_{1023} \\
-    \mathbf{d} &\mapsto \join^\#({}^{\text{T}}[\Ferasurecode{\mathbf{p}} \mid \mathbf{p} \orderedin {}^\text{T}\spl_k(\spl_2(\mathbf{d}))])
+    \mathbf{d} &\mapsto \join^\#({}^{\text{T}}[\Ferasurecode{\mathbf{p}} \mid \mathbf{p} \orderedin {}^\text{T}\spl_2^\#(\spl_{2k}(\mathbf{d}))])
   }
 \end{equation}
 
