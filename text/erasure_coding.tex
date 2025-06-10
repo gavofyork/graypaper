@@ -11,19 +11,14 @@ For the Import \textsc{da} system, we deal with an input size of 4,104 octets re
 
 \subsection{Blob Encoding and Recovery}
 
-\newcommand*{\unzip}{\text{unzip}}
-\newcommand*{\lace}{\text{lace}}
-
-We assume some data blob $\mathbf{d} \in \blob_{684k}, k \in \N$. We are able to express this as a whole number of $k$ pieces each of a sequence of 684 octets. We denote these (data-parallel) pieces $\mathbf{p} \in \seq{\blob_{684}} = \unzip_{684}(\mathbf{d})$. Each piece is then reformed as 342 octet pairs and erasure-coded using $\erasurecode$ as above to give 1,023 octet pairs per piece.
+We assume some data blob $\mathbf{d} \in \blob_{684k}, k \in \N$. This blob is split into a whole number of $k$ pieces, each a sequence of 342 octet pairs. Each piece is erasure-coded using $\erasurecode$ as above to give 1,023 octet pairs per piece.
 
 The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
-Formally we begin by defining four utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
+Formally we begin by defining two utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
 \begin{align}
-  \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \blob_{k:n}) \in \seq{\blob_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
-  \forall n \in \N, k \in \N :\ &\join_n(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{k:n} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots \\
-  \forall n \in \N, k \in \N :\ &\unzip_n(\mathbf{d} \in \blob_{k:n}) \in \seq{\blob_n}_k \equiv \sq{ \sq{ \mathbf{d}_{j\cdot k + i} \mid j \orderedin \N_n } \mid i \orderedin \N_k} \\
-  \forall n \in \N, k \in \N :\ &\lace_n(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{k:n} \equiv \mathbf{d} \ \where \forall i \in \N_k, j \in \N_n: \mathbf{d}_{j\cdot k + i} = (\mathbf{c}_i)_j
+  \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \blob_{kn}) \in \seq{\blob_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
+  \forall n \in \N, k \in \N :\ &\join(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{kn} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots
 \end{align}
 
 We define the transposition operator hence:
@@ -31,11 +26,11 @@ We define the transposition operator hence:
   {}^\text{T}[[\mathbf{x}_{0, 0}, \mathbf{x}_{0, 1}, \mathbf{x}_{0, 2}, \dots], [\mathbf{x}_{1, 0}, \mathbf{x}_{1, 1}, \dots], \dots] \equiv [[\mathbf{x}_{0, 0}, \mathbf{x}_{1, 0}, \mathbf{x}_{2, 0}, \dots], [\mathbf{x}_{0, 1}, \mathbf{x}_{1, 1}, \dots], \dots]
 \end{equation}
 
-We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 684 octets and results in 1,023 sequences of sequences each of smaller blobs:
+We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 684 octets and results in a sequence of 1,023 smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
   \erasurecode_{k \in \N}\colon\abracegroup{
     \blob_{684k} &\to \seq{\blob_{2k}}_{1023} \\
-    \mathbf{d} &\mapsto [ \join(\mathbf{c}) \mid \mathbf{c} \orderedin {}^{\text{T}}[\Ferasurecode{\mathbf{p}} \mid \mathbf{p} \orderedin \text{unzip}_{684}(\mathbf{d})] ]
+    \mathbf{d} &\mapsto \join^\#({}^{\text{T}}[\Ferasurecode{\mathbf{p}} \mid \mathbf{p} \orderedin {}^\text{T}\spl_2^\#(\spl_{2k}(\mathbf{d}))])
   }
 \end{equation}
 
@@ -44,12 +39,11 @@ The original data may be reconstructed with any 342 of the 1,023 resultant items
   \ecrecover_{k \in \N}\colon\abracegroup{
     \protoset{\tuple{\blob_{2k}, \N_{1023}}}_{342} &\to \blob_{684k} \\
     \mathbf{c} &\mapsto \begin{cases}
-      \se(\sq{\mathbf{x} \mid \tup{\mathbf{x}, i} \orderedin \mathbf{c}}) &\when [i \mid (\mathbf{x}, i) \orderedin \mathbf{c}] = [0, 1, \dots 341]\\
-      \lace_k([
-        \ecrecover([(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \orderedin \mathbf{c}])
-      \mid p \in \N_k &\text{always}\\
+      \se(\sq{\mathbf{x} \mid \tup{\mathbf{x}, i} \orderedin \orderby{i}{(\mathbf{x}, i) \in \mathbf{c}}}) &\when \set{i \mid (\mathbf{x}, i) \in \mathbf{c}} = \N_{342}\\
+      \join(\join^\#({}^\text{T}[
+        \ecrecover(\set{(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \in \mathbf{c}})
+      \mid p \in \N_k])) &\text{always}\\
     \end{cases}
-    ])
 %      [ \ecrecover(\mathbf{y}, i) \mid \mathbf{y} \orderedin \transpose[ \spl_2(\mathbf{x}) \mid (\mathbf{x}, i) \orderedin \mathbf{c}] ]
   }
 \end{equation}
