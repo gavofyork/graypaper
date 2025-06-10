@@ -99,13 +99,13 @@ Our formalisms begin by defining $\partialstate$ as a characterization of (\ie v
 \begin{equation}
   \label{eq:partialstate}
   \partialstate \equiv \left(\begin{aligned}
-    &\isa{\mathbf{d}}{\dict{\serviceid}{\serviceaccount}} \,,\;
-    \isa{\mathbf{i}}{\seq{\valkey}_\valcount} \,,\;
-    \isa{\mathbf{q}}{\seq{\seq{\hash}_\mathsf{Q}}_\corecount} \,,\\
-    &\isa{m}{\serviceid} \,,\;
-    \isa{\mathbf{a}}{\seq{\serviceid}_\corecount} \,,\;
-    \isa{v}{\serviceid} \,,\;
-    \isa{\mathbf{z}}{\dict{\serviceid}{\gas}}
+    &\isa{\ps¬accounts}{\dict{\serviceid}{\serviceaccount}} \,,\;
+    \isa{\ps¬stagingset}{\seq{\valkey}_\valcount} \,,\;
+    \isa{\ps¬authqueue}{\seq{\seq{\hash}_\mathsf{Q}}_\corecount} \,,\\
+    &\isa{\ps¬manager}{\serviceid} \,,\;
+    \isa{\ps¬assigners}{\seq{\serviceid}_\corecount} \,,\;
+    \isa{\ps¬delegator}{\serviceid} \,,\;
+    \isa{\ps¬alwaysaccers}{\dict{\serviceid}{\gas}}
   \end{aligned}\right)
 \end{equation}
 
@@ -142,26 +142,80 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
   }
 \end{equation}
 
+\newcommand*{\¬accounts}{\ps¬accounts}
+\newcommand*{\¬stagingset}{\ps¬stagingset}
+\newcommand*{\¬authqueue}{\ps¬authqueue}
+\newcommand*{\¬manager}{\ps¬manager}
+\newcommand*{\¬assigners}{\ps¬assigners}
+\newcommand*{\¬delegator}{\ps¬delegator}
+\newcommand*{\¬alwaysaccers}{\ps¬alwaysaccers}
+
 We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution $u$, a posterior state-context $(\mathbf{d}', \mathbf{i}', \mathbf{q}', m', \mathbf{a}', v', \mathbf{x}')$ and the resultant accumulation-output pairings $\mathbf{b}$ and deferred-transfers $\concatall{\mathbf{t}}$:
 \begin{equation}
   \accpar\colon\abracegroup[\;]{\begin{aligned}
-    &\tup{\partialstate, \seq{\workreport}, \dict{\serviceid}{\gas}} \to \tup{\partialstate, \defxfers, \servouts, \gasused} \\
-    &\tup{\mathbf{o}, \mathbf{w}, \mathbf{f}} \mapsto \tup{\tup{\mathbf{d}', \mathbf{i}', \mathbf{q}', m', \mathbf{a}', v', \mathbf{z}'}, \concatall{\mathbf{t}}, \mathbf{b}, \mathbf{u}}\!\!\!\!\!\!\\
+    &\tuple{\partialstate, \seq{\workreport}, \dict{\serviceid}{\gas}} \to \tuple{\partialstate, \defxfers, \servouts, \gasused} \\
+    &\tup{\mathbf{o}, \mathbf{w}, \mathbf{f}} \mapsto \tup{
+      \tup{
+        \¬accounts', \¬stagingset', \¬authqueue', \¬manager', \¬assigners', \¬delegator', \¬alwaysaccers'
+      }, \concatall{\mathbf{t}}, \mathbf{b}, \mathbf{u}
+    }\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
-      \mathbf{s} &= \set{\build{\mathbf{r}_s}{w \in \mathbf{w}, \mathbf{r} \in w_\mathbf{r}}} \cup \Fkeys{\mathbf{f}} \\
-      \mathbf{u} &= \sq{\tup{s, \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_u} \mid s \orderedin \mathbf{s}} \\
-      \mathbf{b} &= \set{ \build{\tup{s, b}}{s \in \mathbf{s},\, b = \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_b,\, b \ne \none }} \\
-      \mathbf{t} &= \sq{\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{t} \mid s \orderedin \mathbf{s}} \\
-      \mathbf{d}' &= \fnprovide((\mathbf{d} \cup \mathbf{n}) \setminus \mathbf{m}, \bigcup_{s \in \mathbf{s}} \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{p}) \\
-      &\tup{\mathbf{d}, \mathbf{i}, \mathbf{q}, m, \mathbf{z}} = \mathbf{o} \\
-      \tup{m', \mathbf{a}^*, v^*, \mathbf{z}'} &= (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, m)_\mathbf{o})_{\tup{m, \mathbf{a}, v, \mathbf{z}}} \\
-      \forall c \in \coreindex : \mathbf{a}'_c &= ((\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, \mathbf{a}^*_c)_\mathbf{o})_\mathbf{a})_c \\
-      v' &= (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, v^*)_\mathbf{o})_v \\
-      \mathbf{i}' &= (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, v)_\mathbf{o})_\mathbf{i} \\
-      \forall c \in \coreindex : \mathbf{q}'_c &= (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, \mathbf{a}_c)_\mathbf{o})_\mathbf{q} \\
-      \mathbf{n} &= \bigcup_{s \in \mathbf{s}}(\set{ (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d} \setminus \Fkeys{\mathbf{d} \setminus \set{s}} }) \\
-      \mathbf{m} &= \bigcup_{s \in \mathbf{s}}(\Fkeys{\mathbf{d}} \setminus \Fkeys{(\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\mathbf{o})_\mathbf{d}})
+      \using \mathbf{s} &= \set{\build{
+        \mathbf{r}_\wl¬service
+        }{
+          w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests
+        }} \cup \Fkeys{\mathbf{f}} \\
+      \mathbf{u} &= \sq{\build{
+          \tup{s, \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\ao¬gasused}
+        }{
+          s \orderedin \mathbf{s}
+        }} \\
+      \mathbf{b} &= \set{\build{
+          \tup{s, b}
+        }{
+          s \in \mathbf{s},\,
+          b = \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\ao¬accout,\,
+          b \ne \none
+        }} \\
+      \mathbf{t} &= \sq{\build{
+          \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\ao¬defxfers
+        }{
+          s \orderedin \mathbf{s}
+        }} \\
+      \¬accounts' &= \fnprovide(
+        (\ps¬accounts \cup \mathbf{n}) \setminus \mathbf{m},
+        \bigcup_{s \in \mathbf{s}} \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\ao¬provisions
+      ) \\
+      &\tup{\ps¬accounts, \ps¬stagingset, \ps¬authqueue, \ps¬manager, \ps¬alwaysaccers} = \mathbf{o} \\
+      \tup{\¬manager', \¬assigners^*, \¬delegator^*, \¬alwaysaccers'} &=
+        (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, m)_\ao¬poststate)_{
+          \tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬alwaysaccers}
+        } \\
+      \forall c \in \coreindex :
+        \¬assigners'\sub{c} &= ((
+          \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, \¬assigners^*\sub{c})_\ao¬poststate
+        )_\ps¬assigners)\sub{c} \\
+      \¬delegator' &= (
+          \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, \¬delegator^*)_\ao¬poststate
+        )_\ps¬delegator \\
+      \¬stagingset' &= (
+          \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, \ps¬delegator)_\ao¬poststate
+      )_\ps¬stagingset \\
+      \forall c \in \coreindex :
+        \¬authqueue'\sub{c} &= (
+          \accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, \ps¬assigners\sub{c})_\ao¬poststate
+        )_\ps¬authqueue \\
+      \mathbf{n} &= \bigcup_{s \in \mathbf{s}}( \set{
+          (\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\ao¬poststate)_\ps¬accounts
+            \setminus
+          \Fkeys{\ps¬accounts \setminus \set{s}}
+        } ) \\
+      \mathbf{m} &= \bigcup_{s \in \mathbf{s}}(
+        \Fkeys{\ps¬accounts}
+          \setminus
+        \Fkeys{(\accone(\mathbf{o}, \mathbf{w}, \mathbf{f}, s)_\ao¬poststate)_\ps¬accounts}
+      )
     \end{aligned}
   \end{aligned}}
 \end{equation}
@@ -205,17 +259,17 @@ The single-service accumulation function, $\accone$, transforms an initial state
 \begin{align}
     &\accone \colon \abracegroup[\;]{
     &\begin{aligned}
-      \tup{\begin{aligned}
+      \tuple{\begin{aligned}
         &\partialstate, \seq{\workreport},\\
         &\dict{\serviceid}{\gas}, \serviceid
       \end{aligned}}
-      &\to \tup{
+      &\to \tuple{
         \begin{alignedat}{3}
-          \isa{\mathbf{o}&}{\partialstate}\,,\;
-          \isa{&\mathbf{t}&}{\defxfers}\,,\;
-          \isa{b}{\optional{\hash}}\,,\\
-          \isa{u&}{\gas}\,,\;
-          \isa{&\mathbf{p}&}{\protoset{\tuple{\serviceid, \blob}}}
+          \isa{\ao¬poststate&}{\partialstate}\,,\;
+          \isa{&\ao¬defxfers&}{\defxfers}\,,\;
+          \isa{\ao¬accout}{\optional{\hash}}\,,\\
+          \isa{\ao¬gasused&}{\gas}\,,\;
+          \isa{&\ao¬provisions&}{\protoset{\tuple{\serviceid, \blob}}}
         \end{alignedat}
       } \\
       (\mathbf{o}, \mathbf{w}, \mathbf{f}, s) &\mapsto \Psi_A(\mathbf{o}, \thetime', s, g, \mathbf{i})

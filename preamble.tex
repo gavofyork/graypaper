@@ -80,6 +80,7 @@
 \newcommand*{\seqminusl}{\nwspoon}
 \newcommand*{\seqminusr}{\sespoon}
 \newcommand*{\disjoint}{\downspoon}
+\newcommand*{\anglebar}[1]{\left\langlebar#1\right\ranglebar}
 
 % Misc text typography
 \newcommand*{\token}[1]{\text{{\small \texttt{#1}}}}
@@ -122,7 +123,7 @@
 \vskip.15ex
 \hbox{\scalebox{0.5}[0.5]{${\scriptscriptstyle \blacktriangleright}$}}
 }}}
-\newcommand*{\tup}[1]{\!\left\lgroup#1\right\rgroup\!}
+\newcommand*{\tup}[1]{\!\left(#1\right)\!}
 \newcommand*{\tuple}[1]{\!\left\lgroup#1\right\rgroup\!}
 \newcommand*{\is}[2]{#1\tricolon#2}
 \newcommand*{\isa}[2]{#1\in #2}
@@ -240,7 +241,7 @@
 \newcommand*{\bitstring}{\mathbb{B}}
 \newcommand*{\safroleticket}{\mathbb{C}}
 \newcommand*{\dictionary}{\mathbb{D}}
-\newcommand*{\dict}[2]{\dictionary\ang{#1\to#2}}
+\newcommand*{\dict}[2]{\dictionary\anglebar{#1\to#2}}
 \newcommand*{\signature}{\mathbb{E}}
 \newcommand*{\sig}[2]{\signature_{#1}\ang{#2}}
 \newcommand*{\bssignature}{\mathbb{F}}
@@ -417,7 +418,7 @@
 \newcommand*{\sa¬metadata}{\mathbf{m}}
 \newcommand*{\sa¬code}{\mathbf{c}}
 
-% Dields of deferred transfer.
+% Fields of deferred transfer.
 %\newcommand*{\defxfer}{\mathbb{T}}
 \newcommand*{\dx¬source}{s}
 \newcommand*{\dx¬dest}{d}
@@ -432,6 +433,15 @@
 \newcommand*{\vk¬bls}{L}  % TODO: Rename to be a single letter.
 \newcommand*{\vk¬metadata}{m}
 \newcommand*{\allvalkeys}{\seq{\valkey}_{\valcount}}
+
+% Fields of partial state \mathbb{U}.
+\newcommand*{\ps¬accounts}{\mathbf{d}}
+\newcommand*{\ps¬stagingset}{\mathbf{i}}
+\newcommand*{\ps¬authqueue}{\mathbf{q}}
+\newcommand*{\ps¬manager}{m}
+\newcommand*{\ps¬assigners}{\mathbf{a}}
+\newcommand*{\ps¬delegator}{v}
+\newcommand*{\ps¬alwaysaccers}{\mathbf{z}}
 
 %%%%%%%%%%%%
 % State item tuples (fields of lower-greek letters)
@@ -510,6 +520,17 @@
 \newcommand*{\¬sealsig}{s}
 % Derived fields
 \newcommand*{\¬authorbskey}{a}
+
+%%%%%%%%%%%%
+% Function outputs
+
+% \accone output
+\newcommand*{\ao¬poststate}{\mathbf{o}}
+\newcommand*{\ao¬defxfers}{\mathbf{t}}
+\newcommand*{\ao¬accout}{b}
+\newcommand*{\ao¬gasused}{u}
+\newcommand*{\ao¬provisions}{\mathbf{p}}
+
 
 %%%%%%%%%%%%
 % STATE ITEMS
