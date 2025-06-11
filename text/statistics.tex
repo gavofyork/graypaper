@@ -91,7 +91,7 @@ The other two components of statistics are the core and service activity statist
   }}
 \end{align}
 
-The core statistics are updated using several intermediate values from across the overall state-transition function; $\mathbf{w}$, the incoming work-reports, as defined in \ref{eq:incomingworkreports} and $\mathbf{W}$, the newly available work-reports, as defined in \ref{eq:availableworkreports}. We define the statistics as follows:
+The core statistics are updated using several intermediate values from across the overall state-transition function; $\mathbf{w}$, the incoming work-reports, as defined in \ref{eq:incomingworkreports} and $\justbecameavailable$, the newly available work-reports, as defined in \ref{eq:availableworkreports}. We define the statistics as follows:
 \begin{align}
   \forall c \in \coreindex : \corestats'[c] &\equiv \tup{
     \begin{alignedat}{5}
@@ -107,7 +107,7 @@ The core statistics are updated using several intermediate values from across th
   }\!\!\!\!\\
   \where R(c \in \coreindex) &\equiv \!\!\!\!\!\!\!\!\!\!\!\sum_{r \in w_\mathbf{r}, w \in \mathbf{w}, w_c = c}
   \!\!\!\!\!\!\!\!\!\!\!(r_i, r_x, r_z, r_e, r_u, \is{b}{(w_s)_l})\\
-  \also D(c \in \coreindex) &\equiv \!\!\!\!\!\!\sum_{w \in \mathbf{W}, w_c = c}
+  \also D(c \in \coreindex) &\equiv \!\!\!\!\!\!\sum_{w \in \justbecameavailable, w_c = c}
   \!\!\!\!\!\!(w_s)_l + \mathsf{W}_G\ceil{(w_s)_n\nicefrac{65}{64}}
 \end{align}
 
@@ -121,11 +121,11 @@ Finally, the service statistics are updated using the same intermediate values a
       \is{e&}{R(s)_e}\,,\;
       \is{&r&}{\span\span\tup{R(s)_n, R(s)_u}}\,,\;\\
       \is{p&}{\span\span \textstyle \sum_{\tup{s, \mathbf{p}} \in \mathbf{E}_P} \tup{1, \len{\mathbf{p}}}}\,,\;\\
-      \is{a&}{\span\span \subifnone(\mathbf{I}[s], \tup{0, 0})}\,,\; \ \ \\
-      \is{t&}{\span\span \subifnone(\mathbf{X}[s], \tup{0, 0})} \quad\\
+      \is{a&}{\span\span \subifnone(\accumulationstatistics[s], \tup{0, 0})}\,,\; \ \ \\
+      \is{t&}{\span\span \subifnone(\deferredtransfersstatistics\subb{s}, \tup{0, 0})} \quad\\
     \end{alignedat}
   }\!\!\!\!\\
-  \where \mathbf{s} &= \mathbf{r} \cup \mathbf{p} \cup \Fkeys{\mathbf{I}} \cup \Fkeys{\mathbf{X}}\\
+  \where \mathbf{s} &= \mathbf{r} \cup \mathbf{p} \cup \Fkeys{\accumulationstatistics} \cup \Fkeys{\deferredtransfersstatistics}\\
   \also \mathbf{r} &= \set{r_s \mid r \in w_\mathbf{r}, w \in \mathbf{w} }\\
   \also \mathbf{p} &= \set{s \mid \exists x: \tup{s, x} \in \mathbf{E}_P }\\
   \also R(s \in \serviceid) &\equiv \!\!\!\!\!\!\!\!\!\!\!

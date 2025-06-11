@@ -47,7 +47,7 @@ Finally, details of the most recent blocks and timeslot index are tracked in $\r
 Much as in the \emph{YP}, we specify $\transitionstate$ as the implication of formulating all items of posterior state in terms of the prior state and block. To aid the architecting of implementations which parallelize this computation, we minimize the depth of the dependency graph where possible. The overall dependency graph is specified here:
 \begin{align}\label{eq:transitionfunctioncomposition}
   \thetime' &\prec \theheader \\
-  \recenthistory^\dagger &\prec (\theheader, \recenthistory) \label{eq:betadagger} \\
+  \recenthistorypostparentstaterootupdate &\prec (\theheader, \recenthistory) \label{eq:betadagger} \\
   \safrole' &\prec (\theheader, \thetime, \xttickets, \safrole, \stagingset, \entropy', \activeset', \disputes') \\
   \entropy' &\prec (\theheader, \thetime, \entropy) \\
   \activeset' &\prec (\theheader, \thetime, \activeset, \safrole) \\
@@ -56,12 +56,12 @@ Much as in the \emph{YP}, we specify $\transitionstate$ as the implication of fo
   \reportspostjudgement &\prec (\xtdisputes, \reports) \label{eq:rhodagger} \\
   \reportspostguarantees &\prec (\xtassurances, \reportspostjudgement) \label{eq:rhoddagger} \\
   \reports' &\prec (\xtguarantees, \reportspostguarantees, \activeset, \thetime') \label{eq:rhoprime} \\
-  \mathbf{W}^* &\prec (\xtassurances, \reports') \\
-  (\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \authqueue', \lastaccout', \mathbf{I}, \mathbf{X}) &\prec (\mathbf{W}^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \authqueue, \thetime, \thetime') \label{eq:accountspostxfer} \\
-  \recenthistory' &\prec (\theheader, \xtguarantees, \recenthistory^\dagger, \lastaccout') \label{eq:betaprime} \\
+  \justbecameavailable^* &\prec (\xtassurances, \reports') \\
+  (\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \authqueue', \lastaccout', \accumulationstatistics, \deferredtransfersstatistics) &\prec (\justbecameavailable^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \authqueue, \thetime, \thetime') \label{eq:accountspostxfer} \\
+  \recenthistory' &\prec (\theheader, \xtguarantees, \recenthistorypostparentstaterootupdate, \lastaccout') \label{eq:betaprime} \\
   \accountspostpreimage &\prec (\xtpreimages, \accountspostxfer, \thetime') \label{eq:accountspostpreimage} \\
   \authpool' &\prec (\theheader, \xtguarantees, \authqueue', \authpool) \\
-  \activity' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \thetime, \activeset', \activity, \theheader, \mathbf{I}, \mathbf{X})\!\!\!\!\!\!\!\!
+  \activity' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \thetime, \activeset', \activity, \theheader, \accumulationstatistics, \deferredtransfersstatistics)\!\!\!\!\!\!\!\!
 \end{align}
 
 The only synchronous entanglements are visible through the intermediate components superscripted with a dagger and defined in equations \ref{eq:betadagger}, \ref{eq:rhodagger}, \ref{eq:rhoddagger}, \ref{eq:rhoprime}, \ref{eq:accountspostxfer}, \ref{eq:betaprime} and \ref{eq:accountspostpreimage}. The latter two mark a merge and join in the dependency graph and, concretely, imply that the availability extrinsic may be fully processed and accumulation of work happen before the preimage lookup extrinsic is folded into state.

@@ -2,12 +2,12 @@
 
 We retain in state information on the most recent $\mathsf{H}$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
 \begin{align}
-  \recent &\in (\recenthistory, \beefybelt) \label{eq:recenthistory} \\
+  \recent &\equiv \tup{\recenthistory, \beefybelt} \label{eq:recenthistory} \\
   \recenthistory &\in \seq{\tuple{
-    \isa{h}{\hash},
-    \isa{b}{\hash},
-    \isa{s}{\hash},
-    \isa{\mathbf{p}}{\dict{\hash}{\hash}}
+    \isa{\rh¬headerhash}{\hash},
+    \isa{\rh¬stateroot}{\hash},
+    \isa{\rh¬accoutlogsuperpeak}{\hash},
+    \isa{\rh¬reportedpackagehashes}{\dict{\hash}{\hash}}
   }}_{:\mathsf{H}}\\
   \beefybelt &\in \seq{\optional{\hash}} \\
   \lastaccout &\in \seq{\tup{\serviceid, \hash}}
@@ -17,7 +17,7 @@ For each recent block, we retain its header hash, its state root, its accumulati
 
 During the accumulation stage, a value with the partial transition of this state is provided which contains the correction for the newly-known state-root of the parent block:
 \begin{equation}\label{eq:correctlaststateroot}
-  \recenthistory^\dagger \equiv \recenthistory\quad\exc\quad\recenthistory^\dagger[\len{\recenthistory} - 1]_s = \H_\¬priorstateroot
+  \recenthistorypostparentstaterootupdate \equiv \recenthistory\quad\exc\quad\recenthistorypostparentstaterootupdate\subb{\len{\recenthistory} - 1}_\rh¬stateroot = \H_\¬priorstateroot
 \end{equation}
 
 We define the new Accumulation Output Log $\beefybelt$. This is formed from the block's accumulation-output sequence $\lastaccout'$ (defined in section \ref{sec:accumulation}), taking its root using the basic binary Merklization function ($\merklizewb$, defined in appendix \ref{sec:merklization}) and appending it to the previous log value with the \textsc{mmb} append function (defined in appendix \ref{sec:mmr}). Throughout, the Keccak hash function is used to maximize compatibility with legacy systems:
@@ -30,14 +30,22 @@ We define the new Accumulation Output Log $\beefybelt$. This is formed from the 
 The final state transition for $\recenthistory$ appends a new item including the new block's header hash, a Merkle commitment to the block's Accumulation Output Log and the set of work-reports made into it (for which we use the guarantees extrinsic, $\xtguarantees$). Formally:
 \begin{equation}
   \begin{aligned}
-    \recenthistory' &\equiv {\overleftarrow{\recenthistory^\dagger \append \tup{
-      \mathbf{p},
-      \is{h}{\blake(\theheader)},
-      \is{b}{\mmrsuperpeak(\beefybelt')},
-      \is{s}{\zerohash}
+    \recenthistory' &\equiv {\overleftarrow{\recenthistorypostparentstaterootupdate \append \tup{
+      \rh¬reportedpackagehashes,
+      \is{\rh¬headerhash}{\blake(\theheader)},
+      \is{\rh¬stateroot}{\zerohash},
+      \is{\rh¬accoutlogsuperpeak}{\mmrsuperpeak(\beefybelt')}
       }}}^\mathsf{H} \\
-    \where \mathbf{p} &= \set{ ((g_\xg¬workreport)_\wr¬avspec)_\as¬packagehash \mapsto ((g_\xg¬workreport)_\wr¬avspec)_\as¬segroot \mid g \in \xtguarantees }
+    \where \rh¬reportedpackagehashes &= \set{\build{
+        \kv{
+          ((g_\xg¬workreport)_\wr¬avspec)_\as¬packagehash
+        }{
+          ((g_\xg¬workreport)_\wr¬avspec)_\as¬segroot
+        }
+      }{
+        g \in \xtguarantees
+      }}
   \end{aligned}
 \end{equation}
 
-The new state-trie root is the zero hash, $\zerohash$, which is inaccurate but safe since $\recenthistory'$ is not utilized except to define the next block's $\recenthistory^\dagger$, which contains a corrected value for this, as per equation \ref{eq:correctlaststateroot}.
+The new state-trie root is the zero hash, $\zerohash$, which is inaccurate but safe since $\recent'$ is not utilized except to define the next block's $\recentpostparentstaterootupdate$, which contains a corrected value for this, as per equation \ref{eq:correctlaststateroot}.
