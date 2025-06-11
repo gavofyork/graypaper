@@ -267,6 +267,7 @@
 \newcommand*{\readable}[1]{\mathbb{V}_{#1}}
 \newcommand*{\writable}[1]{\mathbb{V}^*_{#1}}
 \newcommand*{\workreport}{\mathbb{W}}
+\newcommand*{\workcontext}{\mathbb{X}}
 \newcommand*{\blob}{\mathbb{Y}}
 \newcommand*{\Z}{\mathbb{Z}}
 
@@ -330,7 +331,7 @@
 
 %\newcommand*{\ram}{\mathbb{M}}
 \newcommand*{\ram¬value}{\mathbf{V}}
-\newcommand*{\ram¬access}{\mathbf{a}}
+\newcommand*{\ram¬access}{\mathbf{A}}
 
 %\newcommand*{\workpackage}{\mathbb{P}}
 \newcommand*{\wp¬authtoken}{\mathbf{j}}
@@ -399,6 +400,16 @@
 \newcommand*{\as¬segroot}{r} % Inconsistent with other segroot. TODO: RENAME to e?
 \newcommand*{\as¬segcount}{n}
 
+% TODO: Move \mathbf{p} from here into the \workreport and work-package - it's really not part of the context.
+
+%\newcommand*{\workcontext}{\mathbb{X}}
+\newcommand*{\cx¬anchorhash}{a}
+\newcommand*{\cx¬anchorpoststate}{s}
+\newcommand*{\cx¬anchoraccoutlog}{b}
+\newcommand*{\cx¬lookupanchorhash}{l}
+\newcommand*{\cx¬lookupanchortime}{t}
+\newcommand*{\cx¬prerequisites}{\mathbf{p}}
+
 %\newcommand*{\serviceaccount}{\mathbb{A}}
 \newcommand*{\sa¬storage}{\mathbf{s}}
 \newcommand*{\sa¬preimages}{\mathbf{p}}
@@ -450,6 +461,14 @@
 \newcommand*{\rs¬workreport}{\¬workreport}
 \newcommand*{\rs¬timestamp}{t}
 
+% Used for \recenthistory
+\newcommand*{\rh¬headerhash}{h}
+\newcommand*{\rh¬stateroot}{s}
+\newcommand*{\rh¬accoutlogsuperpeak}{b}
+\newcommand*{\rh¬reportedpackagehashes}{\mathbf{p}}
+
+
+
 %%%%%%%%%%%%
 % Incidental item tuples (fields of uppercase bold roman letters)
 
@@ -461,9 +480,14 @@
 \newcommand*{\ancestors}{\mathbf{A}}
 \newcommand*{\theancestors}{\ancestors}
 
+\newcommand*{\guarantorassignments}{\mathbf{G}}
+\newcommand*{\guarantorassignmentsunderlastrotation}{\mathbf{G}^*}
+\newcommand*{\accumulationstatistics}{\mathbf{I}}
 \newcommand*{\reporters}{\mathbf{R}}
 \newcommand*{\isticketed}{\mathbf{T}}
-\newcommand*{\verdicts}{\mathbf{V}}
+\newcommand*{\isaudited}{\mathbf{U}}
+\newcommand*{\justbecameavailable}{\mathbf{W}} % TODO: Rename $\justbecameavailable$ to \mathbf{V} or whatever and `\mathbf{w}` becomes `\reporters` and `\reporters` becomes `\mathbf{G}`. `\mathbf{G}` would become something else.
+\newcommand*{\deferredtransfersstatistics}{\mathbf{X}}
 
 % Extrinsics.
 \newcommand*{\extrinsic}{\mathbf{E}}
@@ -478,6 +502,11 @@
 \newcommand*{\xtassurances}{\XT_A}
 \newcommand*{\xtpreimages}{\XT_P}
 \newcommand*{\xtguarantees}{\XT_G}
+
+\newcommand*{\xa¬anchor}{a}
+\newcommand*{\xa¬availabilities}{f}
+\newcommand*{\xa¬assurer}{v}
+\newcommand*{\xa¬signature}{\¬signature}
 
 \newcommand*{\xg¬workreport}{\¬workreport}
 \newcommand*{\xg¬timeslot}{t}
@@ -527,7 +556,7 @@
 % \accone output
 \newcommand*{\ao¬poststate}{\mathbf{o}}
 \newcommand*{\ao¬defxfers}{\mathbf{t}}
-\newcommand*{\ao¬accout}{b}
+\newcommand*{\ao¬account}{b}
 \newcommand*{\ao¬gasused}{u}
 \newcommand*{\ao¬provisions}{\mathbf{p}}
 
@@ -553,9 +582,12 @@
 \newcommand*{\lastaccout}{\theta}
 \newcommand*{\authpool}{\alpha}
 \newcommand*{\authqueue}{\varphi}
+
 \newcommand*{\recent}{\beta}
 \newcommand*{\recenthistory}{\recent_H}
 \newcommand*{\beefybelt}{\recent_B}
+\newcommand*{\recentpostparentstaterootupdate}{\recent^\dagger}
+\newcommand*{\recenthistorypostparentstaterootupdate}{\recent^\dagger_H}
 
 \newcommand*{\disputes}{\psi}
 \newcommand*{\goodset}{\disputes_\mathbf{g}}

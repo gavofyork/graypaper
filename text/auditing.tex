@@ -6,7 +6,7 @@ The auditing and judging system is theoretically equivalent to that in \textsc{E
 
 \subsection{Overview}
 
-The auditing process involves each node requiring themselves to fetch, evaluate and issue judgment on a random but deterministic set of work-reports from each \Jam chain block in which the work-report becomes available (\ie from $\mathbf{W}$). Prior to any evaluation, a node declares and proves its requirement. At specific common junctures in time thereafter, the set of work-reports which a node requires itself to evaluate from each block's $\mathbf{W}$ may be enlarged if any declared intentions are not matched by a positive judgment in a reasonable time or in the event of a negative judgment being seen. These enlargement events are called tranches.
+The auditing process involves each node requiring themselves to fetch, evaluate and issue judgment on a random but deterministic set of work-reports from each \Jam chain block in which the work-report becomes available (\ie from $\justbecameavailable$). Prior to any evaluation, a node declares and proves its requirement. At specific common junctures in time thereafter, the set of work-reports which a node requires itself to evaluate from each block's $\justbecameavailable$ may be enlarged if any declared intentions are not matched by a positive judgment in a reasonable time or in the event of a negative judgment being seen. These enlargement events are called tranches.
 
 If all declared intentions for a work-report are matched by a positive judgment at any given juncture, then the work-report is considered \emph{audited}. Once all of any given block's newly available work-reports are audited, then we consider the block to be \emph{audited}. One prerequisite of a node finalizing a block is for it to view the block as audited. Note that while there will be eventual consensus on whether a block is audited, there may not be consensus at the time that the block gets finalized. This does not affect the crypto-economic guarantees of this system.
 
@@ -28,14 +28,16 @@ All items in the work-package specification field of the work-report should be r
 
 \subsection{Selection of Reports}
 
-Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\block$ with other terms corresponding to the state-transition implied by that block, so $\reports$ is said block's prior core-allocation, $\activeset$ is its prior validator set, $\H$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
+Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\block$ with other terms corresponding to the state-transition implied by that block, so $\reports$ is said block's prior core-allocation, $\activeset$ is its prior validator set, $\header$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
 
-We define the sequence of work-reports which we may be required to audit as $\mathbf{Q}$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
+\newcommand*{\auditreports}{\mathbf{q}}
+
+We define the sequence of work-reports which we may be required to audit as $\auditreports$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
 \begin{align}\label{eq:auditselection}
-  \mathbf{Q} &\in \seq{\optional{\workreport}}_\corecount \\
-  \mathbf{Q} &\equiv \sq{\build{
+  \auditreports &\in \seq{\optional{\workreport}}_\corecount \\
+  \auditreports &\equiv \sq{\build{
     \begin{rcases}
-      \reports[c]_w &\when \reports[c]_w \in \mathbf{W} \\
+      \reports\subb{c}_\rs¬workreport &\when \reports\subb{c}_\rs¬workreport \in \justbecameavailable \\
       \none &\otherwise
     \end{rcases}
   }{
@@ -52,7 +54,7 @@ We define our initial audit tranche in terms of a verifiable random quantity $s_
 We may then define $\mathbf{a}_0$ as the non-empty items to audit through a verifiably random selection of ten cores:
 \begin{align}
   \mathbf{a}_0 &= \set{\build{\tup{c, w}}{\tup{c, w} \in \mathbf{p}_{\dots+10}, w \ne \none}} \\
-  \where \mathbf{p} &= \Ffyshuffle{\sq{\build{\tup{c, \mathbf{Q}_c}}{c \orderedin \coreindex}}, r} \\
+  \where \mathbf{p} &= \Ffyshuffle{\sq{\build{\tup{c, \auditreports_c}}{c \orderedin \coreindex}}, r} \\
   \also r &= \banderout{s_0}
 \end{align}
 
@@ -61,7 +63,7 @@ Every $\mathsf{A} = 8$ seconds following a new time slot, a new tranche begins, 
   \using n = \ffrac{\wallclock - \mathsf{P}\cdot\H_\¬timeslot}{\mathsf{A}}
 \end{equation}
 
-New tranches may contain items from $\mathbf{Q}$ stemming from one of two reasons: either a negative judgment has been received; or the number of judgments from the previous tranche is less than the number of announcements from said tranche. In the first case, the validator is always required to issue a judgment on the work-report. In the second case, a new special-purpose \textsc{vrf} must be constructed to determine if an audit and judgment is warranted from us.
+New tranches may contain items from $\auditreports$ stemming from one of two reasons: either a negative judgment has been received; or the number of judgments from the previous tranche is less than the number of announcements from said tranche. In the first case, the validator is always required to issue a judgment on the work-report. In the second case, a new special-purpose \textsc{vrf} must be constructed to determine if an audit and judgment is warranted from us.
 
 In all cases, we publish a signed statement of which of the cores we believe we are required to audit (an \emph{announcement}) together with evidence of the \textsc{vrf} signature to select them and the other validators' announcements from the previous tranche unmatched with a judgment in order that all other validators are capable of verifying the announcement. \emph{Publication of an announcement should be taken as a contract to complete the audit regardless of any future information.}
 
@@ -89,7 +91,7 @@ We can thus define $\mathbf{a}_n$ beyond the initial tranche through a new \text
 \begin{align}
   \nonumber\forall n > 0:&\\
   \ s_n(w) &\in \bandersig{\activeset[v]_\vk¬bs}{\mathsf{X}_U \concat \banderout{\H_\¬vrfsig}\concat\blake(w)\append n}{[]} \\
-  \ \mathbf{a}_n &\equiv \set{ \textstyle\frac{\valcount}{256\mathsf{F}}\banderout{s_n(w)}_0 < m_n \mid w \in \mathbf{Q}, w \ne \none }\!\!\!\!\\
+  \ \mathbf{a}_n &\equiv \set{ \textstyle\frac{\valcount}{256\mathsf{F}}\banderout{s_n(w)}_0 < m_n \mid w \in \auditreports, w \ne \none }\!\!\!\!\\
   \nonumber \where m_n &= |A_{n - 1}(w) \setminus J_\top(w)|
 \end{align}
 
@@ -125,10 +127,10 @@ From this mapping the validator issues a set of judgments $\mathbf{j}_n$:
   \mathbf{j}_n &= \set{\build{\signdata{\activeset[v]_\vk¬ed}{\mathsf{X}_{e(w)} \concat \blake(w)}}{(c, w) \in \mathbf{a}_n}}
 \end{align}
 
-%We denote the guarantors of a work-package $w$ as $\mathbf{G}(w)$ from a particular chain head, and this may be derived from the guarantees extrinsic $\xtguarantees$ of the ancestor block which introduced the work-report. Our restrictions on the guarantees extrinsic (described in section \ref{sec:accumulation}) ensures that this is unique.
+%We denote the guarantors of a work-package $w$ as $\guarantorassignments(w)$ from a particular chain head, and this may be derived from the guarantees extrinsic $\xtguarantees$ of the ancestor block which introduced the work-report. Our restrictions on the guarantees extrinsic (described in section \ref{sec:accumulation}) ensures that this is unique.
 %\begin{equation}
 %\begin{aligned}
-%    \mathbf{G}(w) &\equiv [ v \mid (s, v) \orderedin a ] \\
+%    \guarantorassignments(w) &\equiv [ v \mid (s, v) \orderedin a ] \\
 %    \where (c, w, a) &\in \xtguarantees \\
 %    (\H, \mathbf{E}) &\in \ancestors
 %\end{aligned}
@@ -145,12 +147,12 @@ We consider a work-report as audited under two circumstances. Either, when it ha
   }
 \end{align}
 
-Our block $\block$ may be considered audited, a condition denoted $\mathbf{U}$, when all the work-reports which were made available are considered audited. Formally:
+Our block $\block$ may be considered audited, a condition denoted $\isaudited$, when all the work-reports which were made available are considered audited. Formally:
 \begin{align}
-  \mathbf{U} &\Leftrightarrow \forall w \in \mathbf{W} : U(w)
+  \isaudited &\Leftrightarrow \forall w \in \justbecameavailable : U(w)
 \end{align}
 
-For any block we must judge it to be audited (\ie $\mathbf{U} = \top$) before we vote for the block to be finalized in \textsc{Grandpa}. See section \ref{sec:grandpa} for more information here.
+For any block we must judge it to be audited (\ie $\isaudited = \top$) before we vote for the block to be finalized in \textsc{Grandpa}. See section \ref{sec:grandpa} for more information here.
 
 Furthermore, we pointedly disregard chains which include the accumulation of a report which we know at least $\onethird$ of validators judge as being invalid. Any chains including such a block are not eligible for authoring on. The \emph{best block}, \ie that on which we build new blocks, is defined as the chain with the most regular Safrole blocks which does \emph{not} contain any such disregarded block. Implementation-wise, this may require reversion to an earlier head or alternative fork.
 

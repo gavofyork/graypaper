@@ -53,7 +53,7 @@
   \item[$\readable{\memory}$] The set of validly readable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
   \item[$\writable{\memory}$] The set of validly writable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
   \item[$\workreport$] The set of work-reports.
-  \item[$\mathbb{X}$] The set of refinement contexts.
+  \item[$\workcontext$] The set of refinement contexts.
   \item[$\blob$] The set of octet strings/``blobs''. Subscript denotes length. See section \ref{sec:sequences}.
   \begin{description}
     \item[$\blskey$] The set of \textsc{bls} public keys. A subset of $\blob_{144}$. See section \ref{sec:signing}.
@@ -162,20 +162,18 @@ These terms are all contextualized to a single block. They may be superscripted 
 \begin{description}
   \item[$\ancestors$] The ancestor set of the block. See equation \ref{eq:ancestors}.
   \item[$\block$] The block. See equation \ref{eq:block}.
-  \item[$\mathbf{E}$] The block extrinsic. See equation \ref{eq:extrinsic}.
+  \item[$\extrinsic$] The block extrinsic. See equation \ref{eq:extrinsic}.
   \item[$\mathbf{F}_v$] The \textsc{Beefy} signed commitment of validator $v$. See equation \ref{eq:beefysignedcommitment}.
-  \item[$\mathbf{G}$] The mapping from cores to guarantor keys. See section \ref{sec:coresandvalidators}.
+  \item[$\guarantorassignments$] The mapping from cores to guarantor keys. See section \ref{sec:coresandvalidators}.
   \item[$\mathbf{G^*}$] The mapping from cores to guarantor keys for the previous rotation. See section \ref{sec:coresandvalidators}.
   \item[$\header$] The block header. See equation \ref{eq:header}.
-  \item[$\mathbf{I}$] The sequence of work-reports which were accumulated this in this block. See equation \ref{eq:accumulatedreports}.
-  \item[$\mathbf{Q}$] The selection of ready work-reports which a validator determined they must audit. See equation \ref{eq:auditselection}.
+  \item[$\accumulationstatistics$] The sequence of work-reports which were accumulated this in this block. See equation \ref{eq:accumulatedreports}.
   \item[$\reporters$] The set of Ed25519 guarantor keys who made a work-report. See equation \ref{eq:guarantorsig}.
   \item[$\mathbf{S}$] The set of indices of services which have been accumulated (``progressed'') in the block. See equation \ref{eq:servicestoaccumulate}.
   \item[$\mathbf{T}$] The ticketed condition, true if the block was sealed with a ticket signature rather than a fallback. See equations \ref{eq:ticketconditiontrue} and \ref{eq:ticketconditionfalse}.
-  \item[$\mathbf{U}$] The audit condition, equal to $\top$ once the block is audited. See section \ref{sec:auditing}.
-  \item[$\mathbf{V}$] The set of verdicts in the present block. See equation \ref{eq:verdicts}.\\
-  \item[$\mathbf{W}$] The sequence of work-reports which have now become available and ready for accumulation. See equation \ref{eq:availableworkreports}.
-  \item[$\mathbf{X}$] The sequence of transfers implied by the block's accumulations. See equation \ref{eq:deferredtransfers}.\\
+  \item[$\isaudited$] The audit condition, equal to $\top$ once the block is audited. See section \ref{sec:auditing}.
+  \item[$\justbecameavailable$] The sequence of work-reports which have now become available and ready for accumulation. See equation \ref{eq:availableworkreports}.
+  \item[$\deferredtransfersstatistics$] The sequence of transfers implied by the block's accumulations. See equation \ref{eq:deferredtransfers}.\\
 \end{description}
 
 Without any superscript, the block is assumed to the block being imported or, if no block is being imported, the head of the best chain (see section \ref{sec:bestchain}). Explicit block-contextualizing superscripts include:
