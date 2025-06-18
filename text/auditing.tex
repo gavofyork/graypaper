@@ -55,7 +55,7 @@ We may then define $\mathbf{a}_0$ as the non-empty items to audit through a veri
 \begin{align}
   \mathbf{a}_0 &= \set{\build{\tup{c, w}}{\tup{c, w} \in \mathbf{p}_{\dots+10}, w \ne \none}} \\
   \where \mathbf{p} &= \Ffyshuffle{\sq{\build{\tup{c, \auditreports_c}}{c \orderedin \coreindex}}, r} \\
-  \also r &= \banderout{s_0}
+  \also r &= \Fbanderout{s_0}
 \end{align}
 
 Every $\mathsf{A} = 8$ seconds following a new time slot, a new tranche begins, and we may determine that additional cores warrant an audit from us. Such items are defined as $\mathbf{a}_n$ where $n$ is the current tranche. Formally:
@@ -90,9 +90,9 @@ We are able to define $\mathbf{a}_n$ for tranches beyond the first on the basis 
 We can thus define $\mathbf{a}_n$ beyond the initial tranche through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
 \begin{align}
   \nonumber\forall n > 0:&\\
-  \ s_n(w) &\in \bandersig{\activeset[v]_\vk¬bs}{\mathsf{X}_U \concat \banderout{\H_\¬vrfsig}\concat\blake(w)\append n}{[]} \\
-  \ \mathbf{a}_n &\equiv \set{ \textstyle\frac{\valcount}{256\mathsf{F}}\banderout{s_n(w)}_0 < m_n \mid w \in \auditreports, w \ne \none }\!\!\!\!\\
-  \nonumber \where m_n &= |A_{n - 1}(w) \setminus J_\top(w)|
+  \ s_n(w) &\in \bandersig{\activeset[v]_\vk¬bs}{\mathsf{X}_U \concat \Fbanderout{\H_\¬vrfsig}\concat\blake(w)\append n}{[]} \\
+  \ \mathbf{a}_n &\equiv \set{ \build{ w }{\textstyle\frac{\valcount}{256\mathsf{F}}\Fbanderout{s_n(w)}_0 < m_n, w \in \auditreports, w \ne \none }}\!\!\!\!\\
+  \nonumber \where m_n &= \len{A_{n - 1}(w) \setminus J_\top(w)}
 \end{align}
 
 We define our bias factor $\mathsf{F} = 2$, which is the expected number of validators which will be required to issue a judgment for a work-report given a single no-show in the tranche before. Modeling by \cite{cryptoeprint:2024/961} shows that this is optimal.

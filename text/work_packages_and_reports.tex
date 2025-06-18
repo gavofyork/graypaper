@@ -191,26 +191,27 @@ We now come to the work-report computation function $\computedigest$. This forms
 \end{equation}
 % TODO: Decide on whether context is bold or not.
 
+\newcommand*{\local¬theitem}{m}
 Where:
 \begin{align*}
-  \Fkeys{\wr¬srlookup} \equiv \,&\set{ h \mid \wiX \in \wpX_\mathbf{w}, (h^\boxplus, n) \in \wiX_\mathbf{i} } \ ,\quad\len{\wr¬srlookup} \le 8\\
+  \Fkeys{\wr¬srlookup} \equiv \,&\set{ h \mid \wiX \in \wpX_\wp¬workitems, (h^\boxplus, n) \in \wiX_\wi¬importsegments } \ ,\quad\len{\wr¬srlookup} \le 8\\
   (\wr¬authtrace, \wr¬authgasused) = \,&\Psi_I(\wpX, \¬core) \\
   (\wr¬digests, \allexports) = \,&\transpose[
-    (\itemtodigest(\wpX_\wp¬workitems[j], r, u), \mathbf{e})
+    (\itemtodigest(\wpX_\wp¬workitems\subb{j}, r, u), \mathbf{e})
     \mid
     (r, u, \mathbf{e}) = \countupexports(\wpX, j),\,
     j \orderedin \N_{\len{\wpX_\wp¬workitems}}
   ] \\
   \countupexports(\wpX, j) \equiv \,&\begin{cases}
-    (\oversize, u, [\segment_0, \segment_0, \dots]_{\dots w_e}) &\when \len{r} + z > \mathsf{W}_R\\
-    (\badexports, u, [\segment_0, \segment_0, \dots]_{\dots w_e}) &\otherwhen \len{\mathbf{e}} \ne w_e \\
-    (r, u, [\segment_0, \segment_0, \dots]_{\dots w_e}) &\otherwhen r \not\in \blob \\
-    (r, u, \mathbf{e}) &\otherwise \\
-    \multicolumn{2}{l}{\where (r, \mathbf{e}, u) = \Psi_R(
-      j, \wpX, \mathbf{o}, [\importsegmentdata(w) \mid w \orderedin \wpX_\wp¬workitems], \ell
+    \tup{\oversize, u, \sq{\segment_0, \segment_0, \dots}_{\dots \local¬theitem_\wi¬exportcount}} &\when \len{r} + z > \mathsf{W}_R\\
+    \tup{\badexports, u, \sq{\segment_0, \segment_0, \dots}_{\dots \local¬theitem_\wi¬exportcount}} &\otherwhen \len{\mathbf{e}} \ne w_e \\
+    \tup{r, u, \sq{\segment_0, \segment_0, \dots}_{\dots \local¬theitem_\wi¬exportcount}} &\otherwhen r \not\in \blob \\
+    \tup{r, u, \mathbf{e}} &\otherwise \\
+    \multicolumn{2}{l}{\where \tup{r, \mathbf{e}, u} = \Psi_R(
+      j, \wpX, \mathbf{o}, \sq{\build{\importsegmentdata(w)}{w \orderedin \wpX_\wp¬workitems}}, \ell
     )}\\
-    \multicolumn{2}{l}{\also h = \blake(\wpX)\,,\; w = \wpX_\wp¬workitems[j]\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems[k]_\wi¬exportcount}\\
-    \multicolumn{2}{l}{\also z = \len{\mathbf{o}} + \sum_{k < j, (r \in \blob, \dots) = I(p, k)} \len{r}}
+    \multicolumn{2}{l}{\also h = \blake(\wpX)\,,\; \local¬theitem = \wpX_\wp¬workitems\subb{j}\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems\subb{k}_\wi¬exportcount}\\
+    \multicolumn{2}{l}{\also z = \len{\mathbf{o}} + \sum_{k < j, \tup{r \in \blob, \dots} = I(p, k)} \len{r}}
   \end{cases}
 \end{align*}
 
