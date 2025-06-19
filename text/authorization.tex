@@ -12,18 +12,18 @@ Authorizers are identified as the hash of their \textsc{pvm} code concatenated w
 
 \subsection{Pool and Queue}
 
-We define the set of authorizers allowable for a particular core $\¬core$ as the \emph{authorizer pool} $\alpha[\¬core]$. To maintain this value, a further portion of state is tracked for each core: the core's current \emph{authorizer queue} $\varphi[\¬core]$, from which we draw values to fill the pool. Formally:
+We define the set of authorizers allowable for a particular core $\¬core$ as the \emph{authorizer pool} $\authpool[\¬core]$. To maintain this value, a further portion of state is tracked for each core: the core's current \emph{authorizer queue} $\authqueue[\¬core]$, from which we draw values to fill the pool. Formally:
 \begin{equation}\label{eq:authstatecomposition}
-  \alpha \in \seq{\seq{\H}_{:\mathsf{O}}}_\mathsf{C}\ , \qquad
-  \varphi \in \seq{\seq{\H}_{\mathsf{Q}}}_\mathsf{C}
+  \authpool \in \seq{\seq{\hash}_{:\mathsf{O}}}_\corecount\ , \qquad
+  \authqueue \in \seq{\seq{\hash}_{\mathsf{Q}}}_\corecount
 \end{equation}
 
-Note: The portion of state $\varphi$ may be altered only through an exogenous call made from the accumulate logic of an appropriately privileged service.
+Note: The portion of state $\authqueue$ may be altered only through an exogenous call made from the accumulate logic of an appropriately privileged service.
 
 The state transition of a block involves placing a new authorization into the pool from the queue:
 \begin{align}
-  &\forall \¬core \in \N_\mathsf{C} : \alpha'[\¬core] \equiv {\overleftarrow{F(\¬core) \doubleplus \varphi'[\¬core] [ \mathbf{H}_t ]^{\circlearrowleft}}}^{\mathsf{O}} \\
-  &F(\¬core) \equiv \begin{cases} \alpha[\¬core] \seqminusl \{(g_w)_a\} &\when \exists g \in \xtguarantees : (g_w)_\¬core = \¬core \\ \alpha[\¬core] & \otherwise \end{cases}
+  &\forall \¬core \in \coreindex : \authpool'\subb{\¬core} \equiv {\overleftarrow{F(\¬core) \append \cyclic{\authqueue'\subb{\¬core}\subb{\H_\¬timeslot}}}}^{\mathsf{O}} \\
+  &F(\¬core) \equiv \begin{cases} \authpool[\¬core] \seqminusl \set{(g_\xg¬workreport)_\wr¬authorizer} &\when \exists g \in \xtguarantees : (g_\xg¬workreport)_\¬core = \¬core \\ \authpool[\¬core] & \otherwise \end{cases}
 \end{align}
 
-Since $\alpha'$ is dependent on $\varphi'$, practically speaking, this step must be computed after accumulation, the stage in which $\varphi'$ is defined. Note that we utilize the guarantees extrinsic $\xtguarantees$ to remove the oldest authorizer which has been used to justify a guaranteed work-package in the current block. This is further defined in equation \ref{eq:guaranteesextrinsic}.
+Since $\authpool'$ is dependent on $\authqueue'$, practically speaking, this step must be computed after accumulation, the stage in which $\authqueue'$ is defined. Note that we utilize the guarantees extrinsic $\xtguarantees$ to remove the oldest authorizer which has been used to justify a guaranteed work-package in the current block. This is further defined in equation \ref{eq:guaranteesextrinsic}.

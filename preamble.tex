@@ -58,47 +58,46 @@
 }}
 \makeatother
 
-\def\drawplusplus#1#2#3{\hbox to 0pt{\hbox to #1{\hfill\vrule height #3 depth
-      0pt width #2\hfill\vrule height #3 depth 0pt width #2\hfill
-      }}\vbox to #3{\vfill\hrule height #2 depth 0pt width
-      #1 \vfill}}
-      %Poor man's typography
-\def\doubleplus{\mathrel{\drawplusplus {7pt}{0.6pt}{5pt}}}
-\def\concat{\ensuremath{\frown}}
-\def\seqminusl{\nwspoon}
-\def\seqminusr{\sespoon}
+% Typical typography
 \newcommand*\eg{e.g.\@\xspace}
 \newcommand*\Eg{E.g.\@\xspace}
 \newcommand*\ie{i.e.\@\xspace}
 \newcommand*\Ie{I.e.\@\xspace}
 \newcommand*\etc{\&c.\@\xspace}
 \newcommand*\nb{\textsc{nb}\@\xspace}
+\newcommand*\twothirds{\ensuremath{\nicefrac{2}{3}}}
+\newcommand*\onethird{\ensuremath{\nicefrac{1}{3}}}
+
+% Some symbols
+\def\drawplusplus#1#2#3{\hbox to 0pt{\hbox to #1{\hfill\vrule height #3 depth
+      0pt width #2\hfill\vrule height #3 depth 0pt width #2\hfill
+      }}\vbox to #3{\vfill\hrule height #2 depth 0pt width
+      #1 \vfill}}
+      %Poor man's typography
+\newcommand*{\doubleplus}{\mathrel{\drawplusplus {7pt}{0.6pt}{5pt}}}
+\newcommand*{\concat}{\ensuremath{\frown}}
+\newcommand*{\append}{\ensuremath{\doubleplus}}
+\newcommand*{\seqminusl}{\nwspoon}
+\newcommand*{\seqminusr}{\sespoon}
+\newcommand*{\disjoint}{\downspoon}
+\newcommand*{\anglebar}[1]{\left\langlebar#1\right\ranglebar}
+
+% Misc text typography
+\newcommand*{\token}[1]{\text{{\small \texttt{#1}}}}
+\newcommand*{\Jam}{\raisebox{-1.2pt}{J}\textsc{am}\@\xspace}
+
+% Some typogrphy for irregular operations
 \newcommand*\rem{\ \text{\scriptsize{\%}}\ }
 \newcommand*\remainder{\text{\hspace{2pt}\footnotesize{\textsf{R}}\hspace{2pt}}}
 \newcommand*\fold{\ \thicksim\mathchoice{\!\!\!\!\!\!\!}{\!\!\!\!\!\!}{\!\!\!\!\!\!}{\!\!\!\!\!\!}\int}
-\newcommand*{\powset}[2][{}]{\wp\left\langle#2\right\rangle_{#1}}
-\newcommand*{\sig}[2]{\mathbb{E}_{#1}\langle#2\rangle}
-\newcommand*{\bandersnatch}[3]{\bar{\mathbb{F}}_{#1}^{#3}\langle#2\rangle}
-\newcommand*{\bandersig}[3]{\mathbb{F}_{#1}^{#3}\langle#2\rangle}
-\newcommand*{\banderout}[1]{\mathcal{Y}(#1)}
-\newcommand*{\dict}[2]{\mathbb{D}\langle #1\to#2\rangle}
 \newcommand*{\order}[1]{\left[#1\right]}
 \newcommand*{\orderby}[2]{\left[#1\,\middle\lwavy\,#2\right]}
 \newcommand*{\orderuniqby}[2]{\left[#1\,\middle\lWavy\,#2\right]}
-\newcommand*{\token}[1]{\text{{\small \texttt{#1}}}}
-\renewcommand*{\H}{\mathbb{H}}
-\newcommand*{\N}{\mathbb{N}}
-\newcommand*{\Y}{\mathbb{Y}}
-\newcommand*{\Z}{\mathbb{Z}}
-\newcommand*{\G}{\mathbb{G}}
 \newcommand*{\orderedin}{\ensuremath{\mathrel{\mathrlap{<}{\scalebox{0.95}[1]{$-$}}}}}
-\newcommand*{\using}{\text{let }}
-\newcommand*{\where}{ \text{where }}
-\newcommand*{\also}{ \text{and }}
-\newcommand*{\otherwise}{\text{otherwise}}
-\newcommand*{\otherwhen}{\text{otherwise if }}
-\newcommand*{\when}{\text{if }}
-\newcommand*{\exc}{\text{ except }}
+% Encoding types with a length prefix
+\newcommand*{\var}[1]{\left\updownarrow#1\right.\!}
+
+% Helpful symbols for the protocol.
 \newcommand*{\oog}{\infty}
 \newcommand*{\error}{\nabla}
 \newcommand*{\panic}{\lightning}
@@ -107,58 +106,201 @@
 \newcommand*{\host}{\hbar}
 \newcommand*{\halt}{\blacksquare}
 \newcommand*{\fault}{\text{\raisebox{6pt}{\rotatebox{180}{\textsf{F}}}}}
+
+% Making types be optional
 \newcommand*{\none}{\emptyset}
-\newcommand*{\subifnone}{\mathcal{U}}
-\newcommand*{\disjoint}{\downspoon}
-\newcommand*{\Jam}{\raisebox{-1.2pt}{J}\textsc{am}\@\xspace}
-\newcommand*{\suchthat}{\text{ such that }}
-\newcommand*{\keys}[1]{\mathcal{K}(#1)}
+\newcommand*{\maybe}[1]{\mathord{\text{¿}}#1}
+\newcommand*{\optional}[1]{#1\bm{?}}
+
+% Tuples, sequences, and sets.
 \let\originalleft\left
 \let\originalright\right
-\renewcommand{\left}{\mathopen{}\mathclose\bgroup\originalleft}
-\renewcommand{\right}{\aftergroup\egroup\originalright}
-\newcommand*{\var}[1]{\left\updownarrow#1\right.\!}
-\newcommand*{\maybe}[1]{\mathord{\text{¿}}#1}
-\newcommand*{\se}{\mathcal{E}}
-\newcommand*{\de}{\mathcal{E}^{-1}}
+\renewcommand*{\left}{\mathopen{}\mathclose\bgroup\originalleft}
+\renewcommand*{\right}{\aftergroup\egroup\originalright}
+\newcommand*{\with}{\;\middle\vert\;}
 \newcommand*{\tricolon}{\!\mathrel{\vcenter{\offinterlineskip%
 \hbox{\scalebox{0.5}[0.5]{${\scriptscriptstyle \blacktriangleright}$}}
 \vskip.15ex
 \hbox{\scalebox{0.5}[0.5]{${\scriptscriptstyle \blacktriangleright}$}}
 }}}
+\newcommand*{\tup}[1]{\!\left(#1\right)\!}
+\newcommand*{\tuple}[1]{\!\left\lgroup#1\right\rgroup\!}
 \newcommand*{\is}[2]{#1\tricolon#2}
 \newcommand*{\isa}[2]{#1\in #2}
-\newcommand*{\ts}{,\,}
-\newcommand*{\lseq}{\left\lsem}
-\newcommand*{\rseq}{\right\rsem}
-\newcommand*{\ltup}{\!\left\lgroup}
-\newcommand*{\rtup}{\right\rgroup\!}
-\newcommand*{\ltuple}{\!\left\lgroup}
-\newcommand*{\rtuple}{\right\rgroup\!}
 \newcommand*{\sq}[1]{\left[#1\right]}
-\newcommand*{\seq}[1]{\lseq#1\rseq}
-\newcommand*{\tup}[1]{\ltup#1\rtup}
-\newcommand*{\tuple}[1]{\ltuple#1\rtuple}
+\newcommand*{\seq}[1]{\left\lsem#1\right\rsem}
+\newcommand*{\set}[1]{\left\{\,#1\,\right\}}
+\newcommand*{\emset}{\left\{\right\}}
+\newcommand*{\protoset}[1]{\left\{\mkern-5mu\left[\,#1\,\right]\mkern-5mu\right\}}
+\newcommand*{\build}[2]{#1 \with #2}
+\newcommand*{\kv}[2]{\tup{#1 \mapsto #2}}
+\newcommand*{\keyval}[2]{\tuple{#1 \to #2}}
+
+% Typical operations.
 \newcommand*{\floor}[1]{\left\lfloor#1\right\rfloor}
 \newcommand*{\ceil}[1]{\left\lceil#1\right\rceil}
-\newcommand*{\len}[1]{\left|#1\right|}
+\newcommand*{\len}[1]{\left\vert#1\right\vert}
 \newcommand*{\fnfrac}[2]{\left\lfloor\nicefrac{#1}{#2}\right\rfloor}
 \newcommand*{\ffrac}[2]{\left\lfloor\frac{#1}{#2}\right\rfloor}
 \newcommand*{\transpose}{{}^\text{T}}
-\newcommand*{\joined}{\wideparen}
-\newcommand*{\ang}[1]{\langle#1\rangle}
+\newcommand*{\ang}[1]{\left\langle#1\right\rangle}
+\newcommand*{\sub}[1]{_{#1}}
+\newcommand*{\subb}[1]{\left[#1\right]}
+\newcommand*{\cyclic}[1]{{#1}^\circlearrowleft}
+\newcommand*{\bracegroup}[1]{\left\{ #1 \right.}
+\newcommand*{\abracegroup}[2][]{\bracegroup{#1\begin{aligned}#2\end{aligned}}}
+\newcommand*{\bracegroupboth}[1]{\left\{ #1 \right\}}
+\newcommand*{\abracegroupboth}[2][]{\bracegroupboth{#1\begin{aligned}#2\end{aligned}}}
+\newcommand*{\bool}{{\set{\bot, \top}}}
+\newcommand*{\concatall}[1]{\wideparen{#1}}
+\newcommand*{\deffunc}[1]{\abracegroup[\,]{#1\vphantom{x'_i}}}
 
-% GP terms
-\renewcommand*{\hash}{\mathcal{H}}
-\newcommand*{\goodset}{\psi_\mathbf{g}}
-\newcommand*{\badset}{\psi_\mathbf{b}}
-\newcommand*{\wonkyset}{\psi_\mathbf{w}}
-\newcommand*{\offenders}{\psi_\mathbf{o}}
-\newcommand*{\xttickets}{\mathbf{E}_T}
-\newcommand*{\xtdisputes}{\mathbf{E}_D}
-\newcommand*{\xtguarantees}{\mathbf{E}_G}
-\newcommand*{\xtassurances}{\mathbf{E}_A}
-\newcommand*{\xtpreimages}{\mathbf{E}_P}
+% Bits of text
+\newcommand*{\suchthat}{\text{ such that }}
+\newcommand*{\using}{\text{let }}
+\newcommand*{\where}{ \text{where }}
+\newcommand*{\also}{ \text{and }}
+\newcommand*{\otherwise}{\text{otherwise}}
+\newcommand*{\otherwhen}{\text{otherwise if }}
+\newcommand*{\when}{\text{if }}
+\newcommand*{\exc}{\text{ except }}
+
+% Special constants/functions (Upper caligraphic letters)
+\newcommand*{\mmrappend}{\mathcal{A}}
+\newcommand*{\octetstobits}{\mathcal{B}}
+\newcommand*{\erasurecode}{\mathcal{C}}
+\newcommand*{\se}{\mathcal{E}}
+\newcommand*{\de}{\mathcal{E}^{-1}}
+\newcommand*{\mmrencode}{\se_M}
+\newcommand*{\fyshuffle}{\mathcal{F}}
+\newcommand*{\blake}{\mathcal{H}}
+\newcommand*{\keccak}{\mathcal{H}_K}
+\newcommand*{\merklejustsubpath}{\mathcal{J}}
+\newcommand*{\keys}{\mathcal{K}}
+\newcommand*{\merklesubtreepage}{\mathcal{L}}
+\newcommand*{\merklizecd}{\mathcal{M}}
+\newcommand*{\merklizewb}{\mathcal{M}_B}
+\newcommand*{\merklizestate}{\mathcal{M}_\sigma}
+\newcommand*{\mmrsuperpeak}{\mathcal{M}_R}
+\newcommand*{\getringroot}{\mathcal{O}}
+\newcommand*{\zeropad}{\mathcal{P}}
+\newcommand*{\seqfromhash}{\mathcal{Q}}
+\newcommand*{\ecrecover}{\mathcal{R}}
+\newcommand*{\signdata}{\mathcal{S}}
+\newcommand*{\wallclock}{\mathcal{T}}
+\newcommand*{\subifnone}{\mathcal{U}}
+\newcommand*{\values}{\mathcal{V}}
+\newcommand*{\sext}{\mathcal{X}}
+\newcommand*{\banderout}{\mathcal{Y}}
+\newcommand*{\tosigned}{\mathcal{Z}}
+
+% F prefix implies these are "proper" latex functions, not just simple names.
+\newcommand*{\Fmmrappend}[1]{\mmrappend\left(#1\right)}
+\newcommand*{\Ferasurecode}[2][]{\erasurecode_{#1}\left(#2\right)}
+\newcommand*{\Ferasurecodeplex}[2][]{\erasurecode^\#_{#1}\left(#2\right)}
+\newcommand*{\Fmmrencode}[1]{\mmrencode\left(#1\right)}
+\newcommand*{\Ffyshuffle}[1]{\fyshuffle\left(#1\right)}
+\newcommand*{\Fmerklejustsubpath}[2]{\merklejustsubpath_{#1}\left(#2\right)}
+\newcommand*{\Fkeys}[1]{\keys\left(#1\right)}
+\newcommand*{\Fmerklesubtreepage}[2]{\merklesubtreepage_{#1}\left(#2\right)}
+\newcommand*{\Fmerklizecd}[1]{\merklizecd\left(#1\right)}
+\newcommand*{\Fmerklizewb}[1]{\merklizewb\left(#1\right)}
+\newcommand*{\Fmerklizestate}[1]{\merklizestate\left(#1\right)} % TODO: Make it take a parameter.
+\newcommand*{\Fmmrsuperpeak}[1]{\mmrsuperpeak\left(#1\right)}
+\newcommand*{\Fgetringroot}[1]{\getringroot\left(#1\right)}
+\newcommand*{\Fzeropad}[2]{\zeropad_{#1}\left(#2\right)}
+\newcommand*{\Fseqfromhash}[1]{\seqfromhash\left(#1\right)}
+\newcommand*{\Fecrecover}[1]{\ecrecover\left(#1\right)}
+\newcommand*{\Fsigndata}[2]{\signdata_{#1}\left(#2\right)}
+\newcommand*{\Fwallclock}{\wallclock}
+\newcommand*{\Fsubifnone}[1]{\subifnone\left(#1\right)} % TODO: Make it take a parameter.
+\newcommand*{\Fvalues}[1]{\values\left(#1\right)}
+\newcommand*{\Fsignext}[2]{\signext_{#1}\left(#2\right)}
+\newcommand*{\Fbanderout}[1]{\banderout\left(#1\right)}
+\newcommand*{\Ftosigned}[2]{\tosigned_{#1}\left(#2\right)}
+\newcommand*{\Ffromsigned}[2]{\fromsigned^{-1}_{#1}\left(#2\right)}
+
+% Constants (Sans-serif upper letters)
+\newcommand*{\corecount}{\mathsf{C}}
+\newcommand*{\epochlen}{\mathsf{E}}
+\newcommand*{\ticketentries}{\mathsf{N}}
+\newcommand*{\valcount}{\mathsf{V}}
+
+% Big Functions (Upper-greek letters)
+\newcommand*{\accumulate}{\Delta}
+\newcommand*{\accone}{\Delta_1}
+\newcommand*{\accpar}{\Delta_*}
+\newcommand*{\accseq}{\Delta_+}
+\newcommand*{\histlookup}{\Lambda}
+\newcommand*{\computedigest}{\Xi}
+\newcommand*{\transitionstate}{\Upsilon}
+
+%%%%%%%%%%%%
+% Named types (blackboard letters)
+\newcommand*{\serviceaccount}{\mathbb{A}}
+\newcommand*{\bitstring}{\mathbb{B}}
+\newcommand*{\safroleticket}{\mathbb{C}}
+\newcommand*{\dictionary}{\mathbb{D}}
+\newcommand*{\dict}[2]{\dictionary\anglebar{#1\to#2}}
+\newcommand*{\signature}{\mathbb{E}}
+\newcommand*{\sig}[2]{\signature_{#1}\ang{#2}}
+\newcommand*{\bssignature}{\mathbb{F}}
+\newcommand*{\bsringproof}{\bar{\mathbb{F}}}
+\newcommand*{\bandersnatch}[3]{\bsringproof_{#1}^{#3}\ang{#2}}
+\newcommand*{\bandersig}[3]{\bssignature_{#1}^{#3}\ang{#2}}
+\newcommand*{\segment}{\mathbb{G}}
+\renewcommand*{\hash}{\mathbb{H}}
+\newcommand*{\workitem}{\mathbb{I}}
+\newcommand*{\workerror}{\mathbb{J}}
+\newcommand*{\valkey}{\mathbb{K}}
+\newcommand*{\workdigest}{\mathbb{L}}
+\newcommand*{\ram}{\mathbb{M}}
+\newcommand*{\N}{\mathbb{N}}
+\newcommand*{\operandtuple}{\mathbb{O}}
+\newcommand*{\workpackage}{\mathbb{P}}
+% Q unused
+% R unused
+\newcommand*{\avspec}{\mathbb{S}}
+\newcommand*{\defxfer}{\mathbb{T}}
+\newcommand*{\defxfers}{\seq\defxfer}
+\newcommand*{\partialstate}{\mathbb{U}}
+\newcommand*{\readable}[1]{\mathbb{V}_{#1}}
+\newcommand*{\writable}[1]{\mathbb{V}^*_{#1}}
+\newcommand*{\workreport}{\mathbb{W}}
+\newcommand*{\workcontext}{\mathbb{X}}
+\newcommand*{\blob}{\mathbb{Y}}
+\newcommand*{\Z}{\mathbb{Z}}
+
+%%%%%%%%%%%%
+% Numeric types (blackboard N subscripts)
+\newcommand*{\timeslot}{\N_T}
+\newcommand*{\balance}{\N_B}
+\newcommand*{\serviceid}{\N_S}
+\newcommand*{\bloblength}{\N_L}
+\newcommand*{\gas}{\N_G}
+\newcommand*{\signedgas}{\Z_G}
+\newcommand*{\coreindex}{\N_\corecount}
+\newcommand*{\valindex}{\N_\valcount}
+\newcommand*{\ticketentryindex}{\N_\ticketentries}
+\newcommand*{\epochindex}{\N_\epochlen}
+\newcommand*{\Nbits}[1]{\N_{2^{#1}}}
+
+%%%%%%%%%%%%
+% Hash & blob specializations
+% The hash & blob types have a bunch of peripheral definitions.
+\newcommand*{\zerohash}{\hash_0}
+\newcommand*{\edkey}{\hash_E}
+\newcommand*{\bskey}{\hash_B}
+\newcommand*{\keccakoutput}{\hash_K}
+\newcommand*{\blskey}{\blob_L}
+\newcommand*{\metadatakey}{\blob_{128}}
+\newcommand*{\ringroot}{\blob_R}
+
+%%%%%%%%%%%%
+% FIELDS
+
+%%%%%%%%%%%%
+% Common fields
 
 % TODO: Use non-prefixed items for common fields:
 \newcommand*{\¬gaslimit}{g}
@@ -173,18 +315,37 @@
 \newcommand*{\¬codehash}{h} % O/L \ot¬packagehash
 \newcommand*{\¬exportcount}{e}
 \newcommand*{\¬importcount}{i}
+\newcommand*{\¬workreport}{w}
+\newcommand*{\¬offender}{k}
+\newcommand*{\¬validity}{v}
+\newcommand*{\¬reporthash}{r}
+\newcommand*{\¬signature}{s}
 
+%%%%%%%%%%%%
+% Named types (blackboard)
+
+% TODO make this local.
+%\newcommand*{\safroleticket}{\mathbb{C}}
+\newcommand*{\st¬id}{y}
+\newcommand*{\st¬entry}{r}
+
+%\newcommand*{\ram}{\mathbb{M}}
+\newcommand*{\ram¬value}{\mathbf{V}}
+\newcommand*{\ram¬access}{\mathbf{A}}
+
+%\newcommand*{\workpackage}{\mathbb{P}}
 \newcommand*{\wp¬authtoken}{\mathbf{j}}
 \newcommand*{\wp¬authcodehost}{h}
 \newcommand*{\wp¬authcodehash}{u}
 \newcommand*{\wp¬authconfig}{\mathbf{p}}
 \newcommand*{\wp¬context}{\mathbf{x}} % Consider rename to \mathbf{c}
 \newcommand*{\wp¬workitems}{\mathbf{w}}
-
+% derived fields
 \newcommand*{\wp¬authorizer}{\¬authorizer}
 \newcommand*{\wp¬authcode}{\mathbf{c}}
 \newcommand*{\wp¬metadata}{\mathbf{m}}
 
+%\newcommand*{\workitem}{\mathbb{I}}
 \newcommand*{\wi¬service}{\¬service}
 \newcommand*{\wi¬codehash}{\¬codehash}
 \newcommand*{\wi¬payload}{\¬payload}
@@ -194,6 +355,7 @@
 \newcommand*{\wi¬importsegments}{\mathbf{i}}
 \newcommand*{\wi¬extrinsics}{\mathbf{x}}
 
+%\newcommand*{\workreport}{\mathbb{W}}
 \newcommand*{\wr¬avspec}{s} % O/L ¬service TODO: make bold
 \newcommand*{\wr¬context}{x} % TODO: Make bold like package. Consider renaming to \mathbf{c}
 \newcommand*{\wr¬core}{\¬core}
@@ -206,10 +368,11 @@
 % p P: work Packages
 % w I: work Items
 % w W: work Reports
-% r L: work resulTs -> Digests TODO: Rename d D
+% r L: work digests TODO: Rename d D
 % d: work output data (digest)
 % y: work payload
 
+%\newcommand*{\workdigest}{\mathbb{L}}
 \newcommand*{\wl¬service}{\¬service}
 \newcommand*{\wl¬codehash}{\¬codehash}
 \newcommand*{\wl¬payloadhash}{\¬payloadhash}
@@ -221,43 +384,262 @@
 \newcommand*{\wl¬xtsize}{z}
 \newcommand*{\wl¬exportcount}{\¬exportcount}
 
+%\newcommand*{\operandtuple}{\mathbb{O}}
 \newcommand*{\ot¬packagehash}{h} % O/L ¬codehash TODO: RENAME to k
-\newcommand*{\ot¬segroot}{e} % O/L ¬exprotcount TODO: RENAME to r?
+\newcommand*{\ot¬segroot}{e} % O/L ¬exportcount TODO: RENAME to r?
 \newcommand*{\ot¬authorizer}{\¬authorizer}
 \newcommand*{\ot¬authtrace}{\¬authtrace}
 \newcommand*{\ot¬payloadhash}{\¬payloadhash}
 \newcommand*{\ot¬gaslimit}{\¬gaslimit}
 \newcommand*{\ot¬result}{\¬result}
 
-\newcommand*{\manager}{\chi_m}
-\newcommand*{\delegator}{\chi_v}
-\newcommand*{\assigners}{\chi_\mathbf{a}}
-\newcommand*{\alwaysaccers}{\chi_\mathbf{g}}
+%\newcommand*{\avspec}{\mathbb{S}}
+\newcommand*{\as¬packagehash}{h}
+\newcommand*{\as¬bundlelen}{l}
+\newcommand*{\as¬erasureroot}{u}
+\newcommand*{\as¬segroot}{r} % Inconsistent with other segroot. TODO: RENAME to e?
+\newcommand*{\as¬segcount}{n}
+
+% TODO: Move \mathbf{p} from here into the \workreport and work-package - it's really not part of the context.
+
+%\newcommand*{\workcontext}{\mathbb{X}}
+\newcommand*{\cx¬anchorhash}{a}
+\newcommand*{\cx¬anchorpoststate}{s}
+\newcommand*{\cx¬anchoraccoutlog}{b}
+\newcommand*{\cx¬lookupanchorhash}{l}
+\newcommand*{\cx¬lookupanchortime}{t}
+\newcommand*{\cx¬prerequisites}{\mathbf{p}}
+
+%\newcommand*{\serviceaccount}{\mathbb{A}}
+\newcommand*{\sa¬storage}{\mathbf{s}}
+\newcommand*{\sa¬preimages}{\mathbf{p}}
+\newcommand*{\sa¬requests}{\mathbf{l}}
+\newcommand*{\sa¬gratis}{f}
+\newcommand*{\sa¬minaccgas}{g}
+\newcommand*{\sa¬minmemogas}{m}
+\newcommand*{\sa¬codehash}{c} % Inconsistent with ¬codehash
+\newcommand*{\sa¬balance}{b}
+\newcommand*{\sa¬created}{r}
+\newcommand*{\sa¬lastacc}{a}
+\newcommand*{\sa¬parent}{p}
+% Derived fields
+\newcommand*{\sa¬items}{i}
+\newcommand*{\sa¬octets}{o}
+\newcommand*{\sa¬minbalance}{t}
+\newcommand*{\sa¬metadata}{\mathbf{m}}
+\newcommand*{\sa¬code}{\mathbf{c}}
+
+% Fields of deferred transfer.
+%\newcommand*{\defxfer}{\mathbb{T}}
+\newcommand*{\dx¬source}{s}
+\newcommand*{\dx¬dest}{d}
+\newcommand*{\dx¬amount}{a}
+\newcommand*{\dx¬memo}{m}
+\newcommand*{\dx¬gas}{g}
+
+% Derived fields of validator keys.
+%\newcommand*{\valkey}{\mathbb{K}}
+\newcommand*{\vk¬bs}{b}
+\newcommand*{\vk¬ed}{e}
+\newcommand*{\vk¬bls}{L}  % TODO: Rename to be a single letter.
+\newcommand*{\vk¬metadata}{m}
+\newcommand*{\allvalkeys}{\seq{\valkey}_{\valcount}}
+
+% Fields of partial state \mathbb{U}.
+\newcommand*{\ps¬accounts}{\mathbf{d}}
+\newcommand*{\ps¬stagingset}{\mathbf{i}}
+\newcommand*{\ps¬authqueue}{\mathbf{q}}
+\newcommand*{\ps¬manager}{m}
+\newcommand*{\ps¬assigners}{\mathbf{a}}
+\newcommand*{\ps¬delegator}{v}
+\newcommand*{\ps¬alwaysaccers}{\mathbf{z}}
+
+%%%%%%%%%%%%
+% State item tuples (fields of lower-greek letters)
+
+% Used for \reports
+\newcommand*{\rs¬workreport}{\¬workreport}
+\newcommand*{\rs¬timestamp}{t}
+
+% Used for \recenthistory
+\newcommand*{\rh¬headerhash}{h}
+\newcommand*{\rh¬stateroot}{s}
+\newcommand*{\rh¬accoutlogsuperpeak}{b}
+\newcommand*{\rh¬reportedpackagehashes}{\mathbf{p}}
+
+
+
+%%%%%%%%%%%%
+% Incidental item tuples (fields of uppercase bold roman letters)
+
+% Blocks.
+\newcommand*{\block}{\mathbf{B}}
+\newcommand*{\theblock}{\block}
+\newcommand*{\B}{\theblock}
+
+\newcommand*{\ancestors}{\mathbf{A}}
+\newcommand*{\theancestors}{\ancestors}
+
+\newcommand*{\guarantorassignments}{\mathbf{G}}
+\newcommand*{\guarantorassignmentsunderlastrotation}{\mathbf{G}^*}
+\newcommand*{\accumulationstatistics}{\mathbf{I}}
+\newcommand*{\reporters}{\mathbf{R}}
+\newcommand*{\isticketed}{\mathbf{T}}
+\newcommand*{\isaudited}{\mathbf{U}}
+\newcommand*{\justbecameavailable}{\mathbf{W}} % TODO: Rename $\justbecameavailable$ to \mathbf{V} or whatever and `\mathbf{w}` becomes `\reporters` and `\reporters` becomes `\mathbf{G}`. `\mathbf{G}` would become something else.
+\newcommand*{\deferredtransfersstatistics}{\mathbf{X}}
+
+% Extrinsics.
+\newcommand*{\extrinsic}{\mathbf{E}}
+\newcommand*{\theextrinsic}{\extrinsic}
+\newcommand*{\XT}{\theextrinsic}
+
+\newcommand*{\xttickets}{\XT_T}
+\newcommand*{\xtdisputes}{\XT_D}
+\newcommand*{\xtverdicts}{\XT_V}
+\newcommand*{\xtculprits}{\XT_C}
+\newcommand*{\xtfaults}{\XT_F}
+\newcommand*{\xtassurances}{\XT_A}
+\newcommand*{\xtpreimages}{\XT_P}
+\newcommand*{\xtguarantees}{\XT_G}
+
+\newcommand*{\xa¬anchor}{a}
+\newcommand*{\xa¬availabilities}{f}
+\newcommand*{\xa¬assurer}{v}
+\newcommand*{\xa¬signature}{\¬signature}
+
+\newcommand*{\xg¬workreport}{\¬workreport}
+\newcommand*{\xg¬timeslot}{t}
+\newcommand*{\xg¬credential}{a}
+
+\newcommand*{\xv¬reporthash}{\¬reporthash}
+\newcommand*{\xv¬epochindex}{a}
+\newcommand*{\xv¬judgments}{\mathbf{j}}
+
+\newcommand*{\xvj¬validity}{\¬validity}
+\newcommand*{\xvj¬judgeindex}{i}
+\newcommand*{\xvj¬signature}{\¬signature}
+
+\newcommand*{\xc¬reporthash}{\¬reporthash}
+\newcommand*{\xc¬offender}{\¬offender}
+\newcommand*{\xc¬signature}{\¬signature}
+
+\newcommand*{\xf¬reporthash}{\¬reporthash}
+\newcommand*{\xf¬validity}{\¬validity}
+\newcommand*{\xf¬offender}{\¬offender}
+\newcommand*{\xf¬signature}{\¬signature}
+
+% Headers.
+\newcommand*{\header}{\mathbf{H}}
+\newcommand*{\theheader}{\header} % "THE header" is overloaded with "prototype header" for now.
+\newcommand*{\seunsignedheader}{\mathcal{E}_U}
+\newcommand*{\parentheader}[1]{{#1}^-}
+\newcommand*{\genesisheader}{\header^0}
+\renewcommand*{\H}{\theheader} % short-hand for \theheader, used in equations when subscripting to a field.
+% Header fields.
+\newcommand*{\¬parent}{p}
+\newcommand*{\¬priorstateroot}{r}
+\newcommand*{\¬timeslot}{t}
+\newcommand*{\¬extrinsichash}{x}
+\newcommand*{\¬epochmark}{e}
+\newcommand*{\¬winnersmark}{w}
+\newcommand*{\¬offendersmark}{o}
+\newcommand*{\¬authorindex}{i}
+\newcommand*{\¬vrfsig}{v}
+\newcommand*{\¬sealsig}{s}
+% Derived fields
+\newcommand*{\¬authorbskey}{a}
+
+%%%%%%%%%%%%
+% Function outputs
+
+% \accone output
+\newcommand*{\ao¬poststate}{\mathbf{o}}
+\newcommand*{\ao¬defxfers}{\mathbf{t}}
+\newcommand*{\ao¬account}{b}
+\newcommand*{\ao¬gasused}{u}
+\newcommand*{\ao¬provisions}{\mathbf{p}}
+
+
+%%%%%%%%%%%%
+% STATE ITEMS
+% Lower-greek letters
+
+\newcommand*{\thestate}{\sigma}
+\newcommand*{\genesisstate}{\sigma^0}
+
+\newcommand*{\entropy}{\eta}
+\newcommand*{\entropyaccumulator}{\eta_0}
+
+\newcommand*{\privileges}{\chi}
+\newcommand*{\manager}{\privileges_m}
+\newcommand*{\delegator}{\privileges_v}
+\newcommand*{\assigners}{\privileges_\mathbf{a}}
+\newcommand*{\alwaysaccers}{\privileges_\mathbf{g}}
+
 \newcommand*{\accumulated}{\xi}
 \newcommand*{\ready}{\vartheta}
-
-\newcommand*{\avspec}{\mathbb{S}}
-\newcommand*{\operandtuple}{\mathbb{O}}
-\newcommand*{\partialstate}{\mathbb{U}}
-\newcommand*{\defxfer}{\mathbb{T}}
-\newcommand*{\defxfers}{\seq{\defxfer}}
-
 \newcommand*{\lastaccout}{\theta}
+\newcommand*{\authpool}{\alpha}
+\newcommand*{\authqueue}{\varphi}
 
-\newcommand*{\recenthistory}{\beta_H}
-\newcommand*{\beefybelt}{\beta_B}
+\newcommand*{\recent}{\beta}
+\newcommand*{\recenthistory}{\recent_H}
+\newcommand*{\beefybelt}{\recent_B}
+\newcommand*{\recentpostparentstaterootupdate}{\recent^\dagger}
+\newcommand*{\recenthistorypostparentstaterootupdate}{\recent^\dagger_H}
 
-\newcommand*{\accountspre}{\delta}
-\newcommand*{\accountspostacc}{\delta^\dagger}
-\newcommand*{\accountspostxfer}{\delta^\ddagger}
-\newcommand*{\accountspostpreimage}{\delta'}
+\newcommand*{\disputes}{\psi}
+\newcommand*{\goodset}{\disputes_\mathbf{g}}
+\newcommand*{\badset}{\disputes_\mathbf{b}}
+\newcommand*{\wonkyset}{\disputes_\mathbf{w}}
+\newcommand*{\offenders}{\disputes_\mathbf{o}}
+
+% Safrole state.
+\newcommand*{\safrole}{\gamma}
+\newcommand*{\epochroot}{\gamma_z}
+\newcommand*{\sealtickets}{\gamma_\mathbf{s}}
+\newcommand*{\ticketaccumulator}{\gamma_\mathbf{a}}
+\newcommand*{\pendingset}{\gamma_\mathbf{k}}
+% Safrole-adjacent sets
+\newcommand*{\thetime}{\tau}
+% Validator key sets.
+\newcommand*{\stagingset}{\iota}
+\newcommand*{\activeset}{\kappa}
+\newcommand*{\previousset}{\lambda}
+
+\newcommand*{\accounts}{\delta}
+\newcommand*{\accountspre}{\accounts}
+\newcommand*{\accountspostacc}{\accounts^\dagger}
+\newcommand*{\accountspostxfer}{\accounts^\ddagger}
+\newcommand*{\accountspostpreimage}{\accounts'}
+\newcommand*{\accountspost}{\accounts'}
+
+\newcommand*{\reports}{\rho}
+\newcommand*{\reportspre}{\reports}
+\newcommand*{\reportspostjudgement}{\reports^\dagger}
+\newcommand*{\reportspostguarantees}{\reports^\ddagger}
+\newcommand*{\reportspostassurances}{\reports'}
+
+\newcommand*{\activity}{\pi}
+\newcommand*{\valstatsaccumulator}{\activity_V}
+\newcommand*{\valstatsprevious}{\activity_L}
+\newcommand*{\corestats}{\activity_C}
+\newcommand*{\servicestats}{\activity_S}
+
+%%%%%%%%%%%%
+% PVM-SPECIFIC ITEMS
 
 \newcommand*{\gascounter}{\varrho}
 \newcommand*{\registers}{\omega}
 \newcommand*{\memory}{\mu}
+\newcommand*{\pvmreg}{\N_R}
 
 \newcommand*{\jamdraftversion}{\input{VERSION}\!\!\!\!}
 \newcommand*{\jamdraftversionstring}{\jamdraftversion}
+
+%%%%%%%%%%%%
+% Other stuff
 
 \newcommand*{\makegpbackground}{
   \AddToShipoutPicture{
