@@ -623,12 +623,12 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   $\begin{aligned}
     \using [n, o] &= \registers_{7, 8} \\
     \using (g, \mathbf{w}) &= \begin{cases}
-      (g, \mathbf{w}): \se_8(g) \concat \concatall{\se^\#_8(\mathbf{w})} = \mem_{o \dots+ 112} &\when \N_{o \dots+ 112} \subseteq \writable{\mem} \\
+      (g, \mathbf{w}): \se_8(g) \concat \se_8(\mathbf{w}) = \mem_{o \dots+ 112} &\when \N_{o \dots+ 112} \subseteq \writable{\mem} \\
       %(\de_8(\memr_{o\dots+8}), [\de_4(\memr_{o+8+8x\dots+8}) \mid x \orderedin \N_{13}]) &\when \N_{o \dots+ 60} \subset \writable_\mem} \\
       (\error, \error) &\otherwise
     \end{cases} \\
     \using (c, i', g', \mathbf{w}', \mathbf{u}') &= \Psi(\mathbf{m}[n]_\mathbf{p}, \mathbf{m}[n]_i, g, \mathbf{w}, \mathbf{m}[n]_\mathbf{u})\\
-    \using \mem^* &= \mem \exc \mem^*_{o \dots+ 112} = \se_8(g') \concat \concatall{\se_8^\#(\mathbf{w}')}\\
+    \using \mem^* &= \mem \exc \mem^*_{o \dots+ 112} = \se_8(g') \concat \se_8(\mathbf{w}')\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*[n]_\mathbf{u} = \mathbf{u}'\\
       \mathbf{m}^*[n]_i = \begin{cases}
