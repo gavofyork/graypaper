@@ -2,7 +2,7 @@
 
 
 %\subsection{Security Assumptions}\label{sec:security}
-%$\ge \nicefrac{2}{3}$ validators honest and live.
+%$\ge \twothirds$ validators honest and live.
 %Short finality stall possible (up to one hour, more likely 12-18 seconds) where reversion possible. Such reversion results in major punishment of at least two validators. No reversion possible after finality.
 
 %\subsection{Parachains and Liveness}
@@ -71,7 +71,7 @@ Estimates for memory usage are as follows:
   \end{tabular}
 \end{center}
 
-%With 11 concurrent \textsc{pvm} instances each using an average of at most 2\textsc{gb} then we would expect 42\textsc{gb} left over for caching the state. Assuming 2\textsc{gb} for node operation, networking and ancilliary databases, then 40\textsc{gb} is remaining for caching the most recent state in \textsc{ram}.
+%With 11 concurrent \textsc{pvm} instances each using an average of at most 2\textsc{gb} then we would expect 42\textsc{gb} left over for caching the state. Assuming 2\textsc{gb} for node operation, networking and ancillary databases, then 40\textsc{gb} is remaining for caching the most recent state in \textsc{ram}.
 As a rough guide, each parachain has an average footprint of around 2\textsc{mb} in the Polkadot Relay chain; a 40\textsc{gb} state would allow 20,000 parachains' information to be retained in state.
 
 What might be called the ``virtual hardware'' of a \Jam core is essentially a regular \textsc{cpu} core executing at somewhere between 25\% and 50\% of regular speed for the whole six-second portion and which may draw and provide 2\textsc{mb}/s average in general-purpose \textsc{i/o} and utilize up to 2\textsc{gb} in \textsc{ram}. The \textsc{i/o} includes any trustless reads from the \Jam chain state, albeit in the recent past. This virtual hardware also provides unlimited reads from a semi-static preimage-lookup database.
