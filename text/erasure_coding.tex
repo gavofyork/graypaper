@@ -3,7 +3,7 @@
 \newcommand{\join}{\text{join}}
 \newcommand{\spl}[1]{\text{split}_{#1}}
 
-The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\bloboflen{2}$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\fnfixedencode{2}$. From this we may assume the encoding function $\erasurecode: \sequence{\bloboflen{2}}_{342} \to \sequence{\bloboflen{2}}_{1023}$ and the recovery function $\ecrecover: \protoset{\tuple{\bloboflen{2}, \Nmax{1023}}}_{342} \to \sequence{\bloboflen{2}}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\erasurecode$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
+The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\bloboflen{2}$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\fnfixedencode{2}$. From this we may assume the encoding function $\fnerasurecode: \sequence{\bloboflen{2}}_{342} \to \sequence{\bloboflen{2}}_{1023}$ and the recovery function $\ecrecover: \protoset{\tuple{\bloboflen{2}, \Nmax{1023}}}_{342} \to \sequence{\bloboflen{2}}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\fnerasurecode$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
 
 Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of 684 octets. Data whose length is not divisible by 684 must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit \textsc{da} and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import \textsc{da} system.
 
@@ -11,7 +11,7 @@ For the Import \textsc{da} system, we deal with an input size of 4,104 octets re
 
 \subsection{Blob Encoding and Recovery}
 
-We assume some data blob $\mathbf{d} \in \bloboflen{684k}, k \in \N$. This blob is split into a whole number of $k$ pieces, each a sequence of 342 octet pairs. Each piece is erasure-coded using $\erasurecode$ as above to give 1,023 octet pairs per piece.
+We assume some data blob $\mathbf{d} \in \bloboflen{684k}, k \in \N$. This blob is split into a whole number of $k$ pieces, each a sequence of 342 octet pairs. Each piece is erasure-coded using $\fnerasurecode$ as above to give 1,023 octet pairs per piece.
 
 The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
@@ -28,9 +28,9 @@ We define the transposition operator hence:
 
 We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 684 octets and results in a sequence of 1,023 smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
-  \erasurecode_{k \in \N}\colon\abracegroup{
+  \fnerasurecode_{k \in \N}\colon\abracegroup{
     \bloboflen{684k} &\to \sequence{\bloboflen{2k}}_{1023} \\
-    \mathbf{d} &\mapsto \join^\#({}^{\text{T}}\sq{\build{\Ferasurecode{\mathbf{p}}}{\mathbf{p} \orderedin {}^\text{T}\spl{2}^\#(\spl{2k}(\mathbf{d}))}})
+    \mathbf{d} &\mapsto \join^\#({}^{\text{T}}\sq{\build{\erasurecode{\mathbf{p}}}{\mathbf{p} \orderedin {}^\text{T}\spl{2}^\#(\spl{2k}(\mathbf{d}))}})
   }
 \end{equation}
 

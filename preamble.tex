@@ -171,50 +171,38 @@
 \newcommand*{\exc}{\text{ except }}
 
 % Special constants/functions (Upper caligraphic letters)
-\newcommand*{\mmrappend}{\mathcal{A}}
-\newcommand*{\octetstobits}{\mathcal{B}}
-\newcommand*{\erasurecode}{\mathcal{C}}
+% TODO: these are pure function names so should not be used directly in invocation and prefixed with fn
+\newcommand*{\fnmmrappend}{\mathcal{A}}
+\newcommand*{\fnoctetstobits}{\mathcal{B}}
+\newcommand*{\fnerasurecode}{\mathcal{C}}
 \newcommand*{\fnencode}{\mathcal{E}}
 \newcommand*{\fnfixedencode}[1]{\fnencode_{#1}}
 \newcommand*{\fndecode}{\mathcal{E}^{-1}}
 \newcommand*{\fnfixeddecode}[1]{\fndecode_{#1}}
 \newcommand*{\fnmmrencode}{\fnencode_M}
-\newcommand*{\fyshuffle}{\mathcal{F}}
-\newcommand*{\blake}{\mathcal{H}}
-\newcommand*{\blakeprefix}[1]{\mathcal{H}_{#1}}
-\newcommand*{\keccak}{\mathcal{H}_K}
-\newcommand*{\merklejustsubpath}{\mathcal{J}}
-\newcommand*{\keys}[1]{\mathcal{K}\left(#1\right)}
-\newcommand*{\merklesubtreepage}{\mathcal{L}}
-\newcommand*{\merklizecd}{\mathcal{M}}
-\newcommand*{\merklizewb}{\mathcal{M}_B}
-\newcommand*{\merklizestate}{\mathcal{M}_\sigma}
-\newcommand*{\mmrsuperpeak}{\mathcal{M}_R}
-\newcommand*{\getringroot}{\mathcal{O}}
-\newcommand*{\zeropad}{\mathcal{P}}
+\newcommand*{\fnfyshuffle}{\mathcal{F}}
+\newcommand*{\fnblake}{\mathcal{H}}
+\newcommand*{\fnblakeprefix}[1]{\mathcal{H}_{#1}}
+\newcommand*{\fnkeccak}{\mathcal{H}_K}
+\newcommand*{\fnmerklejustsubpath}[1]{\mathcal{J}_{#1}}
+\newcommand*{\fnmerklesubtreepage}[1]{\mathcal{L}_{#1}}
+\newcommand*{\fnmerklizecd}{\mathcal{M}}
+\newcommand*{\fnmerklizewb}{\mathcal{M}_B}
+\newcommand*{\fnmerklizestate}{\mathcal{M}_\sigma}
+\newcommand*{\fnmmrsuperpeak}{\mathcal{M}_R}
+\newcommand*{\fngetringroot}{\mathcal{O}}
+\newcommand*{\fnzeropad}[1]{\mathcal{P}_{#1}}
+
 \newcommand*{\seqfromhash}{\mathcal{Q}}
 \newcommand*{\ecrecover}{\mathcal{R}}
 \newcommand*{\signdata}{\mathcal{S}}
 \newcommand*{\wallclock}{\mathcal{T}}
 \newcommand*{\subifnone}{\mathcal{U}}
-\newcommand*{\values}[1]{\mathcal{V}\left(#1\right)}
 \newcommand*{\sext}{\mathcal{X}}
 \newcommand*{\banderout}{\mathcal{Y}}
 \newcommand*{\tosigned}{\mathcal{Z}}
 
-% F prefix implies these are "proper" latex functions, not just simple names.
-\newcommand*{\Fmmrappend}[1]{\mmrappend\left(#1\right)}
-\newcommand*{\Ferasurecode}[2][]{\erasurecode_{#1}\left(#2\right)}
-\newcommand*{\Ferasurecodeplex}[2][]{\erasurecode^\#_{#1}\left(#2\right)}
-\newcommand*{\Ffyshuffle}[1]{\fyshuffle\left(#1\right)}
-\newcommand*{\Fmerklejustsubpath}[2]{\merklejustsubpath_{#1}\left(#2\right)}
-\newcommand*{\Fmerklesubtreepage}[2]{\merklesubtreepage_{#1}\left(#2\right)}
-\newcommand*{\Fmerklizecd}[1]{\merklizecd\left(#1\right)}
-\newcommand*{\Fmerklizewb}[1]{\merklizewb\left(#1\right)}
-\newcommand*{\Fmerklizestate}[1]{\merklizestate\left(#1\right)} % TODO: Make it take a parameter.
-\newcommand*{\Fmmrsuperpeak}[1]{\mmrsuperpeak\left(#1\right)}
-\newcommand*{\Fgetringroot}[1]{\getringroot\left(#1\right)}
-\newcommand*{\Fzeropad}[2]{\zeropad_{#1}\left(#2\right)}
+% TODO: get rid of F prefix - this should be standard.
 \newcommand*{\Fseqfromhash}[1]{\seqfromhash\left(#1\right)}
 \newcommand*{\Fecrecover}[1]{\ecrecover\left(#1\right)}
 \newcommand*{\Fsigndata}[2]{\signdata_{#1}\left(#2\right)}
@@ -230,6 +218,25 @@
 \newcommand*{\decode}[1]{\fndecode\left(#1\right)}
 \newcommand*{\fixeddecode}[2]{\fnfixeddecode{#1}\left(#2\right)}
 \newcommand*{\mmrencode}[1]{\fnmmrencode\left(#1\right)}
+\newcommand*{\keys}[1]{\mathcal{K}\left(#1\right)}
+\newcommand*{\values}[1]{\mathcal{V}\left(#1\right)}
+\newcommand*{\blake}[1]{\fnblake\left(#1\right)}
+\newcommand*{\blakemany}[1]{\fnblake^\#\left(#1\right)}
+\newcommand*{\blakeprefix}[2]{\fnblakeprefix{#1}\left(#2\right)}
+\newcommand*{\keccak}[1]{\fnkeccak\left(#1\right)}
+\newcommand*{\mmrappend}[1]{\fnmmrappend\left(#1\right)}
+\newcommand*{\erasurecode}[2][]{\fnerasurecode_{#1}\left(#2\right)}
+\newcommand*{\erasurecodeplex}[2][]{\fnerasurecode^\#_{#1}\left(#2\right)}
+\newcommand*{\fyshuffle}[1]{\fnfyshuffle\left(#1\right)}
+\newcommand*{\merklejustsubpath}[2]{\fnmerklejustsubpath{#1}\left(#2\right)}
+\newcommand*{\merklesubtreepage}[2]{\fnmerklesubtreepage{#1}\left(#2\right)}
+\newcommand*{\merklizecd}[1]{\fnmerklizecd\left(#1\right)}
+\newcommand*{\merklizewb}[1]{\fnmerklizewb\left(#1\right)}
+\newcommand*{\merklizewbmany}[1]{\fnmerklizewb^\#\left(#1\right)}
+\newcommand*{\merklizestate}[1]{\fnmerklizestate\left(#1\right)} % TODO: Make it take a parameter.
+\newcommand*{\mmrsuperpeak}[1]{\fnmmrsuperpeak\left(#1\right)}
+\newcommand*{\getringroot}[1]{\fngetringroot\left(#1\right)}
+\newcommand*{\zeropad}[2]{\fnzeropad{#1}\left(#2\right)}
 
 % Constants (Sans-serif upper letters)
 \newcommand*{\corecount}{\mathsf{C}}
@@ -307,7 +314,7 @@
 \newcommand*{\zerohash}{\hash_0}
 \newcommand*{\edkey}{\hash_E}
 \newcommand*{\bskey}{\hash_B}
-\newcommand*{\keccakoutput}{\hash_K}
+\newcommand*{\fnkeccakoutput}{\hash_K}
 \newcommand*{\blskey}{\bloboflen{L}}
 \newcommand*{\metadatakey}{\bloboflen{128}}
 \newcommand*{\ringroot}{\bloboflen{R}}

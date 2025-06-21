@@ -145,7 +145,7 @@ The assurances must all be anchored on the parent and ordered by validator index
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\H_\¬parent$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \xtassurances : a_\xa¬signature \in \sig{\activeset\subb{a_\xa¬assurer}_\vk¬ed}{\mathsf{X}_A \concat \blake(\encode{\H_\¬parent, a_\xa¬availabilities)}} \\
+  &\forall a \in \xtassurances : a_\xa¬signature \in \sig{\activeset\subb{a_\xa¬assurer}_\vk¬ed}{\mathsf{X}_A \concat \blake{\encode{\H_\¬parent, a_\xa¬availabilities}}} \\
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
@@ -197,7 +197,7 @@ We define the permute function $P$, the rotation function $R$ and finally the gu
 \begin{align}
   R(\mathbf{c}, n) &\equiv \sq{\build{(x + n) \bmod \corecount}{x \orderedin \mathbf{c}}}\\
   P(e, t) &\equiv R\left(
-    \Ffyshuffle{\sq{\build{\ffrac{\corecount \cdot i}{\valcount}}{i \orderedin \valindex}}, e},
+    \fyshuffle{\sq{\build{\ffrac{\corecount \cdot i}{\valcount}}{i \orderedin \valindex}}, e},
     \ffrac{t \bmod \epochlen}{\mathsf{R}}
   \right)\\
   \guarantorassignments &\equiv \tup{P(\entropy'_2, \thetime'), \Phi(\activeset')}
@@ -256,7 +256,7 @@ The signature must be one whose public key is that of the validator identified i
       \forall \tup{v, s} &\in \xg¬credential
     \end{aligned} :
       \abracegroup[\,]{
-        &s \in \sig{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\concat\blake(\xg¬workreport)}\\
+        &s \in \sig{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\concat\blake{\xg¬workreport}}\\
         &\mathbf{c}\sub{v} = \wrX_\wr¬core \wedge \mathsf{R}(\floor{\nicefrac{\thetime'}{\mathsf{R}}} - 1) \le \xg¬timeslot \le \thetime'\\
       }\\
       &k \in \reporters \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists \tup{v, s} \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
@@ -327,7 +327,7 @@ We require that each lookup-anchor block be within the last $\mathsf{L}$ timeslo
 
 We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\mathsf{L}$ headers as the ancestor set $\ancestors$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
 \begin{align}
-  \forall x \in \incomingcontexts :\ \exists h \in \ancestors: h_\¬timeslot = x_\wc¬lookupanchortime \wedge \blake(h) = x_\wc¬lookupanchorhash
+  \forall x \in \incomingcontexts :\ \exists h \in \ancestors: h_\¬timeslot = x_\wc¬lookupanchortime \wedge \blake{h} = x_\wc¬lookupanchorhash
 \end{align}
 
 We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:

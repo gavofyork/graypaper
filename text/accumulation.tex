@@ -232,9 +232,9 @@ And $\fnprovide$ is the preimage integration function, which transforms a dictio
     &\tup{\mathbf{d}, \mathbf{p}} \mapsto \mathbf{d}'\;\where \mathbf{d}' = \mathbf{d}\;\text{except:} \\
     &\quad\forall \tup{s, \mathbf{i}} \in \mathbf{p},\;
       s \in \keys{\mathbf{d}},\;
-      \mathbf{d}\subb{s}_\sa¬requests\subb{\blake(\mathbf{i}), \len{\mathbf{i}}} = \sq{}:\\
-    &\qquad \mathbf{d}'\subb{s}_\sa¬requests\subb{\blake(\mathbf{i}), \len{\mathbf{i}}} = [\thetime']\\
-    &\qquad \mathbf{d}'\subb{s}_\sa¬preimages\subb{\blake(\mathbf{i})} = \mathbf{i}
+      \mathbf{d}\subb{s}_\sa¬requests\subb{\blake{\mathbf{i}}, \len{\mathbf{i}}} = \sq{}:\\
+    &\qquad \mathbf{d}'\subb{s}_\sa¬requests\subb{\blake{\mathbf{i}}, \len{\mathbf{i}}} = [\thetime']\\
+    &\qquad \mathbf{d}'\subb{s}_\sa¬preimages\subb{\blake{\mathbf{i}}} = \mathbf{i}
   }
 \end{equation}
 
@@ -405,7 +405,7 @@ After accumulation, we must integrate all preimages provided in the lookup extri
 \begin{align}
   \xtpreimages &\in \sequence{\tuple{ \serviceid,\, \blob }} \\
   \label{eq:preimagesareordered}\xtpreimages &= \sqorderuniqby{i}{i \in \xtpreimages} \\
-  \forall \tup{\xp¬service, \xp¬data} &\in \xtpreimages : Y(\accountspre, \xp¬service, \blake(\xp¬data), \len{\xp¬data}) \\
+  \forall \tup{\xp¬service, \xp¬data} &\in \xtpreimages : Y(\accountspre, \xp¬service, \blake{\xp¬data}, \len{\xp¬data}) \\
   \where Y(\mathbf{d}, s, h, l) &\Leftrightarrow
   h \not\in \mathbf{d}\subb{s}_\sa¬preimages \wedge
     \mathbf{d}\subb{s}_\sa¬requests\subb{\tup{h, l}} = \sq{}
@@ -416,10 +416,10 @@ We disregard, without prejudice, any preimages which due to the effects of accum
   \using \mathbf{P} = \set{\build{
     \tup{\xp¬service, \xp¬data}
   }{
-    \tup{\xp¬service, \xp¬data} \in \xtpreimages, Y(\accountspostxfer, \xp¬service, \blake(\xp¬data), \len{\xp¬data})
+    \tup{\xp¬service, \xp¬data} \in \xtpreimages, Y(\accountspostxfer, \xp¬service, \blake{\xp¬data}, \len{\xp¬data})
   }}\\
   \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{\xp¬service,\,\xp¬data} \in \mathbf{P} : \abracegroup[\,]{
-      \quad\accountspostpreimage\subb{\xp¬service}_\sa¬preimages\subb{\blake(\xp¬data)} &= \xp¬data \\
-      \accountspostpreimage\subb{\xp¬service}_\sa¬requests\subb{\blake(\xp¬data), \len{\xp¬data}} &= \sq{\thetime'}
+      \quad\accountspostpreimage\subb{\xp¬service}_\sa¬preimages\subb{\blake{\xp¬data}} &= \xp¬data \\
+      \accountspostpreimage\subb{\xp¬service}_\sa¬requests\subb{\blake{\xp¬data}, \len{\xp¬data}} &= \sq{\thetime'}
     }\!\!\!\!
 \end{align}

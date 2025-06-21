@@ -56,7 +56,7 @@ We define our initial audit tranche in terms of a verifiable random quantity $\l
 We may then define $\local¬tranche\sub{0}$ as the non-empty items to audit through a verifiably random selection of ten cores:
 \begin{align}
   \local¬tranche\sub{0} &= \set{\build{\wrcX}{\wrcX \in \mathbf{p}\subrange{}{10}, \wrX \ne \none}} \\
-  \where \mathbf{p} &= \Ffyshuffle{\sq{\build{\tup{\cX, \local¬reports\sub{\cX}}}{\cX \orderedin \coreindex}}, \Fbanderout{\local¬seed\sub{0}}} \\
+  \where \mathbf{p} &= \fyshuffle{\sq{\build{\tup{\cX, \local¬reports\sub{\cX}}}{\cX \orderedin \coreindex}}, \Fbanderout{\local¬seed\sub{0}}} \\
 \end{align}
 
 Every $\mathsf{A} = 8$ seconds following a new time slot, a new tranche begins, and we may determine that additional cores warrant an audit from us. Such items are defined as $\local¬tranche\sub{n}$ where $n$ is the current tranche. Formally:
@@ -70,8 +70,8 @@ In all cases, we publish a signed statement of which of the cores we believe we 
 
 Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $\local¬seed\sub{n}$ and all signed data. Validator's announcement statements must be in the set $S$:
 \begin{align}
-  S &\equiv \sig{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_I \append n \concat \mathbf{x}\sub{n} \concat \blake(\H)} \\
-  \where \mathbf{x}\sub{n} &= \encode{\set{\build{\fixedencode{2}{\cX} \concat \blake(\wrX)}{\wrcX \in \local¬tranche\sub{n}}}}\\
+  S &\equiv \sig{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_I \append n \concat \mathbf{x}\sub{n} \concat \blake{\H}} \\
+  \where \mathbf{x}\sub{n} &= \encode{\set{\build{\fixedencode{2}{\cX} \concat \blake{\wrX}}{\wrcX \in \local¬tranche\sub{n}}}}\\
   \mathsf{X}_I &= \token{\$jam\_announce}
 \end{align}
 
@@ -92,7 +92,7 @@ We are able to define $\local¬tranche\sub{n}$ for tranches beyond the first on 
 We can thus define $\local¬tranche\sub{n}$ beyond the initial tranche through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
 \begin{align}
   \nonumber\forall n > 0:&\\
-  \ \local¬seed\sub{n}(\wrX) &\in \bandersig{\activeset[v]_\vk¬bs}{\mathsf{X}_U \concat \Fbanderout{\H_\¬vrfsig}\concat\blake(\wrX)\append n}{[]} \\
+  \ \local¬seed\sub{n}(\wrX) &\in \bandersig{\activeset[v]_\vk¬bs}{\mathsf{X}_U \concat \Fbanderout{\H_\¬vrfsig}\concat\blake{\wrX}\append n}{[]} \\
   \ \local¬tranche\sub{n} &\equiv \set{ \build{ \wrX }{\textstyle\frac{\valcount}{256\mathsf{F}}\Fbanderout{\local¬seed\sub{n}(\wrX)}\sub{0} < m\sub{n}, \wrX \in \local¬reports, \wrX \ne \none }}\!\!\!\!\\
   \nonumber \where m\sub{n} &= \len{A_{n - 1}(\wrX) \setminus J_\top(\wrX)}
 \end{align}
@@ -126,7 +126,7 @@ Note that a failure to decode implies an invalid work-report.
 
 From this mapping the validator issues a set of judgments $\mathbf{j}\sub{n}$:
 \begin{align}
-  \mathbf{j}\sub{n} &= \set{\build{\Fsigndata{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_{e\sub{n}(\cX)} \concat \blake(\wrX)}}{\tup{\cX, \wrX} \in \local¬tranche\sub{n}}}
+  \mathbf{j}\sub{n} &= \set{\build{\Fsigndata{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_{e\sub{n}(\cX)} \concat \blake{\wrX}}}{\tup{\cX, \wrX} \in \local¬tranche\sub{n}}}
 \end{align}
 
 %We denote the guarantors of a work-package $\wrX$ as $\guarantorassignments(\wrX)$ from a particular chain head, and this may be derived from the guarantees extrinsic $\xtguarantees$ of the ancestor block which introduced the work-report. Our restrictions on the guarantees extrinsic (described in section \ref{sec:accumulation}) ensures that this is unique.

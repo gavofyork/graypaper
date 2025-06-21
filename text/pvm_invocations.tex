@@ -83,7 +83,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \tup{\token{BAD}, [], 0} &\when w_\wi¬service \not\in \keys{\accounts} \vee \histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash) = \none \\
       \tup{\token{BIG}, [], 0} &\otherwhen \len{\histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)} > \mathsf{W}_C \\
       &\otherwise: \\
-      &\quad\using a = \encode{i, w_\wi¬service, \var{w_\wi¬payload}, \blake(p)}\;,\ \encode{\var{\mathbf{z}}, \mathbf{c}} = \histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
+      &\quad\using a = \encode{i, w_\wi¬service, \var{w_\wi¬payload}, \blake{p}}\;,\ \encode{\var{\mathbf{z}}, \mathbf{c}} = \histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
       &\quad\also (u, \mathbf{o}, \tup{\mathbf{m}, \mathbf{e}}) = \Psi_M(\mathbf{c}, 0, w_\wi¬refgaslimit, a, F, \tup{\emptyset, \sq{}})\ \colon\\
       \tup{\mathbf{o}, \sq{}, u} &\quad\when \mathbf{o} \in \set{ \oog, \panic }  \\
       \tup{\mathbf{o}, \mathbf{e}, u} &\quad\otherwise \\
@@ -109,7 +109,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
         \sq{\build{
           \mathbf{x}
         }{
-          \tup{\blake(\mathbf{x}), \len{\mathbf{x}}} \orderedin \wiX_\wi¬extrinsics
+          \tup{\blake{\mathbf{x}}, \len{\mathbf{x}}} \orderedin \wiX_\wi¬extrinsics
         }}
       }{
         \wiX \orderedin p_\wp¬workitems
@@ -180,7 +180,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
       \is{\im¬yield}{\none},
       \is{\im¬provisions}{\sq{}}
     }\\
-    &\qquad\where \im¬nextfreeid = \text{check}((\decode{4}{\blake(\encode{\im¬id, \entropyaccumulator', \H_\¬timeslot})} \bmod (2^{32}-2^9)) + 2^8) \\
+    &\qquad\where \im¬nextfreeid = \text{check}((\decode{4}{\blake{\encode{\im¬id, \entropyaccumulator', \H_\¬timeslot}}} \bmod (2^{32}-2^9)) + 2^8) \\
   }\\
   F \in \Omega\ang{\implicationspair} &\colon \tup{n, \gascounter, \registers, \memory, \imXY} \mapsto \begin{cases}
   \Omega_G(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{gas} \\
@@ -566,7 +566,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \using p &= \registers_7 \\
     \using z &= \min(\registers_8, \mathsf{W}_G) \\
     \using \mathbf{x} &= \begin{cases}
-      \zeropad_{\mathsf{W}_G}(\mem\subrange{p}{z}) &\when \Nrange{p}{z} \subseteq \mathbb{V}_\memory\\
+      \zeropad{\mathsf{W}_G}{\mem\subrange{p}{z}} &\when \Nrange{p}{z} \subseteq \mathbb{V}_\memory\\
       \error &\otherwise
     \end{cases}\\
     \tup{\execst', \registers'_7, \mathbf{e}'} &\equiv \begin{cases}
@@ -993,7 +993,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \tup{\execst', \registers'_7, \imX'_\im¬provisions} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \imX_\im¬provisions} &\when \mathbf{i} = \error \\
       \tup{\continue, \mathtt{WHO}, \imX_\im¬provisions} &\otherwhen \mathbf{a} = \none \\
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \mathbf{a}_\sa¬requests[\tup{\blake(\mathbf{i}), z}] \ne \sq{} \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \mathbf{a}_\sa¬requests[\tup{\blake{\mathbf{i}}, z}] \ne \sq{} \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \tup{s^*, \mathbf{i}} \in \imX_\im¬provisions \\
       \tup{\continue, \mathtt{OK}, \imX_\im¬provisions \cup \set{\tup{s^*, \mathbf{i}}}} &\otherwise \\
     \end{cases} \\

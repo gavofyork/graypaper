@@ -12,7 +12,7 @@ We define the state-key constructor functions $C$ as:
     \Nbits{8} \cup \tup{\Nbits{8}, \serviceid} \cup \tup{\serviceid, \blob} &\to \bloboflen{31} \\
     i \in \Nbits{8} &\mapsto [i, 0, 0, \dots] \\
     \tup{i, s \in \serviceid} &\mapsto \sq{i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots}\ \where n = \fixedencode{4}{s} \\
-    \tup{s, h} &\mapsto \sq{n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}}\ \where n = \fixedencode{4}{s}, a = \blake(h)\interval{0}{27}
+    \tup{s, h} &\mapsto \sq{n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}}\ \where n = \fixedencode{4}{s}, a = \blake{h}\interval{0}{27}
   }
 \end{equation}
 
@@ -118,7 +118,7 @@ Finally, be aware that \Jam does not allow service storage keys to be directly i
 
 \subsection{Merklization}
 
-With $T$ defined, we now define the rest of $\merklizestate$ which primarily involves transforming the serialized mapping into a cryptographic commitment. We define this commitment as the root of the binary Patricia Merkle Trie with a format optimized for modern compute hardware, primarily by optimizing sizes to fit succinctly into typical memory layouts and reducing the need for unpredictable branching.
+With $T$ defined, we now define the rest of $\fnmerklizestate$ which primarily involves transforming the serialized mapping into a cryptographic commitment. We define this commitment as the root of the binary Patricia Merkle Trie with a format optimized for modern compute hardware, primarily by optimizing sizes to fit succinctly into typical memory layouts and reducing the need for unpredictable branching.
 
 \subsubsection{Node Encoding and Trie Identification}
 We identify (sub-)tries as the hash of their root node, with one exception: empty (sub-)tries are identified as the zero-hash, $\zerohash$.
@@ -143,18 +143,18 @@ Formally, we define the encoding functions $B$ and $L$:
     \tuple{\bloboflen{31}, \blob} &\to \bitstringoflen{512}\\
     \tup{k, v} &\mapsto \begin{cases}
       [1, 0] \concat \text{bits}(\fixedencode{1}{\len{v}})\interval{2}{} \concat \text{bits}(k) \concat \text{bits}(v) \concat [0, 0, \dots] &\when \len{v} \le 32\\
-      [1, 1, 0, 0, 0, 0, 0, 0] \concat \text{bits}(k) \concat \text{bits}(\blake(v)) &\otherwise
+      [1, 1, 0, 0, 0, 0, 0, 0] \concat \text{bits}(k) \concat \text{bits}(\blake{v}) &\otherwise
     \end{cases}
   }
 \end{align}
 
-We may then define the basic Merklization function $\merklizestate$ as:
+We may then define the basic Merklization function $\fnmerklizestate$ as:
 \begin{align}
-  \merklizestate(\thestate) &\equiv M(\set{\build{\kv{\text{bits}(k)}{\tup{k, v}}}{\kv{k}{v} \in T(\thestate) }})\\
+  \merklizestate{\thestate} &\equiv M(\set{\build{\kv{\text{bits}(k)}{\tup{k, v}}}{\kv{k}{v} \in T(\thestate) }})\\
   M(d: \dict{\bitstring}{\tuple{\bloboflen{31}, \blob}}) &\equiv \begin{cases}
     \zerohash &\when \len{d} = 0\\
-    \blake(\text{bits}^{-1}(L(k, v))) &\when \values{d} = \set{ \tup{k, v} }\\
-    \blake(\text{bits}^{-1}(B(M(l), M(r)))) &\otherwise\\
+    \blake{\text{bits}^{-1}(L(k, v))} &\when \values{d} = \set{ \tup{k, v} }\\
+    \blake{\text{bits}^{-1}(B(M(l), M(r)))} &\otherwise\\
     \multicolumn{2}{l}{\quad\where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b\interval{1}{} \mapsto p) \in \begin{cases}
       l &\when b_0 = 0 \\
       r &\when b_0 = 1
@@ -208,9 +208,9 @@ We also define the \emph{trace} function $T$, which returns each opposite node f
 From this we define our other Merklization functions.
 
 \subsubsection{Well-Balanced Tree}
-We define the well-balanced binary Merkle function as $\merklizewb$:
+We define the well-balanced binary Merkle function as $\fnmerklizewb$:
 \begin{equation}
-    \merklizewb\colon \abracegroup{
+    \fnmerklizewb\colon \abracegroup{
       \label{eq:simplemerkleroot}
       \tuple{\sequence{\blob}, \blob \to \hash} &\to \hash \\
       \tup{\mathbf{v}, H} &\mapsto \begin{cases}
@@ -222,31 +222,31 @@ We define the well-balanced binary Merkle function as $\merklizewb$:
 
 This is suitable for creating proofs on data which is not much greater than 32 octets in length since it avoids hashing each item in the sequence. For sequences with larger data items, it is better to hash them beforehand to ensure proof-size is minimal since each proof will generally contain a data item.
 
-Note: In the case that no hash function argument $H$ is supplied, we may assume the Blake 2b hash function, $\blake$.
+Note: In the case that no hash function argument $H$ is supplied, we may assume Blake 2b.
 
 \subsubsection{Constant-Depth Tree}
-We define the constant-depth binary Merkle function as $\merklizecd$. We define two corresponding functions for working with subtree pages, $\merklejustsubpath\sub{x}$ and $\merklesubtreepage\sub{x}$. The latter provides a single page of leaves, themselves hashed, prefixed data. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices.
+We define the constant-depth binary Merkle function as $\fnmerklizecd$. We define two corresponding functions for working with subtree pages, $\fnmerklejustsubpath{x}$ and $\fnmerklesubtreepage{x}$. The latter provides a single page of leaves, themselves hashed, prefixed data. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices.
 \begin{align}
   \label{eq:constantdepthmerkleroot}
-  \merklizecd&\colon \abracegroup{
+  \fnmerklizecd&\colon \abracegroup{
     \tuple{\sequence{\blob}, \blob \to \hash} &\to \hash\\
     \tup{\mathbf{v}, H} &\mapsto N(C(\mathbf{v}, H), H)
   }\\
   \label{eq:constantdepthsubtreemerklejust}
-  \merklejustsubpath\sub{x}&\colon \abracegroup{
+  \fnmerklejustsubpath{x}&\colon \abracegroup{
     \tuple{\sequence{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash} &\to \sequence{\hash}\\
     \tup{\mathbf{v}, i, H} &\mapsto T(C(\mathbf{v}, H), 2^xi, H)_{\dots\max(0, \ceil{\log_2(\max(1, \len{\mathbf{v}})) - x})}
   }\\
   \label{eq:constantdepthsubtreemerkleleafpage}
-  \merklesubtreepage\sub{x}&\colon \abracegroup{
+  \fnmerklesubtreepage{x}&\colon \abracegroup{
     \tuple{\sequence{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash} &\to \sequence{\hash}\\
     \tup{\mathbf{v}, i, H} &\mapsto \sq{\build{H(\token{\$leaf} \concat l)}{l \orderedin \mathbf{v}_{2^xi \dots \min(2^xi+2^x, \len{\mathbf{v}})}}}
   }
 \end{align}
 
-For the latter justification $\merklejustsubpath\sub{x}$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\merklesubtreepage\sub{x}$.
+For the latter justification $\fnmerklejustsubpath{x}$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\fnmerklesubtreepage{x}$.
 
-As above, we may assume a default value for $H$ of the Blake 2b hash function, $\blake$.
+As above, we may assume a default value for $H$ of Blake 2b.
 
 For justifications and Merkle root calculations, a constancy preprocessor function $C$ is applied which hashes all data items with a fixed prefix ``leaf'' and then pads the overall size to the next power of two with the zero hash $\zerohash$:
 \begin{equation}
@@ -270,11 +270,11 @@ We define a Merkle Mountain Range as being within the set $\sequence{\optional{\
 
 Since the sequence of hashes is somewhat unwieldy as a commitment, Merkle Mountain Ranges are themselves generally hashed before being published. Hashing them removes the possibility of further appending so the range itself is kept on the system which needs to generate future proofs.
 
-We define the \textsc{mmb} append function $\mmrappend$ as:
+We define the \textsc{mmb} append function $\fnmmrappend$ as:
 \begin{equation}
   \begin{aligned}
     \label{eq:mmrappend}
-    \mmrappend&\colon\deffunc{
+    \fnmmrappend&\colon\deffunc{
       \tuple{\sequence{\optional{\hash}}, \hash, \blob\to\hash} &\to \sequence{\optional{\hash}}\\
       \tup{\mathbf{r}, l, H} &\mapsto P(\mathbf{r}, l, 0, H)
     }\\
@@ -301,14 +301,14 @@ We define the \textsc{mmr} encoding function as $\fnmmrencode$:
   }
 \end{equation}
 
-We define the \textsc{mmr} super-peak function as $\mmrsuperpeak$:
+We define the \textsc{mmr} super-peak function as $\fnmmrsuperpeak$:
 \begin{equation}
-  \mmrsuperpeak\colon\deffunc{
+  \fnmmrsuperpeak\colon\deffunc{
     \sequence{\optional{\hash}} &\to \hash \\
     \mathbf{b} &\mapsto \begin{cases}
       \zerohash &\when \len{\mathbf{h}} = 0\\
       \mathbf{h}_0 &\when \len{\mathbf{h}} = 1\\
-      \keccak(\token{\$peak} \concat \mmrsuperpeak(\mathbf{h}_{\dots\len{\mathbf{h}}-1}) \concat \mathbf{h}_{\len{\mathbf{h}}-1}) &\otherwise \\
+      \keccak{\token{\$peak} \concat \mmrsuperpeak{\mathbf{h}_{\dots\len{\mathbf{h}}-1}} \concat \mathbf{h}_{\len{\mathbf{h}}-1}} &\otherwise \\
       \multicolumn{2}{l}{\where \mathbf{h} = \sq{h \mid h \orderedin \mathbf{b}, h \ne \none}}
     \end{cases}
   }

@@ -106,7 +106,7 @@ With a new epoch under regular conditions, validator keys get rotated and the ep
   \tup{\pendingset', \activeset', \previousset', \epochroot'} &\equiv \begin{cases}
     (\Phi(\stagingset), \pendingset, \activeset, z) &\when e' > e \\ \tup{\pendingset, \activeset, \previousset, \epochroot} &\otherwise
   \end{cases} \\
-  \nonumber \where z &= \getringroot(\sq{\build{k_\vk¬bs}{k \orderedin \pendingset'}}) \\
+  \nonumber \where z &= \getringroot{\sq{\build{k_\vk¬bs}{k \orderedin \pendingset'}}} \\
   \label{eq:blacklistfilter} \Phi(\mathbf{k}) &\equiv \sq{
     \build{
       \begin{rcases}
@@ -159,7 +159,7 @@ In addition to the entropy accumulator $\entropyaccumulator$, we retain three ad
 
 $\entropyaccumulator$ defines the state of the randomness accumulator to which the provably random output of the \textsc{vrf}, the signature over some unbiasable input, is combined each block. $\entropy_1$, $\entropy_2$ and $\entropy_3$ meanwhile retain the state of this accumulator at the end of the three most recently ended epochs in order.
 \begin{align}
-  \entropyaccumulator' &\equiv \blake(\entropyaccumulator \concat \Fbanderout{\H_\¬vrfsig})
+  \entropyaccumulator' &\equiv \blake{\entropyaccumulator \concat \Fbanderout{\H_\¬vrfsig}}
 \end{align}
 
 On an epoch transition (identified as the condition $e' > e$), we therefore rotate the accumulator value into the history $\entropy_1$, $\entropy_2$ and $\entropy_3$:
@@ -205,7 +205,7 @@ Finally, $F$ is the fallback key sequence function which selects an epoch's wort
   F\colon \abracegroup[\ ]{
     \tuple{\hash,\,\sequence{\valkey}} &\to \sequenceoflen{\bskey}{\epochlen}\\
     \tup{r,\, \mathbf{k}} &\mapsto \sq{\build{
-      \cyclic{\mathbf{k}\sub{\decode{\blakeprefix{4}(r \concat \fixedencode{4}{i})}}}_\vk¬bs
+      \cyclic{\mathbf{k}\sub{\decode{\blakeprefix{4}{r \concat \fixedencode{4}{i}}}}}_\vk¬bs
     }{
       i \in \epochindex
     }}
