@@ -263,7 +263,7 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
   \using l_X = \min(4, \ell) \,,\quad
-  \immed_X \equiv \sext_{l_X}(\de_{l_X}(\instructions\subrange{\imath+1}{l_X}))
+  \immed_X \equiv \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+1}{l_X}})
 \end{aligned}
 \end{equation}
 
@@ -298,9 +298,9 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
     \using l_X &= \min(4, \instructions_{\imath+1} \bmod 8) \,,\quad&
-    \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions\subrange{\imath+2}{l_X})) \\
+    \immed_X &\equiv \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}) \\
     \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
-    \immed_Y &\equiv \sext_{l_Y}(\de_{l_Y}(\instructions\subrange{\imath+2+l_X}{l_Y}))
+    \immed_Y &\equiv \sext_{l_Y}(\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}})
 \end{aligned}
 \end{equation}
 
@@ -321,7 +321,7 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
   \using l_X = \min(4, \ell) \,,\quad
-  \immed_X \equiv \imath + \signfunc{l_X}(\de_{l_X}(\instructions\subrange{\imath+1}{l_X}))
+  \immed_X \equiv \imath + \signfunc{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+1}{l_X}})
 \end{aligned}
 \end{equation}
 
@@ -342,7 +342,7 @@ We assume the skip length $\ell$ is well-defined:
     \reg_A &\equiv \reg_{r_A} \,,\quad
     \reg'_A \equiv \reg'_{r_A} \\
     \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
-    \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions\subrange{\imath+2}{l_X}))
+    \immed_X &\equiv \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}})
 \end{aligned}
 \end{equation}
 
@@ -375,9 +375,9 @@ We assume the skip length $\ell$ is well-defined:
     \reg_A &\equiv \reg_{r_A} \,,\quad
     \reg'_A \equiv \reg'_{r_A} \\
     \using l_X &= \min(4, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
-    \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions\subrange{\imath+2}{l_X})) \\
+    \immed_X &= \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}) \\
     \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
-    \immed_Y &= \sext_{l_Y}(\de_{l_Y}(\instructions\subrange{\imath+2+l_X}{l_Y}))
+    \immed_Y &= \sext_{l_Y}(\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}})
 \end{aligned}
 \end{equation}
 
@@ -401,9 +401,9 @@ We assume the skip length $\ell$ is well-defined:
       \reg_A &\equiv \reg_{r_A} \,,\quad
       \reg'_A \equiv \reg'_{r_A} \\
       \using l_X &= \min(4, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
-      \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions\subrange{\imath+2}{l_X})) \\
+      \immed_X &= \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}) \\
       \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
-      \immed_Y &= \imath + \signfunc{l_Y}(\de_{l_Y}(\instructions\subrange{\imath+2+l_X}{l_Y}))
+      \immed_Y &= \imath + \signfunc{l_Y}(\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}})
   \end{aligned}
 \end{equation}
 
@@ -478,7 +478,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \reg_B &\equiv \reg_{r_B} \,,\quad
   \reg'_B \equiv \reg'_{r_B} \\
   \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
-  \immed_X &\equiv \sext_{l_X}(\de_{l_X}(\instructions\subrange{\imath+2}{l_X}))
+  \immed_X &\equiv \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}})
 \end{aligned}
 \end{equation}
 
@@ -550,7 +550,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
     \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
-    \immed_X &\equiv \imath + \signfunc{l_X}(\de_{l_X}(\instructions\subrange{\imath+2}{l_X}))
+    \immed_X &\equiv \imath + \signfunc{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}})
   \end{aligned}
 \end{equation}
 
@@ -580,9 +580,9 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
     \using l_X &= \min(4, \instructions_{\imath+2} \bmod 8) \,,\quad&
-    \immed_X &= \sext_{l_X}(\de_{l_X}(\instructions\subrange{\imath+3}{l_X})) \\
+    \immed_X &= \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+3}{l_X}}) \\
     \using l_Y &= \min(4, \max(0, \ell - l_X - 2)) \,,\quad&
-    \immed_Y &= \sext_{l_Y}(\de_{l_Y}(\instructions\subrange{\imath+3+l_X}{l_Y}))
+    \immed_Y &= \sext_{l_Y}(\fixeddecode{l_Y}{\instructions\subrange{\imath+3+l_X}{l_Y}})
   \end{aligned}
 \end{equation}
 
@@ -837,11 +837,11 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
       \tup{0, \panic, \mathbf{x}} &\when Y(\mathbf{p}, \mathbf{a}) = \none\\
       R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}, \mathbf{a}) = \tup{\mathbf{c}, \registers, \mem}\\
       \multicolumn{2}{l}{
-        \quad \where R \colon (\gascounter, \tup{\begin{alignedat}{5}
+        \quad \where R \colon \tup{\gascounter, \tup{\begin{alignedat}{5}
           &\varepsilon,\, &&\imath',\, &&\gascounter',\\
           &\registers',\, &&\mem',\, &&\mathbf{x}'
         \end{alignedat}
-        }) \mapsto \begin{cases}
+        }} \mapsto \begin{cases}
           \tup{u, \oog, \mathbf{x}'} &\when \varepsilon = \oog \\
           \tup{u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \subseteq \readable{\mem'} \\
           \tup{u, [], \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \not\subseteq \readable{\mem'} \\

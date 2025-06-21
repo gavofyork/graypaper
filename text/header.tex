@@ -1,6 +1,6 @@
 \section{The Header}\label{sec:header}
 
-We must first define the header in terms of its components. The header comprises a parent hash and prior state root ($\H_\¬parent$ and $\H_\¬priorstateroot$), an extrinsic hash $\H_\¬extrinsichash$, a time-slot index $\H_\¬timeslot$, the epoch, winning-tickets and offenders markers $\H_\¬epochmark$, $\H_\¬winnersmark$ and $\H_\¬offendersmark$, a block author index $\H_\¬authorindex$ and two Bandersnatch signatures; the entropy-yielding \textsc{vrf} signature $\H_\¬vrfsig$ and a block seal $\H_\¬sealsig$. Headers may be serialized to an octet sequence with and without the latter seal component using $\se$ and $\fnencodeunsignedheader$ respectively. Formally:
+We must first define the header in terms of its components. The header comprises a parent hash and prior state root ($\H_\¬parent$ and $\H_\¬priorstateroot$), an extrinsic hash $\H_\¬extrinsichash$, a time-slot index $\H_\¬timeslot$, the epoch, winning-tickets and offenders markers $\H_\¬epochmark$, $\H_\¬winnersmark$ and $\H_\¬offendersmark$, a block author index $\H_\¬authorindex$ and two Bandersnatch signatures; the entropy-yielding \textsc{vrf} signature $\H_\¬vrfsig$ and a block seal $\H_\¬sealsig$. Headers may be serialized to an octet sequence with and without the latter seal component using $\fnencode$ and $\fnencodeunsignedheader$ respectively. Formally:
 \begin{equation}\label{eq:header}
   \theheader \equiv \tup{\H_\¬parent, \H_\¬priorstateroot, \H_\¬extrinsichash, \H_\¬timeslot, \H_\¬epochmark, \H_\¬winnersmark, \H_\¬offendersmark, \H_\¬authorindex, \H_\¬vrfsig, \H_\¬sealsig}
 \end{equation}
@@ -11,7 +11,7 @@ The blockchain is a sequence of blocks, each cryptographically referencing some 
 
 Excepting the Genesis header, all block headers $\header$ have an associated parent header, whose hash is $\header_\¬parent$. We denote the parent header $\parentheader{\header} = \parentfn(\header)$:
 \begin{equation}
-  \header_\¬parent \in \hash \,,\quad \H_\¬parent \equiv \blake(\se(\parentfn(\header)))
+  \header_\¬parent \in \hash \,,\quad \H_\¬parent \equiv \blake(\encode{\parentfn(\header)})
 \end{equation}
 
 $\parentfn$ is thus defined as being the mapping from one block header to its parent block header. With $\parentfn$, we are able to define the set of ancestor headers $\ancestors$:
@@ -24,9 +24,9 @@ We only require implementations to store headers of ancestors which were authore
 The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports to individually have their inclusion proven. Given any block $\block = \tup{\header, \extrinsic}$, then formally:
 \begin{align}
   \H_\¬extrinsichash &\in \hash \ ,\quad
-  \H_\¬extrinsichash \equiv \blake(\se(\blake^\#(\mathbf{a}))) \\
-  \where \mathbf{a} &= [\se_T(\xttickets), \se_P(\xtpreimages), \mathbf{g}, \se_A(\xtassurances), \se_D(\xtdisputes)] \\
-  \also \mathbf{g} &= \se(\var{\sq{\build{(\blake(w), \fixedencode{4}{t}, \var{a})}{\tup{w, t, a} \orderedin \xtguarantees}}})
+  \H_\¬extrinsichash \equiv \blake(\encode{\blake^\#(\mathbf{a})}) \\
+  \where \mathbf{a} &= \sq{\encodetickets{\xttickets}, \encodepreimages{\xtpreimages}, \mathbf{g}, \encodeassurances{\xtassurances}, \encodedisputes{\xtdisputes}} \\
+  \also \mathbf{g} &= \encode{\var{\sq{\build{(\blake(w), \fixedencode{4}{t}, \var{a})}{\tup{w, t, a} \orderedin \xtguarantees}}}}
 \end{align}
 
 A block may only be regarded as valid once the time-slot index $\H_\¬timeslot$ is in the past. It is always strictly greater than that of its parent. Formally:

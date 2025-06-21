@@ -83,7 +83,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \tup{\token{BAD}, [], 0} &\when w_\wi¬service \not\in \keys{\accounts} \vee \histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash) = \none \\
       \tup{\token{BIG}, [], 0} &\otherwhen \len{\histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)} > \mathsf{W}_C \\
       &\otherwise: \\
-      &\quad\using a = \se(i, w_\wi¬service, \var{w_\wi¬payload}, \blake(p))\;,\ \encode{\var{\mathbf{z}}, \mathbf{c}} = \histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
+      &\quad\using a = \encode{i, w_\wi¬service, \var{w_\wi¬payload}, \blake(p)}\;,\ \encode{\var{\mathbf{z}}, \mathbf{c}} = \histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
       &\quad\also (u, \mathbf{o}, \tup{\mathbf{m}, \mathbf{e}}) = \Psi_M(\mathbf{c}, 0, w_\wi¬refgaslimit, a, F, \tup{\emptyset, \sq{}})\ \colon\\
       \tup{\mathbf{o}, \sq{}, u} &\quad\when \mathbf{o} \in \set{ \oog, \panic }  \\
       \tup{\mathbf{o}, \mathbf{e}, u} &\quad\otherwise \\
@@ -336,7 +336,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using \mathbf{v} &= \begin{cases}
       \mathbf{c} &\when \registers_{10} = 0 \\
-      \multicolumn{2}{l}{\where \mathbf{c} = \se\left(
+      \multicolumn{2}{l}{\where \mathbf{c} = \fnencode\left(
         \begin{aligned}
           &\fixedencode{8}{\mathsf{B}_I},
           \fixedencode{8}{\mathsf{B}_L},
@@ -383,7 +383,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \encode{p_\wp¬authcodehash, \var{p_\wp¬authconfig}} &\when p \ne \none \wedge \registers_{10} = 8 \\
       p_\wp¬authtoken &\when p \ne \none \wedge \registers_{10} = 9 \\
       \encode{p_\wp¬context} &\when p \ne \none \wedge \registers_{10} = 10 \\
-      \se(\var{\sq{S(w) \mid w \orderedin p_\wp¬workitems}}) &\when p \ne \none \wedge \registers_{10} = 11 \\
+      \encode{\var{\sq{\build{S(w)}{w \orderedin p_\wp¬workitems}}}} &\when p \ne \none \wedge \registers_{10} = 11 \\
       S(p_\wp¬workitems[\registers_{11}]) &\when p \ne \none \wedge \registers_{10} = 12 \wedge \registers_{11} < \len{p_\wp¬workitems} \\
       \multicolumn{2}{l}{\where S(w) \equiv \encode{\fixedencode{4}{w_\wi¬service}, w_\wi¬codehash, \fixedencode{8}{w_\wi¬refgaslimit, w_\wi¬accgaslimit}, \fixedencode{2}{w_\wi¬exportcount, \len{w_\wi¬importsegments}, \len{w_\wi¬extrinsics}}, \fixedencode{4}{\len{w_\wi¬payload}}}} \\
       p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when p \ne \none \wedge \registers_{10} = 13 \wedge \registers_{11} < \len{p_\wp¬workitems} \\
@@ -491,18 +491,18 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{d}[s] &\when \registers_7 = 2^{64} - 1 \\
-      \mathbf{d}[\registers_7] &\otherwise
+      \mathbf{d}\subb{s} &\when \registers_7 = 2^{64} - 1 \\
+      \mathbf{d}\subb{\registers_7} &\otherwise
     \end{cases} \\
     \using o &= \registers_8 \\
     \using \mathbf{v} &= \begin{cases}
-      \se(
+      \encode{
         \mathbf{a}_\sa¬codehash,
         \fixedencode{8}{\mathbf{a}_\sa¬balance, \mathbf{a}_\sa¬minbalance, \mathbf{a}_\sa¬minaccgas, \mathbf{a}_\sa¬minmemogas, \mathbf{a}_\sa¬octets},
         \fixedencode{4}{\mathbf{a}_\sa¬items},
         \fixedencode{8}{\mathbf{a}_\sa¬gratis},
         \fixedencode{4}{\mathbf{a}_\sa¬created, \mathbf{a}_\sa¬lastacc, \mathbf{a}_\sa¬parent}
-      ) &\when \mathbf{a} \ne \none \\
+      } &\when \mathbf{a} \ne \none \\
       \none &\otherwise
     \end{cases} \\
     \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
@@ -871,7 +871,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using \mathbf{s}' &= ((\imX_\im¬state)_\ps¬accounts)[\imX_\im¬id] \exc \mathbf{s}'_\sa¬balance = (\imX_\im¬self)_\sa¬balance + \mathbf{d}_\sa¬balance \\
     (\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts) &\equiv \begin{cases}
       (\panic, \registers_7, (\imX_\im¬state)_\ps¬accounts) &\when h = \error \\
-      (\continue, \mathtt{WHO}, (\imX_\im¬state)_\ps¬accounts) &\otherwhen \mathbf{d} = \error \vee \mathbf{d}_\sa¬codehash \ne \se_{32}(\imX_\im¬id) \\
+      (\continue, \mathtt{WHO}, (\imX_\im¬state)_\ps¬accounts) &\otherwhen \mathbf{d} = \error \vee \mathbf{d}_\sa¬codehash \ne \fixedencode{32}{\imX_\im¬id} \\
       (\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts) &\otherwhen \mathbf{d}_\sa¬items \ne 2 \vee \tup{h, l} \not\in \mathbf{d}_\sa¬requests \\
       (\continue, \mathtt{OK}, (\imX_\im¬state)_\ps¬accounts \setminus \set{d} \cup \set{ \kv{\imX_\im¬id}{\mathbf{s}'} }) &\otherwhen \mathbf{d}_\sa¬requests[h, l] = [x, y], y < t - \mathsf{D} \\
       (\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts) &\otherwise \\

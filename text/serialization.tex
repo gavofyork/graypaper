@@ -2,7 +2,7 @@
 
 \subsection{Common Terms}
 
-Our codec function $\mathcal{E}$ is used to serialize some term into a sequence of octets. We define the deserialization function $\de$ as the inverse of $\mathcal{E}$ and able to decode some sequence into the original value. The codec is designed such that exactly one value is encoded into any given sequence of octets, and in cases where this is not desirable then we use special codec functions.
+Our codec function $\mathcal{E}$ is used to serialize some term into a sequence of octets. We define the deserialization function $\fndecode$ as the inverse of $\mathcal{E}$ and able to decode some sequence into the original value. The codec is designed such that exactly one value is encoded into any given sequence of octets, and in cases where this is not desirable then we use special codec functions.
 
 \subsubsection{Trivial Encodings}
 We define the serialization of $\none$ as the empty sequence:
@@ -25,21 +25,9 @@ Passing multiple arguments to the serialization functions is equivalent to passi
   \encode{a, b, \dots} &\equiv \encode{\tup{a, b, \dots}}
 \end{align}
 
-%We also define the variable-size prefix 29-bit natural serialization function $\se_{4*}$:
-%\begin{equation}
-%  \se_{4*}\colon\abracegroup{
-%    \Nbits{29} &\to \bloboflen{1:4} \\
-%    x &\mapsto \begin{cases}
-%      [0] &\when x = 0 \\
-%      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \fixedencode{l}{x \bmod 2^{8l}} &\when \exists l \in \N_3 : 2^{7l} \le x < 2^{7(l+1)} \\
-%      \left[2^8-2^5 + \ffrac{x}{2^{24}}\right] \concat \fixedencode{3}{x \bmod 2^{24}} &\when 2^{21} \le x < 2^{29} \\
-%    \end{cases}
-%  }
-%\end{equation}
-
 We define general natural number serialization, able to encode naturals of up to $2^{64}$, as:
 \begin{equation}
-  \se\colon\abracegroup{
+  \fnencode\colon\abracegroup{
     \Nbits{64} &\to \bloboflen{1:9} \\
     x &\mapsto \begin{cases}
       [0] &\when x = 0 \\
@@ -50,7 +38,7 @@ We define general natural number serialization, able to encode naturals of up to
 \end{equation}
 
 \subsubsection{Sequence Encoding}
-We define the sequence serialization function $\encode{\sequence{T}}$ for any $T$ which is itself a subset of the domain of $\se$. We simply concatenate the serializations of each element in the sequence in turn:
+We define the sequence serialization function $\encode{\sequence{T}}$ for any $T$ which is itself a subset of the domain of $\fnencode$. We simply concatenate the serializations of each element in the sequence in turn:
 \begin{equation}
   \encode{[\mathbf{i}_0, \mathbf{i}_1, ...]} \equiv \encode{\mathbf{i}_0} \concat \encode{\mathbf{i}_1} \concat \dots
 \end{equation}
@@ -102,22 +90,6 @@ In general, dictionaries are placed in the Merkle trie directly (see appendix \r
     }
 \end{equation}
 
-%The second is as a sequence of encoded values only, with each entry having an implicit key according to an enumeration over its domain. This is typically used when the domain is small in magnitude and typically similar in magnitude to the active domain. In order to account for the possibility of a key not existing in the dictionary (\ie the domain and the active domain not being equal) we prefix each value with an octet of one to indicate that the key is indeed present in the dictionary and place an octet of zero if the implied key is not.
-%
-%We provide a function $\signdata$ to deliver this from a regular dictionary:
-%\begin{equation}
-%  \forall K, V: \signdata(d \in \dict{K}{V}) \equiv \var{\sqorderby{k}{\begin{aligned}
-%    &[1] \concat \encode{d[k]} &&\ \when k \in \keys{d} \\
-%    &[0] &&\ \otherwise
-%  \end{aligned}
-%  \,\middle\mid\, k \in K}}
-%\end{equation}
-
-%Finally, we may also encode a dictionary only insofar as we encode the keys and encode the values; in this case the result is not a sequence of octets but rather a mapping of octet-sequences to octet-sequences. This is useful in defining the process of Merklization. We define the function $\se_D$ to deliver this from a regular dictionary:
-%\begin{equation}
-%  \forall K, V: \se_D(d \in \dict{K}{V}) \equiv r \suchthat k \in \keys{d} \Leftrightarrow \encode{k} \in \keys{r} \wedge \forall k \in \keys{d} : r[\encode{k}] = \encode{d[k]}
-%\end{equation}
-
 \subsubsection{Set Encoding}
 For any values which are sets and don't already have a defined encoding above, we define the serialization of a set as the serialization of the set's elements in proper order. Formally:
 \begin{equation}
@@ -127,16 +99,16 @@ For any values which are sets and don't already have a defined encoding above, w
 \subsubsection{Fixed-length Integer Encoding}
 We first define the trivial natural number serialization functions which are subscripted by the number of octets of the final sequence. Values are encoded in a regular little-endian fashion. This is utilized for almost all integer encoding across the protocol. Formally:
 \begin{equation}
-  \se_{l \in \N}\colon\abracegroup{
+  \fnfixedencode{l \in \N}\colon\abracegroup{
     \Nbits{8l} &\to \bloboflen{l} \\
     x &\mapsto \begin{cases}
-      sq{} &\when l = 0 \\
-      sq{x \bmod 256} \concat \se_{l - 1}\left(\floor{\frac{x}{256}}\right) &\otherwise
+      \sq{} &\when l = 0 \\
+      \sq{x \bmod 256} \concat \fixedencode{l - 1}{\floor{\frac{x}{256}}} &\otherwise
     \end{cases}
   }
 \end{equation}
 
-For non-natural arguments, $\se_{l \in \N}$ corresponds to the definitions of $\se$, except that recursive elements are made as $\sefixed{l}$ rather than $\se$. Thus:
+For non-natural arguments, $\fnfixedencode{l \in \N}$ corresponds to the definitions of $\fnencode$, except that recursive elements are made as $\fnfixedencode{l}$ rather than $\fnencode$. Thus:
 \begin{align}
   \fixedencode{l \in \N}{a, b, \dots} &\equiv \fixedencode{l}{\tup{a, b, \dots}}\\
   \fixedencode{l \in \N}{\tup{a, b, \dots}} &\equiv \fixedencode{l}{a} \concat \fixedencode{l}{b} \concat \dots\\
@@ -147,7 +119,7 @@ And so on.
 
 \subsection{Block Serialization}
 
-A block $\block$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\se_U$. Formally:
+A block $\block$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\fnencodeunsignedheader$. Formally:
 
 \newcommand*{\encoderesult}[1]{O(#1)}
 \newcommand*{\encodeimportref}[1]{I(#1)}
@@ -155,37 +127,37 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
 \begin{align}
   \encode{\block} &= \encode{
     \header,
-    \se_T(\xttickets),
-    \se_P(\xtpreimages),
-    \se_G(\xtguarantees),
-    \se_A(\xtassurances),
-    \se_D(\xtdisputes)
+    \encodetickets{\xttickets},
+    \encodepreimages{\xtpreimages},
+    \encodeguarantees{\xtguarantees},
+    \encodeassurances{\xtassurances},
+    \encodedisputes{\xtdisputes}
   }
   \\
-  \se_T(\xttickets) &= \encode{\var{\xttickets}} 
+  \encodetickets{\xttickets} &= \encode{\var{\xttickets}} 
   \\
-  \se_P(\xtpreimages) &= \encode{
+  \encodepreimages{\xtpreimages} &= \encode{
     \var{\sq{\build{
-      \tup{s, \var{p}}
+      \tup{\xp¬service, \var{\xp¬data}}
     }{
-      \tup{s, p} \orderedin \xtpreimages}
+      \tup{\xp¬service, \xp¬data} \orderedin \xtpreimages}
     }}}
   \\
-  \se_G(\xtguarantees) &= \encode{
+  \encodeguarantees{\xtguarantees} &= \encode{
     \var{\sq{\build{
-      \tup{w, \fixedencode{4}{t}, \var{a}}
+      \tup{\xg¬workreport, \fixedencode{4}{\xg¬timeslot}, \var{\xg¬credential}}
     }{
-      \tup{w, t, a} \orderedin \xtguarantees}
+      \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \orderedin \xtguarantees}
     }}}
   \\
-  \se_A(\xtassurances) &= \encode{
+  \encodeassurances{\xtassurances} &= \encode{
     \var{\sq{\build{
-      \tup{a, f, \fixedencode{2}{v}, s}
+      \tup{\xa¬anchor, \xa¬availabilities, \fixedencode{2}{\xa¬assurer}, \xa¬signature}
     }{
-      \tup{a, f, v, s} \orderedin \xtassurances}
+      \tup{\xa¬anchor, \xa¬availabilities, \xa¬assurer, \xa¬signature} \orderedin \xtassurances}
     }}}
   \\
-  \se_D(\tup{\mathbf{v}, \mathbf{c}, \mathbf{f}}) &= \encode{
+  \encodedisputes{\tup{\mathbf{v}, \mathbf{c}, \mathbf{f}}} &= \encode{
     \var{\sq{\build{
       \tup{\xv¬reporthash, \fixedencode{4}{\xv¬epochindex},
         \sq{\build{

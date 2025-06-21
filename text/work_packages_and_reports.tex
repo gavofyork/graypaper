@@ -165,10 +165,10 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
   \!\!\pagedproofs\colon\abracegroup{
     \sequence{\segment} \to \,&\sequence{\segment} \\
     \mathbf{s} \mapsto \,&\sq{
-      \zeropad\sub{l}(\se(
+      \zeropad\sub{l}(\encode{
         \var{\merklejustsubpath_6(\mathbf{s}, i)},
         \var{\merklesubtreepage_6(\mathbf{s}, i)}
-      ))
+      })
       \mid i \orderedin \Nmax{\ceil{\nicefrac{\len{\mathbf{s}}}{64}}}
     } \\
     & \where l = \mathsf{W}_G
@@ -247,12 +247,12 @@ We may then define $\wr¬avspec$ as the data availability specification of the p
 \begin{equation}
   \wr¬avspec = \newavailabilityspecifier(
     \blake(\wpX),
-    \se(
+    \encode{
       \wpX,
       \extrinsicdata^\#(\wpX_\wp¬workitems),
       \importsegmentdata^\#(\wpX_\wp¬workitems),
       \justifysegmentdata^\#(\wpX_\wp¬workitems)
-    ),
+    },
     \concatall{\allexports}
   )\!\!\!\!
 \end{equation}

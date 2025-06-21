@@ -174,11 +174,11 @@
 \newcommand*{\mmrappend}{\mathcal{A}}
 \newcommand*{\octetstobits}{\mathcal{B}}
 \newcommand*{\erasurecode}{\mathcal{C}}
-\newcommand*{\se}{\mathcal{E}}
-\newcommand*{\sefixed}[1]{\se_{#1}}
-\newcommand*{\de}{\mathcal{E}^{-1}}
-\newcommand*{\defixed}[1]{\de_{#1}}
-\newcommand*{\mmrencode}{\se_M}
+\newcommand*{\fnencode}{\mathcal{E}}
+\newcommand*{\fnfixedencode}[1]{\fnencode_{#1}}
+\newcommand*{\fndecode}{\mathcal{E}^{-1}}
+\newcommand*{\fnfixeddecode}[1]{\fndecode_{#1}}
+\newcommand*{\fnmmrencode}{\fnencode_M}
 \newcommand*{\fyshuffle}{\mathcal{F}}
 \newcommand*{\blake}{\mathcal{H}}
 \newcommand*{\blakeprefix}[1]{\mathcal{H}_{#1}}
@@ -206,7 +206,6 @@
 \newcommand*{\Fmmrappend}[1]{\mmrappend\left(#1\right)}
 \newcommand*{\Ferasurecode}[2][]{\erasurecode_{#1}\left(#2\right)}
 \newcommand*{\Ferasurecodeplex}[2][]{\erasurecode^\#_{#1}\left(#2\right)}
-\newcommand*{\Fmmrencode}[1]{\mmrencode\left(#1\right)}
 \newcommand*{\Ffyshuffle}[1]{\fyshuffle\left(#1\right)}
 \newcommand*{\Fmerklejustsubpath}[2]{\merklejustsubpath_{#1}\left(#2\right)}
 \newcommand*{\Fmerklesubtreepage}[2]{\merklesubtreepage_{#1}\left(#2\right)}
@@ -226,10 +225,11 @@
 \newcommand*{\Ftosigned}[2]{\tosigned_{#1}\left(#2\right)}
 \newcommand*{\Ffromsigned}[2]{\fromsigned^{-1}_{#1}\left(#2\right)}
 
-\newcommand*{\encode}[1]{\se\left(#1\right)}
-\newcommand*{\fixedencode}[2]{\sefixed{#1}\left(#2\right)}
-\newcommand*{\decode}[1]{\de\left(#1\right)}
-\newcommand*{\fixeddecode}[2]{\defixed{#1}\left(#2\right)}
+\newcommand*{\encode}[1]{\fnencode\left(#1\right)}
+\newcommand*{\fixedencode}[2]{\fnfixedencode{#1}\left(#2\right)}
+\newcommand*{\decode}[1]{\fndecode\left(#1\right)}
+\newcommand*{\fixeddecode}[2]{\fnfixeddecode{#1}\left(#2\right)}
+\newcommand*{\mmrencode}[1]{\fnmmrencode\left(#1\right)}
 
 % Constants (Sans-serif upper letters)
 \newcommand*{\corecount}{\mathsf{C}}
@@ -570,6 +570,12 @@
 \newcommand*{\xtassurances}{\XT_A}
 \newcommand*{\xtpreimages}{\XT_P}
 \newcommand*{\xtguarantees}{\XT_G}
+
+\newcommand*{\encodetickets}[1]{\fnencode_T\left(#1\right)}
+\newcommand*{\encodepreimages}[1]{\fnencode_P\left(#1\right)}
+\newcommand*{\encodeguarantees}[1]{\fnencode_G\left(#1\right)}
+\newcommand*{\encodeassurances}[1]{\fnencode_A\left(#1\right)}
+\newcommand*{\encodedisputes}[1]{\fnencode_D\left(#1\right)}
 
 \newcommand*{\xa¬anchor}{a}
 \newcommand*{\xa¬availabilities}{f}

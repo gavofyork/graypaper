@@ -71,7 +71,7 @@ In all cases, we publish a signed statement of which of the cores we believe we 
 Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $\local¬seed\sub{n}$ and all signed data. Validator's announcement statements must be in the set $S$:
 \begin{align}
   S &\equiv \sig{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_I \append n \concat \mathbf{x}\sub{n} \concat \blake(\H)} \\
-  \where \mathbf{x}\sub{n} &= \se(\set{\build{\fixedencode{2}{\cX} \concat \blake(\wrX)}{\wrcX \in \local¬tranche\sub{n}}})\\
+  \where \mathbf{x}\sub{n} &= \encode{\set{\build{\fixedencode{2}{\cX} \concat \blake(\wrX)}{\wrcX \in \local¬tranche\sub{n}}}}\\
   \mathsf{X}_I &= \token{\$jam\_announce}
 \end{align}
 
