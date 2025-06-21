@@ -19,30 +19,94 @@ We define the state-key constructor functions $C$ as:
 The state serialization is then defined as the dictionary built from the amalgamation of each of the components. Cryptographic hashing ensures that there will be no duplicate state-keys given that there are no duplicate inputs to $C$. Formally, we define $T$ which transforms some state $\thestate$ into its serialized form:
 \begin{equation}
   T(\thestate) \equiv \abracegroup{
-    &&C(1) &\mapsto \encode{[\var{x}\mid x\orderedin \authpool]} \;, \\
+    &&C(1) &\mapsto \encode{\sq{\build{\var{x}}{x \orderedin \authpool}}} \;, \\
     &&C(2) &\mapsto \encode{\authqueue} \;, \\
-    &&C(3) &\mapsto \se(\var{[\tup{h, b, s, \var{\mathbf{p}}}\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \Fmmrencode{\beefybelt}) \;, \\
-    &&C(4) &\mapsto \se\left(\tup{\pendingset, \epochroot, \abracegroupboth{
-      0\ &\when \sealtickets \in \sequence{\safroleticket}_\epochlen\\
-      1\ &\when \sealtickets \in \sequence{\bskey}_\epochlen\\
-    }, \sealtickets,
-    \var{\ticketaccumulator}}\right) \;, \\
-    &&C(5) &\mapsto \encode{\var{\sqorderby{x}{x \in \goodset}}, \var{\sqorderby{x}{x \in \badset}}, \var{\sqorderby{x}{x \in \wonkyset}}, \var{\sqorderby{x}{x \in \offenders}}} \;, \\
+    &&C(3) &\mapsto \encode{
+      \var{\sq{\build{
+        \tup{\rh¬headerhash, \rh¬accoutlogsuperpeak, \rh¬stateroot, \var{\rh¬reportedpackagehashes}}
+      }{
+        \tup{\rh¬headerhash, \rh¬accoutlogsuperpeak, \rh¬stateroot, \rh¬reportedpackagehashes} \orderedin \recenthistory
+      }}},
+      \Fmmrencode{\beefybelt}
+    } \;, \\
+    &&C(4) &\mapsto \encode{
+      \pendingset,
+      \epochroot,
+      \abracegroupboth{
+        0\ &\when \sealtickets \in \sequence{\safroleticket}_\epochlen\\
+        1\ &\when \sealtickets \in \sequence{\bskey}_\epochlen\\
+      },
+      \sealtickets,
+      \var{\ticketaccumulator}
+    } \;, \\
+    &&C(5) &\mapsto \encode{
+      \var{\sqorderby{x}{x \in \goodset}},
+      \var{\sqorderby{x}{x \in \badset}},
+      \var{\sqorderby{x}{x \in \wonkyset}},
+      \var{\sqorderby{x}{x \in \offenders}}
+    } \;, \\
     &&C(6) &\mapsto \encode{\entropy} \;, \\
     &&C(7) &\mapsto \encode{\stagingset} \;, \\
     &&C(8) &\mapsto \encode{\activeset} \;, \\
     &&C(9) &\mapsto \encode{\previousset} \;, \\
-    &&C(10) &\mapsto \se(\sq{\build{\maybe{\tup{w, \fixedencode{4}{t}}}}{\tup{w, t} \orderedin \reports}}) \;, \\
+    &&C(10) &\mapsto \encode{
+      \sq{\build{
+        \maybe{\tup{\rs¬workreport, \fixedencode{4}{\rs¬timestamp}}}
+      }{
+        \tup{\rs¬workreport, \rs¬timestamp} \orderedin \reports
+      }}
+    } \;, \\
     &&C(11) &\mapsto \fixedencode{4}{\thetime} \;, \\
-    &&C(12) &\mapsto \fixedencode{4}{\manager, \assigners, \delegator} \concat \encode{\alwaysaccers} \;, \\
-    &&C(13) &\mapsto \fixedencode{4}{\valstatsaccumulator, \valstatsprevious}, \corestats, \servicestats \;, \\
-    &&C(14) &\mapsto \se(\sq{\build{\var{\tup{\mathbf{w}, \var{\mathbf{d}}}}}{\tup{\mathbf{w}, \mathbf{d}} \orderedin \mathbf{i} \mid \mathbf{i} \orderedin \ready}}) \;, \\
-    &&C(15) &\mapsto \encode{\sq{\build{\var{\mathbf{i}}}{\mathbf{i} \orderedin \accumulated}}} \;, \\
-    &&C(16) &\mapsto \se(\var{\sq{\build{\tup{\fixedencode{4}{s}, \encode{h}}}{\tup{s, h} \orderedin \lastaccout}}}) \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts: &&C(255, s) &\mapsto \mathbf{a}_c \concat \fixedencode{8}{\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_o, \mathbf{a}_f} \concat \fixedencode{4}{\mathbf{a}_i, \mathbf{a}_r, \mathbf{a}_a, \mathbf{a}_p} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts, (\mathbf{k} \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \fixedencode{4}{2^{32}-1} \concat \mathbf{k}) &\mapsto \mathbf{v} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \fixedencode{4}{2^{32}-2} \concat h) &\mapsto \mathbf{p} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts, \kv{\tup{h, l}}{\mathbf{t}} \in \mathbf{a}_\mathbf{l}: &&C(s, \fixedencode{4}{l} \concat h) &\mapsto \encode{\var{\sq{\build{\fixedencode{4}{x}}{x \orderedin \mathbf{t}}}}}
+    &&C(12) &\mapsto \encode{
+      \fixedencode{4}{\manager, \assigners, \delegator},
+      \alwaysaccers
+    } \;, \\
+    &&C(13) &\mapsto \encode{
+      \fixedencode{4}{\valstatsaccumulator, \valstatsprevious},
+      \corestats,
+      \servicestats
+    } \;, \\
+    &&C(14) &\mapsto \encode{
+      \sq{\build{
+        \var{\sq{\build{
+          \tup{\mathbf{w}, \var{\mathbf{d}}}
+        }{
+          \tup{\mathbf{w}, \mathbf{d}} \orderedin \mathbf{i}
+        }}}
+      }{
+        \mathbf{i} \orderedin \ready
+      }}
+    } \;, \\
+    &&C(15) &\mapsto \encode{
+      \sq{\build{\var{\mathbf{i}}}{\mathbf{i} \orderedin \accumulated}}
+    } \;, \\
+    &&C(16) &\mapsto \encode{
+      \var{\sq{\build{\tup{\fixedencode{4}{s}, \encode{h}}}{\tup{s, h} \orderedin \lastaccout}}}
+    } \;, \\
+    \forall \kv{s}{\saX} \in \accounts: &&C(255, s) &\mapsto \encode{
+      \saX_\sa¬codehash,
+      \fixedencode{8}{
+        \saX_\sa¬balance,
+        \saX_\sa¬minaccgas,
+        \saX_\sa¬minmemogas,
+        \saX_\sa¬octets,
+        \saX_\sa¬gratis
+      },
+      \fixedencode{4}{
+        \saX_\sa¬items,
+        \saX_\sa¬created,
+        \saX_\sa¬lastacc,
+        \saX_\sa¬parent
+      }
+    } \;, \\
+    \forall \kv{s}{\saX} \in \accounts, \kv{\mathbf{k}}{\mathbf{v}} \in \saX_\sa¬storage:
+      &&C(s, \fixedencode{4}{2^{32}-1} \concat \mathbf{k}) &\mapsto \mathbf{v} \;, \\
+    \forall \kv{s}{\saX} \in \accounts, \kv{h}{\mathbf{p}} \in \saX_\sa¬preimages:
+      &&C(s, \fixedencode{4}{2^{32}-2} \concat h) &\mapsto \mathbf{p} \;, \\
+    \forall \kv{s}{\saX} \in \accounts, \kv{\tup{h, l}}{\mathbf{t}} \in \saX_\sa¬requests:
+      &&C(s, \fixedencode{4}{l} \concat h) &\mapsto \encode{
+        \var{\sq{\build{\fixedencode{4}{x}}{x \orderedin \mathbf{t}}}}
+      }
   }
 \end{equation}
 
@@ -161,7 +225,7 @@ This is suitable for creating proofs on data which is not much greater than 32 o
 Note: In the case that no hash function argument $H$ is supplied, we may assume the Blake 2b hash function, $\blake$.
 
 \subsubsection{Constant-Depth Tree}
-We define the constant-depth binary Merkle function as $\merklizecd$. We define two corresponding functions for working with subtree pages, $\merklejustsubpath_x$ and $\merklesubtreepage_x$. The latter provides a single page of leaves, themselves hashed, prefixed data. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices.
+We define the constant-depth binary Merkle function as $\merklizecd$. We define two corresponding functions for working with subtree pages, $\merklejustsubpath\sub{x}$ and $\merklesubtreepage\sub{x}$. The latter provides a single page of leaves, themselves hashed, prefixed data. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices.
 \begin{align}
   \label{eq:constantdepthmerkleroot}
   \merklizecd&\colon \abracegroup{
@@ -169,18 +233,18 @@ We define the constant-depth binary Merkle function as $\merklizecd$. We define 
     \tup{\mathbf{v}, H} &\mapsto N(C(\mathbf{v}, H), H)
   }\\
   \label{eq:constantdepthsubtreemerklejust}
-  \merklejustsubpath_x&\colon \abracegroup{
+  \merklejustsubpath\sub{x}&\colon \abracegroup{
     \tuple{\sequence{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash} &\to \sequence{\hash}\\
     \tup{\mathbf{v}, i, H} &\mapsto T(C(\mathbf{v}, H), 2^xi, H)_{\dots\max(0, \ceil{\log_2(\max(1, \len{\mathbf{v}})) - x})}
   }\\
   \label{eq:constantdepthsubtreemerkleleafpage}
-  \merklesubtreepage_x&\colon \abracegroup{
+  \merklesubtreepage\sub{x}&\colon \abracegroup{
     \tuple{\sequence{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash} &\to \sequence{\hash}\\
     \tup{\mathbf{v}, i, H} &\mapsto \sq{\build{H(\token{\$leaf} \concat l)}{l \orderedin \mathbf{v}_{2^xi \dots \min(2^xi+2^x, \len{\mathbf{v}})}}}
   }
 \end{align}
 
-For the latter justification $\merklejustsubpath_x$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\merklesubtreepage_x$.
+For the latter justification $\merklejustsubpath\sub{x}$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\merklesubtreepage\sub{x}$.
 
 As above, we may assume a default value for $H$ of the Blake 2b hash function, $\blake$.
 
@@ -190,8 +254,8 @@ For justifications and Merkle root calculations, a constancy preprocessor functi
     \tuple{\sequence{\blob}, \blob \to \hash} &\to \sequence{\hash}\\
     \tup{\mathbf{v}, H} &\mapsto \mathbf{v}' \ \where \abracegroup[\;]{
       \len{\mathbf{v}}| &= 2^{\ceil{\log_2(\max(1, \len{\mathbf{v}}))}}\\
-      \mathbf{v}'_i &= \begin{cases}
-        H(\token{\$leaf} \concat \mathbf{v}_i) &\when i < \len{\mathbf{v}}\\
+      \mathbf{v}'\sub{i} &= \begin{cases}
+        H(\token{\$leaf} \concat \mathbf{v}\sub{i}) &\when i < \len{\mathbf{v}}\\
         \zerohash &\otherwise \\
       \end{cases}
     }
@@ -218,13 +282,13 @@ We define the \textsc{mmb} append function $\mmrappend$ as:
       \tuple{\sequence{\optional{\hash}}, \hash, \N, \blob\to\hash} &\to \sequence{\optional{\hash}}\\
       \tup{\mathbf{r}, l, n, H} &\mapsto \begin{cases}
         \mathbf{r} \append l &\when n \ge \len{\mathbf{r}}\\
-        R(\mathbf{r}, n, l) &\when n < \len{\mathbf{r}} \wedge \mathbf{r}_n = \none\\
-        P(R(\mathbf{r}, n, \none), H(\mathbf{r}_n \concat l), n + 1, H) &\otherwise
+        R(\mathbf{r}, n, l) &\when n < \len{\mathbf{r}} \wedge \mathbf{r}\sub{n} = \none\\
+        P(R(\mathbf{r}, n, \none), H(\mathbf{r}\sub{n} \concat l), n + 1, H) &\otherwise
       \end{cases}
     }\\
     \also R&\colon\deffunc{
       \tuple{\sequence{T}, \N, T} &\to \sequence{T}\\
-      \tup{\mathbf{s}, i, v} &\mapsto \mathbf{s}'\ \where \mathbf{s}' = \mathbf{s} \exc \mathbf{s}'_i = v
+      \tup{\mathbf{s}, i, v} &\mapsto \mathbf{s}'\ \where \mathbf{s}' = \mathbf{s} \exc \mathbf{s}'\sub{i} = v
     }
   \end{aligned}
 \end{equation}
