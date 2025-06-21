@@ -149,49 +149,182 @@ And so on.
 
 A block $\block$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\se_U$. Formally:
 
-\newcommand*{\seresult}{O}
+\newcommand*{\encoderesult}[1]{O(#1)}
+\newcommand*{\encodeimportref}[1]{I(#1)}
+\newcommand*{\encodeimportrefs}[1]{I^\#(#1)}
 \begin{align}
-  \encode{\block} &= \se\,\left\lparen
-    \header,\ \se_T(\xttickets),\ \se_P(\xtpreimages),\ \se_G(\xtguarantees),\ \se_A(\xtassurances),\ \se_D(\xtdisputes)
-  \right\rparen \\
-  \se_T(\xttickets) &= \encode{\var{\xttickets}} \\
-  \se_P(\xtpreimages) &= \encode{\var{\sq{\build{\tup{s, \var{p}}}{\tup{s, p} \orderedin \xtpreimages}}}} \\
-  \se_G(\xtguarantees) &= \encode{\var{\sq{\build{\tup{w, \fixedencode{4}{t}, \var{a}}}{\tup{w, t, a} \orderedin \xtguarantees}}}} \\
-  \se_A(\xtassurances) &= \encode{\var{\sq{\build{\tup{a, f, \fixedencode{2}{v}, s}}{\tup{a, f, v, s} \orderedin \xtassurances}}}} \\
-  \se_D((\mathbf{v}, \mathbf{c}, \mathbf{f})) &= \se(\var{[(r, \fixedencode{4}{a}, \sq{\build{(v, \fixedencode{2}{i}, s)}{(v, i, s) \orderedin \mathbf{j}}}) \mid (r, a, \mathbf{j}) \orderedin \mathbf{v}]}, \var{\mathbf{c}}, \var{\mathbf{f}}) \\
-  \encode{\mathbf{H}} &= \se_U(\mathbf{H})\concat\encode{\H_\¬sealsig} \\
-  \se_U(\mathbf{H}) &= \encode{\H_\¬parent,\H_\¬priorstateroot,\H_\¬extrinsichash}\concat\fixedencode{4}{\H_\¬timeslot}\concat\encode{\maybe{\H_\¬epochmark},\maybe{\H_\¬winnersmark},\fixedencode{2}{\H_\¬authorindex},\H_\¬vrfsig,\var{\H_\¬offendersmark}}\\
-  \encode{x \in \workcontext} &\equiv \encode{x_a, x_s, x_b, x_l}\concat\fixedencode{4}{x_t}\concat\encode{\var{x_\mathbf{p}}}\\
-  \encode{x \in \avspec} &\equiv \encode{x_h} \concat \fixedencode{4}{x_l}\concat\encode{x_u, x_e} \concat \fixedencode{2}{x_n} \\
-  \encode{x \in \mathbb{L}} &\equiv \se(\fixedencode{4}{x_s}, x_c, x_y, \fixedencode{8}{x_g}, x_u, x_i, x_x, x_z, x_e, \seresult(x_\wd¬result))\\
-  \encode{x \in \workreport} &\equiv \encode{x_s, x_x, x_c, x_a, x_g, \var{x_\wr¬authtrace}, \var{x_\mathbf{l}}, \var{x_\wr¬digests}} \\
-  \encode{x \in \workpackage} &\equiv \encode{\fixedencode{4}{x_\wp¬authcodehost}, x_\wp¬authcodehash, x_\wp¬context, \var{x_\wp¬authtoken}, \var{x_\wp¬authconfig}, \var{x_\wp¬workitems}} \\
+  \encode{\block} &= \encode{
+    \header,
+    \se_T(\xttickets),
+    \se_P(\xtpreimages),
+    \se_G(\xtguarantees),
+    \se_A(\xtassurances),
+    \se_D(\xtdisputes)
+  }
+  \\
+  \se_T(\xttickets) &= \encode{\var{\xttickets}} 
+  \\
+  \se_P(\xtpreimages) &= \encode{
+    \var{\sq{\build{
+      \tup{s, \var{p}}
+    }{
+      \tup{s, p} \orderedin \xtpreimages}
+    }}}
+  \\
+  \se_G(\xtguarantees) &= \encode{
+    \var{\sq{\build{
+      \tup{w, \fixedencode{4}{t}, \var{a}}
+    }{
+      \tup{w, t, a} \orderedin \xtguarantees}
+    }}}
+  \\
+  \se_A(\xtassurances) &= \encode{
+    \var{\sq{\build{
+      \tup{a, f, \fixedencode{2}{v}, s}
+    }{
+      \tup{a, f, v, s} \orderedin \xtassurances}
+    }}}
+  \\
+  \se_D(\tup{\mathbf{v}, \mathbf{c}, \mathbf{f}}) &= \encode{
+    \var{\sq{\build{
+      \tup{\xv¬reporthash, \fixedencode{4}{\xv¬epochindex},
+        \sq{\build{
+          \tup{\xvj¬validity, \fixedencode{2}{\xvj¬judgeindex}, \xvj¬signature}
+        }{
+          \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \orderedin \xv¬judgments
+        }}
+      }
+    }{
+      \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \orderedin \mathbf{v}
+    }}},
+    \var{\mathbf{c}},
+    \var{\mathbf{f}}
+  }
+  \\
+  \encode{\mathbf{H}} &= \encode{
+    \encodeunsignedheader{\mathbf{H}},
+    \H_\¬sealsig
+  }
+  \\
+  \encodeunsignedheader{\mathbf{H}} &= \encode{
+    \H_\¬parent,
+    \H_\¬priorstateroot,
+    \H_\¬extrinsichash
+    \fixedencode{4}{\H_\¬timeslot}
+    \maybe{\H_\¬epochmark},
+    \maybe{\H_\¬winnersmark},
+    \fixedencode{2}{\H_\¬authorindex},
+    \H_\¬vrfsig,
+    \var{\H_\¬offendersmark}
+  }
+  \\
+  \encode{\wcX \in \workcontext} &\equiv \encode{
+    \wcX_\wc¬anchorhash,
+    \wcX_\wc¬anchorpoststate,
+    \wcX_\wc¬anchoraccoutlog,
+    \wcX_\wc¬lookupanchorhash,
+    \fixedencode{4}{\wcX_\wc¬lookupanchortime},
+    \var{\wcX_\wc¬prerequisites}
+  }
+  \\
+  \encode{\asX \in \avspec} &\equiv \encode{
+    \asX_\as¬packagehash,
+    \fixedencode{4}{\asX_\as¬bundlelen},
+    \asX_\as¬erasureroot,
+    \asX_\as¬segroot,
+    \fixedencode{2}{\asX_\as¬segcount}
+  }
+  \\
+  \encode{\wdX \in \mathbb{L}} &\equiv \encode{
+    \fixedencode{4}{\wdX_\wd¬service},
+    \wdX_\wd¬codehash,
+    \wdX_\wd¬payloadhash,
+    \fixedencode{8}{\wdX_\wd¬gaslimit},
+    % TODO: Consider making these fixed length.
+    \wdX_\wd¬gasused,
+    \wdX_\wd¬importcount,
+    \wdX_\wd¬xtcount,
+    \wdX_\wd¬xtsize,
+    \wdX_\wd¬exportcount,
+    \encoderesult{\wdX_\wd¬result}
+  }
+  \\
+  \encode{\wrX \in \workreport} &\equiv \encode{
+    \wrX_\wr¬avspec,
+    \wrX_\wr¬context,
+    \wrX_\wr¬core,
+    \wrX_\wr¬authorizer,
+    \wrX_\wr¬authgasused,
+    \var{\wrX_\wr¬authtrace},
+    \var{\wrX_\wr¬srlookup},
+    \var{\wrX_\wr¬digests}
+  }
+  \\
+  \encode{\wpX \in \workpackage} &\equiv \encode{
+    \fixedencode{4}{\wpX_\wp¬authcodehost},
+    \wpX_\wp¬authcodehash,
+    \wpX_\wp¬context,
+    \var{\wpX_\wp¬authtoken},
+    \var{\wpX_\wp¬authconfig},
+    \var{\wpX_\wp¬workitems}
+  }
+  \\
   % TODO: \fixedencode{4}{i} should be just \encode{i}, but we should wait for this to be written.
-  \encode{x \in \workitem} &\equiv \se(
-    \fixedencode{4}{x_\wi¬service},
-    x_\wi¬codehash,
-    \fixedencode{8}{x_\wi¬refgaslimit},
-    \fixedencode{8}{x_\wi¬accgaslimit},
-    \fixedencode{2}{x_\wi¬exportcount}
-    \var{x_\wi¬payload},
-    \var{\se_I^\#(x_\wi¬importsegments)},
-    \var{\sq{\tup{h, \fixedencode{4}{i}} \mid \tup{h, i} \orderedin x_\wi¬extrinsics}},
-  ) \\
-  \encode{x \in \safroleticket} &\equiv \encode{x_\mathbf{y}, x_r} \\
-  \encode{x \in \defxfer} &\equiv \se(\fixedencode{4}{x_s}, \fixedencode{4}{x_d}, \fixedencode{8}{x_a}, \encode{x_m}, \fixedencode{8}{x_g}) \\
-  \encode{x \in \operandtuple} &\equiv \se(x_\ot¬packagehash, x_\ot¬segroot, x_\ot¬authorizer,  x_\ot¬payloadhash, x_\ot¬gaslimit, \seresult(x_\ot¬result), \var{x_\ot¬authtrace}) \\
-  \seresult(o \in \workerror \cup \blob) &\equiv \begin{cases}
-    (0, \var{o}) &\when o \in \blob \\
+  \encode{\wiX \in \workitem} &\equiv \encode{
+    \fixedencode{4}{\wiX_\wi¬service},
+    \wiX_\wi¬codehash,
+    \fixedencode{8}{\wiX_\wi¬refgaslimit},
+    \fixedencode{8}{\wiX_\wi¬accgaslimit},
+    \fixedencode{2}{\wiX_\wi¬exportcount},
+    \var{\wiX_\wi¬payload},
+    \var{\encodeimportrefs{\wiX_\wi¬importsegments}},
+    \var{\sq{\build{
+      \tup{h, \fixedencode{4}{i}}
+    }{
+      \tup{h, i} \orderedin \wiX_\wi¬extrinsics
+    }}}
+  }
+  \\
+  \encode{\stX \in \safroleticket} &\equiv \encode{
+    \stX_\st¬id,
+    \stX_\st¬entry
+  }
+  \\
+  \encode{\dxX \in \defxfer} &\equiv \encode{
+    \fixedencode{4}{\dxX_\dx¬source},
+    \fixedencode{4}{\dxX_\dx¬dest},
+    \fixedencode{8}{\dxX_\dx¬amount},
+    \dxX_\dx¬memo,
+    \fixedencode{8}{\dxX_\dx¬gas}
+  }
+  \\
+  \encode{\otX \in \operandtuple} &\equiv \encode{
+    \otX_\ot¬packagehash,
+    \otX_\ot¬segroot,
+    \otX_\ot¬authorizer,
+    \otX_\ot¬payloadhash,
+    \otX_\ot¬gaslimit,
+    \encoderesult{\otX_\ot¬result},
+    \var{\otX_\ot¬authtrace}
+  }
+  \\
+  \encoderesult{o \in \workerror \cup \blob} &\equiv \begin{cases}
+    \tup{0, \var{o}} &\when o \in \blob \\
     1 &\when o = \infty \\
     2 &\when o = \panic \\
     3 &\when o = \badexports \\
     4 &\when o = \oversize \\
     5 &\when o = \token{BAD} \\
-    6 &\when o = \token{BIG} \\
-  \end{cases}\\
-  \se_I(h \in \hash \cup \hash^\boxplus, i \in \Nbits{15}) &\equiv \begin{cases}
-    (h, \fixedencode{2}{i}) &\when h \in \hash\\
-    (r, \fixedencode{2}{i + 2^{15}}) &\when \exists r \in \hash, h = r^\boxplus\\
+    6 &\when o = \token{BIG}
+    \\
+  \end{cases}
+  \\
+  \encodeimportref{\tup{
+    h \in \hash \cup \hash^\boxplus,
+    i \in \Nbits{15}
+  }} &\equiv \begin{cases}
+    \tup{h, \fixedencode{2}{i}} &\when h \in \hash\\
+    \tup{r, \fixedencode{2}{i + 2^{15}}} &\when \exists r \in \hash, h = r^\boxplus\\
   \end{cases}
 \end{align}
 

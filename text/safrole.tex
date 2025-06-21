@@ -135,16 +135,16 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
     \label{eq:ticketconditiontrue}
     \safroleticket \in \sequence{\safroleticket} &\implies \abracegroup[\,]{
         &i_\st¬id = \Fbanderout{\H_\¬sealsig}\,,\\
-        &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entry}{\seunsignedheader(\H)}\,,\\
+        &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entry}{\encodeunsignedheader{\H}}\,,\\
         &\isticketed = 1
     }\\
     \label{eq:ticketconditionfalse}
     \safroleticket \in \sequence{\bskey} &\implies \abracegroup[\,]{
         &i = \H_\¬authorbskey\,,\\
-        &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_F \concat \entropy'_3}{\seunsignedheader(\H)}\,,\\
+        &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_F \concat \entropy'_3}{\encodeunsignedheader{\H}}\,,\\
         &\isticketed = 0
     }\\
-  \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E\concat \Fbanderout{\H_\¬sealsig}}{[]} \\
+  \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E \concat \Fbanderout{\H_\¬sealsig}}{[]} \\
   \mathsf{X}_E &= \token{\$jam\_entropy}\\
   \mathsf{X}_F &= \token{\$jam\_fallback\_seal}\\
   \mathsf{X}_T &= \token{\$jam\_ticket\_seal}

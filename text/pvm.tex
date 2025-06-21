@@ -47,7 +47,7 @@
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
   \Psi&\colon \abracegroup{
-    (\blob, \pvmreg, \gas, \regs, \ram) &\to (\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram)\\
+    \tuple{\blob, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
     (\mathbf{p}, \imath, \gascounter, \registers, \mem) &\mapsto \begin{cases}
       \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
       (\oog, \imath', \gascounter', \registers', \mem') &\when \gascounter' < 0\\
@@ -135,7 +135,7 @@ We denote this set, as opcode indices rather than names, as $T$, which is a subs
 We must now define the single-step \textsc{pvm} state-transition function $\Psi_1$:
 \begin{equation}
   \Psi_1\colon \abracegroup{
-    (\blob, \mathbb{B}, \sequence{\pvmreg}, \pvmreg, \gas, \regs, \ram) &\to (\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram)\\
+    \tuple{\blob, \mathbb{B}, \sequence{\pvmreg}, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
     (\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\mapsto (\varepsilon, \imath', \gascounter', \registers', \mem')
   }
 \end{equation}
@@ -703,7 +703,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 Note that the two signed modulo operations have an idiosyncratic definition, operating as the modulo of the absolute values, but with the sign of the numerator. Formally:
 \begin{equation}
   \smod\colon\abracegroup{
-    (\mathbb{Z}, \mathbb{Z}) &\to \mathbb{Z}\\
+    \tuple{\mathbb{Z}, \mathbb{Z}} &\to \mathbb{Z}\\
     (a, b) &\mapsto \begin{cases}
       a &\when b = 0\\
       \text{sgn}(a)(\len{a} \bmod \len{b}) &\otherwise \\
@@ -728,7 +728,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
 \begin{align}
   &\Psi_H\colon \abracegroup{
     \tuple{\begin{aligned}
-      &\blob, \pvmreg, \gas, \regs,\\&\ram, \Omega\langle X \rangle, X
+      &\blob, \pvmreg, \gas, \regs,\\&\ram, \Omega\ang{X}, X
     \end{aligned}
     }
     &\to
@@ -752,7 +752,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
       }\\[8pt]
     \end{cases} \\
     }\!\!\!\!\!\!\!\!\\
-    &\Omega\langle X \rangle \equiv (\N, \gas, \regs, \ram, X) \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X} \cup \set{\fault} \times \pvmreg
+    &\Omega\ang{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X} \cup \set{\fault} \times \pvmreg
 \end{align}
 
 On exit, the instruction counter $\imath'$ references the instruction \emph{which caused the exit}. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed. This is sensible when the instruction is one which necessarily needs re-executing such as in the case of an out-of-gas or page fault reason.
@@ -767,7 +767,7 @@ The software programs which will run in each of the four instances where the \te
 We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} at program start. Given program blob $\mathbf{p}$ and argument data $\mathbf{a}$, we can decode the program code $\mathbf{c}$, registers $\registers$, and \textsc{ram} $\mem$ by invoking the standard initialization function $Y(\mathbf{p}, \mathbf{a})$:
 \begin{equation}
 Y\colon\abracegroup{
-  (\blob, \bloboflen{:\mathsf{Z}_I}) &\to (\blob, \regs, \ram)? \\
+  \tuple{\blob, \bloboflen{:\mathsf{Z}_I}} &\to (\blob, \regs, \ram)? \\
   (\mathbf{p}, \mathbf{a}) &\mapsto \begin{cases}
     (\mathbf{c}, \registers, \mem) &\when \exists! (\mathbf{c}, \mathbf{o}, \mathbf{w}, z, s) \text{ which satisfy equation \ref{eq:conditions}}\\
     \none &\otherwise
@@ -830,9 +830,9 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
 The four instances where the \textsc{pvm} is utilized each expect to be able to pass argument data in and receive some return data back. We thus define the common \textsc{pvm} program-argument invocation function $\Psi_M$:
 \begin{equation}
   \Psi_M\colon \abracegroup{
-    \left(
-      \blob, \pvmreg, \gas, \bloboflen{:\mathsf{Z}_I}, \Omega\langle X \rangle, X
-    \right) &\to (\gas, \blob \cup \set{\panic, \oog}, X)\\
+    \tuple{
+      \blob, \pvmreg, \gas, \bloboflen{:\mathsf{Z}_I}, \Omega\ang{X}, X
+    } &\to \tuple{\gas, \blob \cup \set{\panic, \oog}, X}\\
     (\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}) &\mapsto \begin{cases}
       (0, \panic, \mathbf{x}) &\when Y(\mathbf{p}, \mathbf{a}) = \none\\
       R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}, \mathbf{a}) = (\mathbf{c}, \registers, \mem)\\

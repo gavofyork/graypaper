@@ -345,6 +345,7 @@
 
 % TODO make this local.
 %\newcommand*{\safroleticket}{\mathbb{C}}
+\newcommand*{\stX}{x}
 \newcommand*{\st¬id}{y}
 \newcommand*{\st¬entry}{\¬entry}
 
@@ -379,10 +380,10 @@
 \newcommand*{\wr¬context}{x} % TODO: Make bold like package. Consider renaming to \mathbf{c}
 \newcommand*{\wr¬core}{\¬core}
 \newcommand*{\wr¬authorizer}{\¬authorizer}
-\newcommand*{\wr¬srlookup}{\mathbf{l}}
-\newcommand*{\wr¬authtrace}{\¬authtrace} % TODO: Consider renaming to \mathbf{u} to free up \mathbf{o}
-\newcommand*{\wr¬digests}{\mathbf{r}} % TODO: Consider renaming to \mathbf{t}/{g} avoid overloading \mathbf{r} reports vs results; maybe \mathbf{t} for results
 \newcommand*{\wr¬authgasused}{g}
+\newcommand*{\wr¬authtrace}{\¬authtrace} % TODO: Consider renaming to \mathbf{u} to free up \mathbf{o}
+\newcommand*{\wr¬srlookup}{\mathbf{l}}
+\newcommand*{\wr¬digests}{\mathbf{r}} % TODO: Consider renaming to \mathbf{t}/{g} avoid overloading \mathbf{r} reports vs results; maybe \mathbf{t} for results
 % TODO: Standardize and fully check this:
 % p P: work Packages
 % w I: work Items
@@ -396,14 +397,15 @@
 \newcommand*{\wd¬codehash}{\¬codehash}
 \newcommand*{\wd¬payloadhash}{\¬payloadhash}
 \newcommand*{\wd¬gaslimit}{\¬gaslimit}
-\newcommand*{\wd¬result}{\¬result}
 \newcommand*{\wd¬gasused}{\¬gasused}
 \newcommand*{\wd¬importcount}{\¬importcount}
 \newcommand*{\wd¬xtcount}{\¬xtcount}
 \newcommand*{\wd¬xtsize}{\¬xtsize}
 \newcommand*{\wd¬exportcount}{\¬exportcount}
+\newcommand*{\wd¬result}{\¬result}
 
 %\newcommand*{\operandtuple}{\mathbb{O}}
+\newcommand{\otX}{x}
 \newcommand*{\ot¬packagehash}{h} % O/L ¬codehash TODO: RENAME to k
 \newcommand*{\ot¬segroot}{e} % O/L ¬exportcount TODO: RENAME to r?
 \newcommand*{\ot¬authorizer}{\¬authorizer}
@@ -413,6 +415,7 @@
 \newcommand*{\ot¬result}{\¬result}
 
 %\newcommand*{\avspec}{\mathbb{S}}
+\newcommand*{\asX}{x}
 % TODO: Is it \as¬packagehash or \as¬bundlehash? Unclear whether this was changed to the hash of the work-package bundle or still the hash of the work-package itself.
 \newcommand*{\as¬packagehash}{h}
 \newcommand*{\as¬bundlelen}{l}
@@ -423,6 +426,7 @@
 % TODO: Move \mathbf{p} from here into the \workreport and work-package - it's really not part of the context.
 
 %\newcommand*{\workcontext}{\mathbb{X}}
+\newcommand*{\wcX}{x}
 \newcommand*{\wc¬anchorhash}{a}
 \newcommand*{\wc¬anchorpoststate}{s}
 \newcommand*{\wc¬anchoraccoutlog}{b}
@@ -451,6 +455,7 @@
 
 % Fields of deferred transfer.
 %\newcommand*{\defxfer}{\mathbb{T}}
+\newcommand*{\dxX}{x}
 \newcommand*{\dx¬source}{s}
 \newcommand*{\dx¬dest}{d}
 \newcommand*{\dx¬amount}{a}
@@ -600,7 +605,8 @@
 % Headers.
 \newcommand*{\header}{\mathbf{H}}
 \newcommand*{\theheader}{\header} % "THE header" is overloaded with "prototype header" for now.
-\newcommand*{\seunsignedheader}{\mathcal{E}_U}
+\newcommand*{\fnencodeunsignedheader}{\mathcal{E}_U}
+\newcommand*{\encodeunsignedheader}[1]{\fnencodeunsignedheader\left(#1\right)}
 \newcommand*{\parentheader}[1]{{#1}^-}
 \newcommand*{\genesisheader}{\header^0}
 \renewcommand*{\H}{\theheader} % short-hand for \theheader, used in equations when subscripting to a field.

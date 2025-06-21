@@ -47,7 +47,7 @@ The newly available work-reports, $\justbecameavailable$, are partitioned into t
 We define the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by sets of now-accumulated work-package hashes (those in $\accumulated$). It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the set provided as a parameter, and removes any dependencies which appear in said set. Formally:
 \begin{equation}
   E\colon\abracegroup{
-      &(\sequence{\tuple{\workreport, \protoset{\hash}}}, \protoset{\hash}) \to \sequence{\tuple{\workreport, \protoset{\hash}}} \\
+      &\tuple{\sequence{\tuple{\workreport, \protoset{\hash}}}, \protoset{\hash}} \to \sequence{\tuple{\workreport, \protoset{\hash}}} \\
     &\tup{\mathbf{r}, \mathbf{x}} \mapsto \sq{\build{
       \tup{w, \mathbf{d} \setminus \mathbf{x}}
     }{
@@ -228,7 +228,7 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
 And $\fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/hash pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
 \begin{equation}
   \fnprovide\colon\abracegroup{
-    &(\dict{\serviceid}{\serviceaccount}, \protoset{\tuple{\serviceid, \blob}}) \to \dict{\serviceid}{\serviceaccount} \\
+    &\tuple{\dict{\serviceid}{\serviceaccount}, \protoset{\tuple{\serviceid, \blob}}} \to \dict{\serviceid}{\serviceaccount} \\
     &(\mathbf{d}, \mathbf{p}) \mapsto \mathbf{d}'\;\where \mathbf{d}' = \mathbf{d}\;\text{except:} \\
     &\quad\forall \tup{s, \mathbf{i}} \in \mathbf{p},\;
       s \in \keys{\mathbf{d}},\;

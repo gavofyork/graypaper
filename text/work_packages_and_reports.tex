@@ -124,7 +124,7 @@ We limit the sums of each of the two gas limits to be at most the maximum gas al
 Given the result $\wd¬result$ and gas used $\wd¬gasused$ of some work-item, we define the item-to-digest function $\itemtodigest$ as:
 \begin{equation}
   \itemtodigest\colon\abracegroup{
-    (\workitem, \blob \cup \workerror, \gas) &\to \mathbb{L}\\
+    \tuple{\workitem, \blob \cup \workerror, \gas} &\to \mathbb{L}\\
     \tup{\tup{\begin{aligned}
       &\¬service, \¬codehash, \¬payload,\\
       &\wi¬accgaslimit, \¬exportcount, \wi¬importsegments, \wi¬extrinsics
@@ -149,7 +149,7 @@ We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the h
   \forall \wpX \in \workpackage: \abracegroup[\,]{
     \wpX_\wp¬authorizer &\equiv \blake(\wpX_\wp¬authcodehash \concat \wpX_\wp¬authconfig) \\
     \encode{\var{\wpX_\wp¬metadata}, \wpX_\wp¬authcode} &\equiv \histlookup(\accounts[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_\wc¬lookupanchortime, \wpX_\wp¬authcodehash) \\
-    (\wpX_\wp¬metadata, \wpX_\wp¬authcode) &\in (\blob, \blob)
+    (\wpX_\wp¬metadata, \wpX_\wp¬authcode) &\in \tuple{\blob, \blob}
   }
 \end{equation}
 
@@ -180,7 +180,7 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
 We now come to the work-report computation function $\computereport$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $\¬core$ and results in either an error $\error$ or the work-report and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization. Formally:
 \begin{equation}\label{eq:workdigestfunction}
   \computereport \colon \abracegroup{
-    (\workpackage, \coreindex) &\to \workreport \\
+    \tuple{\workpackage, \coreindex} &\to \workreport \\
     (\wpX, \¬core) &\mapsto \begin{cases}
         \error &\when \wr¬authtrace \not\in \bloboflen{:\mathsf{W}_R} \\
         \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
