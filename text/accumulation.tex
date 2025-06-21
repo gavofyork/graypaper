@@ -413,12 +413,12 @@ After accumulation, we must integrate all preimages provided in the lookup extri
 
 We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
 \begin{align}
-  \using \mathbf{P} = \set{\build{
+  \using \mathbf{p} = \set{\build{
     \tup{\xp¬service, \xp¬data}
   }{
     \tup{\xp¬service, \xp¬data} \in \xtpreimages, Y(\accountspostxfer, \xp¬service, \blake{\xp¬data}, \len{\xp¬data})
   }}\\
-  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{\xp¬service,\,\xp¬data} \in \mathbf{P} : \abracegroup[\,]{
+  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{\xp¬service,\,\xp¬data} \in \mathbf{p} : \abracegroup[\,]{
       \quad\accountspostpreimage\subb{\xp¬service}_\sa¬preimages\subb{\blake{\xp¬data}} &= \xp¬data \\
       \accountspostpreimage\subb{\xp¬service}_\sa¬requests\subb{\blake{\xp¬data}, \len{\xp¬data}} &= \sq{\thetime'}
     }\!\!\!\!

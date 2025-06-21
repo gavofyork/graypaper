@@ -2,9 +2,6 @@
 
 We now define the four practical instances where we wish to invoke a PVM instance as part of the protocol. In general we avoid introducing unbounded data as part of the basic invocation arguments in order to minimise the chance of an unexpectedly large RAM allocation, which could lead to gas inflation and unavoidable underflow. This makes for a more cumbersome interface, but one which is more predictable and easier to reason about.
 
-\newcommand*{\pvm}{\mathbf{M}}
-\newcommand*{\segoff}{\varsigma}
-\newcommand*{\execst}{\varepsilon}
 
 \subsection{Host-Call Result Constants}
 
@@ -64,9 +61,6 @@ The historical-lookup host-call function, $\Omega_H$, is designed to give the sa
   \mathsf{D} \equiv \mathsf{L} + 4,800 = 19,200
 \end{equation}
 
-\newcommand*{\pvm¬code}{\mathbf{p}}
-\newcommand*{\pvm¬ram}{\mathbf{u}}
-\newcommand*{\pvm¬pc}{i}
 
 The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvm$. It holds some program code, instruction counter and \textsc{ram}:
 \begin{equation}
@@ -121,17 +115,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
 
 Since this is a transition which can directly affect a substantial amount of on-chain state, our invocation context is accordingly complex. It is a tuple with elements for each of the aspects of state which can be altered through this invocation and beyond the account of the service itself includes the deferred transfer list and several dictionaries for alterations to preimage lookup state, core assignments, validator key assignments, newly created accounts and alterations to account privilege levels.
 
-Formally, we define our result context to be $\mathbf{X}$, and our invocation context to be a pair of these contexts, $\mathbf{X} \times \mathbf{X}$ (and thus for any value $\mathbf{x} \in \mathbf{X}$ there exists $\mathbf{x}^2 \in \mathbf{X} \times \mathbf{X}$), with one dimension being the regular dimension and generally named $\mathbf{x}$ and the other being the exceptional dimension and being named $\mathbf{y}$. The only function which actually alters this second dimension is $\mathtt{checkpoint}$, $\Omega_C$ and so it is rarely seen.
-\newcommand*{\implications}{\mathbf{X}}
-\newcommand*{\imX}{\mathbf{x}}
-\newcommand*{\imY}{\mathbf{y}}
-\newcommand*{\im¬id}{s}
-\newcommand*{\im¬state}{\mathbf{u}}
-\newcommand*{\im¬nextfreeid}{i}
-\newcommand*{\im¬xfers}{\mathbf{t}}
-\newcommand*{\im¬yield}{y}
-\newcommand*{\im¬provisions}{\mathbf{p}}
-\newcommand*{\im¬self}{\mathbf{s}}
+Formally, we define our result context to be $\implications$, and our invocation context to be a pair of these contexts, $\implications \times \implications$ (and thus for any value $\imX \in \implications$ there exists $\imX^2 \in \implications \times \implications$), with one dimension being the regular dimension and generally named $\imX$ and the other being the exceptional dimension and being named $\imY$. The only function which actually alters this second dimension is $\mathtt{checkpoint}$, $\Omega_C$ and so it is rarely seen.
 \begin{align}
   \implications &\equiv \tuple{
     \isa{\im¬id}{\serviceid},
@@ -701,7 +685,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
 
 \subsection{Accumulate Functions}\label{sec:accumulatefunctions}
 
-This defines a number of functions broadly of the form $(\gascounter' \in \signedgas, \registers' \in \regs, \memory', \tup{\imX', \mathbf{y}'}) = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram, \tup{\mathbf{x}\in \mathbf{X}, \mathbf{y}\in \mathbf{X}}, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
+This defines a number of functions broadly of the form $(\gascounter' \in \signedgas, \registers' \in \regs, \memory', \tup{\imX', \mathbf{y}'}) = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram, \imXY \in \implications^2, \dots)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
 Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
