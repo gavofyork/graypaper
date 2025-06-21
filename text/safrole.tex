@@ -128,7 +128,7 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
     \nonumber \using i = \cyclic{\safroleticket[\H_\¬timeslot]}\colon \\
     \label{eq:ticketconditiontrue}
     \safroleticket \in \seq{\safroleticket} &\implies \abracegroup[\,]{
-        &i_\st¬id = \banderout{\H_\¬sealsig}\,,\\
+        &i_\st¬id = \Fbanderout{\H_\¬sealsig}\,,\\
         &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entry}{\seunsignedheader(\H)}\,,\\
         &\isticketed = 1
     }\\
@@ -138,7 +138,7 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
         &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_F \concat \entropy'_3}{\seunsignedheader(\H)}\,,\\
         &\isticketed = 0
     }\\
-  \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E\concat \banderout{\H_\¬sealsig}}{[]} \\
+  \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E\concat \Fbanderout{\H_\¬sealsig}}{[]} \\
   \mathsf{X}_E &= \token{\$jam\_entropy}\\
   \mathsf{X}_F &= \token{\$jam\_fallback\_seal}\\
   \mathsf{X}_T &= \token{\$jam\_ticket\_seal}
@@ -153,7 +153,7 @@ In addition to the entropy accumulator $\entropyaccumulator$, we retain three ad
 
 $\entropyaccumulator$ defines the state of the randomness accumulator to which the provably random output of the \textsc{vrf}, the signature over some unbiasable input, is combined each block. $\entropy_1$, $\entropy_2$ and $\entropy_3$ meanwhile retain the state of this accumulator at the end of the three most recently ended epochs in order.
 \begin{align}
-  \entropyaccumulator' &\equiv \blake(\entropyaccumulator \concat \banderout{\H_\¬vrfsig})
+  \entropyaccumulator' &\equiv \blake(\entropyaccumulator \concat \Fbanderout{\H_\¬vrfsig})
 \end{align}
 
 On an epoch transition (identified as the condition $e' > e$), we therefore rotate the accumulator value into the history $\entropy_1$, $\entropy_2$ and $\entropy_3$:
@@ -270,7 +270,7 @@ We define $\mathbf{n}$ as the set of new tickets, with the ticket identifier, a 
 \begin{align}
   \mathbf{n} &\equiv \sq{
     \tup{
-      \is{\mathbf{y}}{\banderout{i_p}},\,
+      \is{\mathbf{y}}{\Fbanderout{i_p}},\,
       \is{r}{i_\st¬entry}
     } \mid i \orderedin \xttickets
   }

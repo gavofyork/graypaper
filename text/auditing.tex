@@ -33,9 +33,9 @@ Each validator shall perform auditing duties on each valid block received. Since
 \newcommand*{\local¬reports}{\mathbf{q}}
 \newcommand*{\local¬seed}{s}
 \newcommand*{\local¬tranche}{\mathbf{a}}
-\newcommand*{\wdX}{d}
+\newcommand*{\wrX}{r}
 \newcommand*{\cX}{c}
-\newcommand*{\wdcX}{\tup{\wdX, \cX}}
+\newcommand*{\wrcX}{\tup{\wrX, \cX}}
 
 We define the sequence of work-reports which we may be required to audit as $\local¬reports$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
 \begin{align}\label{eq:auditselection}
@@ -58,9 +58,8 @@ We define our initial audit tranche in terms of a verifiable random quantity $\l
 
 We may then define $\local¬tranche\sub{0}$ as the non-empty items to audit through a verifiably random selection of ten cores:
 \begin{align}
-  \local¬tranche\sub{0} &= \set{\build{\wdcX}{\wdcX \in \mathbf{p}_{\dots+10}, \wdX \ne \none}} \\
-  \where \mathbf{p} &= \Ffyshuffle{\sq{\build{\tup{\cX, \local¬reports\sub{\cX}}}{\cX \orderedin \coreindex}}, r} \\
-  \also r &= \Fbanderout{\local¬seed\sub{0}}
+  \local¬tranche\sub{0} &= \set{\build{\wrcX}{\wrcX \in \mathbf{p}_{\dots+10}, \wrX \ne \none}} \\
+  \where \mathbf{p} &= \Ffyshuffle{\sq{\build{\tup{\cX, \local¬reports\sub{\cX}}}{\cX \orderedin \coreindex}}, \Fbanderout{\local¬seed\sub{0}}} \\
 \end{align}
 
 Every $\mathsf{A} = 8$ seconds following a new time slot, a new tranche begins, and we may determine that additional cores warrant an audit from us. Such items are defined as $\local¬tranche\sub{n}$ where $n$ is the current tranche. Formally:
@@ -75,14 +74,14 @@ In all cases, we publish a signed statement of which of the cores we believe we 
 Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $\local¬seed\sub{n}$ and all signed data. Validator's announcement statements must be in the set $S$:
 \begin{align}
   S &\equiv \sig{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_I \append n \concat \mathbf{x}\sub{n} \concat \blake(\H)} \\
-  \where \mathbf{x}\sub{n} &= \se(\set{\build{\se_2(\cX) \concat \blake(\wdX)}{\wdcX \in \local¬tranche\sub{n}}})\\
+  \where \mathbf{x}\sub{n} &= \se(\set{\build{\se_2(\cX) \concat \blake(\wrX)}{\wrcX \in \local¬tranche\sub{n}}})\\
   \mathsf{X}_I &= \token{\$jam\_announce}
 \end{align}
 
 We define $A\sub{n}$ as our perception of which validator is required to audit each of the work-reports (identified by their associated core) at tranche $n$. This comes from each other validators' announcements (defined above). It cannot be correctly evaluated until $n$ is current. We have absolute knowledge about our own audit requirements.
 \begin{align}
   A\sub{n}: \workreport &\to \protoset{\valindex} \\
-%  \forall (\cX, \wdX) &\in \local¬tranche\sub{0} : v \in q\sub{0}(\wdX)
+%  \forall (\cX, \wrX) &\in \local¬tranche\sub{0} : v \in q\sub{0}(\wrX)
   % TODO: ^^^ Fix this.
 \end{align}
 
@@ -96,9 +95,9 @@ We are able to define $\local¬tranche\sub{n}$ for tranches beyond the first on 
 We can thus define $\local¬tranche\sub{n}$ beyond the initial tranche through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
 \begin{align}
   \nonumber\forall n > 0:&\\
-  \ \local¬seed\sub{n}(\wdX) &\in \bandersig{\activeset[v]_\vk¬bs}{\mathsf{X}_U \concat \Fbanderout{\H_\¬vrfsig}\concat\blake(\wdX)\append n}{[]} \\
-  \ \local¬tranche\sub{n} &\equiv \set{ \build{ \wdX }{\textstyle\frac{\valcount}{256\mathsf{F}}\Fbanderout{\local¬seed\sub{n}(\wdX)}\sub{0} < m\sub{n}, \wdX \in \local¬reports, \wdX \ne \none }}\!\!\!\!\\
-  \nonumber \where m\sub{n} &= \len{A_{n - 1}(\wdX) \setminus J_\top(\wdX)}
+  \ \local¬seed\sub{n}(\wrX) &\in \bandersig{\activeset[v]_\vk¬bs}{\mathsf{X}_U \concat \Fbanderout{\H_\¬vrfsig}\concat\blake(\wrX)\append n}{[]} \\
+  \ \local¬tranche\sub{n} &\equiv \set{ \build{ \wrX }{\textstyle\frac{\valcount}{256\mathsf{F}}\Fbanderout{\local¬seed\sub{n}(\wrX)}\sub{0} < m\sub{n}, \wrX \in \local¬reports, \wrX \ne \none }}\!\!\!\!\\
+  \nonumber \where m\sub{n} &= \len{A_{n - 1}(\wrX) \setminus J_\top(\wrX)}
 \end{align}
 
 We define our bias factor $\mathsf{F} = 2$, which is the expected number of validators which will be required to issue a judgment for a work-report given a single no-show in the tranche before. Modeling by \cite{cryptoeprint:2024/961} shows that this is optimal.
@@ -107,20 +106,20 @@ Later audits must be announced in a similar fashion to the first. If audit requi
 
 As $n$ increases with the passage of time $\local¬tranche\sub{n}$ becomes known and defines our auditing responsibilities. We must attempt to reconstruct all work-packages and their requisite data corresponding to each work-report we must audit. This may be done through requesting erasure-coded chunks from one-third of the validators. It may also be short-cutted by asking a cooperative third party (\eg an original guarantor) for the preimages.
 
-Thus, for any such work-report $\wdX$ we are assured we will be able to fetch some candidate work-package encoding $F(\wdX)$ which comes either from reconstructing erasure-coded chunks verified through the erasure coding's Merkle root, or alternatively from the preimage of the work-package hash. We decode this candidate blob into a work-package.
+Thus, for any such work-report $\wrX$ we are assured we will be able to fetch some candidate work-package encoding $F(\wrX)$ which comes either from reconstructing erasure-coded chunks verified through the erasure coding's Merkle root, or alternatively from the preimage of the work-package hash. We decode this candidate blob into a work-package.
 
 In addition to the work-package, we also assume we are able to fetch all manifest data associated with it through requesting and reconstructing erasure-coded chunks from one-third of validators in the same way as above.
 
 We then attempt to reproduce the report on the core to give $e\sub{n}$, a mapping from cores to evaluations: \vskip -7pt
 \begin{equation}
   \begin{aligned}
-  %  \forall (\cX, \wdX) \in \local¬tranche\sub{n} \!: e\sub{n}(\wdX) \!\Leftrightarrow\! \begin{cases}
-  %    \wdX = \computedigest(p, \cX)\!\!\!\!\! &\when \exists p \in \workpackage: \se(p) = F(\wdX) \\
+  %  \forall (\cX, \wrX) \in \local¬tranche\sub{n} \!: e\sub{n}(\wrX) \!\Leftrightarrow\! \begin{cases}
+  %    \wrX = \computedigest(p, \cX)\!\!\!\!\! &\when \exists p \in \workpackage: \se(p) = F(\wrX) \\
   %    \bot &\otherwise
   %  \end{cases}
-    \forall (\cX, \wdX) \in \local¬tranche\sub{n} :\ \ &\\[-10pt]
+    \forall (\cX, \wrX) \in \local¬tranche\sub{n} :\ \ &\\[-10pt]
     e\sub{n}(\cX) \Leftrightarrow &\begin{cases}
-      \wdX = \computedigest(p, \cX)\!\!\! &\when \exists p \in \workpackage: \se(p) = F(\wdX) \\
+      \wrX = \computedigest(p, \cX)\!\!\! &\when \exists p \in \workpackage: \se(p) = F(\wrX) \\
       \bot &\otherwise
     \end{cases}
   \end{aligned}\!\!
@@ -130,14 +129,14 @@ Note that a failure to decode implies an invalid work-report.
 
 From this mapping the validator issues a set of judgments $\mathbf{j}\sub{n}$:
 \begin{align}
-  \mathbf{j}\sub{n} &= \set{\build{\Fsigndata{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_{e\sub{n}(\cX)} \concat \blake(\wdX)}}{(\cX, \wdX) \in \local¬tranche\sub{n}}}
+  \mathbf{j}\sub{n} &= \set{\build{\Fsigndata{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_{e\sub{n}(\cX)} \concat \blake(\wrX)}}{(\cX, \wrX) \in \local¬tranche\sub{n}}}
 \end{align}
 
-%We denote the guarantors of a work-package $\wdX$ as $\guarantorassignments(\wdX)$ from a particular chain head, and this may be derived from the guarantees extrinsic $\xtguarantees$ of the ancestor block which introduced the work-report. Our restrictions on the guarantees extrinsic (described in section \ref{sec:accumulation}) ensures that this is unique.
+%We denote the guarantors of a work-package $\wrX$ as $\guarantorassignments(\wrX)$ from a particular chain head, and this may be derived from the guarantees extrinsic $\xtguarantees$ of the ancestor block which introduced the work-report. Our restrictions on the guarantees extrinsic (described in section \ref{sec:accumulation}) ensures that this is unique.
 %\begin{equation}
 %\begin{aligned}
-%    \guarantorassignments(\wdX) &\equiv [ v \mid (s, v) \orderedin a ] \\
-%    \where \tup{\cX, \wdX, a} &\in \xtguarantees \\
+%    \guarantorassignments(\wrX) &\equiv [ v \mid (s, v) \orderedin a ] \\
+%    \where \tup{\cX, \wrX, a} &\in \xtguarantees \\
 %    \tup{\H, \mathbf{E}} &\in \ancestors
 %\end{aligned}
 %\end{equation}
@@ -146,15 +145,15 @@ All judgments $\mathbf{j}_*$ should be published to other validators in order th
 
 We consider a work-report as audited under two circumstances. Either, when it has no negative judgments and there exists some tranche in which we see a positive judgment from all validators who we believe are required to audit it; or when we see positive judgments for it from greater than two-thirds of the validator set.
 \begin{align}
-  U(\wdX) &\Leftrightarrow \bigvee\,\abracegroup[\,]{
-    &J_\bot(\wdX) = \emptyset \wedge \exists n : A\sub{n}(\wdX) \subset J_\top(\wdX) \\
-    &|J_\top(\wdX)| > \twothirds\valcount
+  U(\wrX) &\Leftrightarrow \bigvee\,\abracegroup[\,]{
+    &J_\bot(\wrX) = \emptyset \wedge \exists n : A\sub{n}(\wrX) \subset J_\top(\wrX) \\
+    &|J_\top(\wrX)| > \twothirds\valcount
   }
 \end{align}
 
 Our block $\block$ may be considered audited, a condition denoted $\isaudited$, when all the work-reports which were made available are considered audited. Formally:
 \begin{align}
-  \isaudited &\Leftrightarrow \forall \wdX \in \justbecameavailable : U(\wdX)
+  \isaudited &\Leftrightarrow \forall \wrX \in \justbecameavailable : U(\wrX)
 \end{align}
 
 For any block we must judge it to be audited (\ie $\isaudited = \top$) before we vote for the block to be finalized in \textsc{Grandpa}. See section \ref{sec:grandpa} for more information here.
