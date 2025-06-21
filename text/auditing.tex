@@ -33,9 +33,6 @@ Each validator shall perform auditing duties on each valid block received. Since
 \newcommand*{\local¬reports}{\mathbf{q}}
 \newcommand*{\local¬seed}{s}
 \newcommand*{\local¬tranche}{\mathbf{a}}
-\newcommand*{\wrX}{r}
-\newcommand*{\cX}{c}
-\newcommand*{\wrcX}{\tup{\wrX, \cX}}
 
 We define the sequence of work-reports which we may be required to audit as $\local¬reports$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
 \begin{align}\label{eq:auditselection}
@@ -114,12 +111,12 @@ We then attempt to reproduce the report on the core to give $e\sub{n}$, a mappin
 \begin{equation}
   \begin{aligned}
   %  \forall (\cX, \wrX) \in \local¬tranche\sub{n} \!: e\sub{n}(\wrX) \!\Leftrightarrow\! \begin{cases}
-  %    \wrX = \computedigest(p, \cX)\!\!\!\!\! &\when \exists p \in \workpackage: \se(p) = F(\wrX) \\
+  %    \wrX = \computereport(p, \cX)\!\!\!\!\! &\when \exists p \in \workpackage: \se(p) = F(\wrX) \\
   %    \bot &\otherwise
   %  \end{cases}
     \forall (\cX, \wrX) \in \local¬tranche\sub{n} :\ \ &\\[-10pt]
     e\sub{n}(\cX) \Leftrightarrow &\begin{cases}
-      \wrX = \computedigest(p, \cX)\!\!\! &\when \exists p \in \workpackage: \se(p) = F(\wrX) \\
+      \wrX = \computereport(p, \cX)\!\!\! &\when \exists p \in \workpackage: \se(p) = F(\wrX) \\
       \bot &\otherwise
     \end{cases}
   \end{aligned}\!\!

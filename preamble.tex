@@ -91,8 +91,10 @@
 \newcommand*\remainder{\text{\hspace{2pt}\footnotesize{\textsf{R}}\hspace{2pt}}}
 \newcommand*\fold{\ \thicksim\mathchoice{\!\!\!\!\!\!\!}{\!\!\!\!\!\!}{\!\!\!\!\!\!}{\!\!\!\!\!\!}\int}
 \newcommand*{\order}[1]{\left[#1\right]}
-\newcommand*{\orderby}[2]{\left[#1\,\middle\lwavy\,#2\right]}
-\newcommand*{\orderuniqby}[2]{\left[#1\,\middle\lWavy\,#2\right]}
+\newcommand*{\orderby}[2]{#2\,\middle\lwavy\,#1}
+\newcommand*{\orderuniqby}[2]{#2\,\middle\lWavy\,#1}
+\newcommand*{\sqorderby}[2]{\sq{\orderby{#1}{#2}}}
+\newcommand*{\sqorderuniqby}[2]{\sq{\orderuniqby{#1}{#2}}}
 \newcommand*{\orderedin}{\ensuremath{\mathrel{\mathrlap{<}{\scalebox{0.95}[1]{$-$}}}}}
 % Encoding types with a length prefix
 \newcommand*{\var}[1]{\left\updownarrow#1\right.\!}
@@ -129,6 +131,7 @@
 \newcommand*{\isa}[2]{#1\in #2}
 \newcommand*{\sq}[1]{\left[#1\right]}
 \newcommand*{\seq}[1]{\left\lsem#1\right\rsem}
+\newcommand*{\seqoflen}[2]{\left\lsem#1\right\rsem_{#2}} % sequence of fixed length
 \newcommand*{\set}[1]{\left\{\,#1\,\right\}}
 \newcommand*{\emset}{\left\{\right\}}
 \newcommand*{\protoset}[1]{\left\{\mkern-5mu\left[\,#1\,\right]\mkern-5mu\right\}}
@@ -174,6 +177,7 @@
 \newcommand*{\mmrencode}{\se_M}
 \newcommand*{\fyshuffle}{\mathcal{F}}
 \newcommand*{\blake}{\mathcal{H}}
+\newcommand*{\blakeprefix}[1]{\mathcal{H}_{#1}}
 \newcommand*{\keccak}{\mathcal{H}_K}
 \newcommand*{\merklejustsubpath}{\mathcal{J}}
 \newcommand*{\keys}{\mathcal{K}}
@@ -232,13 +236,14 @@
 \newcommand*{\accpar}{\Delta_*}
 \newcommand*{\accseq}{\Delta_+}
 \newcommand*{\histlookup}{\Lambda}
-\newcommand*{\computedigest}{\Xi}
+\newcommand*{\computereport}{\Xi}
 \newcommand*{\transitionstate}{\Upsilon}
 
 %%%%%%%%%%%%
 % Named types (blackboard letters)
 \newcommand*{\serviceaccount}{\mathbb{A}}
 \newcommand*{\bitstring}{\mathbb{B}}
+\newcommand*{\bitstringoflen}[1]{\mathbb{B}_{#1}}
 \newcommand*{\safroleticket}{\mathbb{C}}
 \newcommand*{\dictionary}{\mathbb{D}}
 \newcommand*{\dict}[2]{\dictionary\anglebar{#1\to#2}}
@@ -269,6 +274,7 @@
 \newcommand*{\workreport}{\mathbb{W}}
 \newcommand*{\workcontext}{\mathbb{X}}
 \newcommand*{\blob}{\mathbb{Y}}
+\newcommand*{\bloboflen}[1]{\mathbb{Y}_{#1}}
 \newcommand*{\Z}{\mathbb{Z}}
 
 %%%%%%%%%%%%
@@ -279,11 +285,14 @@
 \newcommand*{\bloblength}{\N_L}
 \newcommand*{\gas}{\N_G}
 \newcommand*{\signedgas}{\Z_G}
-\newcommand*{\coreindex}{\N_\corecount}
-\newcommand*{\valindex}{\N_\valcount}
-\newcommand*{\ticketentryindex}{\N_\ticketentries}
-\newcommand*{\epochindex}{\N_\epochlen}
-\newcommand*{\Nbits}[1]{\N_{2^{#1}}}
+\newcommand*{\Nmax}[1]{\N_{#1}}
+\newcommand*{\Nclamp}[2]{\N_{#1 \dots #2}}
+\newcommand*{\Nrange}[2]{\N_{#1 \dots+ #2}}
+\newcommand*{\Nbits}[1]{\Nmax{2^{#1}}}
+\newcommand*{\coreindex}{\Nmax{\corecount}}
+\newcommand*{\valindex}{\Nmax{\valcount}}
+\newcommand*{\ticketentryindex}{\Nmax{\ticketentries}}
+\newcommand*{\epochindex}{\Nmax{\epochlen}}
 
 %%%%%%%%%%%%
 % Hash & blob specializations
@@ -292,9 +301,9 @@
 \newcommand*{\edkey}{\hash_E}
 \newcommand*{\bskey}{\hash_B}
 \newcommand*{\keccakoutput}{\hash_K}
-\newcommand*{\blskey}{\blob_L}
-\newcommand*{\metadatakey}{\blob_{128}}
-\newcommand*{\ringroot}{\blob_R}
+\newcommand*{\blskey}{\bloboflen{L}}
+\newcommand*{\metadatakey}{\bloboflen{128}}
+\newcommand*{\ringroot}{\bloboflen{R}}
 
 %%%%%%%%%%%%
 % FIELDS
@@ -315,11 +324,14 @@
 \newcommand*{\¬codehash}{h} % O/L \ot¬packagehash
 \newcommand*{\¬exportcount}{e}
 \newcommand*{\¬importcount}{i}
+\newcommand*{\¬xtcount}{x}
+\newcommand*{\¬xtsize}{z}
 \newcommand*{\¬workreport}{w}
 \newcommand*{\¬offender}{k}
 \newcommand*{\¬validity}{v}
 \newcommand*{\¬reporthash}{r}
 \newcommand*{\¬signature}{s}
+\newcommand*{\¬entry}{r} % TODO: Rename to entryindex
 
 %%%%%%%%%%%%
 % Named types (blackboard)
@@ -327,7 +339,7 @@
 % TODO make this local.
 %\newcommand*{\safroleticket}{\mathbb{C}}
 \newcommand*{\st¬id}{y}
-\newcommand*{\st¬entry}{r}
+\newcommand*{\st¬entry}{\¬entry}
 
 %\newcommand*{\ram}{\mathbb{M}}
 \newcommand*{\ram¬value}{\mathbf{V}}
@@ -373,16 +385,16 @@
 % y: work payload
 
 %\newcommand*{\workdigest}{\mathbb{L}}
-\newcommand*{\wl¬service}{\¬service}
-\newcommand*{\wl¬codehash}{\¬codehash}
-\newcommand*{\wl¬payloadhash}{\¬payloadhash}
-\newcommand*{\wl¬gaslimit}{\¬gaslimit}
-\newcommand*{\wl¬result}{\¬result}
-\newcommand*{\wl¬gasused}{\¬gasused}
-\newcommand*{\wl¬importcount}{\¬importcount}
-\newcommand*{\wl¬xtcount}{x}
-\newcommand*{\wl¬xtsize}{z}
-\newcommand*{\wl¬exportcount}{\¬exportcount}
+\newcommand*{\wd¬service}{\¬service}
+\newcommand*{\wd¬codehash}{\¬codehash}
+\newcommand*{\wd¬payloadhash}{\¬payloadhash}
+\newcommand*{\wd¬gaslimit}{\¬gaslimit}
+\newcommand*{\wd¬result}{\¬result}
+\newcommand*{\wd¬gasused}{\¬gasused}
+\newcommand*{\wd¬importcount}{\¬importcount}
+\newcommand*{\wd¬xtcount}{\¬xtcount}
+\newcommand*{\wd¬xtsize}{\¬xtsize}
+\newcommand*{\wd¬exportcount}{\¬exportcount}
 
 %\newcommand*{\operandtuple}{\mathbb{O}}
 \newcommand*{\ot¬packagehash}{h} % O/L ¬codehash TODO: RENAME to k
@@ -394,6 +406,7 @@
 \newcommand*{\ot¬result}{\¬result}
 
 %\newcommand*{\avspec}{\mathbb{S}}
+% TODO: Is it \as¬packagehash or \as¬bundlehash? Unclear whether this was changed to the hash of the work-package bundle or still the hash of the work-package itself.
 \newcommand*{\as¬packagehash}{h}
 \newcommand*{\as¬bundlelen}{l}
 \newcommand*{\as¬erasureroot}{u}
@@ -454,6 +467,34 @@
 \newcommand*{\ps¬delegator}{v}
 \newcommand*{\ps¬alwaysaccers}{\mathbf{z}}
 
+% Fields of core statistics (\corestats)
+\newcommand*{\cs¬daload}{d}
+\newcommand*{\cs¬popularity}{p}
+\newcommand*{\cs¬importcount}{\¬importcount}
+\newcommand*{\cs¬xtcount}{\¬xtcount}
+\newcommand*{\cs¬xtsize}{\¬xtsize}
+\newcommand*{\cs¬exportcount}{\¬exportcount}
+\newcommand*{\cs¬bundlelen}{b} % TODO: Rename to l and dedupe
+\newcommand*{\cs¬gasused}{\¬gasused}
+
+% Fields of service statistics (\servicestats)
+\newcommand*{\ss¬provision}{p}
+\newcommand*{\ss¬refinement}{r}
+\newcommand*{\ss¬accumulation}{a}
+\newcommand*{\ss¬xferral}{t}
+\newcommand*{\ss¬importcount}{\¬importcount}
+\newcommand*{\ss¬xtcount}{\¬xtcount}
+\newcommand*{\ss¬xtsize}{\¬xtsize}
+\newcommand*{\ss¬exportcount}{\¬exportcount}
+
+% Fields of validator statistics (\valstats*)
+\newcommand*{\vs¬blocks}{b}
+\newcommand*{\vs¬tickets}{t}
+\newcommand*{\vs¬preimagecount}{p}
+\newcommand*{\vs¬preimagesize}{d}
+\newcommand*{\vs¬guarantees}{g}
+\newcommand*{\vs¬assurances}{a}
+
 %%%%%%%%%%%%
 % State item tuples (fields of lower-greek letters)
 
@@ -470,6 +511,19 @@
 
 
 %%%%%%%%%%%%
+% Standard iterators for the tuples
+
+\newcommand*{\wpX}{p}
+\newcommand*{\wiX}{w} % TODO: consider change to i
+\newcommand*{\wrX}{r}
+\newcommand*{\wdX}{d}
+\newcommand*{\xgX}{g}
+\newcommand*{\vkX}{k}
+\newcommand*{\cX}{c}
+\newcommand*{\wrcX}{\tup{\wrX, \cX}}
+
+
+%%%%%%%%%%%%
 % Incidental item tuples (fields of uppercase bold roman letters)
 
 % Blocks.
@@ -482,8 +536,9 @@
 
 \newcommand*{\guarantorassignments}{\mathbf{M}}
 \newcommand*{\guarantorassignmentsunderlastrotation}{\mathbf{M}^*}
-\newcommand*{\accumulationstatistics}{\mathbf{I}}
+\newcommand*{\accumulationstatistics}{\mathbf{S}}
 \newcommand*{\reporters}{\mathbf{G}}
+\newcommand*{\incomingreports}{\mathbf{I}}
 \newcommand*{\justbecameavailable}{\mathbf{R}}
 \newcommand*{\isticketed}{\mathbf{T}}
 \newcommand*{\isaudited}{\mathbf{U}}
@@ -511,6 +566,12 @@
 \newcommand*{\xg¬workreport}{\¬workreport}
 \newcommand*{\xg¬timeslot}{t}
 \newcommand*{\xg¬credential}{a}
+
+\newcommand*{\xp¬service}{\¬service}
+\newcommand*{\xp¬data}{\mathbf{p}} % TODO: Consider using mathbf{d}
+
+\newcommand*{\xt¬entry}{\¬entry}
+\newcommand*{\xt¬proof}{p}
 
 \newcommand*{\xv¬reporthash}{\¬reporthash}
 \newcommand*{\xv¬epochindex}{a}

@@ -94,11 +94,11 @@ We must introduce $\valkey$, the set of validator key tuples. This is a combinat
 
 The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_\vk¬bs$, and is equivalent to the first 32-octets; the Ed25519 key, $k_\vk¬ed$, is the second 32 octets; the \textsc{bls} key denoted $k_\vk¬bls$ is equivalent to the following 144 octets, and finally the metadata $k_\vk¬metadata$ is the last 128 octets. Formally:
 \begin{align}
-  \valkey &\equiv \blob_{336} \\
-  \forall k \in \valkey : k_\vk¬bs \in \bskey &\equiv k_{0\dots+32} \\
-  \forall k \in \valkey : k_\vk¬ed \in \edkey &\equiv k_{32\dots+32} \\
-  \forall k \in \valkey : k_\vk¬bls \in \blskey &\equiv k_{64\dots+144} \\
-  \forall k \in \valkey : k_\vk¬metadata \in \metadatakey &\equiv k_{208\dots+128}
+  \valkey &\equiv \bloboflen{336} \\
+  \forall \vkX \in \valkey : \vkX_\vk¬bs \in \bskey &\equiv \vkX_{0\dots+32} \\
+  \forall \vkX \in \valkey : \vkX_\vk¬ed \in \edkey &\equiv \vkX_{32\dots+32} \\
+  \forall \vkX \in \valkey : \vkX_\vk¬bls \in \blskey &\equiv \vkX_{64\dots+144} \\
+  \forall \vkX \in \valkey : \vkX_\vk¬metadata \in \metadatakey &\equiv \vkX_{208\dots+128}
 \end{align}
 
 With a new epoch under regular conditions, validator keys get rotated and the epoch's Bandersnatch key root is updated into $\epochroot'$:
@@ -106,10 +106,16 @@ With a new epoch under regular conditions, validator keys get rotated and the ep
   (\pendingset', \activeset', \previousset', \epochroot') &\equiv \begin{cases}
     (\Phi(\stagingset), \pendingset, \activeset, z) &\when e' > e \\ (\pendingset, \activeset, \previousset, \epochroot) &\otherwise
   \end{cases} \\
-  \nonumber \where z &= \getringroot([k_b \mid k \orderedin \pendingset']) \\
+  \nonumber \where z &= \getringroot([k_\vk¬bs \mid k \orderedin \pendingset']) \\
   \label{eq:blacklistfilter} \Phi(\mathbf{k}) &\equiv \sq{
-    \begin{rcases}[0, 0, \dots] &\when k_e \in \offenders' \\ k &\otherwise \end{rcases}
-    \,\middle\mid\, k \orderedin \mathbf{k}
+    \build{
+      \begin{rcases}
+        \sq{0, 0, \dots} &\when \vkX_\vk¬ed \in \offenders' \\
+        \vkX &\otherwise
+      \end{rcases}
+    }{
+      \vkX \orderedin \mathbf{k}
+    }
   }
 \end{align}
 
@@ -190,7 +196,7 @@ Here, we use $Z$ as the outside-in sequencer function, defined as follows:
 \begin{equation}
   Z\colon\abracegroup[\,]{
     \seq{\safroleticket}_\epochlen &\to \seq{\safroleticket}_\epochlen\\
-    \mathbf{s} &\mapsto [\mathbf{s}_0, \mathbf{s}_{\len{\mathbf{s}} - 1}, \mathbf{s}_1, \mathbf{s}_{\len{\mathbf{s}} - 2}, \dots]\\
+    \mathbf{s} &\mapsto \sq{\mathbf{s}_0, \mathbf{s}_{\len{\mathbf{s}} - 1}, \mathbf{s}_1, \mathbf{s}_{\len{\mathbf{s}} - 2}, \dots}\\
   }
 \end{equation}
 
@@ -257,8 +263,8 @@ Towards the end of the epoch (\ie $\mathsf{Y}$ slots from the start) this contes
 We define the extrinsic as a sequence of proofs of valid tickets, each of which is a tuple of an entry index (a natural number less than $\ticketentries$) and a proof of ticket validity. Formally:
 \begin{align}\label{eq:ticketsextrinsic}
   \xttickets &\in \seq{\tuple{
-    \isa{r}{\N_{\ticketentries}},\,
-    \isa{p}{\bandersnatch{\epochroot'}{\mathsf{X}_T \concat \entropy'_2 \append r}{[]}}
+    \isa{\xt¬entry}{\Nmax{\ticketentries}},\,
+    \isa{\xt¬proof}{\bandersnatch{\epochroot'}{\mathsf{X}_T \concat \entropy'_2 \append \xt¬entry}{\sq{}}}
   }} \\
   \len{\xttickets} &\le \begin{cases}
       \mathsf{K} &\when m' < \mathsf{Y} \\
@@ -270,22 +276,22 @@ We define $\mathbf{n}$ as the set of new tickets, with the ticket identifier, a 
 \begin{align}
   \mathbf{n} &\equiv \sq{
     \tup{
-      \is{\mathbf{y}}{\Fbanderout{i_p}},\,
-      \is{r}{i_\st¬entry}
+      \is{\st¬id}{\Fbanderout{i_\xt¬proof}},\,
+      \is{\st¬entry}{i_\st¬entry}
     } \mid i \orderedin \xttickets
   }
 \end{align}
 
 The tickets submitted via the extrinsic must already have been placed in order of their implied identifier. Duplicate identifiers are never allowed lest a validator submit the same ticket multiple times:
 \begin{align}
-  \mathbf{n} &= \orderuniqby{x_\st¬id}{x \in \mathbf{n}} \\
+  \mathbf{n} &= \sqorderuniqby{x_\st¬id}{x \in \mathbf{n}} \\
   \set{ x_\st¬id \mid x \in \mathbf{n} } &\disjoint \set{ x_\st¬id \mid x \in \ticketaccumulator }
 \end{align}
 
 The new ticket accumulator $\ticketaccumulator'$ is constructed by merging new tickets into the previous accumulator value (or the empty sequence if it is a new epoch):
 \begin{equation}
   \begin{aligned}
-    \ticketaccumulator' &\equiv  {\overrightarrow{\orderby{x_\st¬id}{x \in \mathbf{n} \cup \begin{cases} \none\ &\when e' > e \\ \ticketaccumulator\ &\otherwise \end{cases}}~}}^\epochlen \\
+    \ticketaccumulator' &\equiv  {\overrightarrow{\sqorderby{x_\st¬id}{x \in \mathbf{n} \cup \begin{cases} \none\ &\when e' > e \\ \ticketaccumulator\ &\otherwise \end{cases}}~}}^\epochlen \\
   \end{aligned}
 \end{equation}
 
@@ -294,4 +300,4 @@ The maximum size of the ticket accumulator is $\epochlen$. On each block, the ac
   \mathbf{n} \subseteq \ticketaccumulator'
 \end{align}
 
-Note that it can be shown that in the case of an empty extrinsic $\xttickets = []$, as implied by $m' \ge \mathsf{Y}$, and unchanged epoch ($e' = e$), then $\ticketaccumulator' = \ticketaccumulator$.
+Note that it can be shown that in the case of an empty extrinsic $\xttickets = \sq{}$, as implied by $m' \ge \mathsf{Y}$, and unchanged epoch ($e' = e$), then $\ticketaccumulator' = \ticketaccumulator$.

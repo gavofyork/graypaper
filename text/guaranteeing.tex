@@ -2,7 +2,7 @@
 
 Guaranteeing work-packages involves the creation and distribution of a corresponding \emph{work-report} which requires certain conditions to be met. Along with the report, a signature demonstrating the validator's commitment to its correctness is needed. With two guarantor signatures, the work-report may be distributed to the forthcoming \Jam chain block author in order to be used in the $\xtguarantees$, which leads to a reward for the guarantors.
 
-We presume that in a public system, validators will be punished severely if they malfunction and commit to a report which does not faithfully represent the result of $\computedigest$ applied on a work-package. Overall, the process is:
+We presume that in a public system, validators will be punished severely if they malfunction and commit to a report which does not faithfully represent the result of $\computereport$ applied on a work-package. Overall, the process is:
 
 \begin{enumerate}
     \item Evaluation of the work-package's authorization, and cross-referencing against the authorization pool in the most recent \Jam chain state.
@@ -16,7 +16,7 @@ For any work-package $\mathbf{p}$ we are in receipt of, we may determine the wor
 
 For any guarantor of index $v$ assigned to core $c$ and a work-package $p$, we define the work-report $r$ simply as:
 \begin{equation}
-  r = \computedigest(p, c)
+  r = \computereport(p, c)
 \end{equation}
 
 Such guarantors may safely create and distribute the payload $(s, v)$. The component $s$ may be created according to equation \ref{eq:guarantorsig}; specifically it is a signature using the validator's registered Ed25519 key on a payload $l$:

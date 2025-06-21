@@ -174,8 +174,8 @@ It is left as a rather important implementation detail to ensure that the amount
 The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 64-bit quantity, denoted as $\pvmreg$, a natural less than $2^{64}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\registers \in \seq{\pvmreg}_{13}$ is typically used to denote the registers.
 \begin{align}\label{eq:pvmmemory}
   \ram &\equiv \tuple{
-    \isa{\ram¬value}{\blob_{2^{32}}},
-    \isa{\ram¬access}{\seq{\set{\text{W}, \text{R}, \none}}_p}
+    \isa{\ram¬value}{\bloboflen{2^{32}}},
+    \isa{\ram¬access}{\seq{\set{\text{W}, \text{R}, \none}}\sub{p}}
   }\,,\ p = \frac{2^{32}}{\mathsf{Z}_P}\\
   \mathsf{Z}_P &= 2^{12}
 \end{align}

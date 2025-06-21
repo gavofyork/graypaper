@@ -127,7 +127,7 @@ Instructions of the following opcodes are considered basic-block termination ins
 
 We denote this set, as opcode indices rather than names, as $T$, which is a subset of all valid opcode indices $U$. We define the instruction opcode indices denoting the beginning of basic-blocks as $\basicblocks$:
 \begin{equation}
-  \basicblocks \equiv \left(\set{0} \cup \set{\build{n + 1 + \Fskip(n)}{n \in \N_{\len{\mathbf{c}}} \wedge \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in T}}\right) \cap \set{\build{n}{\mathbf{k}_n = 1 \wedge \mathbf{c}_n \in U}}
+  \basicblocks \equiv \left(\set{0} \cup \set{\build{n + 1 + \Fskip(n)}{n \in \Nmax{\len{\mathbf{c}}} \wedge \mathbf{k}_n = 1 \wedge \mathbf{c}_n \in T}}\right) \cap \set{\build{n}{\mathbf{k}_n = 1 \wedge \mathbf{c}_n \in U}}
 \end{equation}
 
 \subsection{Single-Step State Transition}
@@ -182,20 +182,20 @@ We define signed/unsigned transitions for various octet widths:
   \label{eq:bitsfunc}
   \bitsfunc{n\in\N}&\colon\abracegroup{
     \Nbits{8n} &\to \mathbb{B}_{8n}\\
-    x &\mapsto \mathbf{y}: \forall i \in \N_{8n} : \mathbf{y}[i] \Leftrightarrow \ffrac{x}{2^i}\bmod 2
+    x &\mapsto \mathbf{y}: \forall i \in \Nmax{8n} : \mathbf{y}[i] \Leftrightarrow \ffrac{x}{2^i}\bmod 2
   }\\
   \unbitsfunc{n\in\N}&\colon\abracegroup{
     \mathbb{B}_{8n} &\to \Nbits{8n}\\
-    \mathbf{x} &\mapsto y: \sum_{i \in \N_{8n}} \mathbf{x}_i \cdot 2^i
+    \mathbf{x} &\mapsto y: \sum_{i \in \Nmax{8n}} \mathbf{x}_i \cdot 2^i
   }\\
   \label{eq:revbitsfunc}
   \revbitsfunc{n\in\N}&\colon\abracegroup{
     \Nbits{8n} &\to \mathbb{B}_{8n}\\
-    x &\mapsto \mathbf{y}: \forall i \in \N_{8n} : \mathbf{y}[8n - 1 - i] \Leftrightarrow \ffrac{x}{2^i}\bmod 2
+    x &\mapsto \mathbf{y}: \forall i \in \Nmax{8n} : \mathbf{y}[8n - 1 - i] \Leftrightarrow \ffrac{x}{2^i}\bmod 2
   }\\
   \revunbitsfunc{n\in\N}&\colon\abracegroup{
     \mathbb{B}_{8n} &\to \Nbits{8n}\\
-    \mathbf{x} &\mapsto y: \sum_{i \in \N_{8n}} \mathbf{x}_{8n - 1 - i} \cdot 2^i
+    \mathbf{x} &\mapsto y: \sum_{i \in \Nmax{8n}} \mathbf{x}_{8n - 1 - i} \cdot 2^i
   }
 \end{align}
 
@@ -449,15 +449,15 @@ We assume the skip length $\ell$ is well-defined:
   101&\token{sbrk}&1&$\begin{aligned}
     \reg'_D \equiv &\min(x \in \pvmreg): \\
     &x \ge h\\
-    &\N_{x\dots+\reg_A} \not\subseteq \readable{\memory}\\
-    &\N_{x\dots+\reg_A} \subseteq \writable{\memory'}
+    &\Nrange{x}{\reg_A} \not\subseteq \readable{\memory}\\
+    &\Nrange{x}{\reg_A} \subseteq \writable{\memory'}
   \end{aligned}$\\ \mrule
   102&\token{count\_set\_bits\_64}&1&$\displaystyle\reg'_D = \sum_{i = 0}^{63}\bitsfunc{8}(\reg_A)_i$\\ \mrule
   103&\token{count\_set\_bits\_32}&1&$\displaystyle\reg'_D = \sum_{i = 0}^{31}\bitsfunc{4}(\reg_A \bmod 2^{32})_i$\\ \mrule
-  104&\token{leading\_zero\_bits\_64}&1&$\displaystyle\reg'_D = \max(n \in \N_{65})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{8}(\reg_A)_i = 0$\\ \mrule
-  105&\token{leading\_zero\_bits\_32}&1&$\displaystyle\reg'_D = \max(n \in \N_{33})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{4}(\reg_A \bmod 2^{32})_i = 0$\\ \mrule
-  106&\token{trailing\_zero\_bits\_64}&1&$\displaystyle\reg'_D = \max(n \in \N_{65})\ \where \sum_{i = 0}^{i < n} \bitsfunc{8}(\reg_A)_{i} = 0$\\ \mrule
-  107&\token{trailing\_zero\_bits\_32}&1&$\displaystyle\reg'_D = \max(n \in \N_{33})\ \where \sum_{i = 0}^{i < n} \bitsfunc{4}(\reg_A \bmod 2^{32})_{i} = 0$\\ \mrule
+  104&\token{leading\_zero\_bits\_64}&1&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{8}(\reg_A)_i = 0$\\ \mrule
+  105&\token{leading\_zero\_bits\_32}&1&$\displaystyle\reg'_D = \max(n \in \Nmax{33})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{4}(\reg_A \bmod 2^{32})_i = 0$\\ \mrule
+  106&\token{trailing\_zero\_bits\_64}&1&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \bitsfunc{8}(\reg_A)_{i} = 0$\\ \mrule
+  107&\token{trailing\_zero\_bits\_32}&1&$\displaystyle\reg'_D = \max(n \in \Nmax{33})\ \where \sum_{i = 0}^{i < n} \bitsfunc{4}(\reg_A \bmod 2^{32})_{i} = 0$\\ \mrule
   108&\token{sign\_extend\_8}&1&$\reg'_D = \unsigned{\signedn{1}{\reg_A \bmod 2^8}}$\\ \mrule
   109&\token{sign\_extend\_16}&1&$\reg'_D = \unsigned{\signedn{2}{\reg_A \bmod 2^{16}}}$\\ \mrule
   110&\token{zero\_extend\_16}&1&$\reg'_D = \reg_A \bmod 2^{16}$\\ \mrule
@@ -500,9 +500,9 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   129&\token{load\_ind\_i32}&1&$\reg'_A = \unsigned{\signedn{4}{\de_4(\memr_{\reg_B + \immed_X\dots+4})}}$\\ \mrule
   130&\token{load\_ind\_u64}&1&$\reg'_A = \de_8(\memr_{\reg_B + \immed_X\dots+8})$\\ \mrule
   131&\token{add\_imm\_32}&1&$\reg'_A = \sext_4((\reg_B + \immed_X) \bmod 2^{32})$\\ \mrule
-  132&\token{and\_imm}&1&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \wedge \bits{\immed_X}_i$\\ \mrule
-  133&\token{xor\_imm}&1&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \oplus \bits{\immed_X}_i$\\ \mrule
-  134&\token{or\_imm}&1&$\forall i \in \N_{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \vee \bits{\immed_X}_i$\\ \mrule
+  132&\token{and\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \wedge \bits{\immed_X}_i$\\ \mrule
+  133&\token{xor\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \oplus \bits{\immed_X}_i$\\ \mrule
+  134&\token{or\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \vee \bits{\immed_X}_i$\\ \mrule
   135&\token{mul\_imm\_32}&1&$\reg'_A = \sext_4((\reg_B \cdot \immed_X) \bmod 2^{32})$\\ \mrule
   136&\token{set\_lt\_u\_imm}&1&$\reg'_A = \reg_B < \immed_X$\\ \mrule
   137&\token{set\_lt\_s\_imm}&1&$\reg'_A = \signed{\reg_B} < \signed{\immed_X}$\\ \mrule
@@ -533,10 +533,10 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   155&\token{shlo\_l\_imm\_alt\_64}&1&$\reg'_A = (\immed_X \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
   156&\token{shlo\_r\_imm\_alt\_64}&1&$\reg'_A = \floor{\immed_X \div 2^{\reg_B \bmod 64}}$\\ \mrule
   157&\token{shar\_r\_imm\_alt\_64}&1&$\reg'_A = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
-  158&\token{rot\_r\_64\_imm}&1&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_A)_i = \bitsfunc{8}(\reg_B)_{(i + \immed_X) \bmod 64}$\\ \mrule
-  159&\token{rot\_r\_64\_imm\_alt}&1&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_A)_i = \bitsfunc{8}(\immed_X)_{(i + \reg_B) \bmod 64}$\\ \mrule
-  160&\token{rot\_r\_32\_imm}&1&$\reg'_A = \sext_4(x) \ \where x \in \Nbits{32}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_B)_{(i + \immed_X) \bmod 32}$\\ \mrule
-  161&\token{rot\_r\_32\_imm\_alt}&1&$\reg'_A = \sext_4(x) \ \where x \in \Nbits{32}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\immed_X)_{(i + \reg_B) \bmod 32}$\\
+  158&\token{rot\_r\_64\_imm}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_A)_i = \bitsfunc{8}(\reg_B)_{(i + \immed_X) \bmod 64}$\\ \mrule
+  159&\token{rot\_r\_64\_imm\_alt}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_A)_i = \bitsfunc{8}(\immed_X)_{(i + \reg_B) \bmod 64}$\\ \mrule
+  160&\token{rot\_r\_32\_imm}&1&$\reg'_A = \sext_4(x) \ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_B)_{(i + \immed_X) \bmod 32}$\\ \mrule
+  161&\token{rot\_r\_32\_imm\_alt}&1&$\reg'_A = \sext_4(x) \ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\immed_X)_{(i + \reg_B) \bmod 32}$\\
   \bottomrule
 \end{longtable}
 
@@ -670,9 +670,9 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   208&\token{shlo\_r\_64}&1&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 64}}$\\ \mrule
   209&\token{shar\_r\_64}&1&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
 
-  210&\token{and}&1&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \bits{\reg_B}_i$\\ \mrule
-  211&\token{xor}&1&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \oplus \bits{\reg_B}_i$\\ \mrule
-  212&\token{or}&1&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \bits{\reg_B}_i$\\ \mrule
+  210&\token{and}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \bits{\reg_B}_i$\\ \mrule
+  211&\token{xor}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \oplus \bits{\reg_B}_i$\\ \mrule
+  212&\token{or}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \bits{\reg_B}_i$\\ \mrule
   213&\token{mul\_upper\_s\_s}&1&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \signed{\reg_B}) \div 2^{64}}}$\\ \mrule
   214&\token{mul\_upper\_u\_u}&1&$\reg'_D = \floor{(\reg_A \cdot \reg_B) \div 2^{64}}$\\ \mrule
   215&\token{mul\_upper\_s\_u}&1&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \reg_B) \div 2^{64}}}$\\ \mrule
@@ -686,13 +686,13 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \reg_A &\when \reg_B \ne 0\\
     \reg_D &\otherwise
   \end{cases}$\\ \mrule
-  220&\token{rot\_l\_64}&1&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_D)_{(i + \reg_B) \bmod 64} = \bitsfunc{8}(\reg_A)_i$\\ \mrule
-  221&\token{rot\_l\_32}&1&$\reg'_D = \sext_4(x)\ \where x \in \Nbits{32}, \forall i \in \N_{32} : \bitsfunc{4}(x)_{(i + \reg_B) \bmod 32} = \bitsfunc{4}(\reg_A)_i$\\ \mrule
-  222&\token{rot\_r\_64}&1&$\forall i \in \N_{64} : \bitsfunc{8}(\reg'_D)_i = \bitsfunc{8}(\reg_A)_{(i + \reg_B) \bmod 64}$\\ \mrule
-  223&\token{rot\_r\_32}&1&$\reg'_D = \sext_4(x)\ \where x \in \Nbits{32}, \forall i \in \N_{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_A)_{(i + \reg_B) \bmod 32}$\\ \mrule
-  224&\token{and\_inv}&1&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \lnot \bits{\reg_B}_i$\\ \mrule
-  225&\token{or\_inv}&1&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \lnot \bits{\reg_B}_i$\\ \mrule
-  226&\token{xnor}&1&$\forall i \in \N_{64} : \bits{\reg'_D}_i = \lnot ( \bits{\reg_A}_i \oplus \bits{\reg_B}_i )$\\ \mrule
+  220&\token{rot\_l\_64}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_D)_{(i + \reg_B) \bmod 64} = \bitsfunc{8}(\reg_A)_i$\\ \mrule
+  221&\token{rot\_l\_32}&1&$\reg'_D = \sext_4(x)\ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)_{(i + \reg_B) \bmod 32} = \bitsfunc{4}(\reg_A)_i$\\ \mrule
+  222&\token{rot\_r\_64}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_D)_i = \bitsfunc{8}(\reg_A)_{(i + \reg_B) \bmod 64}$\\ \mrule
+  223&\token{rot\_r\_32}&1&$\reg'_D = \sext_4(x)\ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)_i = \bitsfunc{4}(\reg_A)_{(i + \reg_B) \bmod 32}$\\ \mrule
+  224&\token{and\_inv}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \lnot \bits{\reg_B}_i$\\ \mrule
+  225&\token{or\_inv}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \lnot \bits{\reg_B}_i$\\ \mrule
+  226&\token{xnor}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}_i = \lnot ( \bits{\reg_A}_i \oplus \bits{\reg_B}_i )$\\ \mrule
   227&\token{max}&1&$\reg'_D = \unsigned{\max ( \signed{\reg_A}, \signed{\reg_B} )}$\\ \mrule
   228&\token{max\_u}&1&$\reg'_D = \max ( \reg_A, \reg_B )$\\ \mrule
   229&\token{min}&1&$\reg'_D = \unsigned{\min ( \signed{\reg_A}, \signed{\reg_B} )}$\\ \mrule
@@ -767,7 +767,7 @@ The software programs which will run in each of the four instances where the \te
 We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} at program start. Given program blob $\mathbf{p}$ and argument data $\mathbf{a}$, we can decode the program code $\mathbf{c}$, registers $\registers$, and \textsc{ram} $\mem$ by invoking the standard initialization function $Y(\mathbf{p}, \mathbf{a})$:
 \begin{equation}
 Y\colon\abracegroup{
-  (\blob, \blob_{:\mathsf{Z}_I}) &\to (\blob, \regs, \ram)? \\
+  (\blob, \bloboflen{:\mathsf{Z}_I}) &\to (\blob, \regs, \ram)? \\
   (\mathbf{p}, \mathbf{a}) &\mapsto \begin{cases}
     (\mathbf{c}, \registers, \mem) &\when \exists! (\mathbf{c}, \mathbf{o}, \mathbf{w}, z, s) \text{ which satisfy equation \ref{eq:conditions}}\\
     \none &\otherwise
@@ -778,7 +778,7 @@ With conditions:
 \begin{align}\label{eq:conditions}
   &\using \mathcal{E}_3(\len{\mathbf{o}}) \concat \mathcal{E}_3(\len{\mathbf{w}}) \concat \mathcal{E}_2(z) \concat \mathcal{E}_3(s) \concat \mathbf{o} \concat \mathbf{w} \concat \mathcal{E}_4(\len{\mathbf{c}}) \concat \mathbf{c} = \mathbf{p}\\
   &\mathsf{Z}_Z = 2^{16}\ ,\quad\mathsf{Z}_I = 2^{24}\\
-  &\using \rnp{x \in \N} \equiv \mathsf{Z}_P\left\lceil \frac{x}{\mathsf{Z}_P} \right\rceil\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_Z\left\lceil \frac{x}{\mathsf{Z}_Z} \right\rceil\\
+  &\using \rnp{x \in \N} \equiv \mathsf{Z}_P\ceil{ \frac{x}{\mathsf{Z}_P} }\quad,\qquad\rnq{x \in \N} \equiv \mathsf{Z}_Z\ceil{ \frac{x}{\mathsf{Z}_Z} }\\
   &5\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}} + \rnq{\len{\mathbf{w}} + z\mathsf{Z}_P} + \rnq{s} + \mathsf{Z}_I \leq 2^{32}
 \end{align}
 Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\mathbf{c}$ as above and $\mem$, $\registers$ such that:
@@ -816,7 +816,7 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
   \end{alignedat}}\\
 \end{equation}
 \begin{equation}\label{eq:registers}
-  \forall i \in \N_{13} : \registers_i = \begin{cases}
+  \forall i \in \Nmax{13} : \registers_i = \begin{cases}
       2^{32} - 2^{16} &\when i = 0\\
       2^{32} - 2\mathsf{Z}_Z - \mathsf{Z}_I &\when i = 1\\
       2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I &\when i = 7\\
@@ -831,7 +831,7 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
 \begin{equation}
   \Psi_M\colon \abracegroup{
     \left(
-      \blob, \pvmreg, \gas, \blob_{:\mathsf{Z}_I}, \Omega\langle X \rangle, X
+      \blob, \pvmreg, \gas, \bloboflen{:\mathsf{Z}_I}, \Omega\langle X \rangle, X
     \right) &\to (\gas, \blob \cup \set{\panic, \oog}, X)\\
     (\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}) &\mapsto \begin{cases}
       (0, \panic, \mathbf{x}) &\when Y(\mathbf{p}, \mathbf{a}) = \none\\
@@ -843,8 +843,8 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
         \end{alignedat}
         }) \mapsto \begin{cases}
           (u, \oog, \mathbf{x}') &\when \varepsilon = \oog \\
-          (u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}') &\when \varepsilon = \halt \wedge \N_{\registers'_{7}\dots+\registers'_{8}} \subseteq \readable{\mem'} \\
-          (u, [], \mathbf{x}') &\when \varepsilon = \halt \wedge \N_{\registers'_{7}\dots+\registers'_{8}} \not\subseteq \readable{\mem'} \\
+          (u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}') &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \subseteq \readable{\mem'} \\
+          (u, [], \mathbf{x}') &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \not\subseteq \readable{\mem'} \\
           (u, \panic, \mathbf{x}') &\otherwise \\
           \multicolumn{2}{l}{\quad \where u = \gascounter - \max(\gascounter', 0)}
         \end{cases}

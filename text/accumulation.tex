@@ -75,7 +75,9 @@ Finally, we define the mapping function $\srmap$ which extracts the correspondin
 \begin{equation}
   \srmap\colon\abracegroup{
     \protoset{\workreport} &\to \protoset{\hash}\\
-    \mathbf{w} &\mapsto \set{ (w_\wr¬avspec)_\as¬packagehash \mid w \in \mathbf{w} }
+    \mathbf{w} &\mapsto \set{
+      \build{(w_\wr¬avspec)_\as¬packagehash}{w \in \mathbf{w}}
+    }
   }
 \end{equation}
 
@@ -118,7 +120,7 @@ We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, notin
     \isa{\dx¬source}{\serviceid} ,
     \isa{\dx¬dest}{\serviceid} ,
     \isa{\dx¬amount}{\balance} ,
-    \isa{\dx¬memo}{\blob_{\mathsf{W}_T}} ,
+    \isa{\dx¬memo}{\bloboflen{\mathsf{W}_T}} ,
     \isa{\dx¬gas}{\gas}
   }
 \end{align}
@@ -139,7 +141,7 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
       (i + j, \mathbf{o}', \mathbf{t}^* \!\!\concat \mathbf{t}, \mathbf{b}^* \!\cup \mathbf{b}, \mathbf{u}^* \!\!\concat \mathbf{u})\!\!\!\! &
         \text{o/w}\!\!\!\!\!\!\!\! \\
     \end{cases} \\
-    &\quad\where i = \max(\N_{\len{\mathbf{w}} + 1}): \sum_{w \in \mathbf{w}\sub{\dots i}}\sum_{r \in w_\wr¬digests}(r_\wl¬gaslimit) \le g \\
+    &\quad\where i = \max(\Nmax{\len{\mathbf{w}} + 1}): \sum_{w \in \mathbf{w}\sub{\dots i}}\sum_{r \in w_\wr¬digests}(r_\wd¬gaslimit) \le g \\
     &\quad\also (\mathbf{o}^*, \mathbf{t}^*, \mathbf{b}^*, \mathbf{u}^*) = \accpar(\mathbf{o}, \mathbf{w}\sub{\dots i}, \mathbf{f}) \\
     &\quad\also (j, \mathbf{o}', \mathbf{t}, \mathbf{b}, \mathbf{u}) = \accseq(g - \!\!\!\!\sum_{\tup{s, u} \in \mathbf{u}^*}\!\!\!\!u, \mathbf{w}\sub{i\dots}, \mathbf{o}^*, \emset)
   }
@@ -165,7 +167,7 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
     &\text{where:}\\
     &\ \begin{aligned}
       \using \mathbf{s} &= \set{\build{
-        \mathbf{r}_\wl¬service
+        \mathbf{r}_\wd¬service
         }{
           w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests
         }} \cup \Fkeys{\mathbf{f}} \\
@@ -270,13 +272,13 @@ The single-service accumulation function, $\accone$, transforms an initial state
     \end{aligned} \\
     &\text{where:} \\
     &\ \begin{aligned}
-      g &= \subifnone(\mathbf{f}\sub{s}, 0) + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests , \mathbf{r}_\wl¬service = s}\!\!\!\!(\mathbf{r}_\wr¬authgasused) \\
+      g &= \subifnone(\mathbf{f}\sub{s}, 0) + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests , \mathbf{r}_\wd¬service = s}\!\!\!\!(\mathbf{r}_\wr¬authgasused) \\
       \mathbf{i} &= \left[ \tup{\begin{alignedat}{3}
         % TODO: Rename \mathbf{o} to something else, to allow mathbf{a} to become \mathbf{o}.
         % TODO: Rename k to h. Then 5 of the 6 fields keep their names.
-        \is{\ot¬result}{\mathbf{r}_\wl¬result},\,
-        \is{\ot¬gaslimit}{\mathbf{r}_\wl¬gaslimit},\,
-        \is{\ot¬payloadhash}{\mathbf{r}_\wl¬payloadhash},\,
+        \is{\ot¬result}{\mathbf{r}_\wd¬result},\,
+        \is{\ot¬gaslimit}{\mathbf{r}_\wd¬gaslimit},\,
+        \is{\ot¬payloadhash}{\mathbf{r}_\wd¬payloadhash},\,
         \is{&\ot¬authtrace\;&}{w_\wr¬authtrace&},\\
         \is{\ot¬segroot}{(w_\wr¬avspec)_\as¬segroot},\,
         \is{\ot¬packagehash}{(w_\wr¬avspec)_\as¬packagehash},\,
@@ -285,14 +287,14 @@ The single-service accumulation function, $\accone$, transforms an initial state
       \,\middle\vert\ 
       \begin{alignedat}{2}
         w& \orderedin \mathbf{w},&\\
-        \mathbf{r}& \orderedin w_\wr¬digests,&\ \mathbf{r}_\wl¬service = s
+        \mathbf{r}& \orderedin w_\wr¬digests,&\ \mathbf{r}_\wd¬service = s
       \end{alignedat}
     \,\right]
     \end{aligned}
   }\!\!\!\!
 \end{align}
 
-This introduces $\operandtuple$, the set of wrangled \emph{operand tuples}, used as an operand to the \textsc{pvm} Accumulation function $\Psi_A$: work-items (together with associated data in their work-packages) are rephrased into a sequence of such operand tuples $\mathbf{i}$. It also draws upon $\wl¬gaslimit$, the gas limit implied by the work-reports and gas-privileges.
+This introduces $\operandtuple$, the set of wrangled \emph{operand tuples}, used as an operand to the \textsc{pvm} Accumulation function $\Psi_A$: work-items (together with associated data in their work-packages) are rephrased into a sequence of such operand tuples $\mathbf{i}$. It also draws upon $\wd¬gaslimit$, the gas limit implied by the work-reports and gas-privileges.
 
 \subsection{Deferred Transfers and State Integration}
 
@@ -330,7 +332,7 @@ We compose $\accumulationstatistics$, our accumulation statistics, which is a ma
   \where &N(s) \equiv \sq{\build{r}{
     w \orderedin \justbecameavailable^*\sub{\dots n} ,
     r \orderedin w_\wr¬digests ,
-    r_\wl¬service = s
+    r_\wd¬service = s
   }}
 \end{align}
 
@@ -382,7 +384,7 @@ Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such th
 We define the final state of the ready queue and the accumulated map by integrating those work-reports which were accumulated in this block and shifting any from the prior state with the oldest such items being dropped entirely:
 \begin{align}
   \accumulated'_{\epochlen - 1} &= \srmap(\justbecameavailable^*\sub{\dots n}) \\
-  \forall i \in \N_{\epochlen - 1}: \accumulated'\sub{i} &\equiv \accumulated\sub{i + 1} \\
+  \forall i \in \Nmax{\epochlen - 1}: \accumulated'\sub{i} &\equiv \accumulated\sub{i + 1} \\
   \forall i \in \N_\epochlen : \cyclic{\ready'}\sub{m - i} &\equiv \begin{cases}
     E(\justbecameavailable^Q, \accumulated'\sub{\epochlen - 1}) &\when i = 0 \\
     \sq{} &\when 1 \le i < \thetime' - \thetime \\
@@ -402,22 +404,22 @@ We define the final state of the ready queue and the accumulated map by integrat
 After accumulation, we must integrate all preimages provided in the lookup extrinsic to arrive at the posterior account state. The lookup extrinsic is a sequence of pairs of service indices and data. These pairs must be ordered and without duplicates (equation \ref{eq:preimagesareordered} requires this). The data must have been solicited by a service but not yet provided in the \emph{prior} state. Formally:
 \begin{align}
   \xtpreimages &\in \seq{\tuple{ \serviceid,\, \blob }} \\
-  \label{eq:preimagesareordered}\xtpreimages &= \orderuniqby{i}{i \in \xtpreimages} \\
-  Y(\mathbf{d}, s, h, l) &\Leftrightarrow
+  \label{eq:preimagesareordered}\xtpreimages &= \sqorderuniqby{i}{i \in \xtpreimages} \\
+  \forall \tup{\xp¬service, \xp¬data} &\in \xtpreimages : Y(\accountspre, \xp¬service, \blake(\xp¬data), \len{\xp¬data}) \\
+  \where Y(\mathbf{d}, s, h, l) &\Leftrightarrow
   h \not\in \mathbf{d}\subb{s}_\sa¬preimages \wedge
-    \mathbf{d}\subb{s}_\sa¬requests\subb{\tup{h, l}} = \sq{}\\
-  \forall \tup{s, \mathbf{p}} &\in \xtpreimages : Y(\accountspre, s, \blake(\mathbf{p}), \len{\mathbf{p}})
+    \mathbf{d}\subb{s}_\sa¬requests\subb{\tup{h, l}} = \sq{}
 \end{align}
 
 We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
 \begin{align}
   \using \mathbf{P} = \set{\build{
-    \tup{s, \mathbf{p}}
+    \tup{\xp¬service, \xp¬data}
   }{
-    \tup{s, \mathbf{p}} \in \xtpreimages, Y(\accountspostxfer, s, \blake(\mathbf{p}), \len{\mathbf{p}})
+    \tup{\xp¬service, \xp¬data} \in \xtpreimages, Y(\accountspostxfer, \xp¬service, \blake(\xp¬data), \len{\xp¬data})
   }}\\
-  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{s,\,\mathbf{p}} \in \mathbf{P} : \abracegroup[\,]{
-      \quad\accountspostpreimage\subb{s}_\sa¬preimages\subb{\blake(\mathbf{p})} &= \mathbf{p} \\
-      \accountspostpreimage\subb{s}_\sa¬requests\subb{\blake(\mathbf{p}), \len{\mathbf{p}}} &= \sq{\thetime'}
+  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{\xp¬service,\,\xp¬data} \in \mathbf{P} : \abracegroup[\,]{
+      \quad\accountspostpreimage\subb{\xp¬service}_\sa¬preimages\subb{\blake(\xp¬data)} &= \xp¬data \\
+      \accountspostpreimage\subb{\xp¬service}_\sa¬requests\subb{\blake(\xp¬data), \len{\xp¬data}} &= \sq{\thetime'}
     }\!\!\!\!
 \end{align}
