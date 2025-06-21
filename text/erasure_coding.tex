@@ -1,9 +1,9 @@
 \section{Erasure Coding}\label{sec:erasurecoding}
 
 \newcommand{\join}{\text{join}}
-\newcommand{\spl}{\text{split}}
+\newcommand{\spl}[1]{\text{split}_{#1}}
 
-The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\blob_2$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\se_2$. From this we may assume the encoding function $\erasurecode: \seq{\blob_2}_{342} \to \seq{\blob_2}_{1023}$ and the recovery function $\ecrecover: \protoset{\tuple{\blob_2, \N_{1023}}}_{342} \to \seq{\blob_2}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\erasurecode$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
+The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\bloboflen{2}$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\fnfixedencode{2}$. From this we may assume the encoding function $\fnerasurecode: \sequence{\bloboflen{2}}_{342} \to \sequence{\bloboflen{2}}_{1023}$ and the recovery function $\ecrecover: \protoset{\tuple{\bloboflen{2}, \Nmax{1023}}}_{342} \to \sequence{\bloboflen{2}}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\fnerasurecode$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
 
 Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of 684 octets. Data whose length is not divisible by 684 must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit \textsc{da} and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import \textsc{da} system.
 
@@ -11,40 +11,44 @@ For the Import \textsc{da} system, we deal with an input size of 4,104 octets re
 
 \subsection{Blob Encoding and Recovery}
 
-We assume some data blob $\mathbf{d} \in \blob_{684k}, k \in \N$. This blob is split into a whole number of $k$ pieces, each a sequence of 342 octet pairs. Each piece is erasure-coded using $\erasurecode$ as above to give 1,023 octet pairs per piece.
+We assume some data blob $\mathbf{d} \in \bloboflen{684k}, k \in \N$. This blob is split into a whole number of $k$ pieces, each a sequence of 342 octet pairs. Each piece is erasure-coded using $\fnerasurecode$ as above to give 1,023 octet pairs per piece.
 
 The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
 Formally we begin by defining two utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
 \begin{align}
-  \forall n \in \N, k \in \N :\ &\spl_n(\mathbf{d} \in \blob_{kn}) \in \seq{\blob_n}_k \equiv \sq{\mathbf{d}_{0\dots+n}, \mathbf{d}_{n\dots+n}, \cdots, \mathbf{d}_{(k-1)n\dots+n}} \\
-  \forall n \in \N, k \in \N :\ &\join(\mathbf{c} \in \seq{\blob_n}_k) \in \blob_{kn} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots
+  \forall n \in \N, k \in \N :\ &\spl{n}(\mathbf{d} \in \bloboflen{kn}) \in \sequenceoflen{\bloboflen{n}}{k} \equiv \sq{\mathbf{d}\subrange{0}{n}, \mathbf{d}\subrange{n}{n}, \cdots, \mathbf{d}\subrange{(k-1)n}{n}} \\
+  \forall n \in \N, k \in \N :\ &\join(\mathbf{c} \in \sequenceoflen{\bloboflen{n}}{k}) \in \bloboflen{kn} \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots
 \end{align}
 
 We define the transposition operator hence:
 \begin{equation}\label{eq:transpose}
-  {}^\text{T}[[\mathbf{x}_{0, 0}, \mathbf{x}_{0, 1}, \mathbf{x}_{0, 2}, \dots], [\mathbf{x}_{1, 0}, \mathbf{x}_{1, 1}, \dots], \dots] \equiv [[\mathbf{x}_{0, 0}, \mathbf{x}_{1, 0}, \mathbf{x}_{2, 0}, \dots], [\mathbf{x}_{0, 1}, \mathbf{x}_{1, 1}, \dots], \dots]
+  {}^\text{T}\sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{0, 1}, \mathbf{x}_{0, 2}, \dots}, \sq{\mathbf{x}_{1, 0}, \mathbf{x}_{1, 1}, \dots}, \dots} \equiv \sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{1, 0}, \mathbf{x}_{2, 0}, \dots}, \sq{\mathbf{x}_{0, 1}, \mathbf{x}_{1, 1}, \dots}, \dots}
 \end{equation}
 
 We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 684 octets and results in a sequence of 1,023 smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
-  \erasurecode_{k \in \N}\colon\abracegroup{
-    \blob_{684k} &\to \seq{\blob_{2k}}_{1023} \\
-    \mathbf{d} &\mapsto \join^\#({}^{\text{T}}[\Ferasurecode{\mathbf{p}} \mid \mathbf{p} \orderedin {}^\text{T}\spl_2^\#(\spl_{2k}(\mathbf{d}))])
+  \fnerasurecode_{k \in \N}\colon\abracegroup{
+    \bloboflen{684k} &\to \sequence{\bloboflen{2k}}_{1023} \\
+    \mathbf{d} &\mapsto \join^\#({}^{\text{T}}\sq{\build{\erasurecode{\mathbf{p}}}{\mathbf{p} \orderedin {}^\text{T}\spl{2}^\#(\spl{2k}(\mathbf{d}))}})
   }
 \end{equation}
 
 The original data may be reconstructed with any 342 of the 1,023 resultant items (along with their indices). If the original 342 items are known then reconstruction is just their concatenation.
 \begin{equation}\label{eq:erasurecodinginv}
-  \ecrecover_{k \in \N}\colon\abracegroup{
-    \protoset{\tuple{\blob_{2k}, \N_{1023}}}_{342} &\to \blob_{684k} \\
+  \fnecrecover_{k \in \N}\colon\abracegroup{
+    \protoset{\tuple{\bloboflen{2k}, \Nmax{1023}}}_{342} &\to \bloboflen{684k} \\
     \mathbf{c} &\mapsto \begin{cases}
-      \se(\sq{\mathbf{x} \mid \tup{\mathbf{x}, i} \orderedin \orderby{i}{(\mathbf{x}, i) \in \mathbf{c}}}) &\when \set{i \mid (\mathbf{x}, i) \in \mathbf{c}} = \N_{342}\\
+      \encode{\sq{\build{\mathbf{x}}{\tup{\mathbf{x}, i} \orderedin \sqorderby{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}}}} &\when \set{\build{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}} = \Nmax{342}\\
       \join(\join^\#({}^\text{T}[
-        \ecrecover(\set{(\spl_2(\mathbf{x})_p, i) \mid (\mathbf{x}, i) \in \mathbf{c}})
-      \mid p \in \N_k])) &\text{always}\\
+        \ecrecover{}{\set{\build{
+          (\spl{2}(\mathbf{x})\sub{p}, i)
+        }{
+          \tup{\mathbf{x}, i} \in \mathbf{c}
+        }}}
+      \mid p \in \Nmax{k}])) &\text{always}\\
     \end{cases}
-%      [ \ecrecover(\mathbf{y}, i) \mid \mathbf{y} \orderedin \transpose[ \spl_2(\mathbf{x}) \mid (\mathbf{x}, i) \orderedin \mathbf{c}] ]
+%      [ \ecrecover{\mathbf{y}, i} \mid \mathbf{y} \orderedin \transpose\sq{\build{\spl{2}(\mathbf{x})}{\tup{\mathbf{x}, i} \orderedin \mathbf{c}}} ]
   }
 \end{equation}
 
@@ -104,16 +108,16 @@ Instead of using the standard basis $\set{1, \authpool, \authpool^2, \dots, \aut
   \end{tabular}
 \end{center}
 
-Every message word $m_i=m_{i, 15} \ldots m_{i, 0}$ consists of 16 bits. As such it could be regarded as binary vector of length 16:
+Every message word $m\sub{i}=m_{i, 15} \ldots m\sub{i, 0}$ consists of 16 bits. As such it could be regarded as binary vector of length 16:
 \begin{equation}
-m_i = (m_{i, 0} \ldots m_{i, 15})
+m\sub{i} = \tup{m\sub{i, 0} \ldots m\sub{i, 15}}
 \end{equation}
 
-Where $m_{i, 0}$ is the least significant bit of message word $m_i$. Accordingly we consider the field element $\tilde{m}_i = \sum^{15}_{j = 0} m_{i, j} v_j$ to represent that message word.
+Where $m_{i, 0}$ is the least significant bit of message word $m\sub{i}$. Accordingly we consider the field element $\tilde{m}\sub{i} = \sum^{15}_{j = 0} m\sub{i, j} v\sub{j}$ to represent that message word.
 
 Similarly, we assign a unique index to each validator between 0 and 1,022 and we represent validator $i$ with the field element:
 \begin{equation}
-\tilde{i} = \sum^{15}_{j = 0} i_j v_j
+\tilde{i} = \sum^{15}_{j = 0} i\sub{j} v\sub{j}
 \end{equation}
 
 where $i = i_{15} \ldots i_0$ is the binary representation of $i$.

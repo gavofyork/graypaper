@@ -9,8 +9,6 @@
 \newcommand*{\pagedproofs}{P}
 \newcommand*{\marshallrefine}{R}
 \newcommand*{\extrinsicdata}{X}
-\newcommand*{\wpX}{p}
-\newcommand*{\wiX}{w}
 \newcommand*{\segsX}{\mathbf{b}}
 \newcommand*{\allexports}{\overline{\mathbf{e}}}
 
@@ -42,7 +40,7 @@ Work-packages have two other types of external data associated with them: A cryp
 
 The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\segment$, is an octet sequence of fixed length $\mathsf{W}_G = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term D$^3$L during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the D$^3$L system.
 \begin{equation}\label{eq:segment}
-  \segment \equiv \blob_{\mathsf{W}_G}
+  \segment \equiv \bloboflen{\mathsf{W}_G}
 \end{equation}
 
 Exported segments are data which are \emph{generated} through the execution of the Refine logic and thus are a side effect of transforming the work-package into a work-report. Since their data is deterministic based on the execution of the Refine logic, we do not require any particular commitment to them in the work-package beyond knowing how many are associated with each Refine invocation in order that we can supply an exact index.
@@ -69,7 +67,7 @@ We begin by defining a \emph{work-package}, of set $\workpackage$, and its const
     \isa{\wp¬authcodehash}{\hash},\ 
     \isa{\wp¬authconfig}{\blob},\ 
     \isa{\wp¬context}{\workcontext},\ 
-    \isa{\wp¬workitems}{\seq{\workitem}_{1:\mathsf{I}}}
+    \isa{\wp¬workitems}{\sequence{\workitem}_{1:\mathsf{I}}}
   }
 \end{equation}
 
@@ -82,8 +80,8 @@ A work item includes: $\wi¬service$ the identifier of the service to which it r
     \isa{\wi¬refgaslimit}{\gas},
     \isa{\wi¬accgaslimit}{\gas},
     \isa{\wi¬exportcount}{\N}, \\
-    &\isa{\wi¬importsegments}{\seq{\tuple{\hash \cup (\hash^\boxplus),\N}}},
-    \isa{\wi¬extrinsics}{\seq{\tuple{\hash, \N}}}
+    &\isa{\wi¬importsegments}{\sequence{\tuple{\hash \cup (\hash^\boxplus),\N}}},
+    \isa{\wi¬extrinsics}{\sequence{\tuple{\hash, \N}}}
   \end{aligned}}
 \end{equation}
 
@@ -107,7 +105,7 @@ We limit the total size of the auditable \emph{work-bundle}, containing the work
   &\begin{aligned}
     &\forall \wpX \in \workpackage: \Big(\len{\wpX_\wp¬authtoken} + \len{\wpX_\wp¬authconfig} +
     \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \mathsf{W}_B \\
-    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l
+    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{\tup{h, l} \in \wiX_\wi¬extrinsics} \!\!\!l
   \end{aligned}\\
   &\mathsf{W}_B \equiv 13,794,305\\
   &\phantom{\mathsf{W}_B} = \mathsf{W}_M(\mathsf{W}_G + 1 + 32\ceil{\log_2(\mathsf{W}_T)}) + 4096 + 1
@@ -116,32 +114,32 @@ We limit the total size of the auditable \emph{work-bundle}, containing the work
 We limit the sums of each of the two gas limits to be at most the maximum gas allocated to a core for the corresponding operation:
 \begin{equation}
   \forall \wpX \in \workpackage:\ \;
-    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_a) < \mathsf{G}_A
+    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_\wi¬accgaslimit) < \mathsf{G}_A
   \quad\wedge\ \;
-    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_g) < \mathsf{G}_R
+    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_\wi¬refgaslimit) < \mathsf{G}_R
 \end{equation}
 
 %The implication of equation \ref{eq:checkextractsize} is that we have access to the preimage of all extrinsic data. For guaranteeing, this implies the work-package author probably submits the preimages alongside the work-package itself. For auditing, the extrinsic preimages may be reconstructed in the same manner as the work-package. Both are described later.
 
-Given the result $\wl¬result$ and gas used $\wl¬gasused$ of some work-item, we define the item-to-digest function $\itemtodigest$ as:
+Given the result $\wd¬result$ and gas used $\wd¬gasused$ of some work-item, we define the item-to-digest function $\itemtodigest$ as:
 \begin{equation}
   \itemtodigest\colon\abracegroup{
-    (\workitem, \blob \cup \workerror, \gas) &\to \mathbb{L}\\
+    \tuple{\workitem, \blob \cup \workerror, \gas} &\to \mathbb{L}\\
     \tup{\tup{\begin{aligned}
       &\¬service, \¬codehash, \¬payload,\\
       &\wi¬accgaslimit, \¬exportcount, \wi¬importsegments, \wi¬extrinsics
     \end{aligned}
-    }, \wl¬result, \wl¬gasused} &\mapsto \tup{\begin{aligned}
-      &\wl¬service,\,
-      \wl¬codehash,\,
-      \is{\wl¬payloadhash}{\blake(\¬payload)},\,
-      \is{\wl¬gaslimit}{\wi¬accgaslimit},\,
-      \wl¬result,\,
-      \wl¬gasused,\\
-      &\is{\wl¬importcount}{\len{\wi¬importsegments}},\,
-      \wl¬exportcount,\,
-      \is{\wl¬xtcount}{\len{\wi¬extrinsics}},\,
-      \is{\wl¬xtsize}{\!\!\!\!\sum_{\tup{h, z} \in \wi¬extrinsics}\!\!\!\!z}
+    }, \wd¬result, \wd¬gasused} &\mapsto \tup{\begin{aligned}
+      &\wd¬service,\,
+      \wd¬codehash,\,
+      \is{\wd¬payloadhash}{\blake{\¬payload}},\,
+      \is{\wd¬gaslimit}{\wi¬accgaslimit},\,
+      \wd¬result,\,
+      \wd¬gasused,\\
+      &\is{\wd¬importcount}{\len{\wi¬importsegments}},\,
+      \wd¬exportcount,\,
+      \is{\wd¬xtcount}{\len{\wi¬extrinsics}},\,
+      \is{\wd¬xtsize}{\!\!\!\!\sum_{\tup{h, z} \in \wi¬extrinsics}\!\!\!\!z}
     \end{aligned}}\!\!\!\!
   }
 \end{equation}
@@ -149,9 +147,9 @@ Given the result $\wl¬result$ and gas used $\wl¬gasused$ of some work-item, we
 We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the hash of the authorization code hash concatenated with the configuration. We define the authorization code as $\wpX_\wp¬authcode$ and require that it be available at the time of the lookup anchor block from the historical lookup of service $\wpX_\wp¬authcodehost$. Formally:
 \begin{equation}
   \forall \wpX \in \workpackage: \abracegroup[\,]{
-    \wpX_\wp¬authorizer &\equiv \blake(\wpX_\wp¬authcodehash \concat \wpX_\wp¬authconfig) \\
-    \se(\var{\wpX_\wp¬metadata}, \wpX_\wp¬authcode) &\equiv \histlookup(\accounts[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_t, \wpX_\wp¬authcodehash) \\
-    (\wpX_\wp¬metadata, \wpX_\wp¬authcode) &\in (\blob, \blob)
+    \wpX_\wp¬authorizer &\equiv \blake{\wpX_\wp¬authcodehash \concat \wpX_\wp¬authconfig} \\
+    \encode{\var{\wpX_\wp¬metadata}, \wpX_\wp¬authcode} &\equiv \histlookup(\accounts[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_\wc¬lookupanchortime, \wpX_\wp¬authcodehash) \\
+    \tup{\wpX_\wp¬metadata, \wpX_\wp¬authcode} &\in \tuple{\blob, \blob}
   }
 \end{equation}
 
@@ -165,13 +163,13 @@ Guarantors are required to erasure-code and distribute two data sets: one blob, 
 We define the paged-proofs function $\pagedproofs$ which accepts a series of exported segments $\mathbf{s}$ and defines some series of additional segments placed into the D$^3$L via erasure-coding and distribution. The function evaluates to pages of hashes, together with subtree proofs, such that justifications of correctness based on a segments-root may be made from it:
 \begin{equation}\label{eq:pagedproofs}
   \!\!\pagedproofs\colon\abracegroup{
-    \seq{\segment} \to \,&\seq{\segment} \\
+    \sequence{\segment} \to \,&\sequence{\segment} \\
     \mathbf{s} \mapsto \,&\sq{
-      \zeropad_l(\se(
-        \var{\merklejustsubpath_6(\mathbf{s}, i)},
-        \var{\merklesubtreepage_6(\mathbf{s}, i)}
-      ))
-      \mid i \orderedin \N_{\ceil{\nicefrac{\len{\mathbf{s}}}{64}}}
+      \zeropad{l}{\encode{
+        \var{\fnmerklejustsubpath{6}{\mathbf{s}, i}},
+        \var{\fnmerklesubtreepage{6}{\mathbf{s}, i}}
+      }}
+      \mid i \orderedin \Nmax{\ceil{\nicefrac{\len{\mathbf{s}}}{64}}}
     } \\
     & \where l = \mathsf{W}_G
   }\!\!\!\!
@@ -179,12 +177,12 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
 
 \subsection{Computation of Work-Report}\label{sec:computeworkreport}
 
-We now come to the work-report computation function $\computedigest$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $\¬core$ and results in either an error $\error$ or the work-report and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization. Formally:
+We now come to the work-report computation function $\computereport$. This forms the basis for all utilization of cores on \Jam. It accepts some work-package $\wpX$ for some nominated core $\¬core$ and results in either an error $\error$ or the work-report and series of exported segments. This function is deterministic and requires only that it be evaluated within eight epochs of a recently finalized block thanks to the historical lookup functionality. It can thus comfortably be evaluated by any node within the auditing period, even allowing for practicalities of imperfect synchronization. Formally:
 \begin{equation}\label{eq:workdigestfunction}
-  \computedigest \colon \abracegroup{
-    (\workpackage, \coreindex) &\to \workreport \\
-    (\wpX, \¬core) &\mapsto \begin{cases}
-        \error &\when \wr¬authtrace \not\in \blob_{:\mathsf{W}_R} \\
+  \computereport \colon \abracegroup{
+    \tuple{\workpackage, \coreindex} &\to \workreport \\
+    \tup{\wpX, \¬core} &\mapsto \begin{cases}
+        \error &\when \wr¬authtrace \not\in \bloboflen{:\mathsf{W}_R} \\
         \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
     \end{cases}
   }
@@ -194,28 +192,26 @@ We now come to the work-report computation function $\computedigest$. This forms
 \newcommand*{\local¬theitem}{m}
 Where:
 \begin{align*}
-  \Fkeys{\wr¬srlookup} \equiv \,&\set{ h \mid \wiX \in \wpX_\wp¬workitems, (h^\boxplus, n) \in \wiX_\wi¬importsegments } \ ,\quad\len{\wr¬srlookup} \le 8\\
-  (\wr¬authtrace, \wr¬authgasused) = \,&\Psi_I(\wpX, \¬core) \\
-  (\wr¬digests, \allexports) = \,&\transpose[
+  \keys{\wr¬srlookup} \equiv \,&\set{ h \mid \wiX \in \wpX_\wp¬workitems, \tup{h^\boxplus, n} \in \wiX_\wi¬importsegments } \ ,\quad\len{\wr¬srlookup} \le 8\\
+  \tup{\wr¬authtrace, \wr¬authgasused} = \,&\Psi_I(\wpX, \¬core) \\
+  \tup{\wr¬digests, \allexports} = \,&\transpose[
     (\itemtodigest(\wpX_\wp¬workitems\subb{j}, r, u), \mathbf{e})
     \mid
-    (r, u, \mathbf{e}) = \countupexports(\wpX, j),\,
-    j \orderedin \N_{\len{\wpX_\wp¬workitems}}
+    \tup{r, u, \mathbf{e}} = \countupexports(\wpX, j),\,
+    j \orderedin \Nmax{\len{\wpX_\wp¬workitems}}
   ] \\
   \countupexports(\wpX, j) \equiv \,&\begin{cases}
-    \tup{\oversize, u, \sq{\segment_0, \segment_0, \dots}_{\dots \local¬theitem_\wi¬exportcount}} &\when \len{r} + z > \mathsf{W}_R\\
-    \tup{\badexports, u, \sq{\segment_0, \segment_0, \dots}_{\dots \local¬theitem_\wi¬exportcount}} &\otherwhen \len{\mathbf{e}} \ne w_e \\
-    \tup{r, u, \sq{\segment_0, \segment_0, \dots}_{\dots \local¬theitem_\wi¬exportcount}} &\otherwhen r \not\in \blob \\
+    \tup{\oversize, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\when \len{r} + z > \mathsf{W}_R\\
+    \tup{\badexports, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\otherwhen \len{\mathbf{e}} \ne \local¬theitem_\wi¬exportcount \\
+    \tup{r, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\otherwhen r \not\in \blob \\
     \tup{r, u, \mathbf{e}} &\otherwise \\
     \multicolumn{2}{l}{\where \tup{r, \mathbf{e}, u} = \Psi_R(
       j, \wpX, \mathbf{o}, \sq{\build{\importsegmentdata(w)}{w \orderedin \wpX_\wp¬workitems}}, \ell
     )}\\
-    \multicolumn{2}{l}{\also h = \blake(\wpX)\,,\; \local¬theitem = \wpX_\wp¬workitems\subb{j}\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems\subb{k}_\wi¬exportcount}\\
+    \multicolumn{2}{l}{\also h = \blake{\wpX}\,,\; \local¬theitem = \wpX_\wp¬workitems\subb{j}\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems\subb{k}_\wi¬exportcount}\\
     \multicolumn{2}{l}{\also z = \len{\mathbf{o}} + \sum_{k < j, \tup{r \in \blob, \dots} = I(p, k)} \len{r}}
   \end{cases}
 \end{align*}
-
-% TODO: Handle case where there's an output size overrun gracefully too.
 
 Note that we gracefully handle both the case where the output size of the work output would take the work-report beyond its acceptable size and where number of segments exported by a work-item's Refinement execution is incorrectly reported in the work-item's export segment count. In both cases, the work-package continues to be valid as a whole, but the work-item's exported segments are replaced by a sequence of zero-segments equal in size to the export segment count and its output is replaced by an error.
 
@@ -231,7 +227,7 @@ We immediately define the segment-root lookup function $\segrootlookup$, depende
 
 In order to expect to be compensated for a work-report they are building, guarantors must compose a value for $\wr¬srlookup$ to ensure not only the above but also a further constraint that all pairs of work-package hashes and segment-roots do properly correspond:
 \begin{equation}
-  \forall (h \mapsto e) \in \wr¬srlookup : \exists \wpX, \¬core \in \workpackage, \coreindex : \blake(\wpX) = h \wedge (\computedigest(\wpX, \¬core)_s)_e = e\!\!\!\!
+  \forall (h \mapsto e) \in \wr¬srlookup : \exists \wpX, \¬core \in \workpackage, \coreindex : \blake{\wpX} = h \wedge (\computereport(\wpX, \¬core)_\wr¬avspec)_\as¬segroot = e\!\!\!\!
 \end{equation}
 
 As long as the guarantor is unable to satisfy the above constraints, then it should consider the work-package unable to be guaranteed. Auditors are not expected to populate this but rather to reuse the value in the work-report they are auditing.
@@ -241,22 +237,22 @@ The next term to be introduced, $\tup{\wr¬authtrace, \wr¬authgasused}$, is the
 The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ which, respectively, define the import segment data and the extrinsic data for some work-item argument $\wiX$. We also define $\justifysegmentdata$, which compiles justifications of segment data:
 \begin{equation}
   \begin{aligned}
-    \extrinsicdata(\wiX \in \workitem) &\equiv \sq{\build{\mathbf{d}}{(\blake(\mathbf{d}), \len{\mathbf{d}}) \orderedin \wiX_\wi¬extrinsics}} \\
-    \importsegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\segsX[n]}{\merklizecd(\segsX) = \segrootlookup(r), (r, n) \orderedin \wiX_\wi¬importsegments}} \\
-    \justifysegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\var{\merklejustsubpath_0(\segsX, n)}}{\merklizecd(\segsX) = \segrootlookup(r), (r, n) \orderedin \wiX_\wi¬importsegments}}
+    \extrinsicdata(\wiX \in \workitem) &\equiv \sq{\build{\mathbf{d}}{(\blake{\mathbf{d}}, \len{\mathbf{d}}) \orderedin \wiX_\wi¬extrinsics}} \\
+    \importsegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\segsX[n]}{\merklizecd{\segsX} = \segrootlookup(r), \tup{r, n} \orderedin \wiX_\wi¬importsegments}} \\
+    \justifysegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\var{\fnmerklejustsubpath{0}{\segsX, n}}}{\merklizecd{\segsX} = \segrootlookup(r), \tup{r, n} \orderedin \wiX_\wi¬importsegments}}
   \end{aligned}
 \end{equation}
 
 We may then define $\wr¬avspec$ as the data availability specification of the package using these three functions together with the yet to be defined \emph{Availability Specifier} function $\newavailabilityspecifier$ (see section \ref{sec:availabiltyspecifier}):
 \begin{equation}
   \wr¬avspec = \newavailabilityspecifier(
-    \blake(\wpX),
-    \se(
+    \blake{\wpX},
+    \encode{
       \wpX,
       \extrinsicdata^\#(\wpX_\wp¬workitems),
       \importsegmentdata^\#(\wpX_\wp¬workitems),
       \justifysegmentdata^\#(\wpX_\wp¬workitems)
-    ),
+    },
     \concatall{\allexports}
   )\!\!\!\!
 \end{equation}
@@ -277,35 +273,33 @@ Validators, in their role as availability assurers, should index such chunks acc
 We define the availability specifier function $\newavailabilityspecifier$, which creates an availability specifier from the package hash, an octet sequence of the audit-friendly work-package bundle (comprising the work-package itself, the extrinsic data and the concatenated import segments along with their proofs of correctness), and the sequence of exported segments:
 \begin{equation}
   \!\!\!\newavailabilityspecifier\colon\abracegroup[\,]{
-    \tuple{\hash, \blob, \seq{\segment}} &\to \avspec\\
+    \tuple{\hash, \blob, \sequence{\segment}} &\to \avspec\\
     \tup{h, \mathbf{b},\,\mathbf{s}} &\mapsto \tup{
       h,\,
       \is{l}{\len{\mathbf{b}}},\,
       u,\,
-      \is{e}{\merklizecd(\mathbf{s})},\,
+      \is{e}{\merklizecd{\mathbf{s}}},\,
       \is{n}{\len{\mathbf{s}}}
     }
   }\!\!\!\!\!
 \end{equation}
 \begin{align*}
-  \where u &= \merklizewb(
-    [\concatall{\mathbf{x}} \mid \mathbf{x} \orderedin \transpose[\mathbf{b}^\clubsuit, \mathbf{s}^\clubsuit]]
-  )\\
-  \also \mathbf{b}^\clubsuit &= \blake^\#(\Ferasurecode[\ceil{\nicefrac{\len{\mathbf{b}}}{\mathsf{W}_E}}]{\zeropad_{\mathsf{W}_E}(\mathbf{b})})\\
-  \also \mathbf{s}^\clubsuit &= \merklizewb^\#(\transpose\Ferasurecodeplex[6]{\mathbf{s} \concat \pagedproofs(\mathbf{s})})
+  \where u &= \merklizewb{
+    \sq{\build{\concatall{\mathbf{x}}}{\mathbf{x} \orderedin \transpose\sq{\mathbf{b}^\clubsuit, \mathbf{s}^\clubsuit}}}
+  }\\
+  \also \mathbf{b}^\clubsuit &= \blakemany{\erasurecode[\ceil{\nicefrac{\len{\mathbf{b}}}{\mathsf{W}_E}}]{\zeropad{\mathsf{W}_E}{\mathbf{b}}}}\\
+  \also \mathbf{s}^\clubsuit &= \merklizewbmany{\transpose\erasurecodeplex[6]{\mathbf{s} \concat \pagedproofs(\mathbf{s})}}
 \end{align*}
-
-% TODO: \avspec_h is now the hash of the work-package bundle, not the work-package itself. This is a change from the original document... does anything break with it?
 
 The paged-proofs function $\pagedproofs$, defined earlier in equation \ref{eq:pagedproofs}, accepts a sequence of segments and returns a sequence of paged-proofs sufficient to justify the correctness of every segment. There are exactly $\ceil{\nicefrac{1}{64}}$ paged-proof segments as the number of yielded segments, each composed of a page of 64 hashes of segments, together with a Merkle proof from the root to the subtree-root which includes those 64 segments.
 
-The functions $\merklizecd$ and $\merklizewb$ are the fixed-depth and simple binary Merkle root functions, defined in equations \ref{eq:constantdepthmerkleroot} and \ref{eq:simplemerkleroot}. The function $\erasurecode$ is the erasure-coding function, defined in appendix \ref{sec:erasurecoding}.
+The functions $\fnmerklizecd$ and $\fnmerklizewb$ are the fixed-depth and simple binary Merkle root functions, defined in equations \ref{eq:constantdepthmerkleroot} and \ref{eq:simplemerkleroot}. The function $\fnerasurecode$ is the erasure-coding function, defined in appendix \ref{sec:erasurecoding}.
 
-And $\zeropad$ is the zero-padding function to take an octet array to some multiple of $n$ in length:
+And $\fnzeropad{}$ is the zero-padding function to take an octet array to some multiple of $n$ in length:
 \begin{equation}\label{eq:zeropadding}
-  \zeropad_{n \in \N_{1\dots}}\colon\abracegroup{
-    \blob &\to \blob_{k \cdot n}\\
-    \mathbf{x} &\mapsto \mathbf{x} \concat [0, 0, ...]_{((\len{x} + n - 1) \bmod n) + 1 \dots n}
+  \fnzeropad{n \in \Nclamp{1}{}}\colon\abracegroup{
+    \blob &\to \bloboflen{k \cdot n}\\
+    \mathbf{x} &\mapsto \mathbf{x} \concat \sq{0, 0, \dots}\interval{((\len{x} + n - 1) \bmod n) + 1}{n}
   }
 \end{equation}
 
@@ -320,5 +314,4 @@ We will see this function utilized in the next sections, for guaranteeing, audit
 \undef{\pagedproofs}
 \undef{\marshallrefine}
 \undef{\extrinsicdata}
-\undef{\wpX}
-\undef{\wiX}
+\undef{\segsX}

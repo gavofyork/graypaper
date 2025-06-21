@@ -6,7 +6,7 @@ Much as in the Ethereum Yellow Paper, a number of notational conventions are use
 
 We use a number of different typefaces to denote different kinds of terms. Where a term is used to refer to a value only relevant within some localized section of the document, we use a lower-case roman letter \eg $x$, $y$ (typically used for an item of a set or sequence) or \eg $i$, $j$ (typically used for numerical indices). Where we refer to a Boolean term or a function in a local context, we tend to use a capitalized roman alphabet letter such as $A$, $F$. If particular emphasis is needed on the fact a term is sophisticated or multidimensional, then we may use a bold typeface, especially in the case of sequences and sets.
 
-For items which retain their definition throughout the present work, we use other typographic conventions. Sets are usually referred to with a blackboard typeface, \eg $\N$ refers to all natural numbers including zero. Sets which may be parameterized may be subscripted or be followed by parenthesized arguments. Imported functions, used by the present work but not specifically introduced by it, are written in calligraphic typeface, \eg $\blake$ the Blake2 cryptographic hashing function. For other non-context dependent functions introduced in the present work, we use upper case Greek letters, \eg $\transitionstate$ denotes the state transition function.
+For items which retain their definition throughout the present work, we use other typographic conventions. Sets are usually referred to with a blackboard typeface, \eg $\N$ refers to all natural numbers including zero. Sets which may be parameterized may be subscripted or be followed by parenthesized arguments. Imported functions, used by the present work but not specifically introduced by it, are written in calligraphic typeface, \eg $\fnblake$ the Blake2 cryptographic hashing function. For other non-context dependent functions introduced in the present work, we use upper case Greek letters, \eg $\transitionstate$ denotes the state transition function.
 
 Values which are not fixed but nonetheless hold some consistent meaning throughout the present work are denoted with lower case Greek letters such as $\thestate$, the state identifier. These may be placed in bold typeface to denote that they refer to an abnormally complex value.
 
@@ -26,11 +26,11 @@ We define the precedes relation to indicate that one term is defined in terms of
 %  \end{cases}
 %\end{align}
 
-The substitute-if-nothing function $\subifnone$ is equivalent to the first argument which is not $\none$, or $\none$ if no such argument exists:
+The substitute-if-nothing function $\fnsubifnone$ is equivalent to the first argument which is not $\none$, or $\none$ if no such argument exists:
 \begin{align}\label{eq:substituteifnothing}
-  \subifnone(a_0, \dots a_n ) \equiv a_x : (a_x \ne \none \vee x = n), \bigwedge_{i=0}^{x-1} a_i = \none
+  \subifnone{a_0, \dots a\sub{n}} \equiv a\sub{x} : (a\sub{x} \ne \none \vee x = n), \bigwedge_{i=0}^{x-1} a\sub{i} = \none
 \end{align}
-Thus, \eg $\subifnone(\none, 1, \none, 2) = 1$ and $\subifnone(\none, \none) = \none$.
+Thus, \eg $\subifnone{\none, 1, \none, 2} = 1$ and $\subifnone{\none, \none} = \none$.
 
 \subsection{Sets}\label{sec:sets}
 
@@ -49,9 +49,9 @@ The term $\error$ is utilized to indicate the unexpected failure of an operation
 
 \subsection{Numbers}\label{sec:numbers}
 
-$\N$ denotes the set of naturals including zero whereas $\N_n$ implies a restriction on that set to values less than $n$. Formally, $\N = \set{0, 1, \dots}$ and $\N_n = \set{\build{x}{x \in \N, x < n}}$.
+$\N$ denotes the set of naturals including zero whereas $\Nmax{n}$ implies a restriction on that set to values less than $n$. Formally, $\N = \set{0, 1, \dots}$ and $\Nmax{n} = \set{\build{x}{x \in \N, x < n}}$.
 
-$\mathbb{Z}$ denotes the set of integers. We denote $\mathbb{Z}_{a \dots b}$ to be the set of integers within the interval $[a, b)$. Formally, $\mathbb{Z}_{a \dots b} = \set{\build{x}{x \in \mathbb{Z}, a \le x < b}}$. \Eg $\mathbb{Z}_{2 \dots 5} = \set{2, 3, 4}$. We denote the offset/length form of this set as $\mathbb{Z}_{a \dots +b}$, a short form of $\mathbb{Z}_{a \dots a+b}$.
+$\mathbb{Z}$ denotes the set of integers. We denote $\mathbb{Z}\interval{a}{b}$ to be the set of integers within the interval $[a, b)$. Formally, $\mathbb{Z}\interval{a}{b} = \set{\build{x}{x \in \mathbb{Z}, a \le x < b}}$. \Eg $\mathbb{Z}\interval{2}{5} = \set{2, 3, 4}$. We denote the offset/length form of this set as $\mathbb{Z}\subrange{a}{b}$, a short form of $\mathbb{Z}\interval{a}{a+b}$.
 
 It can sometimes be useful to represent lengths of sequences and yet limit their size, especially when dealing with sequences of octets which must be stored practically. Typically, these lengths can be defined as the set $\Nbits{32}$. To improve clarity, we denote $\bloblength$ as the set of lengths of octet sequences and is equivalent to $\Nbits{32}$.
 
@@ -73,8 +73,8 @@ The subset is caused by a constraint that a dictionary's members must associate 
 
 In the context of a dictionary we denote the pairs with a mapping notation:
 \begin{align}
-  &\dict{\mathrm{K}}{\mathrm{V}} \equiv \protoset{\keyval{\mathrm{K}}{\mathrm{V}}}\\
-  &\mathbf{p} \in \keyval{\mathrm{K}}{\mathrm{V}} \Leftrightarrow \exists k \in \mathrm{K}, v \in \mathrm{V}, \mathbf{p} \equiv \kv{k}{v}
+  &\dict{\mathrm{K}}{\mathrm{V}} \equiv \protoset{\keyvalue{\mathrm{K}}{\mathrm{V}}}\\
+  &\mathbf{p} \in \keyvalue{\mathrm{K}}{\mathrm{V}} \Leftrightarrow \exists k \in \mathrm{K}, v \in \mathrm{V}, \mathbf{p} \equiv \kv{k}{v}
 \end{align}
 
 This assertion allows us to unambiguously define the subscript and subtraction operator for a dictionary $d$:
@@ -88,41 +88,41 @@ This assertion allows us to unambiguously define the subscript and subtraction o
 
 Note that when using a subscript, it is an implicit assertion that the key exists in the dictionary. Should the key not exist, the result is undefined and any block which relies on it must be considered invalid.
 
-To denote the active domain (\ie set of keys) of a dictionary $\mathbf{d} \in \dict{K}{V}$, we use $\Fkeys{\mathbf{d}} \subseteq K$ and for the range (\ie set of values), $\Fvalues{\mathbf{d}} \subseteq V$. Formally:
+To denote the active domain (\ie set of keys) of a dictionary $\mathbf{d} \in \dict{K}{V}$, we use $\keys{\mathbf{d}} \subseteq K$ and for the range (\ie set of values), $\values{\mathbf{d}} \subseteq V$. Formally:
 \begin{align}
-  \Fkeys{\mathbf{d} \in \dictionary} &\equiv \set{\build{k}{\exists v : \kv{k}{v} \in \mathbf{d}}} \\
-  \Fvalues{\mathbf{d} \in \dictionary} &\equiv \set{\build{v}{\exists k : \kv{k}{v} \in \mathbf{d}}}
+  \keys{\mathbf{d} \in \dictionary} &\equiv \set{\build{k}{\exists v : \kv{k}{v} \in \mathbf{d}}} \\
+  \values{\mathbf{d} \in \dictionary} &\equiv \set{\build{v}{\exists k : \kv{k}{v} \in \mathbf{d}}}
 \end{align}
 
-Note that since the co-domain of $\values$ is a set, should different keys with equal values appear in the dictionary, the set will only contain one such value.
+Note that since the co-domain of $\values{}$ is a set, should different keys with equal values appear in the dictionary, the set will only contain one such value.
 
 Dictionaries may be combined through the union operator $\cup$, which priorities the right-side operand in the case of a key-collision:
 \begin{equation}
-  \forall \mathbf{d} \in \dictionary, \mathbf{e} \in \dictionary: \mathbf{d} \cup \mathbf{e} \equiv (\mathbf{d} \setminus \Fkeys{\mathbf{e}}) \cup \mathbf{e}
+  \forall \mathbf{d} \in \dictionary, \mathbf{e} \in \dictionary: \mathbf{d} \cup \mathbf{e} \equiv (\mathbf{d} \setminus \keys{\mathbf{e}}) \cup \mathbf{e}
 \end{equation}
 
 \subsection{Tuples}\label{sec:tuples}
 
 Tuples are groups of values where each item may belong to a different set. They are denoted with parentheses, \eg the tuple $t$ of the naturals $3$ and $5$ is denoted $t = \tup{3, 5}$, and it exists in the set of natural pairs sometimes denoted $\N \times \N$, but denoted in the present work as $\tuple{\N, \N}$.
 
-We have frequent need to refer to a specific item within a tuple value and as such find it convenient to declare a name for each item. \Eg we may denote a tuple with two named natural components $a$ and $b$ as $T = \tuple{\isa{a}{\N},\,\isa{b}{\N}}$. We would denote an item $t \in T$ through subscripting its name, thus for some $t = \tup{\is{a}{3},\,\is{b}{5}}$, $t_a = 3$ and $t_b = 5$.
+We have frequent need to refer to a specific item within a tuple value and as such find it convenient to declare a name for each item. \Eg we may denote a tuple with two named natural components $a$ and $b$ as $T = \tuple{\isa{a}{\N},\,\isa{b}{\N}}$. We would denote an item $t \in T$ through subscripting its name, thus for some $t = \tup{\is{a}{3},\,\is{b}{5}}$, $t_{a} = 3$ and $t_{b} = 5$.
 
 \subsection{Sequences}\label{sec:sequences}
 
-A sequence is a series of elements with particular ordering not dependent on their values. The set of sequences of elements all of which are drawn from some set $T$ is denoted $\seq{T}$, and it defines a partial mapping $\N \to T$. The set of sequences containing exactly $n$ elements each a member of the set $T$ may be denoted $\seq{T}_n$ and accordingly defines a complete mapping $\N_n \to T$. Similarly, sets of sequences of at most $n$ elements and at least $n$ elements may be denoted $\seq{T}_{:n}$ and $\seq{T}_{n:}$ respectively.
+A sequence is a series of elements with particular ordering not dependent on their values. The set of sequences of elements all of which are drawn from some set $T$ is denoted $\sequence{T}$, and it defines a partial mapping $\N \to T$. The set of sequences containing exactly $n$ elements each a member of the set $T$ may be denoted $\sequenceoflen{T}{n}$ and accordingly defines a complete mapping $\Nmax{n} \to T$. Similarly, sets of sequences of at most $n$ elements and at least $n$ elements may be denoted $\sequenceoflen{T}{:n}$ and $\sequenceoflen{T}{n:}$ respectively.
 
-Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}[i]$, or where unambiguous, $\mathbf{s}_i$. A range may be denoted using an ellipsis for example: $\sq{0, 1, 2, 3}_{\dots2} = \sq{0, 1}$ and $\sq{0, 1, 2, 3}_{1\dots+2} = \sq{1, 2}$. The length of such a sequence may be denoted $\len{\mathbf{s}}$.
+Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}\subb{i}$, or where unambiguous, $\mathbf{s}\sub{i}$. A range may be denoted using an ellipsis for example: $\sq{0, 1, 2, 3}\sub{\dots2} = \sq{0, 1}$ and $\sq{0, 1, 2, 3}\sub{1\dots+2} = \sq{1, 2}$. The length of such a sequence may be denoted $\len{\mathbf{s}}$.
 
 We denote modulo subscription as $\cyclic{\mathbf{s}[i]} \equiv \mathbf{s}[\,i \rem \len{\mathbf{s}}\,]$. We denote the final element $x$ of a sequence $\mathbf{s} = \sq{..., x}$ through the function $\text{last}(\mathbf{s}) \equiv x$.
 
 \subsubsection{Construction}
-We may wish to define a sequence in terms of incremental subscripts of other values: $\sq{\mathbf{x}_0, \mathbf{x}_1, \dots }_n$ denotes a sequence of $n$ values beginning $\mathbf{x}_0$ continuing up to $\mathbf{x}_{n-1}$. Furthermore, we may also wish to define a sequence as elements each of which are a function of their index $i$; in this case we denote $\sq{\build{f(i)}{i \orderedin \N_n}} \equiv \sq{f(0), f(1), \dots, f(n - 1)}$. Thus, when the ordering of elements matters we use $\orderedin$ rather than the unordered notation $\in$. The latter may also be written in short form $\sq{f(i \orderedin \N_n)}$. This applies to any set which has an unambiguous ordering, particularly sequences, thus $\sq{\build{i^2}{i \orderedin \sq{1, 2, 3}}} = \sq{1, 4, 9}$. Multiple sequences may be combined, thus $\sq{\build{i \cdot j}{i \orderedin \sq{1, 2, 3}, j \orderedin \sq{2, 3, 4}}} = \sq{2, 6, 12}$.
+We may wish to define a sequence in terms of incremental subscripts of other values: $\sq{\mathbf{x}_0, \mathbf{x}_1, \dots }\sub{\dots n}$ denotes a sequence of $n$ values beginning $\mathbf{x}_0$ continuing up to $\mathbf{x}_{n-1}$. Furthermore, we may also wish to define a sequence as elements each of which are a function of their index $i$; in this case we denote $\sq{\build{f(i)}{i \orderedin \Nmax{n}}} \equiv \sq{f(0), f(1), \dots, f(n - 1)}$. Thus, when the ordering of elements matters we use $\orderedin$ rather than the unordered notation $\in$. The latter may also be written in short form $\sq{f(i \orderedin \Nmax{n})}$. This applies to any set which has an unambiguous ordering, particularly sequences, thus $\sq{\build{i^2}{i \orderedin \sq{1, 2, 3}}} = \sq{1, 4, 9}$. Multiple sequences may be combined, thus $\sq{\build{i \cdot j}{i \orderedin \sq{1, 2, 3}, j \orderedin \sq{2, 3, 4}}} = \sq{2, 6, 12}$.
 
 As with sets, we use explicit notation $f^{\#}$ to denote a function mapping over all items of a sequence.
 
-Sequences may be constructed from sets or other sequences whose order should be ignored through sequence ordering notation $\orderby{i_k}{i \in X}$, which is defined to result in the set or sequence of its argument except that all elements $i$ are placed in ascending order of the corresponding value $i_k$.
+Sequences may be constructed from sets or other sequences whose order should be ignored through sequence ordering notation $\sqorderby{f(i)}{i \in X}$, which is defined to result in the set or sequence of its argument except that all elements $i$ are placed in ascending order of the corresponding value $f(i)$.
 
-The key component may be elided in which case it is assumed to be ordered by the elements directly; \ie $\order{i \in X} \equiv \orderby{i}{i \in X}$. $\orderuniqby{i_k}{i \in X}$ does the same, but excludes any duplicate values of $i$. \Eg assuming $\mathbf{s} = \sq{1, 3, 2, 3}$, then $\orderuniqby{i}{i \in \mathbf{s}} = \sq{1, 2, 3}$ and $\orderby{-i}{i \in \mathbf{s}} = \sq{3, 3, 2, 1}$.
+The key component may be elided in which case it is assumed to be ordered by the elements directly; \ie $\order{i \in X} \equiv \sqorderby{i}{i \in X}$. $\sqorderuniqby{i}{i \in X}$ does the same, but excludes any duplicate values of $i$. \Eg assuming $\mathbf{s} = \sq{1, 3, 2, 3}$, then $\sqorderuniqby{i}{i \in \mathbf{s}} = \sq{1, 2, 3}$ and $\sqorderby{-i}{i \in \mathbf{s}} = \sq{3, 3, 2, 1}$.
 
 Sets may be constructed from sequences with the regular set construction syntax, \eg assuming $\mathbf{s} = \sq{1, 2, 3, 1}$, then $\set{\build{a}{a \in \mathbf{s}}}$ would be equivalent to $\set{1, 2, 3}$.
 
@@ -136,36 +136,36 @@ We define ${}^\text{T}\mathbf{x}$ as the transposition of the sequence-of-sequen
 We denote sequence subtraction with a slight modification of the set subtraction operator; specifically, some sequence $\mathbf{s}$ excepting the left-most element equal to $v$ would be denoted $\mathbf{s}\seqminusl\set{v}$.
 
 \subsubsection{Boolean values}
-$\bitstring_s$ denotes the set of Boolean strings of length $s$, thus $\bitstring_s = \seq{\bool}_s$. When dealing with Boolean values we may assume an implicit equivalence mapping to a bit whereby $\top = 1$ and $\bot = 0$, thus $\bitstring_\Box = \seq{\N_2}_\Box$. We use the function $\text{bits}(\blob) \in \bitstring$ to denote the sequence of bits, ordered with the most significant first, which represent the octet sequence $\blob$, thus $\text{bits}(\sq{160, 0}) = \sq{1, 0, 1, 0, 0, \dots}$.
+$\bitstringoflen{s}$ denotes the set of Boolean strings of length $s$, thus $\bitstringoflen{s} = \sequenceoflen{\bool}{s}$. When dealing with Boolean values we may assume an implicit equivalence mapping to a bit whereby $\top = 1$ and $\bot = 0$, thus $\bitstringoflen{\Box} = \sequence{\N_2}_\Box$. We use the function $\text{bits}(\blob) \in \bitstring$ to denote the sequence of bits, ordered with the most significant first, which represent the octet sequence $\blob$, thus $\text{bits}(\sq{160, 0}) = \sq{1, 0, 1, 0, 0, \dots}$.
 
 The unary-not operator applies to both boolean values and sequences of boolean values, thus $\neg \top = \bot$ and $\neg \sq{\top, \bot} = \sq{\bot, \top}$.
 
 \subsubsection{Octets and Blobs}
 
-$\blob$ denotes the set of octet strings (``blobs'') of arbitrary length. As might be expected, $\blob_x$ denotes the set of such sequences of length $x$. $\blob_\$$ denotes the subset of $\blob$ which are ASCII-encoded strings. Note that while an octet has an implicit and obvious bijective relationship with natural numbers less than 256, and we may implicitly coerce between octet form and natural number form, we do not treat them as exactly equivalent entities. In particular for the purpose of serialization, an octet is always serialized to itself, whereas a natural number may be serialized as a sequence of potentially several octets, depending on its magnitude and the encoding variant.
+$\blob$ denotes the set of octet strings (``blobs'') of arbitrary length. As might be expected, $\bloboflen{x}$ denotes the set of such sequences of length $x$. $\bloboflen{\$}$ denotes the subset of $\blob$ which are ASCII-encoded strings. Note that while an octet has an implicit and obvious bijective relationship with natural numbers less than 256, and we may implicitly coerce between octet form and natural number form, we do not treat them as exactly equivalent entities. In particular for the purpose of serialization, an octet is always serialized to itself, whereas a natural number may be serialized as a sequence of potentially several octets, depending on its magnitude and the encoding variant.
 
 \subsubsection{Shuffling}
 
-We define the sequence-shuffle function $\fyshuffle$, originally introduced by \cite{fisheryates1938statistical}, with an efficient in-place algorithm described by \cite{wikipedia2024fisheryates}. This accepts a sequence and some entropy and returns a sequence of the same length with the same elements but in an order determined by the entropy. The entropy may be provided as either an indefinite sequence of naturals or a hash. For a full definition see appendix \ref{sec:shuffle}.
+We define the sequence-shuffle function $\fnfyshuffle$, originally introduced by \cite{fisheryates1938statistical}, with an efficient in-place algorithm described by \cite{wikipedia2024fisheryates}. This accepts a sequence and some entropy and returns a sequence of the same length with the same elements but in an order determined by the entropy. The entropy may be provided as either an indefinite sequence of naturals or a hash. For a full definition see appendix \ref{sec:shuffle}.
 
 \subsection{Cryptography}\label{sec:cryptography}
 
 \subsubsection{Hashing}
 
-$\hash$ denotes the set of 256-bit values typically expected to be arrived at through a cryptographic function, equivalent to $\blob_{32}$, with $\zerohash$ being equal to $[0]_{32}$. We assume a function $\blake(m \in \blob) \in \hash$ denoting the Blake2b 256-bit hash introduced by \cite{rfc7693} and a function $\keccak(m \in \blob) \in \hash$ denoting the Keccak 256-bit hash as proposed by \cite{bertoni2013keccak} and utilized by \cite{wood2014ethereum}.
+$\hash$ denotes the set of 256-bit values typically expected to be arrived at through a cryptographic function, equivalent to $\bloboflen{32}$, with $\zerohash$ being equal to $[0]_{32}$. We assume a function $\blake{m \in \blob} \in \hash$ denoting the Blake2b 256-bit hash introduced by \cite{rfc7693} and a function $\keccak{m \in \blob} \in \hash$ denoting the Keccak 256-bit hash as proposed by \cite{bertoni2013keccak} and utilized by \cite{wood2014ethereum}.
 
-We may sometimes wish to take only the first $x$ octets of a hash, in which case we denote $\blake_x(m) \in \blob_x$ to be the first $x$ octets of $\blake(m)$. The inputs of a hash function should be expected to be passed through our serialization codec $\mathcal{E}$ to yield an octet sequence to which the cryptography may be applied. (Note that an octet sequence conveniently yields an identity transform.) We may wish to interpret a sequence of octets as some other kind of value with the assumed decoder function $\de(x \in \blob)$. In both cases, we may subscript the transformation function with the number of octets we expect the octet sequence term to have. Thus, $r = \mathcal{E}_4(x \in \N)$ would assert $x \in \Nbits{32}$ and $r \in \blob_4$, whereas $s = \de_8(y)$ would assert $y \in \blob_8$ and $s \in \Nbits{64}$.
+We may sometimes wish to take only the first $x$ octets of a hash, in which case we denote $\blakeprefix{x}{m} \in \bloboflen{x}$ to be the first $x$ octets of $\blake{m}$. The inputs of a hash function should be expected to be passed through our serialization codec $\mathcal{E}$ to yield an octet sequence to which the cryptography may be applied. (Note that an octet sequence conveniently yields an identity transform.) We may wish to interpret a sequence of octets as some other kind of value with the assumed decoder function $\decode{x \in \blob}$. In both cases, we may subscript the transformation function with the number of octets we expect the octet sequence term to have. Thus, $r = \mathcal{E}_4(x \in \N)$ would assert $x \in \Nbits{32}$ and $r \in \bloboflen{4}$, whereas $s = \decode{8}{y}$ would assert $y \in \bloboflen{8}$ and $s \in \Nbits{64}$.
 
 \subsubsection{Signing Schemes}\label{sec:signing}
 
-$\sig{k}{m} \subset \blob_{64}$ is the set of valid Ed25519 signatures, defined by \cite{rfc8032}, made through knowledge of a secret key whose public key counterpart is $k \in \blob_{32}$ and whose message is $m$. To aid readability, we denote the set of valid public keys $\edkey$.
+$\sig{k}{m} \subset \bloboflen{64}$ is the set of valid Ed25519 signatures, defined by \cite{rfc8032}, made through knowledge of a secret key whose public key counterpart is $k \in \bloboflen{32}$ and whose message is $m$. To aid readability, we denote the set of valid public keys $\edkey$.
 
-We use $\blskey \subset \blob_{144}$ to denote the set of public keys for the \textsc{bls} signature scheme, described by \cite{jofc-2004-14130}, on curve \textsc{bls}\oldstylenums{12}-\oldstylenums{381} defined by \cite{bls12-381}.
+We use $\blskey \subset \bloboflen{144}$ to denote the set of public keys for the \textsc{bls} signature scheme, described by \cite{jofc-2004-14130}, on curve \textsc{bls}\oldstylenums{12}-\oldstylenums{381} defined by \cite{bls12-381}.
 
-We denote the set of valid Bandersnatch public keys as $\bskey$, defined in appendix \ref{sec:bandersnatch}. $\bandersig{k \in \bskey}{x \in \blob}{m \in \blob} \subset \blob_{96}$ is the set of valid singly-contextualized signatures of utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
+We denote the set of valid Bandersnatch public keys as $\bskey$, defined in appendix \ref{sec:bandersnatch}. $\bandersig{k \in \bskey}{x \in \blob}{m \in \blob} \subset \bloboflen{96}$ is the set of valid singly-contextualized signatures of utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
 
-$\bandersnatch{r \in \ringroot}{x \in \blob}{m \in \blob} \subset \blob_{784}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\ringroot \subset \blob_{144}$. We denote $\getringroot(\mathbf{s} \in \seq{\bskey}) \in \ringroot$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
+$\bandersnatch{r \in \ringroot}{x \in \blob}{m \in \blob} \subset \bloboflen{784}$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\ringroot \subset \bloboflen{144}$. We denote $\getringroot{\mathbf{s} \in \sequence{\bskey}} \in \ringroot$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific set of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
 
 Both the Bandersnatch signature and Ring\textsc{vrf} proof strictly imply that a member utilized their secret key in combination with both the context $x$ and the message $m$; the difference is that the member is identified in the former and is anonymous in the latter. Furthermore, both define a \textsc{vrf} \emph{output}, a high entropy hash influenced by $x$ but not by $m$, formally denoted $\banderout{\bandersnatch{r}{x}{m}} \subset \hash$ and $\banderout{\bandersig{k}{x}{m}} \subset \hash$.
 
-We define the function $\signdata$ as the signature function, such that $\signdata_{k}(m) \in \bandersig{k}{[]}{m} \cup \sig{k}{m}$. We assert that the ability to compute a result for this function relies on knowledge of a secret key.
+We define the function $\fnsigndata{}$ as the signature function, such that $\signdata{k}{m} \in \bandersig{k}{[]}{m} \cup \sig{k}{m}$. We assert that the ability to compute a result for this function relies on knowledge of a secret key.

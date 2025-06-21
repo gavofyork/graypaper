@@ -1,48 +1,49 @@
 \section{The Header}\label{sec:header}
 
-We must first define the header in terms of its components. The header comprises a parent hash and prior state root ($\H_\¬parent$ and $\H_\¬priorstateroot$), an extrinsic hash $\H_\¬extrinsichash$, a time-slot index $\H_\¬timeslot$, the epoch, winning-tickets and offenders markers $\H_\¬epochmark$, $\H_\¬winnersmark$ and $\H_\¬offendersmark$, a block author index $\H_\¬authorindex$ and two Bandersnatch signatures; the entropy-yielding \textsc{vrf} signature $\H_\¬vrfsig$ and a block seal $\H_\¬sealsig$. Headers may be serialized to an octet sequence with and without the latter seal component using $\se$ and $\seunsignedheader$ respectively. Formally:
+We must first define the header in terms of its components. The header comprises a parent hash and prior state root ($\H_\¬parent$ and $\H_\¬priorstateroot$), an extrinsic hash $\H_\¬extrinsichash$, a time-slot index $\H_\¬timeslot$, the epoch, winning-tickets and offenders markers $\H_\¬epochmark$, $\H_\¬winnersmark$ and $\H_\¬offendersmark$, a block author index $\H_\¬authorindex$ and two Bandersnatch signatures; the entropy-yielding \textsc{vrf} signature $\H_\¬vrfsig$ and a block seal $\H_\¬sealsig$. Headers may be serialized to an octet sequence with and without the latter seal component using $\fnencode$ and $\fnencodeunsignedheader$ respectively. Formally:
 \begin{equation}\label{eq:header}
-  \theheader \equiv (\H_\¬parent, \H_\¬priorstateroot, \H_\¬extrinsichash, \H_\¬timeslot, \H_\¬epochmark, \H_\¬winnersmark, \H_\¬offendersmark, \H_\¬authorindex, \H_\¬vrfsig, \H_\¬sealsig)
+  \theheader \equiv \tup{\H_\¬parent, \H_\¬priorstateroot, \H_\¬extrinsichash, \H_\¬timeslot, \H_\¬epochmark, \H_\¬winnersmark, \H_\¬offendersmark, \H_\¬authorindex, \H_\¬vrfsig, \H_\¬sealsig}
 \end{equation}
 
 The blockchain is a sequence of blocks, each cryptographically referencing some prior block by including a hash derived from the parent's header, all the way back to some first block which references the genesis header. We already presume consensus over this genesis header $\genesisheader$ and the state it represents defined as $\genesisstate$.
 
-\newcommand*{\parentfn}{P}
+\newcommand*{\fngetparent}{P}
+\newcommand*{\getparent}[1]{\fngetparent\left(#1\right)}
 
-Excepting the Genesis header, all block headers $\header$ have an associated parent header, whose hash is $\header_\¬parent$. We denote the parent header $\parentheader{\header} = \parentfn(\header)$:
+Excepting the Genesis header, all block headers $\header$ have an associated parent header, whose hash is $\header_\¬parent$. We denote the parent header $\parentheader{\header} = \getparent{\header}$:
 \begin{equation}
-  \header_\¬parent \in \hash \,,\quad \H_\¬parent \equiv \blake(\se(\parentfn(\header)))
+  \header_\¬parent \in \hash \,,\quad \H_\¬parent \equiv \blake{\encode{\getparent{\header}}}
 \end{equation}
 
-$\parentfn$ is thus defined as being the mapping from one block header to its parent block header. With $\parentfn$, we are able to define the set of ancestor headers $\ancestors$:
+$\fngetparent$ is thus defined as being the mapping from one block header to its parent block header. With $\fngetparent$, we are able to define the set of ancestor headers $\ancestors$:
 \begin{align}\label{eq:ancestors}
-  h \in \ancestors \Leftrightarrow h = \header \vee (\exists i \in \ancestors : h = \parentfn(i))
+  h \in \ancestors \Leftrightarrow h = \header \vee (\exists i \in \ancestors : h = \getparent{i})
 \end{align}
 
 We only require implementations to store headers of ancestors which were authored in the previous $\mathsf{L} = 24$ hours of any block $\block$ they wish to validate.
 
-The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports to individually have their inclusion proven. Given any block $\block = (\header, \extrinsic)$, then formally:
+The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports to individually have their inclusion proven. Given any block $\block = \tup{\header, \extrinsic}$, then formally:
 \begin{align}
   \H_\¬extrinsichash &\in \hash \ ,\quad
-  \H_\¬extrinsichash \equiv \blake(\se(\blake^\#(\mathbf{a}))) \\
-  \where \mathbf{a} &= [\se_T(\xttickets), \se_P(\xtpreimages), \mathbf{g}, \se_A(\xtassurances), \se_D(\xtdisputes)] \\
-  \also \mathbf{g} &= \se(\var{[(\blake(w), \se_4(t), \var{a}) \mid (w, t, a) \orderedin \xtguarantees]})
+  \H_\¬extrinsichash \equiv \blake{\encode{\blakemany{\mathbf{a}}}} \\
+  \where \mathbf{a} &= \sq{\encodetickets{\xttickets}, \encodepreimages{\xtpreimages}, \mathbf{g}, \encodeassurances{\xtassurances}, \encodedisputes{\xtdisputes}} \\
+  \also \mathbf{g} &= \encode{\var{\sq{\build{(\blake{w}, \fixedencode{4}{t}, \var{a})}{\tup{w, t, a} \orderedin \xtguarantees}}}}
 \end{align}
 
 A block may only be regarded as valid once the time-slot index $\H_\¬timeslot$ is in the past. It is always strictly greater than that of its parent. Formally:
 \begin{equation}
   \H_\¬timeslot \in \timeslot \,,\quad
-  \parentfn(\H)_t < \H_\¬timeslot\ \wedge\ \H_\¬timeslot\cdot\mathsf{P} \leq \wallclock
+  \getparent{\H}_\¬timeslot < \H_\¬timeslot\ \wedge\ \H_\¬timeslot\cdot\mathsf{P} \leq \wallclock
 \end{equation}
 
 Blocks considered invalid by this rule may become valid as $\wallclock$ advances.
 
 The parent state root $\H_\¬priorstateroot$ is the root of a Merkle trie composed by the mapping of the \emph{prior} state's Merkle root, which by definition is also the parent block's posterior state. This is a departure from both Polkadot and the Yellow Paper's Ethereum, in both of which a block's header contains the \emph{posterior} state's Merkle root. We do this to facilitate the pipelining of block computation and in particular of Merklization.
 \begin{equation}
-  \H_\¬priorstateroot \in \hash \,,\quad \H_\¬priorstateroot \equiv \merklizestate(\thestate)
+  \H_\¬priorstateroot \in \hash \,,\quad \H_\¬priorstateroot \equiv \merklizestate{\thestate}
 \end{equation}
 
-We assume the state-Merklization function $\merklizestate$ is capable of transforming our state $\thestate$ into a 32-octet commitment. See appendix \ref{sec:statemerklization} for a full definition of these two functions.
+We assume the state-Merklization function $\fnmerklizestate$ is capable of transforming our state $\thestate$ into a 32-octet commitment. See appendix \ref{sec:statemerklization} for a full definition of these two functions.
 
 All blocks have an associated public key to identify the author of the block. We identify this as an index into the posterior current validator set $\activeset'$. We denote the Bandersnatch key of the author as $\H_\¬authorbskey$ though note that this is merely an equivalence, and is not serialized as part of the header.
 \begin{equation}
@@ -53,9 +54,9 @@ All blocks have an associated public key to identify the author of the block. We
 
 If not $\none$, then the epoch marker specifies key and entropy relevant to the following epoch in case the ticket contest does not complete adequately (a very much unexpected eventuality). Similarly, the winning-tickets marker, if not $\none$, provides the series of 600 slot sealing ``tickets'' for the next epoch (see the next section). Finally, the offenders marker is the sequence of Ed25519 keys of newly misbehaving validators, to be fully explained in section \ref{sec:disputes}. Formally:
 \begin{equation}
-  \H_\¬epochmark \in \optional{\tuple{\hash, \hash, \seq{\tuple{\bskey, \edkey}}_{\valcount}}}\,,\quad
-  \H_\¬winnersmark \in \optional{\seq{\safroleticket}_{\epochlen}}\,,\quad
-  \H_\¬offendersmark \in \seq{\edkey}
+  \H_\¬epochmark \in \optional{\tuple{\hash, \hash, \sequence{\tuple{\bskey, \edkey}}_{\valcount}}}\,,\quad
+  \H_\¬winnersmark \in \optional{\sequence{\safroleticket}_{\epochlen}}\,,\quad
+  \H_\¬offendersmark \in \sequence{\edkey}
 \end{equation}
 
 The terms are fully defined in sections \ref{sec:epochmarker} and \ref{sec:disputes}.
