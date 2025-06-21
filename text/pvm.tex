@@ -48,15 +48,15 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
 \begin{align}
   \Psi&\colon \abracegroup{
     \tuple{\blob, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
-    (\mathbf{p}, \imath, \gascounter, \registers, \mem) &\mapsto \begin{cases}
+    \tup{\mathbf{p}, \imath, \gascounter, \registers, \mem} &\mapsto \begin{cases}
       \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
-      (\oog, \imath', \gascounter', \registers', \mem') &\when \gascounter' < 0\\
-      (\varepsilon, 0, \gascounter', \registers', \mem') &\when \varepsilon \in \set{ \panic, \halt }\\
-      (\varepsilon, \imath', \gascounter', \registers', \mem') &\otherwise
+      \tup{\oog, \imath', \gascounter', \registers', \mem'} &\when \gascounter' < 0\\
+      \tup{\varepsilon, 0, \gascounter', \registers', \mem'} &\when \varepsilon \in \set{ \panic, \halt }\\
+      \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &\otherwise
     \end{cases} \\
-    \where (\varepsilon, \imath', \gascounter', \registers', \mem') &= \begin{cases}
+    \where \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &= \begin{cases}
       \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\when \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} = \deblob(\mathbf{p}) \\
-      (\panic, \imath, \gascounter, \registers, \mem) &\otherwise
+      \tup{\panic, \imath, \gascounter, \registers, \mem} &\otherwise
     \end{cases}
   }\\
   \deblob&\colon\abracegroup{
@@ -84,7 +84,7 @@ We define the Skip function $\Fskip$ which provides the number of octets, minus 
 \begin{equation}
   \Fskip\colon\abracegroup{
     \N &\to \N\\
-    i &\mapsto \min(24,\ j \in \N : (\mathbf{k} \concat [1, 1, \dots])_{i + 1 + j} = 1)
+    i &\mapsto \min(24,\ j \in \N : \tup{\mathbf{k} \concat [1, 1, \dots]}_{i + 1 + j} = 1)
   }
 \end{equation}
 
@@ -136,7 +136,7 @@ We must now define the single-step \textsc{pvm} state-transition function $\Psi_
 \begin{equation}
   \Psi_1\colon \abracegroup{
     \tuple{\blob, \mathbb{B}, \sequence{\pvmreg}, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
-    (\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\mapsto (\varepsilon, \imath', \gascounter', \registers', \mem')
+    \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem} &\mapsto \tup{\varepsilon, \imath', \gascounter', \registers', \mem'}
   }
 \end{equation}
 
@@ -144,8 +144,8 @@ We define $\varepsilon$ together with the posterior values (denoted as prime) of
 
 %We alias the registers $\registers$ to their \textsc{risc-v} specification name:
 %\begin{equation}
-%  (\RA, \SP, \T_0, \T_1, \T_2, \S_0, \S_1, \A_0, \A_1, \A_2, \A_3, \A_4, \A_5) \equiv \registers,\qquad
-%  (\RA', \SP', \T_0', \T_1', \T_2', \S_0', \S_1', \A_0', \A_1', \A_2', \A_3', \A_4', \A_5') \equiv \registers'
+%  \tup{\RA, \SP, \T_0, \T_1, \T_2, \S_0, \S_1, \A_0, \A_1, \A_2, \A_3, \A_4, \A_5} \equiv \registers,\qquad
+%  \tup{\RA', \SP', \T_0', \T_1', \T_2', \S_0', \S_1', \A_0', \A_1', \A_2', \A_3', \A_4', \A_5'} \equiv \registers'
 %\end{equation}
 
 In general, when transitioning machine state for an instruction a number of conditions hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one, the gas remaining is reduced by the amount corresponding to the instruction type and \textsc{ram} \& registers are unchanged. Formally:
@@ -209,10 +209,10 @@ Immediate arguments are encoded in little-endian format with the most-significan
 
 Any alterations of the program counter stemming from a static jump, call or branch must be to the start of a basic block or else a panic occurs. Hypotheticals are not considered. Formally:
 \begin{equation}
-  \token{branch}(b, C) \implies (\varepsilon, \imath') = \begin{cases}
-    (\continue, \imath) &\when \lnot C \\
-    (\panic, \imath) &\otherwhen b \not\in \basicblocks \\
-    (\continue, b) &\otherwise
+  \token{branch}(b, C) \implies \tup{\varepsilon, \imath'} = \begin{cases}
+    \tup{\continue, \imath} &\when \lnot C \\
+    \tup{\panic, \imath} &\otherwhen b \not\in \basicblocks \\
+    \tup{\continue, b} &\otherwise
   \end{cases}
 \end{equation}
 
@@ -220,9 +220,9 @@ Jumps whose next instruction is dynamically computed must use an address which m
 
 As with other irregular alterations to the program counter, target code index must be the start of a basic block or else a panic occurs. Formally:
 \begin{equation}\label{eq:jumptablealignment}
-  \token{djump}(a) \implies (\varepsilon, \imath') = \begin{cases}
-    (\halt, \imath) &\when a = 2^{32} - 2^{16}\\
-    (\panic, \imath) &\otherwhen a = 0 \vee a > \len{\mathbf{j}}\cdot\mathsf{Z}_A \vee a \bmod \mathsf{Z}_A \ne 0 \vee \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1} \not\in \basicblocks \\
+  \token{djump}(a) \implies \tup{\varepsilon, \imath'} = \begin{cases}
+    \tup{\halt, \imath} &\when a = 2^{32} - 2^{16}\\
+    \tup{\panic, \imath} &\otherwhen a = 0 \vee a > \len{\mathbf{j}}\cdot\mathsf{Z}_A \vee a \bmod \mathsf{Z}_A \ne 0 \vee \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1} \not\in \basicblocks \\
     (\continue, \mathbf{j}_{(\nicefrac{a}{\mathsf{Z}_A}) - 1}) &\otherwise
   \end{cases}
 \end{equation}
@@ -693,10 +693,10 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   224&\token{and\_inv}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \wedge \lnot \bits{\reg_B}_i$\\ \mrule
   225&\token{or\_inv}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}_i = \bits{\reg_A}_i \vee \lnot \bits{\reg_B}_i$\\ \mrule
   226&\token{xnor}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}_i = \lnot ( \bits{\reg_A}_i \oplus \bits{\reg_B}_i )$\\ \mrule
-  227&\token{max}&1&$\reg'_D = \unsigned{\max ( \signed{\reg_A}, \signed{\reg_B} )}$\\ \mrule
-  228&\token{max\_u}&1&$\reg'_D = \max ( \reg_A, \reg_B )$\\ \mrule
-  229&\token{min}&1&$\reg'_D = \unsigned{\min ( \signed{\reg_A}, \signed{\reg_B} )}$\\ \mrule
-  230&\token{min\_u}&1&$\reg'_D = \min ( \reg_A, \reg_B )$\\
+  227&\token{max}&1&$\reg'_D = \unsigned{\max \tup{ \signed{\reg_A}, \signed{\reg_B} }}$\\ \mrule
+  228&\token{max\_u}&1&$\reg'_D = \max \tup{ \reg_A, \reg_B }$\\ \mrule
+  229&\token{min}&1&$\reg'_D = \unsigned{\min \tup{ \signed{\reg_A}, \signed{\reg_B} }}$\\ \mrule
+  230&\token{min\_u}&1&$\reg'_D = \min \tup{ \reg_A, \reg_B }$\\
 \bottomrule
 \end{longtable}
 
@@ -704,7 +704,7 @@ Note that the two signed modulo operations have an idiosyncratic definition, ope
 \begin{equation}
   \smod\colon\abracegroup{
     \tuple{\mathbb{Z}, \mathbb{Z}} &\to \mathbb{Z}\\
-    (a, b) &\mapsto \begin{cases}
+    \tup{a, b} &\mapsto \begin{cases}
       a &\when b = 0\\
       \text{sgn}(a)(\len{a} \bmod \len{b}) &\otherwise \\
     \end{cases}
@@ -733,21 +733,21 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     }
     &\to
     \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram, X}\\
-    (\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}) &\mapsto \begin{cases}
+    \tup{\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}} &\mapsto \begin{cases}
       \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem):} \\[8pt]
-      (\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
-      (\fault \times a, \imath', \gascounter', \registers', \mem', \mathbf{x}) &\when \bigwedge\abracegroup[\;]{
+      \tup{\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
+      \tup{\fault \times a, \imath', \gascounter', \registers', \mem', \mathbf{x}} &\when \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
         &\fault \times a = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
       }\\[10 pt]
       \Psi_H(\mathbf{c}, \imath', \gascounter'', \registers'', \mem'', f, \mathbf{x}'')
        &\when \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
-        &(\continue, \gascounter'', \registers'', \mem'', \mathbf{x}'') = f(h, \gascounter', \registers', \mem', \mathbf{x})
+        &\tup{\continue, \gascounter'', \registers'', \mem'', \mathbf{x}''} = f(h, \gascounter', \registers', \mem', \mathbf{x})
       }\\[8pt]
-      (\varepsilon'', \imath', \gascounter'', \registers'', \mem'', \mathbf{x}'') &\when  \bigwedge\abracegroup[\;]{
+      \tup{\varepsilon'', \imath', \gascounter'', \registers'', \mem'', \mathbf{x}''} &\when  \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
-        &(\varepsilon'', \gascounter'', \registers'', \mem'', \mathbf{x}'') = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
+        &\tup{\varepsilon'', \gascounter'', \registers'', \mem'', \mathbf{x}''} = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
         &\varepsilon'' \in \set{\panic, \halt, \oog}
       }\\[8pt]
     \end{cases} \\
@@ -767,9 +767,9 @@ The software programs which will run in each of the four instances where the \te
 We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} at program start. Given program blob $\mathbf{p}$ and argument data $\mathbf{a}$, we can decode the program code $\mathbf{c}$, registers $\registers$, and \textsc{ram} $\mem$ by invoking the standard initialization function $Y(\mathbf{p}, \mathbf{a})$:
 \begin{equation}
 Y\colon\abracegroup{
-  \tuple{\blob, \bloboflen{:\mathsf{Z}_I}} &\to (\blob, \regs, \ram)? \\
-  (\mathbf{p}, \mathbf{a}) &\mapsto \begin{cases}
-    (\mathbf{c}, \registers, \mem) &\when \exists! (\mathbf{c}, \mathbf{o}, \mathbf{w}, z, s) \text{ which satisfy equation \ref{eq:conditions}}\\
+  \tuple{\blob, \bloboflen{:\mathsf{Z}_I}} &\to \tup{\blob, \regs, \ram}? \\
+  \tup{\mathbf{p}, \mathbf{a}} &\mapsto \begin{cases}
+    \tup{\mathbf{c}, \registers, \mem} &\when \exists! \tup{\mathbf{c}, \mathbf{o}, \mathbf{w}, z, s} \text{ which satisfy equation \ref{eq:conditions}}\\
     \none &\otherwise
   \end{cases}
 }
@@ -788,7 +788,7 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
         \mathsf{Z}_Z
             &\ \leq i < \ &&
                 \mathsf{Z}_Z + \len{\mathbf{o}}\\
-    &(0, R) &&\ \when
+    &\tup{0, R} &&\ \when
         \mathsf{Z}_Z + \len{\mathbf{o}}
             &\ \leq i < \ &&
                 \mathsf{Z}_Z + \rnp{\len{\mathbf{o}}} \\
@@ -796,11 +796,11 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
         2\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}}
             &\ \leq i < \ &&
                 2\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}} + \len{\mathbf{w}}\\
-    &(0, W) &&\ \when
+    &\tup{0, W} &&\ \when
         2\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}} + \len{\mathbf{w}}
             &\ \leq i < \ &&
                 2\mathsf{Z}_Z + \rnq{\len{\mathbf{o}}} + \rnp{\len{\mathbf{w}}} + z\mathsf{Z}_P\\
-    &(0, W) &&\ \when
+    &\tup{0, W} &&\ \when
         2^{32} - 2\mathsf{Z}_Z - \mathsf{Z}_I - \rnp{s}
             &\ \leq i < \ &&
                 2^{32} - 2\mathsf{Z}_Z - \mathsf{Z}_I\\
@@ -808,11 +808,11 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
         2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I
             &\ \leq i < \ &&
                 2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + \len{\mathbf{a}}\\
-    &(0, R) &&\ \when
+    &\tup{0, R} &&\ \when
         2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + \len{\mathbf{a}}
             &\ \leq i < \ &&
                 2^{32} - \mathsf{Z}_Z - \mathsf{Z}_I + \rnp{\len{\mathbf{a}}}\\
-    &(0, \none) &&\otherwise&&&
+    &\tup{0, \none} &&\otherwise&&&
   \end{alignedat}}\\
 \end{equation}
 \begin{equation}\label{eq:registers}
@@ -833,19 +833,19 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
     \tuple{
       \blob, \pvmreg, \gas, \bloboflen{:\mathsf{Z}_I}, \Omega\ang{X}, X
     } &\to \tuple{\gas, \blob \cup \set{\panic, \oog}, X}\\
-    (\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}) &\mapsto \begin{cases}
-      (0, \panic, \mathbf{x}) &\when Y(\mathbf{p}, \mathbf{a}) = \none\\
-      R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}, \mathbf{a}) = (\mathbf{c}, \registers, \mem)\\
+    \tup{\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}} &\mapsto \begin{cases}
+      \tup{0, \panic, \mathbf{x}} &\when Y(\mathbf{p}, \mathbf{a}) = \none\\
+      R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}, \mathbf{a}) = \tup{\mathbf{c}, \registers, \mem}\\
       \multicolumn{2}{l}{
         \quad \where R \colon (\gascounter, \tup{\begin{alignedat}{5}
           &\varepsilon,\, &&\imath',\, &&\gascounter',\\
           &\registers',\, &&\mem',\, &&\mathbf{x}'
         \end{alignedat}
         }) \mapsto \begin{cases}
-          (u, \oog, \mathbf{x}') &\when \varepsilon = \oog \\
-          (u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}') &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \subseteq \readable{\mem'} \\
-          (u, [], \mathbf{x}') &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \not\subseteq \readable{\mem'} \\
-          (u, \panic, \mathbf{x}') &\otherwise \\
+          \tup{u, \oog, \mathbf{x}'} &\when \varepsilon = \oog \\
+          \tup{u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \subseteq \readable{\mem'} \\
+          \tup{u, [], \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \not\subseteq \readable{\mem'} \\
+          \tup{u, \panic, \mathbf{x}'} &\otherwise \\
           \multicolumn{2}{l}{\quad \where u = \gascounter - \max(\gascounter', 0)}
         \end{cases}
       }\!\!\!\!\!\!\!\!

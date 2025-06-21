@@ -105,7 +105,7 @@ We limit the total size of the auditable \emph{work-bundle}, containing the work
   &\begin{aligned}
     &\forall \wpX \in \workpackage: \Big(\len{\wpX_\wp¬authtoken} + \len{\wpX_\wp¬authconfig} +
     \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \mathsf{W}_B \\
-    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{(h, l) \in \wiX_\wi¬extrinsics} \!\!\!l
+    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{\tup{h, l} \in \wiX_\wi¬extrinsics} \!\!\!l
   \end{aligned}\\
   &\mathsf{W}_B \equiv 13,794,305\\
   &\phantom{\mathsf{W}_B} = \mathsf{W}_M(\mathsf{W}_G + 1 + 32\ceil{\log_2(\mathsf{W}_T)}) + 4096 + 1
@@ -149,7 +149,7 @@ We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the h
   \forall \wpX \in \workpackage: \abracegroup[\,]{
     \wpX_\wp¬authorizer &\equiv \blake(\wpX_\wp¬authcodehash \concat \wpX_\wp¬authconfig) \\
     \encode{\var{\wpX_\wp¬metadata}, \wpX_\wp¬authcode} &\equiv \histlookup(\accounts[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_\wc¬lookupanchortime, \wpX_\wp¬authcodehash) \\
-    (\wpX_\wp¬metadata, \wpX_\wp¬authcode) &\in \tuple{\blob, \blob}
+    \tup{\wpX_\wp¬metadata, \wpX_\wp¬authcode} &\in \tuple{\blob, \blob}
   }
 \end{equation}
 
@@ -181,7 +181,7 @@ We now come to the work-report computation function $\computereport$. This forms
 \begin{equation}\label{eq:workdigestfunction}
   \computereport \colon \abracegroup{
     \tuple{\workpackage, \coreindex} &\to \workreport \\
-    (\wpX, \¬core) &\mapsto \begin{cases}
+    \tup{\wpX, \¬core} &\mapsto \begin{cases}
         \error &\when \wr¬authtrace \not\in \bloboflen{:\mathsf{W}_R} \\
         \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
     \end{cases}
@@ -192,12 +192,12 @@ We now come to the work-report computation function $\computereport$. This forms
 \newcommand*{\local¬theitem}{m}
 Where:
 \begin{align*}
-  \keys{\wr¬srlookup} \equiv \,&\set{ h \mid \wiX \in \wpX_\wp¬workitems, (h^\boxplus, n) \in \wiX_\wi¬importsegments } \ ,\quad\len{\wr¬srlookup} \le 8\\
-  (\wr¬authtrace, \wr¬authgasused) = \,&\Psi_I(\wpX, \¬core) \\
-  (\wr¬digests, \allexports) = \,&\transpose[
+  \keys{\wr¬srlookup} \equiv \,&\set{ h \mid \wiX \in \wpX_\wp¬workitems, \tup{h^\boxplus, n} \in \wiX_\wi¬importsegments } \ ,\quad\len{\wr¬srlookup} \le 8\\
+  \tup{\wr¬authtrace, \wr¬authgasused} = \,&\Psi_I(\wpX, \¬core) \\
+  \tup{\wr¬digests, \allexports} = \,&\transpose[
     (\itemtodigest(\wpX_\wp¬workitems\subb{j}, r, u), \mathbf{e})
     \mid
-    (r, u, \mathbf{e}) = \countupexports(\wpX, j),\,
+    \tup{r, u, \mathbf{e}} = \countupexports(\wpX, j),\,
     j \orderedin \Nmax{\len{\wpX_\wp¬workitems}}
   ] \\
   \countupexports(\wpX, j) \equiv \,&\begin{cases}
@@ -238,8 +238,8 @@ The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ whi
 \begin{equation}
   \begin{aligned}
     \extrinsicdata(\wiX \in \workitem) &\equiv \sq{\build{\mathbf{d}}{(\blake(\mathbf{d}), \len{\mathbf{d}}) \orderedin \wiX_\wi¬extrinsics}} \\
-    \importsegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\segsX[n]}{\merklizecd(\segsX) = \segrootlookup(r), (r, n) \orderedin \wiX_\wi¬importsegments}} \\
-    \justifysegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\var{\merklejustsubpath_0(\segsX, n)}}{\merklizecd(\segsX) = \segrootlookup(r), (r, n) \orderedin \wiX_\wi¬importsegments}}
+    \importsegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\segsX[n]}{\merklizecd(\segsX) = \segrootlookup(r), \tup{r, n} \orderedin \wiX_\wi¬importsegments}} \\
+    \justifysegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\var{\merklejustsubpath_0(\segsX, n)}}{\merklizecd(\segsX) = \segrootlookup(r), \tup{r, n} \orderedin \wiX_\wi¬importsegments}}
   \end{aligned}
 \end{equation}
 

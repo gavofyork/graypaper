@@ -11,8 +11,8 @@ We define the state-key constructor functions $C$ as:
   C\colon\abracegroup{
     \Nbits{8} \cup \tup{\Nbits{8}, \serviceid} \cup \tup{\serviceid, \blob} &\to \bloboflen{31} \\
     i \in \Nbits{8} &\mapsto [i, 0, 0, \dots] \\
-    (i, s \in \serviceid) &\mapsto [i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots]\ \where n = \fixedencode{4}{s} \\
-    (s, h) &\mapsto [n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}]\ \where n = \fixedencode{4}{s}, a = \blake(h)\interval{0}{27}
+    \tup{i, s \in \serviceid} &\mapsto \sq{i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots}\ \where n = \fixedencode{4}{s} \\
+    \tup{s, h} &\mapsto \sq{n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}}\ \where n = \fixedencode{4}{s}, a = \blake(h)\interval{0}{27}
   }
 \end{equation}
 
@@ -21,7 +21,7 @@ The state serialization is then defined as the dictionary built from the amalgam
   T(\thestate) \equiv \abracegroup{
     &&C(1) &\mapsto \encode{[\var{x}\mid x\orderedin \authpool]} \;, \\
     &&C(2) &\mapsto \encode{\authqueue} \;, \\
-    &&C(3) &\mapsto \se(\var{[(h, b, s, \var{\mathbf{p}})\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \Fmmrencode{\beefybelt}) \;, \\
+    &&C(3) &\mapsto \se(\var{[\tup{h, b, s, \var{\mathbf{p}}}\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \Fmmrencode{\beefybelt}) \;, \\
     &&C(4) &\mapsto \se\left(\tup{\pendingset, \epochroot, \abracegroupboth{
       0\ &\when \sealtickets \in \sequence{\safroleticket}_\epochlen\\
       1\ &\when \sealtickets \in \sequence{\bskey}_\epochlen\\
@@ -32,17 +32,17 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(7) &\mapsto \encode{\stagingset} \;, \\
     &&C(8) &\mapsto \encode{\activeset} \;, \\
     &&C(9) &\mapsto \encode{\previousset} \;, \\
-    &&C(10) &\mapsto \se(\sq{\build{\maybe{(w, \fixedencode{4}{t})}}{(w, t) \orderedin \reports}}) \;, \\
+    &&C(10) &\mapsto \se(\sq{\build{\maybe{\tup{w, \fixedencode{4}{t}}}}{\tup{w, t} \orderedin \reports}}) \;, \\
     &&C(11) &\mapsto \fixedencode{4}{\thetime} \;, \\
     &&C(12) &\mapsto \fixedencode{4}{\manager, \assigners, \delegator} \concat \encode{\alwaysaccers} \;, \\
     &&C(13) &\mapsto \fixedencode{4}{\valstatsaccumulator, \valstatsprevious}, \corestats, \servicestats \;, \\
-    &&C(14) &\mapsto \se(\sq{\build{\var{(\mathbf{w}, \var{\mathbf{d}})}}{(\mathbf{w}, \mathbf{d}) \orderedin \mathbf{i} \mid \mathbf{i} \orderedin \ready}}) \;, \\
+    &&C(14) &\mapsto \se(\sq{\build{\var{\tup{\mathbf{w}, \var{\mathbf{d}}}}}{\tup{\mathbf{w}, \mathbf{d}} \orderedin \mathbf{i} \mid \mathbf{i} \orderedin \ready}}) \;, \\
     &&C(15) &\mapsto \encode{\sq{\build{\var{\mathbf{i}}}{\mathbf{i} \orderedin \accumulated}}} \;, \\
-    &&C(16) &\mapsto \se(\var{\sq{\build{(\fixedencode{4}{s}, \encode{h})}{(s, h) \orderedin \lastaccout}}}) \;, \\
+    &&C(16) &\mapsto \se(\var{\sq{\build{\tup{\fixedencode{4}{s}, \encode{h}}}{\tup{s, h} \orderedin \lastaccout}}}) \;, \\
     \forall (s \mapsto \mathbf{a}) \in \accounts: &&C(255, s) &\mapsto \mathbf{a}_c \concat \fixedencode{8}{\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_o, \mathbf{a}_f} \concat \fixedencode{4}{\mathbf{a}_i, \mathbf{a}_r, \mathbf{a}_a, \mathbf{a}_p} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \accounts, (\mathbf{k} \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \fixedencode{4}{2^{32}-1} \concat \mathbf{k}) &\mapsto \mathbf{v} \;, \\
     \forall (s \mapsto \mathbf{a}) \in \accounts, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \fixedencode{4}{2^{32}-2} \concat h) &\mapsto \mathbf{p} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \fixedencode{4}{l} \concat h) &\mapsto \encode{\var{\sq{\build{\fixedencode{4}{x}}{x \orderedin \mathbf{t}}}}}
+    \forall (s \mapsto \mathbf{a}) \in \accounts, \kv{\tup{h, l}}{\mathbf{t}} \in \mathbf{a}_\mathbf{l}: &&C(s, \fixedencode{4}{l} \concat h) &\mapsto \encode{\var{\sq{\build{\fixedencode{4}{x}}{x \orderedin \mathbf{t}}}}}
   }
 \end{equation}
 
@@ -73,11 +73,11 @@ Formally, we define the encoding functions $B$ and $L$:
 \begin{align}
   B&\colon\abracegroup{
     \tuple{\hash, \hash} &\to \bitstringoflen{512}\\
-    (l, r) &\mapsto [0] \concat \text{bits}(l)\interval{1}{} \concat \text{bits}(r)
+    \tup{l, r} &\mapsto [0] \concat \text{bits}(l)\interval{1}{} \concat \text{bits}(r)
   }\\
   L&\colon\abracegroup{
     \tuple{\bloboflen{31}, \blob} &\to \bitstringoflen{512}\\
-    (k, v) &\mapsto \begin{cases}
+    \tup{k, v} &\mapsto \begin{cases}
       [1, 0] \concat \text{bits}(\fixedencode{1}{\len{v}})\interval{2}{} \concat \text{bits}(k) \concat \text{bits}(v) \concat [0, 0, \dots] &\when \len{v} \le 32\\
       [1, 1, 0, 0, 0, 0, 0, 0] \concat \text{bits}(k) \concat \text{bits}(\blake(v)) &\otherwise
     \end{cases}
@@ -86,7 +86,7 @@ Formally, we define the encoding functions $B$ and $L$:
 
 We may then define the basic Merklization function $\merklizestate$ as:
 \begin{align}
-  \merklizestate(\thestate) &\equiv M(\set{ (\text{bits}(k) \mapsto \tup{k, v}) \mid (k \mapsto v) \in T(\thestate) })\\
+  \merklizestate(\thestate) &\equiv M(\set{\build{\kv{\text{bits}(k)}{\tup{k, v}}}{\kv{k}{v} \in T(\thestate) }})\\
   M(d: \dict{\bitstring}{\tuple{\bloboflen{31}, \blob}}) &\equiv \begin{cases}
     \zerohash &\when \len{d} = 0\\
     \blake(\text{bits}^{-1}(L(k, v))) &\when \values{d} = \set{ \tup{k, v} }\\
@@ -108,7 +108,7 @@ The underlying function for our Merkle trees is the \emph{node} function $N$, wh
 \begin{equation}
   N\colon\abracegroup{
     \tuple{\sequence{\bloboflen{n}}, \blob \to \hash} &\to \bloboflen{n} \cup \hash \\
-    (\mathbf{v}, H) &\mapsto \begin{cases}
+    \tup{\mathbf{v}, H} &\mapsto \begin{cases}
       \zerohash &\when \len{\mathbf{v}} = 0 \\
       \mathbf{v}_0 &\when \len{\mathbf{v}} = 1 \\
       H(\token{\$node} \concat N(\mathbf{v}_{\dots\ceil{\nicefrac{\len{\mathbf{v}}}{2}}}, H) \concat N(\mathbf{v}_{\ceil{\nicefrac{\len{\mathbf{v}}}{2}}\dots}, H)) &\otherwise
@@ -122,7 +122,7 @@ We also define the \emph{trace} function $T$, which returns each opposite node f
 \begin{equation}
   T\colon\abracegroup{
     \tuple{\sequence{\bloboflen{n}}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash}\ &\to \sequence{\bloboflen{n} \cup \hash}\\
-    (\mathbf{v}, i, H) &\mapsto \begin{cases}
+    \tup{\mathbf{v}, i, H} &\mapsto \begin{cases}
       [N(P^\bot(\mathbf{v}, i), H)] \concat T(P^\top(\mathbf{v}, i), i - P_I(\mathbf{v}, i), H) &\when \len{\mathbf{v}} > 1\\
       [] &\otherwise\\
       \multicolumn{2}{l}{
@@ -149,7 +149,7 @@ We define the well-balanced binary Merkle function as $\merklizewb$:
     \merklizewb\colon \abracegroup{
       \label{eq:simplemerkleroot}
       \tuple{\sequence{\blob}, \blob \to \hash} &\to \hash \\
-      (\mathbf{v}, H) &\mapsto \begin{cases}
+      \tup{\mathbf{v}, H} &\mapsto \begin{cases}
         H(\mathbf{v}_0) &\when \len{\mathbf{v}} = 1 \\
         N(\mathbf{v}, H) &\otherwise
       \end{cases} \\
@@ -166,17 +166,17 @@ We define the constant-depth binary Merkle function as $\merklizecd$. We define 
   \label{eq:constantdepthmerkleroot}
   \merklizecd&\colon \abracegroup{
     \tuple{\sequence{\blob}, \blob \to \hash} &\to \hash\\
-    (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}, H), H)
+    \tup{\mathbf{v}, H} &\mapsto N(C(\mathbf{v}, H), H)
   }\\
   \label{eq:constantdepthsubtreemerklejust}
   \merklejustsubpath_x&\colon \abracegroup{
     \tuple{\sequence{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash} &\to \sequence{\hash}\\
-    (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), 2^xi, H)_{\dots\max(0, \ceil{\log_2(\max(1, \len{\mathbf{v}})) - x})}
+    \tup{\mathbf{v}, i, H} &\mapsto T(C(\mathbf{v}, H), 2^xi, H)_{\dots\max(0, \ceil{\log_2(\max(1, \len{\mathbf{v}})) - x})}
   }\\
   \label{eq:constantdepthsubtreemerkleleafpage}
   \merklesubtreepage_x&\colon \abracegroup{
     \tuple{\sequence{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash} &\to \sequence{\hash}\\
-    (\mathbf{v}, i, H) &\mapsto \sq{\build{H(\token{\$leaf} \concat l)}{l \orderedin \mathbf{v}_{2^xi \dots \min(2^xi+2^x, \len{\mathbf{v}})}}}
+    \tup{\mathbf{v}, i, H} &\mapsto \sq{\build{H(\token{\$leaf} \concat l)}{l \orderedin \mathbf{v}_{2^xi \dots \min(2^xi+2^x, \len{\mathbf{v}})}}}
   }
 \end{align}
 
@@ -188,7 +188,7 @@ For justifications and Merkle root calculations, a constancy preprocessor functi
 \begin{equation}
   C\colon\abracegroup{
     \tuple{\sequence{\blob}, \blob \to \hash} &\to \sequence{\hash}\\
-    (\mathbf{v}, H) &\mapsto \mathbf{v}' \ \where \abracegroup[\;]{
+    \tup{\mathbf{v}, H} &\mapsto \mathbf{v}' \ \where \abracegroup[\;]{
       \len{\mathbf{v}}| &= 2^{\ceil{\log_2(\max(1, \len{\mathbf{v}}))}}\\
       \mathbf{v}'_i &= \begin{cases}
         H(\token{\$leaf} \concat \mathbf{v}_i) &\when i < \len{\mathbf{v}}\\
@@ -212,11 +212,11 @@ We define the \textsc{mmb} append function $\mmrappend$ as:
     \label{eq:mmrappend}
     \mmrappend&\colon\deffunc{
       \tuple{\sequence{\optional{\hash}}, \hash, \blob\to\hash} &\to \sequence{\optional{\hash}}\\
-      (\mathbf{r}, l, H) &\mapsto P(\mathbf{r}, l, 0, H)
+      \tup{\mathbf{r}, l, H} &\mapsto P(\mathbf{r}, l, 0, H)
     }\\
     \where P&\colon\deffunc{
       \tuple{\sequence{\optional{\hash}}, \hash, \N, \blob\to\hash} &\to \sequence{\optional{\hash}}\\
-      (\mathbf{r}, l, n, H) &\mapsto \begin{cases}
+      \tup{\mathbf{r}, l, n, H} &\mapsto \begin{cases}
         \mathbf{r} \append l &\when n \ge \len{\mathbf{r}}\\
         R(\mathbf{r}, n, l) &\when n < \len{\mathbf{r}} \wedge \mathbf{r}_n = \none\\
         P(R(\mathbf{r}, n, \none), H(\mathbf{r}_n \concat l), n + 1, H) &\otherwise
@@ -224,7 +224,7 @@ We define the \textsc{mmb} append function $\mmrappend$ as:
     }\\
     \also R&\colon\deffunc{
       \tuple{\sequence{T}, \N, T} &\to \sequence{T}\\
-      (\mathbf{s}, i, v) &\mapsto \mathbf{s}'\ \where \mathbf{s}' = \mathbf{s} \exc \mathbf{s}'_i = v
+      \tup{\mathbf{s}, i, v} &\mapsto \mathbf{s}'\ \where \mathbf{s}' = \mathbf{s} \exc \mathbf{s}'_i = v
     }
   \end{aligned}
 \end{equation}

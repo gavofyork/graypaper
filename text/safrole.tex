@@ -103,8 +103,8 @@ The set of validator keys itself is equivalent to the set of 336-octet sequences
 
 With a new epoch under regular conditions, validator keys get rotated and the epoch's Bandersnatch key root is updated into $\epochroot'$:
 \begin{align}
-  (\pendingset', \activeset', \previousset', \epochroot') &\equiv \begin{cases}
-    (\Phi(\stagingset), \pendingset, \activeset, z) &\when e' > e \\ (\pendingset, \activeset, \previousset, \epochroot) &\otherwise
+  \tup{\pendingset', \activeset', \previousset', \epochroot'} &\equiv \begin{cases}
+    (\Phi(\stagingset), \pendingset, \activeset, z) &\when e' > e \\ \tup{\pendingset, \activeset, \previousset, \epochroot} &\otherwise
   \end{cases} \\
   \nonumber \where z &= \getringroot(\sq{\build{k_\vk¬bs}{k \orderedin \pendingset'}}) \\
   \label{eq:blacklistfilter} \Phi(\mathbf{k}) &\equiv \sq{
@@ -164,9 +164,9 @@ $\entropyaccumulator$ defines the state of the randomness accumulator to which t
 
 On an epoch transition (identified as the condition $e' > e$), we therefore rotate the accumulator value into the history $\entropy_1$, $\entropy_2$ and $\entropy_3$:
 \begin{align}
-  (\entropy'_1, \entropy'_2, \entropy'_3) &\equiv \begin{cases}
-    (\entropy_0, \entropy_1, \entropy_2) &\when e' > e \\
-    (\entropy_1, \entropy_2, \entropy_3) &\otherwise
+  \tup{\entropy'_1, \entropy'_2, \entropy'_3} &\equiv \begin{cases}
+    \tup{\entropy_0, \entropy_1, \entropy_2} &\when e' > e \\
+    \tup{\entropy_1, \entropy_2, \entropy_3} &\otherwise
   \end{cases}
 \end{align}
 
@@ -203,11 +203,12 @@ Here, we use $Z$ as the outside-in sequencer function, defined as follows:
 Finally, $F$ is the fallback key sequence function which selects an epoch's worth of validator Bandersnatch keys ($\sequence{\bskey}_{\epochlen}$) from the validator key set $\mathbf{k}$ using the entropy collected on-chain $r$:
 \begin{equation}\label{eq:fallbackkeysequence}
   F\colon \abracegroup[\ ]{
-    \tuple{\hash,\,\sequence{\valkey}} &\to \sequence{\bskey}_\epochlen\\
-    \tup{r,\, \mathbf{k}} &\mapsto \left[
-    \cyclic{\mathbf{k}[\de(\blake_4(r \concat \mathcal{E}_4(i)))]}_\vk¬bs
-    \middle\vert\; i \in \epochindex
-    \right]
+    \tuple{\hash,\,\sequence{\valkey}} &\to \sequenceoflen{\bskey}{\epochlen}\\
+    \tup{r,\, \mathbf{k}} &\mapsto \sq{\build{
+      \cyclic{\mathbf{k}\sub{\decode{\blakeprefix{4}(r \concat \fixedencode{4}{i})}}}_\vk¬bs
+    }{
+      i \in \epochindex
+    }}
   }\!\!\!
 \end{equation}
 

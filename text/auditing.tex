@@ -78,7 +78,7 @@ Formally, for each tranche $n$ we ensure the announcement statement is published
 We define $A\sub{n}$ as our perception of which validator is required to audit each of the work-reports (identified by their associated core) at tranche $n$. This comes from each other validators' announcements (defined above). It cannot be correctly evaluated until $n$ is current. We have absolute knowledge about our own audit requirements.
 \begin{align}
   A\sub{n}: \workreport &\to \protoset{\valindex} \\
-%  \forall (\cX, \wrX) &\in \local¬tranche\sub{0} : v \in q\sub{0}(\wrX)
+%  \forall \tup{\cX, \wrX} &\in \local¬tranche\sub{0} : v \in q\sub{0}(\wrX)
   % TODO: ^^^ Fix this.
 \end{align}
 
@@ -110,11 +110,11 @@ In addition to the work-package, we also assume we are able to fetch all manifes
 We then attempt to reproduce the report on the core to give $e\sub{n}$, a mapping from cores to evaluations: \vskip -7pt
 \begin{equation}
   \begin{aligned}
-  %  \forall (\cX, \wrX) \in \local¬tranche\sub{n} \!: e\sub{n}(\wrX) \!\Leftrightarrow\! \begin{cases}
+  %  \forall \tup{\cX, \wrX} \in \local¬tranche\sub{n} \!: e\sub{n}(\wrX) \!\Leftrightarrow\! \begin{cases}
   %    \wrX = \computereport(p, \cX)\!\!\!\!\! &\when \exists p \in \workpackage: \encode{p} = F(\wrX) \\
   %    \bot &\otherwise
   %  \end{cases}
-    \forall (\cX, \wrX) \in \local¬tranche\sub{n} :\ \ &\\[-10pt]
+    \forall \tup{\cX, \wrX} \in \local¬tranche\sub{n} :\ \ &\\[-10pt]
     e\sub{n}(\cX) \Leftrightarrow &\begin{cases}
       \wrX = \computereport(p, \cX)\!\!\! &\when \exists p \in \workpackage: \encode{p} = F(\wrX) \\
       \bot &\otherwise
@@ -126,13 +126,13 @@ Note that a failure to decode implies an invalid work-report.
 
 From this mapping the validator issues a set of judgments $\mathbf{j}\sub{n}$:
 \begin{align}
-  \mathbf{j}\sub{n} &= \set{\build{\Fsigndata{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_{e\sub{n}(\cX)} \concat \blake(\wrX)}}{(\cX, \wrX) \in \local¬tranche\sub{n}}}
+  \mathbf{j}\sub{n} &= \set{\build{\Fsigndata{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_{e\sub{n}(\cX)} \concat \blake(\wrX)}}{\tup{\cX, \wrX} \in \local¬tranche\sub{n}}}
 \end{align}
 
 %We denote the guarantors of a work-package $\wrX$ as $\guarantorassignments(\wrX)$ from a particular chain head, and this may be derived from the guarantees extrinsic $\xtguarantees$ of the ancestor block which introduced the work-report. Our restrictions on the guarantees extrinsic (described in section \ref{sec:accumulation}) ensures that this is unique.
 %\begin{equation}
 %\begin{aligned}
-%    \guarantorassignments(\wrX) &\equiv \sq{\build{v}{(s, v) \orderedin a}} \\
+%    \guarantorassignments(\wrX) &\equiv \sq{\build{v}{\tup{s, v} \orderedin a}} \\
 %    \where \tup{\cX, \wrX, a} &\in \xtguarantees \\
 %    \tup{\H, \mathbf{E}} &\in \ancestors
 %\end{aligned}

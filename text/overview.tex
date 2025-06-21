@@ -13,8 +13,8 @@ Broadly speaking, \Jam (and indeed blockchains in general) may be defined simply
 
 To aid comprehension and definition of our protocol, we partition as many of our terms as possible into their functional components. We begin with the block $\block$ which may be restated as the header $\H$ and some input data external to the system and thus said to be \emph{extrinsic}, $\mathbf{E}$:
 \begin{align}
-  \label{eq:block}\block &\equiv (\header, \extrinsic) \\
-  \label{eq:extrinsic}\extrinsic &\equiv (\xttickets, \xtdisputes, \xtpreimages, \xtassurances, \xtguarantees)
+  \label{eq:block}\block &\equiv \tup{\header, \extrinsic} \\
+  \label{eq:extrinsic}\extrinsic &\equiv \tup{\xttickets, \xtdisputes, \xtpreimages, \xtassurances, \xtguarantees}
 \end{align}
 
 The header is a collection of metadata primarily concerned with cryptographic references to the blockchain ancestors and the operands and result of the present transition. As an immutable known \emph{a priori}, it is assumed to be available throughout the functional components of block transition. The extrinsic data is split into its several portions:
@@ -31,7 +31,7 @@ The header is a collection of metadata primarily concerned with cryptographic re
 
 Our state may be logically partitioned into several largely independent segments which can both help avoid visual clutter within our protocol description and provide formality over elements of computation which may be simultaneously calculated (i.e. parallelized). We therefore pronounce an equivalence between $\thestate$ (some complete state) and a tuple of partitioned segments of that state:
 \begin{align}\label{eq:statecomposition}
-  \thestate &\equiv (\authpool, \recenthistory, \safrole, \accounts, \entropy, \stagingset, \activeset, \previousset, \reports, \thetime, \authqueue, \privileges, \disputes, \activity, \ready, \accumulated)
+  \thestate &\equiv \tup{\authpool, \recenthistory, \safrole, \accounts, \entropy, \stagingset, \activeset, \previousset, \reports, \thetime, \authqueue, \privileges, \disputes, \activity, \ready, \accumulated}
 \end{align}
 
 In summary, $\accounts$ is the portion of state dealing with \emph{services}, analogous in \Jam to the Yellow Paper's (smart contract) \emph{accounts}, the only state of the \emph{YP}'s Ethereum. The identities of services which hold some privileged status are tracked in $\privileges$.
@@ -47,21 +47,21 @@ Finally, details of the most recent blocks and timeslot index are tracked in $\r
 Much as in the \emph{YP}, we specify $\transitionstate$ as the implication of formulating all items of posterior state in terms of the prior state and block. To aid the architecting of implementations which parallelize this computation, we minimize the depth of the dependency graph where possible. The overall dependency graph is specified here:
 \begin{align}\label{eq:transitionfunctioncomposition}
   \thetime' &\prec \theheader \\
-  \recenthistorypostparentstaterootupdate &\prec (\theheader, \recenthistory) \label{eq:betadagger} \\
-  \safrole' &\prec (\theheader, \thetime, \xttickets, \safrole, \stagingset, \entropy', \activeset', \disputes') \\
-  \entropy' &\prec (\theheader, \thetime, \entropy) \\
-  \activeset' &\prec (\theheader, \thetime, \activeset, \safrole) \\
-  \previousset' &\prec (\theheader, \thetime, \previousset, \activeset) \\
-  \disputes' &\prec (\xtdisputes, \disputes) \\
-  \reportspostjudgement &\prec (\xtdisputes, \reports) \label{eq:rhodagger} \\
-  \reportspostguarantees &\prec (\xtassurances, \reportspostjudgement) \label{eq:rhoddagger} \\
-  \reports' &\prec (\xtguarantees, \reportspostguarantees, \activeset, \thetime') \label{eq:rhoprime} \\
-  \justbecameavailable^* &\prec (\xtassurances, \reports') \\
-  (\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \authqueue', \lastaccout', \accumulationstatistics, \deferredtransfersstatistics) &\prec (\justbecameavailable^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \authqueue, \thetime, \thetime') \label{eq:accountspostxfer} \\
-  \recenthistory' &\prec (\theheader, \xtguarantees, \recenthistorypostparentstaterootupdate, \lastaccout') \label{eq:betaprime} \\
-  \accountspostpreimage &\prec (\xtpreimages, \accountspostxfer, \thetime') \label{eq:accountspostpreimage} \\
-  \authpool' &\prec (\theheader, \xtguarantees, \authqueue', \authpool) \\
-  \activity' &\prec (\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \thetime, \activeset', \activity, \theheader, \accumulationstatistics, \deferredtransfersstatistics)\!\!\!\!\!\!\!\!
+  \recenthistorypostparentstaterootupdate &\prec \tup{\theheader, \recenthistory} \label{eq:betadagger} \\
+  \safrole' &\prec \tup{\theheader, \thetime, \xttickets, \safrole, \stagingset, \entropy', \activeset', \disputes'} \\
+  \entropy' &\prec \tup{\theheader, \thetime, \entropy} \\
+  \activeset' &\prec \tup{\theheader, \thetime, \activeset, \safrole} \\
+  \previousset' &\prec \tup{\theheader, \thetime, \previousset, \activeset} \\
+  \disputes' &\prec \tup{\xtdisputes, \disputes} \\
+  \reportspostjudgement &\prec \tup{\xtdisputes, \reports} \label{eq:rhodagger} \\
+  \reportspostguarantees &\prec \tup{\xtassurances, \reportspostjudgement} \label{eq:rhoddagger} \\
+  \reports' &\prec \tup{\xtguarantees, \reportspostguarantees, \activeset, \thetime'} \label{eq:rhoprime} \\
+  \justbecameavailable^* &\prec \tup{\xtassurances, \reports'} \\
+  \tup{\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \authqueue', \lastaccout', \accumulationstatistics, \deferredtransfersstatistics} &\prec \tup{\justbecameavailable^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \authqueue, \thetime, \thetime'} \label{eq:accountspostxfer} \\
+  \recenthistory' &\prec \tup{\theheader, \xtguarantees, \recenthistorypostparentstaterootupdate, \lastaccout'} \label{eq:betaprime} \\
+  \accountspostpreimage &\prec \tup{\xtpreimages, \accountspostxfer, \thetime'} \label{eq:accountspostpreimage} \\
+  \authpool' &\prec \tup{\theheader, \xtguarantees, \authqueue', \authpool} \\
+  \activity' &\prec \tup{\xtguarantees, \xtpreimages, \xtassurances, \xttickets, \thetime, \activeset', \activity, \theheader, \accumulationstatistics, \deferredtransfersstatistics}\!\!\!\!\!\!\!\!
 \end{align}
 
 The only synchronous entanglements are visible through the intermediate components superscripted with a dagger and defined in equations \ref{eq:betadagger}, \ref{eq:rhodagger}, \ref{eq:rhoddagger}, \ref{eq:rhoprime}, \ref{eq:accountspostxfer}, \ref{eq:betaprime} and \ref{eq:accountspostpreimage}. The latter two mark a merge and join in the dependency graph and, concretely, imply that the availability extrinsic may be fully processed and accumulation of work happen before the preimage lookup extrinsic is folded into state.
