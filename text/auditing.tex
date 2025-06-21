@@ -55,7 +55,7 @@ We define our initial audit tranche in terms of a verifiable random quantity $\l
 
 We may then define $\local¬tranche\sub{0}$ as the non-empty items to audit through a verifiably random selection of ten cores:
 \begin{align}
-  \local¬tranche\sub{0} &= \set{\build{\wrcX}{\wrcX \in \mathbf{p}_{\dots+10}, \wrX \ne \none}} \\
+  \local¬tranche\sub{0} &= \set{\build{\wrcX}{\wrcX \in \mathbf{p}\subrange{}{10}, \wrX \ne \none}} \\
   \where \mathbf{p} &= \Ffyshuffle{\sq{\build{\tup{\cX, \local¬reports\sub{\cX}}}{\cX \orderedin \coreindex}}, \Fbanderout{\local¬seed\sub{0}}} \\
 \end{align}
 
@@ -132,7 +132,7 @@ From this mapping the validator issues a set of judgments $\mathbf{j}\sub{n}$:
 %We denote the guarantors of a work-package $\wrX$ as $\guarantorassignments(\wrX)$ from a particular chain head, and this may be derived from the guarantees extrinsic $\xtguarantees$ of the ancestor block which introduced the work-report. Our restrictions on the guarantees extrinsic (described in section \ref{sec:accumulation}) ensures that this is unique.
 %\begin{equation}
 %\begin{aligned}
-%    \guarantorassignments(\wrX) &\equiv [ v \mid (s, v) \orderedin a ] \\
+%    \guarantorassignments(\wrX) &\equiv \sq{\build{v}{(s, v) \orderedin a}} \\
 %    \where \tup{\cX, \wrX, a} &\in \xtguarantees \\
 %    \tup{\H, \mathbf{E}} &\in \ancestors
 %\end{aligned}

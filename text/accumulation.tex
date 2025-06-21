@@ -35,7 +35,7 @@ We also maintain knowledge of ready (\ie available and/or audited) but not-yet-a
 
 The newly available work-reports, $\justbecameavailable$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\justbecameavailable^!$, are accumulated immediately. Those not, $\justbecameavailable^Q$, are for queued execution. Formally:
 \begin{align}
-  \justbecameavailable^! &\equiv [ w \mid w \orderedin \justbecameavailable, |(w_\wr¬context)_\wc¬prerequisites| = 0 \wedge w_\wr¬srlookup = \emset ] \\
+  \justbecameavailable^! &\equiv \sq{\build{w}{w \orderedin \justbecameavailable, |(w_\wr¬context)_\wc¬prerequisites| = 0 \wedge w_\wr¬srlookup = \emset}} \\
   \justbecameavailable^Q &\equiv E(\sq{
     D(w) \mid
     w \orderedin \justbecameavailable,
@@ -66,7 +66,7 @@ We further define the accumulation priority queue function $Q$, which provides t
     &\mathbf{r} \mapsto \begin{cases}
       [] &\when \mathbf{g} = [] \\
       \mathbf{g} \concat Q(E(\mathbf{r}, \srmap(\mathbf{g})))\!\!\!\! &\otherwise \\
-      \multicolumn{2}{l}{\,\where \mathbf{g} = [w \mid (w, \emset) \orderedin \mathbf{r}]}
+      \multicolumn{2}{l}{\,\where \mathbf{g} = \sq{\build{w}{(w, \emset) \orderedin \mathbf{r}}}}
     \end{cases}
   }
 \end{equation}
@@ -85,7 +85,7 @@ We may now define the sequence of accumulatable work-reports in this block as $\
 \begin{align}
   \using m &= \H_\¬timeslot \bmod \epochlen\\
   \justbecameavailable^* &\equiv \justbecameavailable^! \concat Q(\mathbf{q}) \\
-  \quad\where \mathbf{q} &= E(\concatall{\ready_{m\dots}} \concat \concatall{\ready_{\dots m}} \concat \justbecameavailable^Q, \srmap(\justbecameavailable^!))
+  \quad\where \mathbf{q} &= E(\concatall{\ready\interval{m}{}} \concat \concatall{\ready\interval{}{m}} \concat \justbecameavailable^Q, \srmap(\justbecameavailable^!))
 \end{align}
 
 \subsection{Execution}

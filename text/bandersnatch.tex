@@ -6,7 +6,7 @@ The singly-contextualized Bandersnatch Schnorr-like signatures $\bandersig{k}{c}
 
 \begin{align}
   \bandersig{k \in \bskey}{c \in \hash}{m \in \blob} \subset \bloboflen{96} &\equiv \set{ x \mid x \in \bloboflen{96}, \text{verify}(k, c, m, x) = \top }  \\
-  \Fbanderout{s \in \bandersig{k}{c}{m}} \in \hash &\equiv \text{output}(x \mid x \in \bandersig{k}{c}{m})_{\dots32}
+  \Fbanderout{s \in \bandersig{k}{c}{m}} \in \hash &\equiv \text{output}(x \mid x \in \bandersig{k}{c}{m})\interval{}{32}
 \end{align}
 
 The singly-contextualized Bandersnatch Ring\textsc{vrf} proofs $\bandersnatch{r}{c}{m}$ are a zk-\textsc{snark}-enabled analogue utilizing the Pedersen \textsc{vrf}, also defined by \cite{hosseini2024bandersnatch} and further detailed by \cite{cryptoeprint:2023/002}.
@@ -14,7 +14,7 @@ The singly-contextualized Bandersnatch Ring\textsc{vrf} proofs $\bandersnatch{r}
 \begin{align}
   \getringroot(\sequence{\bskey}) \in \ringroot &\equiv \text{commit}(\sequence{\bskey})  \\
   \bandersnatch{r \in \ringroot}{c \in \hash}{m \in \blob} \subset \bloboflen{784} &\equiv \set{ x \mid x \in \bloboflen{784}, \text{verify}(r, c, m, x) = \top }  \\
-  \Fbanderout{p \in \bandersnatch{r}{c}{m}} \in \hash &\equiv \text{output}(x \mid x \in \bandersnatch{r}{c}{m})_{\dots32}
+  \Fbanderout{p \in \bandersnatch{r}{c}{m}} \in \hash &\equiv \text{output}(x \mid x \in \bandersnatch{r}{c}{m})\interval{}{32}
 \end{align}
 
 Note that in the case a key $\bskey$ has no corresponding Bandersnatch point when constructing the ring, then the Bandersnatch \emph{padding point} as stated by \cite{hosseini2024bandersnatch} should be substituted.

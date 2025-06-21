@@ -95,10 +95,10 @@ We must introduce $\valkey$, the set of validator key tuples. This is a combinat
 The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_\vk¬bs$, and is equivalent to the first 32-octets; the Ed25519 key, $k_\vk¬ed$, is the second 32 octets; the \textsc{bls} key denoted $k_\vk¬bls$ is equivalent to the following 144 octets, and finally the metadata $k_\vk¬metadata$ is the last 128 octets. Formally:
 \begin{align}
   \valkey &\equiv \bloboflen{336} \\
-  \forall \vkX \in \valkey : \vkX_\vk¬bs \in \bskey &\equiv \vkX_{0\dots+32} \\
-  \forall \vkX \in \valkey : \vkX_\vk¬ed \in \edkey &\equiv \vkX_{32\dots+32} \\
-  \forall \vkX \in \valkey : \vkX_\vk¬bls \in \blskey &\equiv \vkX_{64\dots+144} \\
-  \forall \vkX \in \valkey : \vkX_\vk¬metadata \in \metadatakey &\equiv \vkX_{208\dots+128}
+  \forall \vkX \in \valkey : \vkX_\vk¬bs \in \bskey &\equiv \vkX\subrange{0}{32} \\
+  \forall \vkX \in \valkey : \vkX_\vk¬ed \in \edkey &\equiv \vkX\subrange{32}{32} \\
+  \forall \vkX \in \valkey : \vkX_\vk¬bls \in \blskey &\equiv \vkX\subrange{64}{144} \\
+  \forall \vkX \in \valkey : \vkX_\vk¬metadata \in \metadatakey &\equiv \vkX\subrange{208}{128}
 \end{align}
 
 With a new epoch under regular conditions, validator keys get rotated and the epoch's Bandersnatch key root is updated into $\epochroot'$:
@@ -106,7 +106,7 @@ With a new epoch under regular conditions, validator keys get rotated and the ep
   (\pendingset', \activeset', \previousset', \epochroot') &\equiv \begin{cases}
     (\Phi(\stagingset), \pendingset, \activeset, z) &\when e' > e \\ (\pendingset, \activeset, \previousset, \epochroot) &\otherwise
   \end{cases} \\
-  \nonumber \where z &= \getringroot([k_\vk¬bs \mid k \orderedin \pendingset']) \\
+  \nonumber \where z &= \getringroot(\sq{\build{k_\vk¬bs}{k \orderedin \pendingset'}}) \\
   \label{eq:blacklistfilter} \Phi(\mathbf{k}) &\equiv \sq{
     \build{
       \begin{rcases}
