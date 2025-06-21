@@ -171,7 +171,6 @@
 \newcommand*{\exc}{\text{ except }}
 
 % Special constants/functions (Upper caligraphic letters)
-% TODO: these are pure function names so should not be used directly in invocation and prefixed with fn
 \newcommand*{\fnmmrappend}{\mathcal{A}}
 \newcommand*{\fnoctetstobits}{\mathcal{B}}
 \newcommand*{\fnerasurecode}{\mathcal{C}}
@@ -192,26 +191,14 @@
 \newcommand*{\fnmmrsuperpeak}{\mathcal{M}_R}
 \newcommand*{\fngetringroot}{\mathcal{O}}
 \newcommand*{\fnzeropad}[1]{\mathcal{P}_{#1}}
-
-\newcommand*{\seqfromhash}{\mathcal{Q}}
-\newcommand*{\ecrecover}{\mathcal{R}}
-\newcommand*{\signdata}{\mathcal{S}}
+\newcommand*{\fnseqfromhash}[1]{\mathcal{Q}_{#1}}
+\newcommand*{\fnecrecover}{\mathcal{R}}
+\newcommand*{\fnsigndata}[1]{\mathcal{S}_{#1}}
+\newcommand*{\fnsubifnone}{\mathcal{U}}
+\newcommand*{\fnsext}[1]{\mathcal{X}_{#1}}
+\newcommand*{\fnbanderout}{\mathcal{Y}}
+\newcommand*{\fntosigned}[1]{\mathcal{Z}_{#1}}
 \newcommand*{\wallclock}{\mathcal{T}}
-\newcommand*{\subifnone}{\mathcal{U}}
-\newcommand*{\sext}{\mathcal{X}}
-\newcommand*{\banderout}{\mathcal{Y}}
-\newcommand*{\tosigned}{\mathcal{Z}}
-
-% TODO: get rid of F prefix - this should be standard.
-\newcommand*{\Fseqfromhash}[1]{\seqfromhash\left(#1\right)}
-\newcommand*{\Fecrecover}[1]{\ecrecover\left(#1\right)}
-\newcommand*{\Fsigndata}[2]{\signdata_{#1}\left(#2\right)}
-\newcommand*{\Fwallclock}{\wallclock}
-\newcommand*{\Fsubifnone}[1]{\subifnone\left(#1\right)} % TODO: Make it take a parameter.
-\newcommand*{\Fsignext}[2]{\signext_{#1}\left(#2\right)}
-\newcommand*{\Fbanderout}[1]{\banderout\left(#1\right)}
-\newcommand*{\Ftosigned}[2]{\tosigned_{#1}\left(#2\right)}
-\newcommand*{\Ffromsigned}[2]{\fromsigned^{-1}_{#1}\left(#2\right)}
 
 \newcommand*{\encode}[1]{\fnencode\left(#1\right)}
 \newcommand*{\fixedencode}[2]{\fnfixedencode{#1}\left(#2\right)}
@@ -233,10 +220,22 @@
 \newcommand*{\merklizecd}[1]{\fnmerklizecd\left(#1\right)}
 \newcommand*{\merklizewb}[1]{\fnmerklizewb\left(#1\right)}
 \newcommand*{\merklizewbmany}[1]{\fnmerklizewb^\#\left(#1\right)}
-\newcommand*{\merklizestate}[1]{\fnmerklizestate\left(#1\right)} % TODO: Make it take a parameter.
+\newcommand*{\merklizestate}[1]{\fnmerklizestate\left(#1\right)}
 \newcommand*{\mmrsuperpeak}[1]{\fnmmrsuperpeak\left(#1\right)}
 \newcommand*{\getringroot}[1]{\fngetringroot\left(#1\right)}
 \newcommand*{\zeropad}[2]{\fnzeropad{#1}\left(#2\right)}
+\newcommand*{\seqfromhash}[2]{\fnseqfromhash{#1}\left(#2\right)}
+\newcommand*{\ecrecover}[1]{\fnecrecover\left(#1\right)}
+\newcommand*{\signdata}[2]{\fnsigndata{#1}\left(#2\right)}
+\newcommand*{\subifnone}[1]{\fnsubifnone\left(#1\right)}
+\newcommand*{\sext}[2]{\fnsext{#1}\left(#2\right)}
+\newcommand*{\banderout}[1]{\fnbanderout\left(#1\right)}
+\newcommand*{\signfunc}[1]{\fntosigned{#1}}
+\newcommand*{\unsignfunc}[1]{\signfunc{#1}^{-1} }
+\newcommand*{\signed}[1]{\signedn{8}{#1}}
+\newcommand*{\unsigned}[1]{\unsignedn{8}{#1}}
+\newcommand*{\signedn}[2]{\signfunc{#1}(#2)}
+\newcommand*{\unsignedn}[2]{\unsignfunc{#1}(#2)}
 
 % Constants (Sans-serif upper letters)
 \newcommand*{\corecount}{\mathsf{C}}

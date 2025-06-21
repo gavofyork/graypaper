@@ -22,12 +22,6 @@
 \newcommand*{\unbits}[1]{\unbitsn{8}{#1}}
 \newcommand*{\bitsn}[2]{\bitsfunc{#1}(#2)}
 \newcommand*{\unbitsn}[2]{\unbitsfunc{#1}(#2)}
-\newcommand*{\signfunc}[1]{\tosigned_{#1}}
-\newcommand*{\unsignfunc}[1]{\signfunc{#1}^{-1} }
-\newcommand*{\signed}[1]{\signedn{8}{#1}}
-\newcommand*{\unsigned}[1]{\unsignedn{8}{#1}}
-\newcommand*{\signedn}[2]{\signfunc{#1}(#2)}
-\newcommand*{\unsignedn}[2]{\unsignfunc{#1}(#2)}
 %\newcommand*{\signed}[1]{{{}^{\mathord{\mp}}#1}}
 %\newcommand*{\unsigned}[1]{{{}^{\mathord{+}}#1}}
 %\newcommand*{\signedn}[2]{{{}_{#1}^{\mathord{\mp}}#2}}
@@ -199,9 +193,9 @@ We define signed/unsigned transitions for various octet widths:
   }
 \end{align}
 
-Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values. We thus define the signed extension function operating on an input of $n$ octets as $\sext_{n}$:
+Immediate arguments are encoded in little-endian format with the most-significant bit being the sign bit. They may be compactly encoded by eliding more significant octets. Elided octets are assumed to be zero if the \textsc{msb} of the value is zero, and 255 otherwise. This allows for compact representation of both positive and negative encoded values. We thus define the signed extension function operating on an input of $n$ octets as $\fnsext{n}$:
 \begin{align}\label{eq:signedextension}
-  \sext_{n \in \set{0, 1, 2, 3, 4, 8}}\colon\abracegroup{
+  \fnsext{n \in \set{0, 1, 2, 3, 4, 8}}\colon\abracegroup{
     \Nbits{8n} &\to \pvmreg\\
     x &\mapsto x + \ffrac{x}{2^{8n-1}}(2^{64}-2^{8n})
   }
@@ -263,7 +257,7 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
   \using l_X = \min(4, \ell) \,,\quad
-  \immed_X \equiv \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+1}{l_X}})
+  \immed_X \equiv \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+1}{l_X}}}
 \end{aligned}
 \end{equation}
 
@@ -298,9 +292,9 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
     \using l_X &= \min(4, \instructions_{\imath+1} \bmod 8) \,,\quad&
-    \immed_X &\equiv \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}) \\
+    \immed_X &\equiv \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}} \\
     \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
-    \immed_Y &\equiv \sext_{l_Y}(\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}})
+    \immed_Y &\equiv \sext{l_Y}{\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}}}
 \end{aligned}
 \end{equation}
 
@@ -342,7 +336,7 @@ We assume the skip length $\ell$ is well-defined:
     \reg_A &\equiv \reg_{r_A} \,,\quad
     \reg'_A \equiv \reg'_{r_A} \\
     \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
-    \immed_X &\equiv \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}})
+    \immed_X &\equiv \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}}
 \end{aligned}
 \end{equation}
 
@@ -355,11 +349,11 @@ We assume the skip length $\ell$ is well-defined:
   50&\token{jump\_ind}&1&$\token{djump}((\reg_A + \immed_X) \bmod 2^{32})$\\ \mrule
   51&\token{load\_imm}&1&$\reg'_A = \immed_X$\\ \mrule
   52&\token{load\_u8}&1&$\reg'_A = \memr_{\immed_X}$\\ \mrule
-  53&\token{load\_i8}&1&$\reg'_A = \sext_1(\memr_{\immed_X})$\\ \mrule
+  53&\token{load\_i8}&1&$\reg'_A = \sext{1}{\memr_{\immed_X}}$\\ \mrule
   54&\token{load\_u16}&1&$\reg'_A = \decode{2}{\memr\subrange{\immed_X}{2}}$\\ \mrule
-  55&\token{load\_i16}&1&$\reg'_A = \sext_2(\decode{2}{\memr\subrange{\immed_X}{2}})$\\ \mrule
+  55&\token{load\_i16}&1&$\reg'_A = \sext{2}{\decode{2}{\memr\subrange{\immed_X}{2}}}$\\ \mrule
   56&\token{load\_u32}&1&$\reg'_A = \decode{4}{\memr\subrange{\immed_X}{4}}$\\ \mrule
-  57&\token{load\_i32}&1&$\reg'_A = \sext_4(\decode{4}{\memr\subrange{\immed_X}{4}})$\\ \mrule
+  57&\token{load\_i32}&1&$\reg'_A = \sext{4}{\decode{4}{\memr\subrange{\immed_X}{4}}}$\\ \mrule
   58&\token{load\_u64}&1&$\reg'_A = \decode{8}{\memr\subrange{\immed_X}{8}}$\\ \mrule
   59&\token{store\_u8}&1&$\memwr_{\immed_X} = \reg_A \bmod 2^8$\\ \mrule
   60&\token{store\_u16}&1&$\memwr\subrange{\immed_X}{2} = \fixedencode{2}{\reg_A \bmod 2^{16}}$\\ \mrule
@@ -375,9 +369,9 @@ We assume the skip length $\ell$ is well-defined:
     \reg_A &\equiv \reg_{r_A} \,,\quad
     \reg'_A \equiv \reg'_{r_A} \\
     \using l_X &= \min(4, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
-    \immed_X &= \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}) \\
+    \immed_X &= \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}} \\
     \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
-    \immed_Y &= \sext_{l_Y}(\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}})
+    \immed_Y &= \sext{l_Y}{\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}}}
 \end{aligned}
 \end{equation}
 
@@ -401,7 +395,7 @@ We assume the skip length $\ell$ is well-defined:
       \reg_A &\equiv \reg_{r_A} \,,\quad
       \reg'_A \equiv \reg'_{r_A} \\
       \using l_X &= \min(4, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
-      \immed_X &= \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}) \\
+      \immed_X &= \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}} \\
       \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
       \immed_Y &= \imath + \signfunc{l_Y}(\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}})
   \end{aligned}
@@ -478,7 +472,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \reg_B &\equiv \reg_{r_B} \,,\quad
   \reg'_B \equiv \reg'_{r_B} \\
   \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
-  \immed_X &\equiv \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}})
+  \immed_X &\equiv \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}}
 \end{aligned}
 \end{equation}
 
@@ -499,21 +493,21 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   128&\token{load\_ind\_u32}&1&$\reg'_A = \decode{4}{\memr\subrange{\reg_B + \immed_X}{4}}$\\ \mrule
   129&\token{load\_ind\_i32}&1&$\reg'_A = \unsigned{\signedn{4}{\decode{4}{\memr\subrange{\reg_B + \immed_X}{4}}}}$\\ \mrule
   130&\token{load\_ind\_u64}&1&$\reg'_A = \decode{8}{\memr\subrange{\reg_B + \immed_X}{8}}$\\ \mrule
-  131&\token{add\_imm\_32}&1&$\reg'_A = \sext_4((\reg_B + \immed_X) \bmod 2^{32})$\\ \mrule
+  131&\token{add\_imm\_32}&1&$\reg'_A = \sext{4}{(\reg_B + \immed_X) \bmod 2^{32}}$\\ \mrule
   132&\token{and\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \wedge \bits{\immed_X}\sub{i}$\\ \mrule
   133&\token{xor\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \oplus \bits{\immed_X}\sub{i}$\\ \mrule
   134&\token{or\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \vee \bits{\immed_X}\sub{i}$\\ \mrule
-  135&\token{mul\_imm\_32}&1&$\reg'_A = \sext_4((\reg_B \cdot \immed_X) \bmod 2^{32})$\\ \mrule
+  135&\token{mul\_imm\_32}&1&$\reg'_A = \sext{4}{(\reg_B \cdot \immed_X) \bmod 2^{32}}$\\ \mrule
   136&\token{set\_lt\_u\_imm}&1&$\reg'_A = \reg_B < \immed_X$\\ \mrule
   137&\token{set\_lt\_s\_imm}&1&$\reg'_A = \signed{\reg_B} < \signed{\immed_X}$\\ \mrule
-  138&\token{shlo\_l\_imm\_32}&1&$\reg'_A = \sext_4((\reg_B \cdot 2^{\immed_X \bmod 32}) \bmod 2^{32})$\\ \mrule
-  139&\token{shlo\_r\_imm\_32}&1&$\reg'_A = \sext_4(\floor{\reg_B \bmod 2^{32} \div 2^{\immed_X \bmod 32}})$\\ \mrule
+  138&\token{shlo\_l\_imm\_32}&1&$\reg'_A = \sext{4}{(\reg_B \cdot 2^{\immed_X \bmod 32}) \bmod 2^{32}}$\\ \mrule
+  139&\token{shlo\_r\_imm\_32}&1&$\reg'_A = \sext{4}{\floor{\reg_B \bmod 2^{32} \div 2^{\immed_X \bmod 32}}}$\\ \mrule
   140&\token{shar\_r\_imm\_32}&1&$\reg'_A = \unsigned{\floor{\signedn{4}{\reg_B \bmod 2^{32} } \div 2^{\immed_X \bmod 32}}}$\\ \mrule
-  141&\token{neg\_add\_imm\_32}&1&$\reg'_A = \sext_4((\immed_X + 2^{32} - \reg_B) \bmod 2^{32})$\\ \mrule
+  141&\token{neg\_add\_imm\_32}&1&$\reg'_A = \sext{4}{(\immed_X + 2^{32} - \reg_B) \bmod 2^{32}}$\\ \mrule
   142&\token{set\_gt\_u\_imm}&1&$\reg'_A = \reg_B > \immed_X$\\ \mrule
   143&\token{set\_gt\_s\_imm}&1&$\reg'_A = \signed{\reg_B} > \signed{\immed_X}$\\ \mrule
-  144&\token{shlo\_l\_imm\_alt\_32}&1&$\reg'_A = \sext_4((\immed_X \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
-  145&\token{shlo\_r\_imm\_alt\_32}&1&$\reg'_A = \sext_4(\floor{\immed_X \bmod 2^{32} \div 2^{\reg_B \bmod 32}})$\\ \mrule
+  144&\token{shlo\_l\_imm\_alt\_32}&1&$\reg'_A = \sext{4}{(\immed_X \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}}$\\ \mrule
+  145&\token{shlo\_r\_imm\_alt\_32}&1&$\reg'_A = \sext{4}{\floor{\immed_X \bmod 2^{32} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
   146&\token{shar\_r\_imm\_alt\_32}&1&$\reg'_A = \unsigned{\floor{\signedn{4}{\immed_X \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
   147&\token{cmov\_iz\_imm}&1&$\reg'_A = \begin{cases}
     \immed_X &\when \reg_B = 0\\
@@ -525,9 +519,9 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \end{cases}$\\ \mrule
   149&\token{add\_imm\_64}&1&$\reg'_A = (\reg_B + \immed_X) \bmod 2^{64}$\\ \mrule
   150&\token{mul\_imm\_64}&1&$\reg'_A = (\reg_B \cdot \immed_X) \bmod 2^{64}$\\ \mrule
-  % \sext_8 is a no-op - WTF is this doing here??
-  151&\token{shlo\_l\_imm\_64}&1&$\reg'_A = \sext_8((\reg_B \cdot 2^{\immed_X \bmod 64}) \bmod 2^{64})$\\ \mrule
-  152&\token{shlo\_r\_imm\_64}&1&$\reg'_A = \sext_8(\floor{\reg_B \div 2^{\immed_X \bmod 64}})$\\ \mrule
+  % \sext{8} is a no-op - WTF is this doing here??
+  151&\token{shlo\_l\_imm\_64}&1&$\reg'_A = \sext{8}{(\reg_B \cdot 2^{\immed_X \bmod 64}) \bmod 2^{64}}$\\ \mrule
+  152&\token{shlo\_r\_imm\_64}&1&$\reg'_A = \sext{8}{\floor{\reg_B \div 2^{\immed_X \bmod 64}}}$\\ \mrule
   153&\token{shar\_r\_imm\_64}&1&$\reg'_A = \unsigned{\floor{\signed{\reg_B} \div 2^{\immed_X \bmod 64}}}$\\ \mrule
   154&\token{neg\_add\_imm\_64}&1&$\reg'_A = (\immed_X + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
   155&\token{shlo\_l\_imm\_alt\_64}&1&$\reg'_A = (\immed_X \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
@@ -535,8 +529,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   157&\token{shar\_r\_imm\_alt\_64}&1&$\reg'_A = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
   158&\token{rot\_r\_64\_imm}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_A)\sub{i} = \bitsfunc{8}(\reg_B)_{(i + \immed_X) \bmod 64}$\\ \mrule
   159&\token{rot\_r\_64\_imm\_alt}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_A)\sub{i} = \bitsfunc{8}(\immed_X)_{(i + \reg_B) \bmod 64}$\\ \mrule
-  160&\token{rot\_r\_32\_imm}&1&$\reg'_A = \sext_4(x) \ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\reg_B)_{(i + \immed_X) \bmod 32}$\\ \mrule
-  161&\token{rot\_r\_32\_imm\_alt}&1&$\reg'_A = \sext_4(x) \ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\immed_X)_{(i + \reg_B) \bmod 32}$\\
+  160&\token{rot\_r\_32\_imm}&1&$\reg'_A = \sext{4}{x} \ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\reg_B)_{(i + \immed_X) \bmod 32}$\\ \mrule
+  161&\token{rot\_r\_32\_imm\_alt}&1&$\reg'_A = \sext{4}{x} \ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\immed_X)_{(i + \reg_B) \bmod 32}$\\
   \bottomrule
 \end{longtable}
 
@@ -580,9 +574,9 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
     \using l_X &= \min(4, \instructions_{\imath+2} \bmod 8) \,,\quad&
-    \immed_X &= \sext_{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+3}{l_X}}) \\
+    \immed_X &= \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+3}{l_X}}} \\
     \using l_Y &= \min(4, \max(0, \ell - l_X - 2)) \,,\quad&
-    \immed_Y &= \sext_{l_Y}(\fixeddecode{l_Y}{\instructions\subrange{\imath+3+l_X}{l_Y}})
+    \immed_Y &= \sext{l_Y}{\fixeddecode{l_Y}{\instructions\subrange{\imath+3+l_X}{l_Y}}}
   \end{aligned}
 \end{equation}
 
@@ -620,12 +614,12 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  190&\token{add\_32}&1&$\reg'_D = \sext_4((\reg_A + \reg_B) \bmod 2^{32})$\\ \mrule
-  191&\token{sub\_32}&1&$\reg'_D = \sext_4((\reg_A + 2^{32} - (\reg_B \bmod 2^{32})) \bmod 2^{32})$\\ \mrule
-  192&\token{mul\_32}&1&$\reg'_D = \sext_4((\reg_A \cdot \reg_B) \bmod 2^{32})$\\ \mrule
+  190&\token{add\_32}&1&$\reg'_D = \sext{4}{(\reg_A + \reg_B) \bmod 2^{32}}$\\ \mrule
+  191&\token{sub\_32}&1&$\reg'_D = \sext{4}{(\reg_A + 2^{32} - (\reg_B \bmod 2^{32})) \bmod 2^{32}}$\\ \mrule
+  192&\token{mul\_32}&1&$\reg'_D = \sext{4}{(\reg_A \cdot \reg_B) \bmod 2^{32}}$\\ \mrule
   193&\token{div\_u\_32}&1&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B \bmod 2^{32} = 0\\
-    \sext_4(\floor{(\reg_A \bmod 2^{32}) \div (\reg_B \bmod 2^{32})}) &\otherwise
+    \sext{4}{\floor{(\reg_A \bmod 2^{32}) \div (\reg_B \bmod 2^{32})}} &\otherwise
   \end{cases}$\\ \mrule
   194&\token{div\_s\_32}&1&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when b = 0\\
@@ -634,16 +628,16 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
   195&\token{rem\_u\_32}&1&$\reg'_D = \begin{cases}
-    \sext_4(\reg_A \bmod 2^{32}) &\when \reg_B \bmod 2^{32} = 0\\
-    \sext_4((\reg_A \bmod 2^{32}) \bmod (\reg_B \bmod 2^{32})) &\otherwise
+    \sext{4}{\reg_A \bmod 2^{32}} &\when \reg_B \bmod 2^{32} = 0\\
+    \sext{4}{(\reg_A \bmod 2^{32}) \bmod (\reg_B \bmod 2^{32})} &\otherwise
   \end{cases}$\\ \mrule
   196&\token{rem\_s\_32}&1&$\reg'_D = \begin{cases}
     0 &\when a = -2^{31} \wedge b = -1 \\
     \unsigned{\smod(a, b)} &\otherwise \\[2pt]
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
-  197&\token{shlo\_l\_32}&1&$\reg'_D = \sext_4((\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32})$\\ \mrule
-  198&\token{shlo\_r\_32}&1&$\reg'_D = \sext_4(\floor{(\reg_A \bmod 2^{32}) \div 2^{\reg_B \bmod 32}})$\\ \mrule
+  197&\token{shlo\_l\_32}&1&$\reg'_D = \sext{4}{(\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}}$\\ \mrule
+  198&\token{shlo\_r\_32}&1&$\reg'_D = \sext{4}{\floor{(\reg_A \bmod 2^{32}) \div 2^{\reg_B \bmod 32}}}$\\ \mrule
   199&\token{shar\_r\_32}&1&$\reg'_D = \unsigned{\floor{\signedn{4}{\reg_A \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
 
   200&\token{add\_64}&1&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{64}$\\ \mrule
@@ -687,9 +681,9 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
     \reg_D &\otherwise
   \end{cases}$\\ \mrule
   220&\token{rot\_l\_64}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_D)_{(i + \reg_B) \bmod 64} = \bitsfunc{8}(\reg_A)\sub{i}$\\ \mrule
-  221&\token{rot\_l\_32}&1&$\reg'_D = \sext_4(x)\ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)_{(i + \reg_B) \bmod 32} = \bitsfunc{4}(\reg_A)\sub{i}$\\ \mrule
+  221&\token{rot\_l\_32}&1&$\reg'_D = \sext{4}{x}\ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)_{(i + \reg_B) \bmod 32} = \bitsfunc{4}(\reg_A)\sub{i}$\\ \mrule
   222&\token{rot\_r\_64}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_D)\sub{i} = \bitsfunc{8}(\reg_A)_{(i + \reg_B) \bmod 64}$\\ \mrule
-  223&\token{rot\_r\_32}&1&$\reg'_D = \sext_4(x)\ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\reg_A)_{(i + \reg_B) \bmod 32}$\\ \mrule
+  223&\token{rot\_r\_32}&1&$\reg'_D = \sext{4}{x}\ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\reg_A)_{(i + \reg_B) \bmod 32}$\\ \mrule
   224&\token{and\_inv}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \wedge \lnot \bits{\reg_B}\sub{i}$\\ \mrule
   225&\token{or\_inv}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \vee \lnot \bits{\reg_B}\sub{i}$\\ \mrule
   226&\token{xnor}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \lnot ( \bits{\reg_A}\sub{i} \oplus \bits{\reg_B}\sub{i} )$\\ \mrule

@@ -36,15 +36,19 @@ We may then define our erasure-code chunking function which accepts an arbitrary
 
 The original data may be reconstructed with any 342 of the 1,023 resultant items (along with their indices). If the original 342 items are known then reconstruction is just their concatenation.
 \begin{equation}\label{eq:erasurecodinginv}
-  \ecrecover_{k \in \N}\colon\abracegroup{
+  \fnecrecover_{k \in \N}\colon\abracegroup{
     \protoset{\tuple{\bloboflen{2k}, \Nmax{1023}}}_{342} &\to \bloboflen{684k} \\
     \mathbf{c} &\mapsto \begin{cases}
       \encode{\sq{\build{\mathbf{x}}{\tup{\mathbf{x}, i} \orderedin \sqorderby{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}}}} &\when \set{\build{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}} = \Nmax{342}\\
       \join(\join^\#({}^\text{T}[
-        \ecrecover(\set{\build{(\spl{2}(\mathbf{x})\sub{p}, i)}{\tup{\mathbf{x}, i} \in \mathbf{c}}})
+        \ecrecover{}{\set{\build{
+          (\spl{2}(\mathbf{x})\sub{p}, i)
+        }{
+          \tup{\mathbf{x}, i} \in \mathbf{c}
+        }}}
       \mid p \in \Nmax{k}])) &\text{always}\\
     \end{cases}
-%      [ \ecrecover(\mathbf{y}, i) \mid \mathbf{y} \orderedin \transpose\sq{\build{\spl{2}(\mathbf{x})}{\tup{\mathbf{x}, i} \orderedin \mathbf{c}}} ]
+%      [ \ecrecover{\mathbf{y}, i} \mid \mathbf{y} \orderedin \transpose\sq{\build{\spl{2}(\mathbf{x})}{\tup{\mathbf{x}, i} \orderedin \mathbf{c}}} ]
   }
 \end{equation}
 
