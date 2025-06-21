@@ -67,7 +67,7 @@ We begin by defining a \emph{work-package}, of set $\workpackage$, and its const
     \isa{\wp¬authcodehash}{\hash},\ 
     \isa{\wp¬authconfig}{\blob},\ 
     \isa{\wp¬context}{\workcontext},\ 
-    \isa{\wp¬workitems}{\seq{\workitem}_{1:\mathsf{I}}}
+    \isa{\wp¬workitems}{\sequence{\workitem}_{1:\mathsf{I}}}
   }
 \end{equation}
 
@@ -80,8 +80,8 @@ A work item includes: $\wi¬service$ the identifier of the service to which it r
     \isa{\wi¬refgaslimit}{\gas},
     \isa{\wi¬accgaslimit}{\gas},
     \isa{\wi¬exportcount}{\N}, \\
-    &\isa{\wi¬importsegments}{\seq{\tuple{\hash \cup (\hash^\boxplus),\N}}},
-    \isa{\wi¬extrinsics}{\seq{\tuple{\hash, \N}}}
+    &\isa{\wi¬importsegments}{\sequence{\tuple{\hash \cup (\hash^\boxplus),\N}}},
+    \isa{\wi¬extrinsics}{\sequence{\tuple{\hash, \N}}}
   \end{aligned}}
 \end{equation}
 
@@ -148,7 +148,7 @@ We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the h
 \begin{equation}
   \forall \wpX \in \workpackage: \abracegroup[\,]{
     \wpX_\wp¬authorizer &\equiv \blake(\wpX_\wp¬authcodehash \concat \wpX_\wp¬authconfig) \\
-    \se(\var{\wpX_\wp¬metadata}, \wpX_\wp¬authcode) &\equiv \histlookup(\accounts[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_\cx¬lookupanchortime, \wpX_\wp¬authcodehash) \\
+    \encode{\var{\wpX_\wp¬metadata}, \wpX_\wp¬authcode} &\equiv \histlookup(\accounts[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_\wc¬lookupanchortime, \wpX_\wp¬authcodehash) \\
     (\wpX_\wp¬metadata, \wpX_\wp¬authcode) &\in (\blob, \blob)
   }
 \end{equation}
@@ -163,7 +163,7 @@ Guarantors are required to erasure-code and distribute two data sets: one blob, 
 We define the paged-proofs function $\pagedproofs$ which accepts a series of exported segments $\mathbf{s}$ and defines some series of additional segments placed into the D$^3$L via erasure-coding and distribution. The function evaluates to pages of hashes, together with subtree proofs, such that justifications of correctness based on a segments-root may be made from it:
 \begin{equation}\label{eq:pagedproofs}
   \!\!\pagedproofs\colon\abracegroup{
-    \seq{\segment} \to \,&\seq{\segment} \\
+    \sequence{\segment} \to \,&\sequence{\segment} \\
     \mathbf{s} \mapsto \,&\sq{
       \zeropad\sub{l}(\se(
         \var{\merklejustsubpath_6(\mathbf{s}, i)},
@@ -192,7 +192,7 @@ We now come to the work-report computation function $\computereport$. This forms
 \newcommand*{\local¬theitem}{m}
 Where:
 \begin{align*}
-  \Fkeys{\wr¬srlookup} \equiv \,&\set{ h \mid \wiX \in \wpX_\wp¬workitems, (h^\boxplus, n) \in \wiX_\wi¬importsegments } \ ,\quad\len{\wr¬srlookup} \le 8\\
+  \keys{\wr¬srlookup} \equiv \,&\set{ h \mid \wiX \in \wpX_\wp¬workitems, (h^\boxplus, n) \in \wiX_\wi¬importsegments } \ ,\quad\len{\wr¬srlookup} \le 8\\
   (\wr¬authtrace, \wr¬authgasused) = \,&\Psi_I(\wpX, \¬core) \\
   (\wr¬digests, \allexports) = \,&\transpose[
     (\itemtodigest(\wpX_\wp¬workitems\subb{j}, r, u), \mathbf{e})
@@ -273,7 +273,7 @@ Validators, in their role as availability assurers, should index such chunks acc
 We define the availability specifier function $\newavailabilityspecifier$, which creates an availability specifier from the package hash, an octet sequence of the audit-friendly work-package bundle (comprising the work-package itself, the extrinsic data and the concatenated import segments along with their proofs of correctness), and the sequence of exported segments:
 \begin{equation}
   \!\!\!\newavailabilityspecifier\colon\abracegroup[\,]{
-    \tuple{\hash, \blob, \seq{\segment}} &\to \avspec\\
+    \tuple{\hash, \blob, \sequence{\segment}} &\to \avspec\\
     \tup{h, \mathbf{b},\,\mathbf{s}} &\mapsto \tup{
       h,\,
       \is{l}{\len{\mathbf{b}}},\,

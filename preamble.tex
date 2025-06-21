@@ -130,14 +130,14 @@
 \newcommand*{\is}[2]{#1\tricolon#2}
 \newcommand*{\isa}[2]{#1\in #2}
 \newcommand*{\sq}[1]{\left[#1\right]}
-\newcommand*{\seq}[1]{\left\lsem#1\right\rsem}
-\newcommand*{\seqoflen}[2]{\left\lsem#1\right\rsem_{#2}} % sequence of fixed length
+\newcommand*{\sequence}[1]{\left\lsem#1\right\rsem}
+\newcommand*{\sequenceoflen}[2]{\sequence{#1}_{#2}} % sequence of fixed length
 \newcommand*{\set}[1]{\left\{\,#1\,\right\}}
 \newcommand*{\emset}{\left\{\right\}}
 \newcommand*{\protoset}[1]{\left\{\mkern-5mu\left[\,#1\,\right]\mkern-5mu\right\}}
 \newcommand*{\build}[2]{#1 \with #2}
 \newcommand*{\kv}[2]{\tup{#1 \mapsto #2}}
-\newcommand*{\keyval}[2]{\tuple{#1 \to #2}}
+\newcommand*{\keyvalue}[2]{\tuple{#1 \to #2}}
 
 % Typical operations.
 \newcommand*{\floor}[1]{\left\lfloor#1\right\rfloor}
@@ -148,6 +148,8 @@
 \newcommand*{\transpose}{{}^\text{T}}
 \newcommand*{\ang}[1]{\left\langle#1\right\rangle}
 \newcommand*{\sub}[1]{_{#1}}
+\newcommand*{\interval}[2]{_{#1 \dots #2}}
+\newcommand*{\subrange}[2]{_{#1 \dots+ #2}}
 \newcommand*{\subb}[1]{\left[#1\right]}
 \newcommand*{\cyclic}[1]{{#1}^\circlearrowleft}
 \newcommand*{\bracegroup}[1]{\left\{ #1 \right.}
@@ -173,14 +175,16 @@
 \newcommand*{\octetstobits}{\mathcal{B}}
 \newcommand*{\erasurecode}{\mathcal{C}}
 \newcommand*{\se}{\mathcal{E}}
+\newcommand*{\sefixed}[1]{\se_{#1}}
 \newcommand*{\de}{\mathcal{E}^{-1}}
+\newcommand*{\defixed}[1]{\de_{#1}}
 \newcommand*{\mmrencode}{\se_M}
 \newcommand*{\fyshuffle}{\mathcal{F}}
 \newcommand*{\blake}{\mathcal{H}}
 \newcommand*{\blakeprefix}[1]{\mathcal{H}_{#1}}
 \newcommand*{\keccak}{\mathcal{H}_K}
 \newcommand*{\merklejustsubpath}{\mathcal{J}}
-\newcommand*{\keys}{\mathcal{K}}
+\newcommand*{\keys}[1]{\mathcal{K}\left(#1\right)}
 \newcommand*{\merklesubtreepage}{\mathcal{L}}
 \newcommand*{\merklizecd}{\mathcal{M}}
 \newcommand*{\merklizewb}{\mathcal{M}_B}
@@ -193,7 +197,7 @@
 \newcommand*{\signdata}{\mathcal{S}}
 \newcommand*{\wallclock}{\mathcal{T}}
 \newcommand*{\subifnone}{\mathcal{U}}
-\newcommand*{\values}{\mathcal{V}}
+\newcommand*{\values}[1]{\mathcal{V}\left(#1\right)}
 \newcommand*{\sext}{\mathcal{X}}
 \newcommand*{\banderout}{\mathcal{Y}}
 \newcommand*{\tosigned}{\mathcal{Z}}
@@ -205,7 +209,6 @@
 \newcommand*{\Fmmrencode}[1]{\mmrencode\left(#1\right)}
 \newcommand*{\Ffyshuffle}[1]{\fyshuffle\left(#1\right)}
 \newcommand*{\Fmerklejustsubpath}[2]{\merklejustsubpath_{#1}\left(#2\right)}
-\newcommand*{\Fkeys}[1]{\keys\left(#1\right)}
 \newcommand*{\Fmerklesubtreepage}[2]{\merklesubtreepage_{#1}\left(#2\right)}
 \newcommand*{\Fmerklizecd}[1]{\merklizecd\left(#1\right)}
 \newcommand*{\Fmerklizewb}[1]{\merklizewb\left(#1\right)}
@@ -218,11 +221,15 @@
 \newcommand*{\Fsigndata}[2]{\signdata_{#1}\left(#2\right)}
 \newcommand*{\Fwallclock}{\wallclock}
 \newcommand*{\Fsubifnone}[1]{\subifnone\left(#1\right)} % TODO: Make it take a parameter.
-\newcommand*{\Fvalues}[1]{\values\left(#1\right)}
 \newcommand*{\Fsignext}[2]{\signext_{#1}\left(#2\right)}
 \newcommand*{\Fbanderout}[1]{\banderout\left(#1\right)}
 \newcommand*{\Ftosigned}[2]{\tosigned_{#1}\left(#2\right)}
 \newcommand*{\Ffromsigned}[2]{\fromsigned^{-1}_{#1}\left(#2\right)}
+
+\newcommand*{\encode}[1]{\se\left(#1\right)}
+\newcommand*{\fixedencode}[2]{\sefixed{#1}\left(#2\right)}
+\newcommand*{\decode}[1]{\de\left(#1\right)}
+\newcommand*{\fixeddecode}[2]{\defixed{#1}\left(#2\right)}
 
 % Constants (Sans-serif upper letters)
 \newcommand*{\corecount}{\mathsf{C}}
@@ -267,7 +274,7 @@
 % R unused
 \newcommand*{\avspec}{\mathbb{S}}
 \newcommand*{\defxfer}{\mathbb{T}}
-\newcommand*{\defxfers}{\seq\defxfer}
+\newcommand*{\defxfers}{\sequence\defxfer}
 \newcommand*{\partialstate}{\mathbb{U}}
 \newcommand*{\readable}[1]{\mathbb{V}_{#1}}
 \newcommand*{\writable}[1]{\mathbb{V}^*_{#1}}
@@ -416,12 +423,12 @@
 % TODO: Move \mathbf{p} from here into the \workreport and work-package - it's really not part of the context.
 
 %\newcommand*{\workcontext}{\mathbb{X}}
-\newcommand*{\cx¬anchorhash}{a}
-\newcommand*{\cx¬anchorpoststate}{s}
-\newcommand*{\cx¬anchoraccoutlog}{b}
-\newcommand*{\cx¬lookupanchorhash}{l}
-\newcommand*{\cx¬lookupanchortime}{t}
-\newcommand*{\cx¬prerequisites}{\mathbf{p}}
+\newcommand*{\wc¬anchorhash}{a}
+\newcommand*{\wc¬anchorpoststate}{s}
+\newcommand*{\wc¬anchoraccoutlog}{b}
+\newcommand*{\wc¬lookupanchorhash}{l}
+\newcommand*{\wc¬lookupanchortime}{t}
+\newcommand*{\wc¬prerequisites}{\mathbf{p}}
 
 %\newcommand*{\serviceaccount}{\mathbb{A}}
 \newcommand*{\sa¬storage}{\mathbf{s}}
@@ -456,7 +463,7 @@
 \newcommand*{\vk¬ed}{e}
 \newcommand*{\vk¬bls}{L}  % TODO: Rename to be a single letter.
 \newcommand*{\vk¬metadata}{m}
-\newcommand*{\allvalkeys}{\seq{\valkey}_{\valcount}}
+\newcommand*{\allvalkeys}{\sequence{\valkey}_{\valcount}}
 
 % Fields of partial state \mathbb{U}.
 \newcommand*{\ps¬accounts}{\mathbf{d}}

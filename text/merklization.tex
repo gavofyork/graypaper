@@ -11,38 +11,38 @@ We define the state-key constructor functions $C$ as:
   C\colon\abracegroup{
     \Nbits{8} \cup (\Nbits{8}, \serviceid) \cup \tup{\serviceid, \blob} &\to \bloboflen{31} \\
     i \in \Nbits{8} &\mapsto [i, 0, 0, \dots] \\
-    (i, s \in \serviceid) &\mapsto [i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots]\ \where n = \se_4(s) \\
-    (s, h) &\mapsto [n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}]\ \where n = \se_4(s), a = \blake(h)_{0\dots 27}
+    (i, s \in \serviceid) &\mapsto [i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots]\ \where n = \fixedencode{4}{s} \\
+    (s, h) &\mapsto [n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}]\ \where n = \fixedencode{4}{s}, a = \blake(h)_{0\dots 27}
   }
 \end{equation}
 
 The state serialization is then defined as the dictionary built from the amalgamation of each of the components. Cryptographic hashing ensures that there will be no duplicate state-keys given that there are no duplicate inputs to $C$. Formally, we define $T$ which transforms some state $\thestate$ into its serialized form:
 \begin{equation}
   T(\thestate) \equiv \abracegroup{
-    &&C(1) &\mapsto \se([\var{x}\mid x\orderedin \authpool]) \;, \\
-    &&C(2) &\mapsto \se(\authqueue) \;, \\
+    &&C(1) &\mapsto \encode{[\var{x}\mid x\orderedin \authpool]} \;, \\
+    &&C(2) &\mapsto \encode{\authqueue} \;, \\
     &&C(3) &\mapsto \se(\var{[(h, b, s, \var{\mathbf{p}})\mid \tup{h, b, s, \mathbf{p}} \orderedin \recenthistory]}, \Fmmrencode{\beefybelt}) \;, \\
     &&C(4) &\mapsto \se\left(\tup{\pendingset, \epochroot, \abracegroupboth{
-      0\ &\when \sealtickets \in \seq{\safroleticket}_\epochlen\\
-      1\ &\when \sealtickets \in \seq{\bskey}_\epochlen\\
+      0\ &\when \sealtickets \in \sequence{\safroleticket}_\epochlen\\
+      1\ &\when \sealtickets \in \sequence{\bskey}_\epochlen\\
     }, \sealtickets,
     \var{\ticketaccumulator}}\right) \;, \\
-    &&C(5) &\mapsto \se(\var{\sqorderby{x}{x \in \goodset}}, \var{\sqorderby{x}{x \in \badset}}, \var{\sqorderby{x}{x \in \wonkyset}}, \var{\sqorderby{x}{x \in \offenders}}) \;, \\
-    &&C(6) &\mapsto \se(\entropy) \;, \\
-    &&C(7) &\mapsto \se(\stagingset) \;, \\
-    &&C(8) &\mapsto \se(\activeset) \;, \\
-    &&C(9) &\mapsto \se(\previousset) \;, \\
-    &&C(10) &\mapsto \se([\maybe{(w, \se_4(t))} \mid (w, t) \orderedin \reports]) \;, \\
-    &&C(11) &\mapsto \se_4(\thetime) \;, \\
-    &&C(12) &\mapsto \se_4(\manager, \assigners, \delegator) \concat \se(\alwaysaccers) \;, \\
-    &&C(13) &\mapsto \se_4(\valstatsaccumulator, \valstatsprevious), \corestats, \servicestats \;, \\
+    &&C(5) &\mapsto \encode{\var{\sqorderby{x}{x \in \goodset}}, \var{\sqorderby{x}{x \in \badset}}, \var{\sqorderby{x}{x \in \wonkyset}}, \var{\sqorderby{x}{x \in \offenders}}} \;, \\
+    &&C(6) &\mapsto \encode{\entropy} \;, \\
+    &&C(7) &\mapsto \encode{\stagingset} \;, \\
+    &&C(8) &\mapsto \encode{\activeset} \;, \\
+    &&C(9) &\mapsto \encode{\previousset} \;, \\
+    &&C(10) &\mapsto \se([\maybe{(w, \fixedencode{4}{t})} \mid (w, t) \orderedin \reports]) \;, \\
+    &&C(11) &\mapsto \fixedencode{4}{\thetime} \;, \\
+    &&C(12) &\mapsto \fixedencode{4}{\manager, \assigners, \delegator} \concat \encode{\alwaysaccers} \;, \\
+    &&C(13) &\mapsto \fixedencode{4}{\valstatsaccumulator, \valstatsprevious}, \corestats, \servicestats \;, \\
     &&C(14) &\mapsto \se([\var{(\mathbf{w}, \var{\mathbf{d}})} \mid (\mathbf{w}, \mathbf{d}) \orderedin \mathbf{i} \mid \mathbf{i} \orderedin \ready]) \;, \\
-    &&C(15) &\mapsto \se([\var{\mathbf{i}} \mid \mathbf{i} \orderedin \accumulated]) \;, \\
-    &&C(16) &\mapsto \se(\var{[(\se_4(s), \se(h)) \mid (s, h) \orderedin \lastaccout]}) \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts: &&C(255, s) &\mapsto \mathbf{a}_c \concat \se_8(\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_o, \mathbf{a}_f) \concat \se_4(\mathbf{a}_i, \mathbf{a}_r, \mathbf{a}_a, \mathbf{a}_p) \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts, (\mathbf{k} \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \se_4(2^{32}-1) \concat \mathbf{k}) &\mapsto \mathbf{v} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \se_4(2^{32}-2) \concat h) &\mapsto \mathbf{p} \;, \\
-    \forall (s \mapsto \mathbf{a}) \in \accounts, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \se_4(l) \concat h) &\mapsto \se(\var{[\se_4(x) \mid x \orderedin \mathbf{t}]})
+    &&C(15) &\mapsto \encode{[\var{\mathbf{i}} \mid \mathbf{i} \orderedin \accumulated]} \;, \\
+    &&C(16) &\mapsto \se(\var{[(\fixedencode{4}{s}, \encode{h}) \mid (s, h) \orderedin \lastaccout]}) \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \accounts: &&C(255, s) &\mapsto \mathbf{a}_c \concat \fixedencode{8}{\mathbf{a}_b, \mathbf{a}_g, \mathbf{a}_m, \mathbf{a}_o, \mathbf{a}_f} \concat \fixedencode{4}{\mathbf{a}_i, \mathbf{a}_r, \mathbf{a}_a, \mathbf{a}_p} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \accounts, (\mathbf{k} \mapsto \mathbf{v}) \in \mathbf{a}_\mathbf{s}: &&C(s, \fixedencode{4}{2^{32}-1} \concat \mathbf{k}) &\mapsto \mathbf{v} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \accounts, (h \mapsto \mathbf{p}) \in \mathbf{a}_\mathbf{p}: &&C(s, \fixedencode{4}{2^{32}-2} \concat h) &\mapsto \mathbf{p} \;, \\
+    \forall (s \mapsto \mathbf{a}) \in \accounts, (\tup{h, l} \mapsto \mathbf{t}) \in \mathbf{a}_\mathbf{l}: &&C(s, \fixedencode{4}{l} \concat h) &\mapsto \se(\var{[\fixedencode{4}{x} \mid x \orderedin \mathbf{t}]})
   }
 \end{equation}
 
@@ -78,7 +78,7 @@ Formally, we define the encoding functions $B$ and $L$:
   L&\colon\abracegroup{
     (\bloboflen{31}, \blob) &\to \bitstringoflen{512}\\
     (k, v) &\mapsto \begin{cases}
-      [1, 0] \concat \text{bits}(\se_1(\len{v}))_{2\dots} \concat \text{bits}(k) \concat \text{bits}(v) \concat [0, 0, \dots] &\when \len{v} \le 32\\
+      [1, 0] \concat \text{bits}(\fixedencode{1}{\len{v}})_{2\dots} \concat \text{bits}(k) \concat \text{bits}(v) \concat [0, 0, \dots] &\when \len{v} \le 32\\
       [1, 1, 0, 0, 0, 0, 0, 0] \concat \text{bits}(k) \concat \text{bits}(\blake(v)) &\otherwise
     \end{cases}
   }
@@ -89,7 +89,7 @@ We may then define the basic Merklization function $\merklizestate$ as:
   \merklizestate(\thestate) &\equiv M(\set{ (\text{bits}(k) \mapsto \tup{k, v}) \mid (k \mapsto v) \in T(\thestate) })\\
   M(d: \dict{\bitstring}{(\bloboflen{31}, \blob)}) &\equiv \begin{cases}
     \zerohash &\when \len{d} = 0\\
-    \blake(\text{bits}^{-1}(L(k, v))) &\when \Fvalues{d} = \set{ \tup{k, v} }\\
+    \blake(\text{bits}^{-1}(L(k, v))) &\when \values{d} = \set{ \tup{k, v} }\\
     \blake(\text{bits}^{-1}(B(M(l), M(r)))) &\otherwise\\
     \multicolumn{2}{l}{\quad\where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b_{1\dots} \mapsto p) \in \begin{cases}
       l &\when b_0 = 0 \\
@@ -107,7 +107,7 @@ The Merkle tree is a cryptographic data structure yielding a hash commitment to 
 The underlying function for our Merkle trees is the \emph{node} function $N$, which accepts some sequence of blobs of some length $n$ and provides either such a blob back or a hash:
 \begin{equation}
   N\colon\abracegroup{
-    (\seq{\bloboflen{n}}, \blob \to \hash) &\to \bloboflen{n} \cup \hash \\
+    (\sequence{\bloboflen{n}}, \blob \to \hash) &\to \bloboflen{n} \cup \hash \\
     (\mathbf{v}, H) &\mapsto \begin{cases}
       \zerohash &\when \len{\mathbf{v}} = 0 \\
       \mathbf{v}_0 &\when \len{\mathbf{v}} = 1 \\
@@ -121,7 +121,7 @@ The astute reader will realize that if our $\bloboflen{n}$ happens to be equival
 We also define the \emph{trace} function $T$, which returns each opposite node from top to bottom as the tree is navigated to arrive at some leaf corresponding to the item of a given index into the sequence. It is useful in creating justifications of data inclusion.
 \begin{equation}
   T\colon\abracegroup{
-    (\seq{\bloboflen{n}}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash)\ &\to \seq{\bloboflen{n} \cup \hash}\\
+    (\sequence{\bloboflen{n}}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash)\ &\to \sequence{\bloboflen{n} \cup \hash}\\
     (\mathbf{v}, i, H) &\mapsto \begin{cases}
       [N(P^\bot(\mathbf{v}, i), H)] \concat T(P^\top(\mathbf{v}, i), i - P_I(\mathbf{v}, i), H) &\when \len{\mathbf{v}} > 1\\
       [] &\otherwise\\
@@ -148,7 +148,7 @@ We define the well-balanced binary Merkle function as $\merklizewb$:
 \begin{equation}
     \merklizewb\colon \abracegroup{
       \label{eq:simplemerkleroot}
-      (\seq{\blob}, \blob \to \hash) &\to \hash \\
+      (\sequence{\blob}, \blob \to \hash) &\to \hash \\
       (\mathbf{v}, H) &\mapsto \begin{cases}
         H(\mathbf{v}_0) &\when \len{\mathbf{v}} = 1 \\
         N(\mathbf{v}, H) &\otherwise
@@ -165,17 +165,17 @@ We define the constant-depth binary Merkle function as $\merklizecd$. We define 
 \begin{align}
   \label{eq:constantdepthmerkleroot}
   \merklizecd&\colon \abracegroup{
-    (\seq{\blob}, \blob \to \hash) &\to \hash\\
+    (\sequence{\blob}, \blob \to \hash) &\to \hash\\
     (\mathbf{v}, H) &\mapsto N(C(\mathbf{v}, H), H)
   }\\
   \label{eq:constantdepthsubtreemerklejust}
   \merklejustsubpath_x&\colon \abracegroup{
-    (\seq{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash) &\to \seq{\hash}\\
+    (\sequence{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash) &\to \sequence{\hash}\\
     (\mathbf{v}, i, H) &\mapsto T(C(\mathbf{v}, H), 2^xi, H)_{\dots\max(0, \ceil{\log_2(\max(1, \len{\mathbf{v}})) - x})}
   }\\
   \label{eq:constantdepthsubtreemerkleleafpage}
   \merklesubtreepage_x&\colon \abracegroup{
-    (\seq{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash) &\to \seq{\hash}\\
+    (\sequence{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash) &\to \sequence{\hash}\\
     (\mathbf{v}, i, H) &\mapsto [H(\token{\$leaf} \concat l) \mid l \orderedin \mathbf{v}_{2^xi \dots \min(2^xi+2^x, \len{\mathbf{v}})}]
   }
 \end{align}
@@ -187,7 +187,7 @@ As above, we may assume a default value for $H$ of the Blake 2b hash function, $
 For justifications and Merkle root calculations, a constancy preprocessor function $C$ is applied which hashes all data items with a fixed prefix ``leaf'' and then pads the overall size to the next power of two with the zero hash $\zerohash$:
 \begin{equation}
   C\colon\abracegroup{
-    (\seq{\blob}, \blob \to \hash) &\to \seq{\hash}\\
+    (\sequence{\blob}, \blob \to \hash) &\to \sequence{\hash}\\
     (\mathbf{v}, H) &\mapsto \mathbf{v}' \ \where \abracegroup[\;]{
       \len{\mathbf{v}}| &= 2^{\ceil{\log_2(\max(1, \len{\mathbf{v}}))}}\\
       \mathbf{v}'_i &= \begin{cases}
@@ -202,7 +202,7 @@ For justifications and Merkle root calculations, a constancy preprocessor functi
 
 The Merkle Mountain Range (\textsc{mmr}) is an append-only cryptographic data structure which yields a commitment to a sequence of values. Appending to an \textsc{mmr} and proof of inclusion of some item within it are both $O(\log(N))$ in time and space for the size of the set.
 
-We define a Merkle Mountain Range as being within the set $\seq{\optional{\hash}}$, a sequence of peaks, each peak the root of a Merkle tree containing $2^i$ items where $i$ is the index in the sequence. Since we support set sizes which are not always powers-of-two-minus-one, some peaks may be empty, $\none$ rather than a Merkle root.
+We define a Merkle Mountain Range as being within the set $\sequence{\optional{\hash}}$, a sequence of peaks, each peak the root of a Merkle tree containing $2^i$ items where $i$ is the index in the sequence. Since we support set sizes which are not always powers-of-two-minus-one, some peaks may be empty, $\none$ rather than a Merkle root.
 
 Since the sequence of hashes is somewhat unwieldy as a commitment, Merkle Mountain Ranges are themselves generally hashed before being published. Hashing them removes the possibility of further appending so the range itself is kept on the system which needs to generate future proofs.
 
@@ -211,11 +211,11 @@ We define the \textsc{mmb} append function $\mmrappend$ as:
   \begin{aligned}
     \label{eq:mmrappend}
     \mmrappend&\colon\deffunc{
-      (\seq{\optional{\hash}}, \hash, \blob\to\hash) &\to \seq{\optional{\hash}}\\
+      (\sequence{\optional{\hash}}, \hash, \blob\to\hash) &\to \sequence{\optional{\hash}}\\
       (\mathbf{r}, l, H) &\mapsto P(\mathbf{r}, l, 0, H)
     }\\
     \where P&\colon\deffunc{
-      (\seq{\optional{\hash}}, \hash, \N, \blob\to\hash) &\to \seq{\optional{\hash}}\\
+      (\sequence{\optional{\hash}}, \hash, \N, \blob\to\hash) &\to \sequence{\optional{\hash}}\\
       (\mathbf{r}, l, n, H) &\mapsto \begin{cases}
         \mathbf{r} \append l &\when n \ge \len{\mathbf{r}}\\
         R(\mathbf{r}, n, l) &\when n < \len{\mathbf{r}} \wedge \mathbf{r}_n = \none\\
@@ -223,7 +223,7 @@ We define the \textsc{mmb} append function $\mmrappend$ as:
       \end{cases}
     }\\
     \also R&\colon\deffunc{
-      (\seq{T}, \N, T) &\to \seq{T}\\
+      (\sequence{T}, \N, T) &\to \sequence{T}\\
       (\mathbf{s}, i, v) &\mapsto \mathbf{s}'\ \where \mathbf{s}' = \mathbf{s} \exc \mathbf{s}'_i = v
     }
   \end{aligned}
@@ -232,15 +232,15 @@ We define the \textsc{mmb} append function $\mmrappend$ as:
 We define the \textsc{mmr} encoding function as $\mmrencode$:
 \begin{equation}
   \mmrencode\colon\deffunc{
-    \seq{\optional{\hash}} &\to \blob \\
-    \mathbf{b} &\mapsto \se(\var{[\maybe{x}\mid x \orderedin \mathbf{b}]})
+    \sequence{\optional{\hash}} &\to \blob \\
+    \mathbf{b} &\mapsto \encode{\var{[\maybe{x}\mid x \orderedin \mathbf{b}]}}
   }
 \end{equation}
 
 We define the \textsc{mmr} super-peak function as $\mmrsuperpeak$:
 \begin{equation}
   \mmrsuperpeak\colon\deffunc{
-    \seq{\optional{\hash}} &\to \hash \\
+    \sequence{\optional{\hash}} &\to \hash \\
     \mathbf{b} &\mapsto \begin{cases}
       \zerohash &\when \len{\mathbf{h}} = 0\\
       \mathbf{h}_0 &\when \len{\mathbf{h}} = 1\\

@@ -31,8 +31,8 @@ Passing multiple arguments to the serialization functions is equivalent to passi
 %    \Nbits{29} &\to \bloboflen{1:4} \\
 %    x &\mapsto \begin{cases}
 %      [0] &\when x = 0 \\
-%      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \se_l(x \bmod 2^{8l}) &\when \exists l \in \N_3 : 2^{7l} \le x < 2^{7(l+1)} \\
-%      \left[2^8-2^5 + \ffrac{x}{2^{24}}\right] \concat \se_3(x \bmod 2^{24}) &\when 2^{21} \le x < 2^{29} \\
+%      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \fixeddecode{l}{x \bmod 2^{8l}} &\when \exists l \in \N_3 : 2^{7l} \le x < 2^{7(l+1)} \\
+%      \left[2^8-2^5 + \ffrac{x}{2^{24}}\right] \concat \fixeddecode{3}{x \bmod 2^{24}} &\when 2^{21} \le x < 2^{29} \\
 %    \end{cases}
 %  }
 %\end{equation}
@@ -43,14 +43,14 @@ We define general natural number serialization, able to encode naturals of up to
     \Nbits{64} &\to \bloboflen{1:9} \\
     x &\mapsto \begin{cases}
       [0] &\when x = 0 \\
-      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \se_l(x \bmod 2^{8l}) &\when \exists l \in \N_8 : 2^{7l} \le x < 2^{7(l+1)} \\
-      [2^8-1] \concat \se_8(x) &\otherwhen x < 2^{64} \\
+      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \fixeddecode{l}{x \bmod 2^{8l}} &\when \exists l \in \N_8 : 2^{7l} \le x < 2^{7(l+1)} \\
+      [2^8-1] \concat \fixeddecode{8}{x} &\otherwhen x < 2^{64} \\
     \end{cases}
   }
 \end{equation}
 
 \subsubsection{Sequence Encoding}
-We define the sequence serialization function $\se(\seq{T})$ for any $T$ which is itself a subset of the domain of $\se$. We simply concatenate the serializations of each element in the sequence in turn:
+We define the sequence serialization function $\se(\sequence{T})$ for any $T$ which is itself a subset of the domain of $\se$. We simply concatenate the serializations of each element in the sequence in turn:
 \begin{equation}
   \se([\mathbf{i}_0, \mathbf{i}_1, ...]) \equiv \se(\mathbf{i}_0) \concat \se(\mathbf{i}_1) \concat \dots
 \end{equation}
@@ -60,7 +60,7 @@ Thus, conveniently, fixed length octet sequences (\eg hashes $\hash$ and its var
 \subsubsection{Discriminator Encoding}
 When we have sets of heterogeneous items such as a union of different kinds of tuples or sequences of different length, we require a discriminator to determine the nature of the encoded item for successful deserialization. Discriminators are encoded as a natural and are encoded immediately prior to the item.
 
-We generally use a \emph{length discriminator} when serializing sequence terms which have variable length (\eg general blobs $\blob$ or unbound numeric sequences $\seq{\N}$) (though this is omitted in the case of fixed-length terms such as hashes $\hash$).\footnote{Note that since specific values may belong to both sets which would need a discriminator and those that would not then we are sadly unable to introduce a function capable of serializing corresponding to the \emph{term}'s limitation. A more sophisticated formalism than basic set-theory would be needed, capable of taking into account not simply the value but the term from which or to which it belongs in order to do this succinctly.} In this case, we simply prefix the term its length prior to encoding. Thus, for some term $y \in \tup{x \in \blob, \dots}$, we would generally define its serialized form to be $\se(\len{x})\concat\se(x)\concat\dots$. To avoid repetition of the term in such cases, we define the notation $\var{x}$ to mean that the term of value $x$ is variable in size and requires a length discriminator. Formally:
+We generally use a \emph{length discriminator} when serializing sequence terms which have variable length (\eg general blobs $\blob$ or unbound numeric sequences $\sequence{\N}$) (though this is omitted in the case of fixed-length terms such as hashes $\hash$).\footnote{Note that since specific values may belong to both sets which would need a discriminator and those that would not then we are sadly unable to introduce a function capable of serializing corresponding to the \emph{term}'s limitation. A more sophisticated formalism than basic set-theory would be needed, capable of taking into account not simply the value but the term from which or to which it belongs in order to do this succinctly.} In this case, we simply prefix the term its length prior to encoding. Thus, for some term $y \in \tup{x \in \blob, \dots}$, we would generally define its serialized form to be $\se(\len{x})\concat\se(x)\concat\dots$. To avoid repetition of the term in such cases, we define the notation $\var{x}$ to mean that the term of value $x$ is variable in size and requires a length discriminator. Formally:
 \begin{equation}
   \var{x} \equiv \tup{\len{x}, x}\text{ thus }\se(\var{x}) \equiv \se(\len{x})\concat\se(x)
 \end{equation}
@@ -77,15 +77,29 @@ We also define a convenient discriminator operator $\maybe{x}$ specifically for 
 A sequence of bits $b \in \bitstring$ is a special case since encoding each individual bit as an octet would be very wasteful. We instead pack the bits into octets in order of least significant to most, and arrange into an octet stream. In the case of a variable length sequence, then the length is prefixed as in the general case.
 \begin{align}
   \se(b \in \bitstring) &\equiv \begin{cases}
-    [] &\when b = [] \\
-    \left[\sum\limits_{i=0}^{\min(8, \len{b})}{b_i\cdot 2^i}\right] \concat \se(b_{8\dots}) &\otherwise\\
+    \sq{} &\when b = \sq{} \\
+    \sq{
+      \sum\limits_{i=0}^{\min(8, \len{b})}
+      b\sub{i} \cdot 2^i
+    } \concat \encode{b\interval{8}{}} &\otherwise\\
   \end{cases}
 \end{align}
 
 \subsubsection{Dictionary Encoding}
 In general, dictionaries are placed in the Merkle trie directly (see appendix \ref{sec:merklization} for details). However, small dictionaries may reasonably be encoded as a sequence of pairs ordered by the key. Formally:
 \begin{equation}
-  \forall K, V: \se(d \in \dict{K}{V}) \equiv \se(\var{\sqorderby{k}{\tup{\se(k), \se(d[k])} \mid k \in \Fkeys{d}}})
+  \forall K, V: \se(d \in \dict{K}{V}) \equiv
+    \encode{
+      \var{\sq{
+        \orderby{k}{
+          \build{
+            \tup{\se(k), \se(d[k])}
+          }{
+            k \in \keys{d}
+          }
+        }
+      }}
+    }
 \end{equation}
 
 %The second is as a sequence of encoded values only, with each entry having an implicit key according to an enumeration over its domain. This is typically used when the domain is small in magnitude and typically similar in magnitude to the active domain. In order to account for the possibility of a key not existing in the dictionary (\ie the domain and the active domain not being equal) we prefix each value with an octet of one to indicate that the key is indeed present in the dictionary and place an octet of zero if the implied key is not.
@@ -93,7 +107,7 @@ In general, dictionaries are placed in the Merkle trie directly (see appendix \r
 %We provide a function $\signdata$ to deliver this from a regular dictionary:
 %\begin{equation}
 %  \forall K, V: \signdata(d \in \dict{K}{V}) \equiv \var{\sqorderby{k}{\begin{aligned}
-%    &[1] \concat \se(d[k]) &&\ \when k \in \Fkeys{d} \\
+%    &[1] \concat \se(d[k]) &&\ \when k \in \keys{d} \\
 %    &[0] &&\ \otherwise
 %  \end{aligned}
 %  \,\middle\mid\, k \in K}}
@@ -101,7 +115,7 @@ In general, dictionaries are placed in the Merkle trie directly (see appendix \r
 
 %Finally, we may also encode a dictionary only insofar as we encode the keys and encode the values; in this case the result is not a sequence of octets but rather a mapping of octet-sequences to octet-sequences. This is useful in defining the process of Merklization. We define the function $\se_D$ to deliver this from a regular dictionary:
 %\begin{equation}
-%  \forall K, V: \se_D(d \in \dict{K}{V}) \equiv r \suchthat k \in \Fkeys{d} \Leftrightarrow \se(k) \in \Fkeys{r} \wedge \forall k \in \Fkeys{d} : r[\se(k)] = \se(d[k])
+%  \forall K, V: \se_D(d \in \dict{K}{V}) \equiv r \suchthat k \in \keys{d} \Leftrightarrow \se(k) \in \keys{r} \wedge \forall k \in \keys{d} : r[\se(k)] = \se(d[k])
 %\end{equation}
 
 \subsubsection{Set Encoding}
@@ -122,11 +136,11 @@ We first define the trivial natural number serialization functions which are sub
   }
 \end{equation}
 
-For non-natural arguments, $\se_{l \in \N}$ corresponds to the definitions of $\se$, except that recursive elements are made as $\se_l$ rather than $\se$. Thus:
+For non-natural arguments, $\se_{l \in \N}$ corresponds to the definitions of $\se$, except that recursive elements are made as $\sefixed{l}$ rather than $\se$. Thus:
 \begin{align}
-  \se_{l \in \N}(a, b, \dots) &\equiv \se_l(\tup{a, b, \dots})\\
-  \se_{l \in \N}(\tup{a, b, \dots}) &\equiv \se_l(a) \concat \se_l(b) \concat \dots\\
-  \se_{l \in \N}(\sq{\mathbf{i}_0, \mathbf{i}_1, \dots}) &\equiv \se_l(\mathbf{i}_0) \concat \se_l(\mathbf{i}_1) \concat \dots
+  \se_{l \in \N}(a, b, \dots) &\equiv \fixeddecode{l}{\tup{a, b, \dots}}\\
+  \se_{l \in \N}(\tup{a, b, \dots}) &\equiv \fixeddecode{l}{a} \concat \fixeddecode{l}{b} \concat \dots\\
+  \se_{l \in \N}(\sq{\mathbf{i}_0, \mathbf{i}_1, \dots}) &\equiv \fixeddecode{l}{\mathbf{i}_0} \concat \fixeddecode{l}{\mathbf{i}_1} \concat \dots
 \end{align}
 
 And so on.
@@ -142,29 +156,29 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \right\rparen \\
   \se_T(\xttickets) &= \se(\var{\xttickets}) \\
   \se_P(\xtpreimages) &= \se(\var{[\tup{s, \var{p}} \mid \tup{s, p} \orderedin \xtpreimages]}) \\
-  \se_G(\xtguarantees) &= \se(\var{[\tup{w, \se_4(t), \var{a}} \mid \tup{w, t, a} \orderedin \xtguarantees]}) \\
-  \se_A(\xtassurances) &= \se(\var{[\tup{a, f, \se_2(v), s} \mid \tup{a, f, v, s} \orderedin \xtassurances]}) \\
-  \se_D((\mathbf{v}, \mathbf{c}, \mathbf{f})) &= \se(\var{[(r, \se_4(a), [(v, \se_2(i), s) \mid (v, i, s) \orderedin \mathbf{j}]) \mid (r, a, \mathbf{j}) \orderedin \mathbf{v}]}, \var{\mathbf{c}}, \var{\mathbf{f}}) \\
+  \se_G(\xtguarantees) &= \se(\var{[\tup{w, \fixeddecode{4}{t}, \var{a}} \mid \tup{w, t, a} \orderedin \xtguarantees]}) \\
+  \se_A(\xtassurances) &= \se(\var{[\tup{a, f, \fixeddecode{2}{v}, s} \mid \tup{a, f, v, s} \orderedin \xtassurances]}) \\
+  \se_D((\mathbf{v}, \mathbf{c}, \mathbf{f})) &= \se(\var{[(r, \fixeddecode{4}{a}, [(v, \fixeddecode{2}{i}, s) \mid (v, i, s) \orderedin \mathbf{j}]) \mid (r, a, \mathbf{j}) \orderedin \mathbf{v}]}, \var{\mathbf{c}}, \var{\mathbf{f}}) \\
   \se(\mathbf{H}) &= \se_U(\mathbf{H})\concat\se(\H_\¬sealsig) \\
-  \se_U(\mathbf{H}) &= \se(\H_\¬parent,\H_\¬priorstateroot,\H_\¬extrinsichash)\concat\se_4(\H_\¬timeslot)\concat\se(\maybe{\H_\¬epochmark},\maybe{\H_\¬winnersmark},\se_2(\H_\¬authorindex),\H_\¬vrfsig,\var{\H_\¬offendersmark})\\
-  \se(x \in \workcontext) &\equiv \se(x_a, x_s, x_b, x_l)\concat\se_4(x_t)\concat\se(\var{x_\mathbf{p}})\\
-  \se(x \in \avspec) &\equiv \se(x_h) \concat \se_4(x_l)\concat\se(x_u, x_e) \concat \se_2(x_n) \\
-  \se(x \in \mathbb{L}) &\equiv \se(\se_4(x_s), x_c, x_y, \se_8(x_g), x_u, x_i, x_x, x_z, x_e, \seresult(x_\wd¬result))\\
+  \se_U(\mathbf{H}) &= \se(\H_\¬parent,\H_\¬priorstateroot,\H_\¬extrinsichash)\concat\fixeddecode{4}{\H_\¬timeslot}\concat\se(\maybe{\H_\¬epochmark},\maybe{\H_\¬winnersmark},\fixeddecode{2}{\H_\¬authorindex},\H_\¬vrfsig,\var{\H_\¬offendersmark})\\
+  \se(x \in \workcontext) &\equiv \se(x_a, x_s, x_b, x_l)\concat\fixeddecode{4}{x_t}\concat\se(\var{x_\mathbf{p}})\\
+  \se(x \in \avspec) &\equiv \se(x_h) \concat \fixeddecode{4}{x_l}\concat\se(x_u, x_e) \concat \fixeddecode{2}{x_n} \\
+  \se(x \in \mathbb{L}) &\equiv \se(\fixeddecode{4}{x_s}, x_c, x_y, \fixeddecode{8}{x_g}, x_u, x_i, x_x, x_z, x_e, \seresult(x_\wd¬result))\\
   \se(x \in \workreport) &\equiv \se(x_s, x_x, x_c, x_a, x_g, \var{x_\wr¬authtrace}, \var{x_\mathbf{l}}, \var{x_\wr¬digests}) \\
-  \se(x \in \workpackage) &\equiv \se(\se_4(x_\wp¬authcodehost), x_\wp¬authcodehash, x_\wp¬context, \var{x_\wp¬authtoken}, \var{x_\wp¬authconfig}, \var{x_\wp¬workitems}) \\
-  % TODO: \se_4(i) should be just \se(i), but we should wait for this to be written.
+  \se(x \in \workpackage) &\equiv \se(\fixeddecode{4}{x_\wp¬authcodehost}, x_\wp¬authcodehash, x_\wp¬context, \var{x_\wp¬authtoken}, \var{x_\wp¬authconfig}, \var{x_\wp¬workitems}) \\
+  % TODO: \fixeddecode{4}{i} should be just \se(i), but we should wait for this to be written.
   \se(x \in \workitem) &\equiv \se(
-    \se_4(x_\wi¬service),
+    \fixeddecode{4}{x_\wi¬service},
     x_\wi¬codehash,
-    \se_8(x_\wi¬refgaslimit),
-    \se_8(x_\wi¬accgaslimit),
-    \se_2(x_\wi¬exportcount)
+    \fixeddecode{8}{x_\wi¬refgaslimit},
+    \fixeddecode{8}{x_\wi¬accgaslimit},
+    \fixeddecode{2}{x_\wi¬exportcount}
     \var{x_\wi¬payload},
     \var{\se_I^\#(x_\wi¬importsegments)},
-    \var{\sq{\tup{h, \se_4(i)} \mid \tup{h, i} \orderedin x_\wi¬extrinsics}},
+    \var{\sq{\tup{h, \fixeddecode{4}{i}} \mid \tup{h, i} \orderedin x_\wi¬extrinsics}},
   ) \\
   \se(x \in \safroleticket) &\equiv \se(x_\mathbf{y}, x_r) \\
-  \se(x \in \defxfer) &\equiv \se(\se_4(x_s), \se_4(x_d), \se_8(x_a), \se(x_m), \se_8(x_g)) \\
+  \se(x \in \defxfer) &\equiv \se(\fixeddecode{4}{x_s}, \fixeddecode{4}{x_d}, \fixeddecode{8}{x_a}, \se(x_m), \fixeddecode{8}{x_g}) \\
   \se(x \in \operandtuple) &\equiv \se(x_\ot¬packagehash, x_\ot¬segroot, x_\ot¬authorizer,  x_\ot¬payloadhash, x_\ot¬gaslimit, \seresult(x_\ot¬result), \var{x_\ot¬authtrace}) \\
   \seresult(o \in \workerror \cup \blob) &\equiv \begin{cases}
     (0, \var{o}) &\when o \in \blob \\
@@ -176,8 +190,8 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     6 &\when o = \token{BIG} \\
   \end{cases}\\
   \se_I(h \in \hash \cup \hash^\boxplus, i \in \Nbits{15}) &\equiv \begin{cases}
-    (h, \se_2(i)) &\when h \in \hash\\
-    (r, \se_2(i + 2^{15})) &\when \exists r \in \hash, h = r^\boxplus\\
+    (h, \fixeddecode{2}{i}) &\when h \in \hash\\
+    (r, \fixeddecode{2}{i + 2^{15}}) &\when \exists r \in \hash, h = r^\boxplus\\
   \end{cases}
 \end{align}
 

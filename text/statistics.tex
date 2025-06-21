@@ -9,14 +9,14 @@ Such performance information cannot directly cover all aspects of validator acti
 The validator statistics are made on a per-epoch basis and we retain one record of completed statistics together with one record which serves as an accumulator for the present epoch. Both are tracked in $\activity$, which is thus a sequence of two elements, with the first being the accumulator and the second the previous epoch's statistics. For each epoch we track a performance record for each validator:
 \begin{align}
   \activity &\equiv \tup{\valstatsaccumulator, \valstatsprevious, \corestats, \servicestats}\\
-  \tuple{\valstatsaccumulator, \valstatsprevious} &\in \seq{\tuple{
+  \tuple{\valstatsaccumulator, \valstatsprevious} &\in \sequence{\tuple{
     \isa{\vs¬blocks}{\N}\,,
     \isa{\vs¬tickets}{\N}\,,
     \isa{\vs¬preimagecount}{\N}\,,
     \isa{\vs¬preimagesize}{\N}\,,
     \isa{\vs¬guarantees}{\N}\,,
     \isa{\vs¬assurances}{\N}
-%    \isa{\mathbf{u}}{\seq{\N}_\valcount}
+%    \isa{\mathbf{u}}{\sequence{\N}_\valcount}
   }}_\valcount^2
   \!\!\!\!\!\!\!\!\!\!
 \end{align}
@@ -76,7 +76,7 @@ Note that $\reporters$ is the \emph{Reporters} set, as defined in equation \ref{
 
 The other two components of statistics are the core and service activity statistics. These are tracked only on a per-block basis unlike the validator statistics which are tracked over the whole epoch.
 \begin{align}
-  \corestats &\in \seq{\tuple{
+  \corestats &\in \sequence{\tuple{
     \begin{alignedat}{7}
       \isa{\cs¬daload&}{\N}\,,\;
       \isa{&\cs¬popularity&}{\N}\,,\;
@@ -171,8 +171,8 @@ Finally, the service statistics are updated using the same intermediate values a
   \where \local¬servicesactive &=
     \local¬servicesreported \cup
     \local¬servicesprovided \cup
-    \Fkeys{\accumulationstatistics} \cup
-    \Fkeys{\deferredtransfersstatistics}\\
+    \keys{\accumulationstatistics} \cup
+    \keys{\deferredtransfersstatistics}\\
   \also \local¬servicesreported &= \set{
     \build{\wdX_\wd¬service}{\wdX \in \wrX_\wr¬digests, \wrX \in \incomingreports}
   }\\

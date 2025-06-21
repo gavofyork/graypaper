@@ -4,7 +4,7 @@
 
 \subsection{Basic Definition}
 \newcommand*{\instr}[1]{\text{{\small \texttt{#1}}}}
-\newcommand*{\regs}{\seq{\pvmreg}_{13}}
+\newcommand*{\regs}{\sequence{\pvmreg}_{13}}
 \newcommand*{\reg}{{\registers}}
 \newcommand*{\mem}{{\memory}}
 \newcommand*{\memr}{\cyclic{\mem}}
@@ -60,9 +60,9 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
     \end{cases}
   }\\
   \deblob&\colon\abracegroup{
-    \blob &\to \tuple{\blob, \mathbb{B}, \seq{\pvmreg}} \cup \error \\
+    \blob &\to \tuple{\blob, \mathbb{B}, \sequence{\pvmreg}} \cup \error \\
     \mathbf{p} &\mapsto \begin{cases}
-      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \se(\len{\mathbf{j}}) \concat \se_1(z) \concat \se(\len{\mathbf{c}}) \concat \se_z(\mathbf{j}) \concat \se(\mathbf{c}) \concat \se(\mathbf{k})\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \encode{\len{\mathbf{j}}} \concat \fixedencode{1}{z} \concat \encode{\len{\mathbf{c}}} \concat \se_z(\mathbf{j}) \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
       \error &\otherwise
     \end{cases} \\
   }
@@ -135,7 +135,7 @@ We denote this set, as opcode indices rather than names, as $T$, which is a subs
 We must now define the single-step \textsc{pvm} state-transition function $\Psi_1$:
 \begin{equation}
   \Psi_1\colon \abracegroup{
-    (\blob, \mathbb{B}, \seq{\pvmreg}, \pvmreg, \gas, \regs, \ram) &\to (\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram)\\
+    (\blob, \mathbb{B}, \sequence{\pvmreg}, \pvmreg, \gas, \regs, \ram) &\to (\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram)\\
     (\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\mapsto (\varepsilon, \imath', \gascounter', \registers', \mem')
   }
 \end{equation}
@@ -281,7 +281,7 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
   \using r_A = \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad
   \reg'_A \equiv \reg'_{r_A} \,,\quad
-  \immed_X \equiv \de_8(\instructions_{\imath+2\dots+8})
+  \immed_X \equiv \decode{8}{\instructions_{\imath+2\dots+8}}
 \end{equation}
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
@@ -311,9 +311,9 @@ We assume the skip length $\ell$ is well-defined:
   \midrule
   \endhead
   30&\token{store\_imm\_u8}&1&$\memwr_{\immed_X} = \immed_Y \bmod 2^8 $\\ \mrule
-  31&\token{store\_imm\_u16}&1&$\memwr_{\immed_X\dots+2} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
-  32&\token{store\_imm\_u32}&1&$\memwr_{\immed_X\dots+4} = \se_4(\immed_Y \bmod 2^{32})$\\ \mrule
-  33&\token{store\_imm\_u64}&1&$\memwr_{\immed_X\dots+8} = \se_8(\immed_Y)$\\
+  31&\token{store\_imm\_u16}&1&$\memwr_{\immed_X\dots+2} = \fixedencode{2}{\immed_Y \bmod 2^{16}}$\\ \mrule
+  32&\token{store\_imm\_u32}&1&$\memwr_{\immed_X\dots+4} = \fixedencode{4}{\immed_Y \bmod 2^{32}}$\\ \mrule
+  33&\token{store\_imm\_u64}&1&$\memwr_{\immed_X\dots+8} = \fixedencode{8}{\immed_Y}$\\
 \bottomrule
 \end{longtable}
 
@@ -356,15 +356,15 @@ We assume the skip length $\ell$ is well-defined:
   51&\token{load\_imm}&1&$\reg'_A = \immed_X$\\ \mrule
   52&\token{load\_u8}&1&$\reg'_A = \memr_{\immed_X}$\\ \mrule
   53&\token{load\_i8}&1&$\reg'_A = \sext_1(\memr_{\immed_X})$\\ \mrule
-  54&\token{load\_u16}&1&$\reg'_A = \de_2(\memr_{\immed_X\dots+2})$\\ \mrule
-  55&\token{load\_i16}&1&$\reg'_A = \sext_2(\de_2(\memr_{\immed_X\dots+2}))$\\ \mrule
-  56&\token{load\_u32}&1&$\reg'_A = \de_4(\memr_{\immed_X\dots+4})$\\ \mrule
-  57&\token{load\_i32}&1&$\reg'_A = \sext_4(\de_4(\memr_{\immed_X\dots+4}))$\\ \mrule
-  58&\token{load\_u64}&1&$\reg'_A = \de_8(\memr_{\immed_X\dots+8})$\\ \mrule
+  54&\token{load\_u16}&1&$\reg'_A = \decode{2}{\memr_{\immed_X\dots+2}}$\\ \mrule
+  55&\token{load\_i16}&1&$\reg'_A = \sext_2(\decode{2}{\memr_{\immed_X\dots+2}})$\\ \mrule
+  56&\token{load\_u32}&1&$\reg'_A = \decode{4}{\memr_{\immed_X\dots+4}}$\\ \mrule
+  57&\token{load\_i32}&1&$\reg'_A = \sext_4(\decode{4}{\memr_{\immed_X\dots+4}})$\\ \mrule
+  58&\token{load\_u64}&1&$\reg'_A = \decode{8}{\memr_{\immed_X\dots+8}}$\\ \mrule
   59&\token{store\_u8}&1&$\memwr_{\immed_X} = \reg_A \bmod 2^8$\\ \mrule
-  60&\token{store\_u16}&1&$\memwr_{\immed_X\dots+2} = \se_2(\reg_A \bmod 2^{16})$\\ \mrule
-  61&\token{store\_u32}&1&$\memwr_{\immed_X\dots+4} = \se_4(\reg_A \bmod 2^{32})$\\ \mrule
-  62&\token{store\_u64}&1&$\memwr_{\immed_X\dots+8} = \se_8(\reg_A)$\\
+  60&\token{store\_u16}&1&$\memwr_{\immed_X\dots+2} = \fixedencode{2}{\reg_A \bmod 2^{16}}$\\ \mrule
+  61&\token{store\_u32}&1&$\memwr_{\immed_X\dots+4} = \fixedencode{4}{\reg_A \bmod 2^{32}}$\\ \mrule
+  62&\token{store\_u64}&1&$\memwr_{\immed_X\dots+8} = \fixedencode{8}{\reg_A}$\\
 \bottomrule
 \end{longtable}
 
@@ -388,9 +388,9 @@ We assume the skip length $\ell$ is well-defined:
   \midrule
   \endhead
   70&\token{store\_imm\_ind\_u8}&1&$\memwr_{\reg_A + \immed_X} = \immed_Y \bmod 2^8$\\ \mrule
-  71&\token{store\_imm\_ind\_u16}&1&$\memwr_{\reg_A + \immed_X \dots+ 2} = \se_2(\immed_Y \bmod 2^{16})$\\ \mrule
-  72&\token{store\_imm\_ind\_u32}&1&$\memwr_{\reg_A + \immed_X \dots+ 4} = \se_4(\immed_Y \bmod 2^{32})$\\ \mrule
-  73&\token{store\_imm\_ind\_u64}&1&$\memwr_{\reg_A + \immed_X \dots+ 8} = \se_8(\immed_Y)$\\
+  71&\token{store\_imm\_ind\_u16}&1&$\memwr_{\reg_A + \immed_X \dots+ 2} = \fixedencode{2}{\immed_Y \bmod 2^{16}}$\\ \mrule
+  72&\token{store\_imm\_ind\_u32}&1&$\memwr_{\reg_A + \immed_X \dots+ 4} = \fixedencode{4}{\immed_Y \bmod 2^{32}}$\\ \mrule
+  73&\token{store\_imm\_ind\_u64}&1&$\memwr_{\reg_A + \immed_X \dots+ 8} = \fixedencode{8}{\immed_Y}$\\
   \bottomrule
 \end{longtable}
 
@@ -461,7 +461,7 @@ We assume the skip length $\ell$ is well-defined:
   108&\token{sign\_extend\_8}&1&$\reg'_D = \unsigned{\signedn{1}{\reg_A \bmod 2^8}}$\\ \mrule
   109&\token{sign\_extend\_16}&1&$\reg'_D = \unsigned{\signedn{2}{\reg_A \bmod 2^{16}}}$\\ \mrule
   110&\token{zero\_extend\_16}&1&$\reg'_D = \reg_A \bmod 2^{16}$\\ \mrule
-  111&\token{reverse\_bytes}&1&$\forall i \in \N_8 : \se_8(\reg'_D)_i = \se_8(\reg_A)_{7-i}$\\
+  111&\token{reverse\_bytes}&1&$\forall i \in \N_8 : \fixedencode{8}{\reg'_D}_i = \fixedencode{8}{\reg_A}_{7-i}$\\
 %  10X&\token{}&1&$\reg'_D = ...$\\ \mrule
 \bottomrule
 \end{longtable}
@@ -489,16 +489,16 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \midrule
   \endhead
   120&\token{store\_ind\_u8}&1&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
-  121&\token{store\_ind\_u16}&1&$\memwr_{\reg_B + \immed_X \dots+ 2} = \se_2(\reg_A \bmod 2^{16})$\\ \mrule
-  122&\token{store\_ind\_u32}&1&$\memwr_{\reg_B + \immed_X \dots+ 4} = \se_4(\reg_A \bmod 2^{32})$\\ \mrule
-  123&\token{store\_ind\_u64}&1&$\memwr_{\reg_B + \immed_X \dots+ 8} = \se_8(\reg_A)$\\ \mrule
+  121&\token{store\_ind\_u16}&1&$\memwr_{\reg_B + \immed_X \dots+ 2} = \fixedencode{2}{\reg_A \bmod 2^{16}}$\\ \mrule
+  122&\token{store\_ind\_u32}&1&$\memwr_{\reg_B + \immed_X \dots+ 4} = \fixedencode{4}{\reg_A \bmod 2^{32}}$\\ \mrule
+  123&\token{store\_ind\_u64}&1&$\memwr_{\reg_B + \immed_X \dots+ 8} = \fixedencode{8}{\reg_A}$\\ \mrule
   124&\token{load\_ind\_u8}&1&$\reg'_A = \memr_{\reg_B + \immed_X}$\\ \mrule
   125&\token{load\_ind\_i8}&1&$\reg'_A = \unsigned{\signedn{1}{\memr_{\reg_B + \immed_X}}}$\\ \mrule
-  126&\token{load\_ind\_u16}&1&$\reg'_A = \de_2(\memr_{\reg_B + \immed_X\dots+2})$\\ \mrule
-  127&\token{load\_ind\_i16}&1&$\reg'_A = \unsigned{\signedn{2}{\de_2(\memr_{\reg_B + \immed_X\dots+2})}}$\\ \mrule
-  128&\token{load\_ind\_u32}&1&$\reg'_A = \de_4(\memr_{\reg_B + \immed_X\dots+4})$\\ \mrule
-  129&\token{load\_ind\_i32}&1&$\reg'_A = \unsigned{\signedn{4}{\de_4(\memr_{\reg_B + \immed_X\dots+4})}}$\\ \mrule
-  130&\token{load\_ind\_u64}&1&$\reg'_A = \de_8(\memr_{\reg_B + \immed_X\dots+8})$\\ \mrule
+  126&\token{load\_ind\_u16}&1&$\reg'_A = \decode{2}{\memr_{\reg_B + \immed_X\dots+2}}$\\ \mrule
+  127&\token{load\_ind\_i16}&1&$\reg'_A = \unsigned{\signedn{2}{\decode{2}{\memr_{\reg_B + \immed_X\dots+2}}}}$\\ \mrule
+  128&\token{load\_ind\_u32}&1&$\reg'_A = \decode{4}{\memr_{\reg_B + \immed_X\dots+4}}$\\ \mrule
+  129&\token{load\_ind\_i32}&1&$\reg'_A = \unsigned{\signedn{4}{\decode{4}{\memr_{\reg_B + \immed_X\dots+4}}}}$\\ \mrule
+  130&\token{load\_ind\_u64}&1&$\reg'_A = \decode{8}{\memr_{\reg_B + \immed_X\dots+8}}$\\ \mrule
   131&\token{add\_imm\_32}&1&$\reg'_A = \sext_4((\reg_B + \immed_X) \bmod 2^{32})$\\ \mrule
   132&\token{and\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \wedge \bits{\immed_X}_i$\\ \mrule
   133&\token{xor\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}_i = \bits{\reg_B}_i \oplus \bits{\immed_X}_i$\\ \mrule

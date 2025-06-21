@@ -36,7 +36,7 @@ Each validator shall perform auditing duties on each valid block received. Since
 
 We define the sequence of work-reports which we may be required to audit as $\local¬reports$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
 \begin{align}\label{eq:auditselection}
-  \local¬reports &\in \seq{\optional{\workreport}}_\corecount \\
+  \local¬reports &\in \sequence{\optional{\workreport}}_\corecount \\
   \local¬reports &\equiv \sq{\build{
     \begin{rcases}
       \reports\subb{\cX}_\rs¬workreport &\when \reports\subb{\cX}_\rs¬workreport \in \justbecameavailable \\
@@ -71,7 +71,7 @@ In all cases, we publish a signed statement of which of the cores we believe we 
 Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $\local¬seed\sub{n}$ and all signed data. Validator's announcement statements must be in the set $S$:
 \begin{align}
   S &\equiv \sig{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_I \append n \concat \mathbf{x}\sub{n} \concat \blake(\H)} \\
-  \where \mathbf{x}\sub{n} &= \se(\set{\build{\se_2(\cX) \concat \blake(\wrX)}{\wrcX \in \local¬tranche\sub{n}}})\\
+  \where \mathbf{x}\sub{n} &= \se(\set{\build{\fixedencode{2}{\cX} \concat \blake(\wrX)}{\wrcX \in \local¬tranche\sub{n}}})\\
   \mathsf{X}_I &= \token{\$jam\_announce}
 \end{align}
 
@@ -111,12 +111,12 @@ We then attempt to reproduce the report on the core to give $e\sub{n}$, a mappin
 \begin{equation}
   \begin{aligned}
   %  \forall (\cX, \wrX) \in \local¬tranche\sub{n} \!: e\sub{n}(\wrX) \!\Leftrightarrow\! \begin{cases}
-  %    \wrX = \computereport(p, \cX)\!\!\!\!\! &\when \exists p \in \workpackage: \se(p) = F(\wrX) \\
+  %    \wrX = \computereport(p, \cX)\!\!\!\!\! &\when \exists p \in \workpackage: \encode{p} = F(\wrX) \\
   %    \bot &\otherwise
   %  \end{cases}
     \forall (\cX, \wrX) \in \local¬tranche\sub{n} :\ \ &\\[-10pt]
     e\sub{n}(\cX) \Leftrightarrow &\begin{cases}
-      \wrX = \computereport(p, \cX)\!\!\! &\when \exists p \in \workpackage: \se(p) = F(\wrX) \\
+      \wrX = \computereport(p, \cX)\!\!\! &\when \exists p \in \workpackage: \encode{p} = F(\wrX) \\
       \bot &\otherwise
     \end{cases}
   \end{aligned}\!\!

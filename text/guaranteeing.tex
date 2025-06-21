@@ -21,7 +21,7 @@ For any guarantor of index $v$ assigned to core $c$ and a work-package $p$, we d
 
 Such guarantors may safely create and distribute the payload $(s, v)$. The component $s$ may be created according to equation \ref{eq:guarantorsig}; specifically it is a signature using the validator's registered Ed25519 key on a payload $l$:
 \begin{equation}
-  l = \blake(\se(c, r))
+  l = \blake(\encode{c, r)}
 \end{equation}
 
 To maximize profit, the guarantor should require the work-digest meets all expectations which are in place during the guarantee extrinsic described in section \ref{sec:workreportguarantees}. This includes contextual validity and inclusion of the authorization in the authorization pool. No doing so does not result in punishment, but will prevent the block author from including the package and so reduces rewards.

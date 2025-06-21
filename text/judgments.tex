@@ -27,17 +27,17 @@ The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise i
 \begin{equation}
   \begin{aligned}
     \xtdisputes &\equiv \tuple{\xtverdicts, \xtculprits, \xtfaults} \\
-    \where \xtverdicts &\in \seq{\tuple{
+    \where \xtverdicts &\in \sequence{\tuple{
       \hash,
       \ffrac{\thetime}{\epochlen} - \N_2,
-      \seq{\tuple{
+      \sequence{\tuple{
         \set{\top, \bot},
         \valindex,
         \signature
       }}_{\floor{\twothirds\valcount} + 1}
     }}\\
-    \also \xtculprits &\in \seq{\tuple{\hash, \edkey, \signature}} \,,\quad
-    \xtfaults \in \seq{\tuple{\hash, \set{\top,\bot}, \edkey, \signature}}
+    \also \xtculprits &\in \sequence{\tuple{\hash, \edkey, \signature}} \,,\quad
+    \xtfaults \in \sequence{\tuple{\hash, \set{\top,\bot}, \edkey, \signature}}
   \end{aligned}
 \end{equation}
 
@@ -87,7 +87,7 @@ The judgments of all verdicts must be ordered by validator index and there may b
 
 We define $\verdicts$ to derive from the sequence of verdicts introduced in the block's extrinsic, containing only the report hash and the sum of positive judgments. We require this total to be either exactly two-thirds-plus-one, zero or one-third of the validator set indicating, respectively, that the report is good, that it's bad, or that it's wonky.\footnote{This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{cryptoeprint:2024/961} discusses the security implications in depth).} Formally:
 \begin{align}\label{eq:verdicts}
-  \verdicts &\in \seq{\tup{
+  \verdicts &\in \sequence{\tup{
     \hash,
     \set{0, \floor{\onethird\valcount}, \floor{\twothirds\valcount} + 1}
   }} \\

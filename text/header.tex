@@ -26,7 +26,7 @@ The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking 
   \H_\¬extrinsichash &\in \hash \ ,\quad
   \H_\¬extrinsichash \equiv \blake(\se(\blake^\#(\mathbf{a}))) \\
   \where \mathbf{a} &= [\se_T(\xttickets), \se_P(\xtpreimages), \mathbf{g}, \se_A(\xtassurances), \se_D(\xtdisputes)] \\
-  \also \mathbf{g} &= \se(\var{[(\blake(w), \se_4(t), \var{a}) \mid (w, t, a) \orderedin \xtguarantees]})
+  \also \mathbf{g} &= \se(\var{[(\blake(w), \fixedencode{4}{t}, \var{a}) \mid (w, t, a) \orderedin \xtguarantees]})
 \end{align}
 
 A block may only be regarded as valid once the time-slot index $\H_\¬timeslot$ is in the past. It is always strictly greater than that of its parent. Formally:
@@ -53,9 +53,9 @@ All blocks have an associated public key to identify the author of the block. We
 
 If not $\none$, then the epoch marker specifies key and entropy relevant to the following epoch in case the ticket contest does not complete adequately (a very much unexpected eventuality). Similarly, the winning-tickets marker, if not $\none$, provides the series of 600 slot sealing ``tickets'' for the next epoch (see the next section). Finally, the offenders marker is the sequence of Ed25519 keys of newly misbehaving validators, to be fully explained in section \ref{sec:disputes}. Formally:
 \begin{equation}
-  \H_\¬epochmark \in \optional{\tuple{\hash, \hash, \seq{\tuple{\bskey, \edkey}}_{\valcount}}}\,,\quad
-  \H_\¬winnersmark \in \optional{\seq{\safroleticket}_{\epochlen}}\,,\quad
-  \H_\¬offendersmark \in \seq{\edkey}
+  \H_\¬epochmark \in \optional{\tuple{\hash, \hash, \sequence{\tuple{\bskey, \edkey}}_{\valcount}}}\,,\quad
+  \H_\¬winnersmark \in \optional{\sequence{\safroleticket}_{\epochlen}}\,,\quad
+  \H_\¬offendersmark \in \sequence{\edkey}
 \end{equation}
 
 The terms are fully defined in sections \ref{sec:epochmarker} and \ref{sec:disputes}.
