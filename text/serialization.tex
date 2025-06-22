@@ -99,7 +99,7 @@ For any values which are sets and don't already have a defined encoding above, w
 \subsubsection{Fixed-length Integer Encoding}
 We first define the trivial natural number serialization functions which are subscripted by the number of octets of the final sequence. Values are encoded in a regular little-endian fashion. This is utilized for almost all integer encoding across the protocol. Formally:
 \begin{equation}
-  \fnfixedencode{l \in \N}\colon\abracegroup{
+  \fnencode[l \in \N]\colon\abracegroup{
     \Nbits{8l} &\to \bloboflen{l} \\
     x &\mapsto \begin{cases}
       \sq{} &\when l = 0 \\
@@ -108,7 +108,7 @@ We first define the trivial natural number serialization functions which are sub
   }
 \end{equation}
 
-For non-natural arguments, $\fnfixedencode{l \in \N}$ corresponds to the definitions of $\fnencode$, except that recursive elements are made as $\fnfixedencode{l}$ rather than $\fnencode$. Thus:
+For non-natural arguments, $\fnencode[l \in \N]$ corresponds to the definitions of $\fnencode$, except that recursive elements are made as $\fnencode[l]$ rather than $\fnencode$. Thus:
 \begin{align}
   \encode[l \in \N]{a, b, \dots} &\equiv \encode[l]{\tup{a, b, \dots}}\\
   \encode[l \in \N]{\tup{a, b, \dots}} &\equiv \encode[l]{a} \concat \encode[l]{b} \concat \dots\\

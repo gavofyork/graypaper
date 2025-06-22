@@ -26,8 +26,18 @@ The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking 
 \begin{align}
   \H_\¬extrinsichash &\in \hash \ ,\quad
   \H_\¬extrinsichash \equiv \blake{\encode{\blakemany{\mathbf{a}}}} \\
-  \where \mathbf{a} &= \sq{\encodetickets{\xttickets}, \encodepreimages{\xtpreimages}, \mathbf{g}, \encodeassurances{\xtassurances}, \encodedisputes{\xtdisputes}} \\
-  \also \mathbf{g} &= \encode{\var{\sq{\build{(\blake{w}, \encode[4]{t}, \var{a})}{\tup{w, t, a} \orderedin \xtguarantees}}}}
+  \where \mathbf{a} &= \sq{
+    \encodetickets{\xttickets},
+    \encodepreimages{\xtpreimages},
+    \mathbf{g},
+    \encodeassurances{\xtassurances},
+    \encodedisputes{\xtdisputes}
+  } \\
+  \also \mathbf{g} &= \encode{\var{\sq{\build{
+    \tup{\blake{\xg¬workreport}, \encode[4]{\xg¬timeslot}, \var{\xg¬credential}}
+  }{
+    \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \orderedin \xtguarantees
+  }}}}
 \end{align}
 
 A block may only be regarded as valid once the time-slot index $\H_\¬timeslot$ is in the past. It is always strictly greater than that of its parent. Formally:

@@ -174,11 +174,9 @@
 \newcommand*{\fnmmrappend}{\mathcal{A}}
 \newcommand*{\fnoctetstobits}{\mathcal{B}}
 \newcommand*{\fnerasurecode}{\mathcal{C}}
-\newcommand*{\fnencode}{\mathcal{E}}
-\newcommand*{\fnfixedencode}[1]{\fnencode_{#1}}
-\newcommand*{\fndecode}{\mathcal{E}^{-1}}
-\newcommand*{\fnfixeddecode}[1]{\fndecode_{#1}}
-\newcommand*{\fnmmrencode}{\fnencode_M}
+\newcommand*{\fnencode}[1][]{\mathcal{E}_{#1}}
+\newcommand*{\fndecode}[1][]{\mathcal{E}^{-1}_{#1}}
+\newcommand*{\fnmmrencode}{\fnencode[M]}
 \newcommand*{\fnfyshuffle}{\mathcal{F}}
 \newcommand*{\fnblake}{\mathcal{H}}
 \newcommand*{\fnkeccak}{\mathcal{H}_K}
@@ -199,21 +197,19 @@
 \newcommand*{\fntosigned}[1]{\mathcal{Z}_{#1}}
 \newcommand*{\wallclock}{\mathcal{T}}
 
-\newcommand*{\encode}[2][]{\fnfixedencode{#1}\left(#2\right)}
-\newcommand*{\fixedencode}[2]{\fnfixedencode{#1}\left(#2\right)}
-\newcommand*{\decode}[2][]{\fnfixeddecode{#1}\left(#2\right)}
-\newcommand*{\fixeddecode}[2]{\fnfixeddecode{#1}\left(#2\right)}
-\newcommand*{\mmrencode}[1]{\fnmmrencode\left(#1\right)}
-\newcommand*{\keys}[1]{\mathcal{K}\left(#1\right)}
-\newcommand*{\values}[1]{\mathcal{V}\left(#1\right)}
-\newcommand*{\blake}[2][]{\fnblake_{#1}\left(#2\right)}
-\newcommand*{\blakemany}[2][]{\fnblake^\#_{#1}\left(#2\right)}
-\newcommand*{\keccak}[1]{\fnkeccak\left(#1\right)}
+% Caligraphic Functions
 \newcommand*{\mmrappend}[1]{\fnmmrappend\left(#1\right)}
 \newcommand*{\erasurecode}[2][]{\fnerasurecode_{#1}\left(#2\right)}
 \newcommand*{\erasurecodemany}[2][]{\fnerasurecode^\#_{#1}\left(#2\right)}
+\newcommand*{\encode}[2][]{\fnencode[#1]\left(#2\right)}
+\newcommand*{\decode}[2][]{\fndecode[#1]\left(#2\right)}
+\newcommand*{\mmrencode}[1]{\fnmmrencode\left(#1\right)}
 \newcommand*{\fyshuffle}[1]{\fnfyshuffle\left(#1\right)}
+\newcommand*{\blake}[2][]{\fnblake_{#1}\left(#2\right)}
+\newcommand*{\blakemany}[2][]{\fnblake^\#_{#1}\left(#2\right)}
+\newcommand*{\keccak}[1]{\fnkeccak\left(#1\right)}
 \newcommand*{\merklejustsubpath}[2]{\fnmerklejustsubpath{#1}\left(#2\right)}
+\newcommand*{\keys}[1]{\mathcal{K}\left(#1\right)}
 \newcommand*{\merklesubtreepage}[2]{\fnmerklesubtreepage{#1}\left(#2\right)}
 \newcommand*{\merklizecd}[1]{\fnmerklizecd\left(#1\right)}
 \newcommand*{\merklizewb}[1]{\fnmerklizewb\left(#1\right)}
@@ -226,6 +222,7 @@
 \newcommand*{\ecrecover}[1]{\fnecrecover\left(#1\right)}
 \newcommand*{\signdata}[2]{\fnsigndata{#1}\left(#2\right)}
 \newcommand*{\subifnone}[1]{\fnsubifnone\left(#1\right)}
+\newcommand*{\values}[1]{\mathcal{V}\left(#1\right)}
 \newcommand*{\sext}[2]{\fnsext{#1}\left(#2\right)}
 \newcommand*{\banderout}[1]{\fnbanderout\left(#1\right)}
 \newcommand*{\signfunc}[1]{\fntosigned{#1}}
@@ -576,11 +573,11 @@
 \newcommand*{\xtpreimages}{\XT_P}
 \newcommand*{\xtguarantees}{\XT_G}
 
-\newcommand*{\encodetickets}[1]{\fnencode_T\left(#1\right)}
-\newcommand*{\encodepreimages}[1]{\fnencode_P\left(#1\right)}
-\newcommand*{\encodeguarantees}[1]{\fnencode_G\left(#1\right)}
-\newcommand*{\encodeassurances}[1]{\fnencode_A\left(#1\right)}
-\newcommand*{\encodedisputes}[1]{\fnencode_D\left(#1\right)}
+\newcommand*{\encodetickets}[1]{\encode[T]{#1}}
+\newcommand*{\encodepreimages}[1]{\encode[P]{#1}}
+\newcommand*{\encodeguarantees}[1]{\encode[G]{#1}}
+\newcommand*{\encodeassurances}[1]{\encode[A]{#1}}
+\newcommand*{\encodedisputes}[1]{\encode[D]{#1}}
 
 \newcommand*{\xa¬anchor}{a}
 \newcommand*{\xa¬availabilities}{f}
@@ -617,8 +614,8 @@
 % Headers.
 \newcommand*{\header}{\mathbf{H}}
 \newcommand*{\theheader}{\header} % "THE header" is overloaded with "prototype header" for now.
-\newcommand*{\fnencodeunsignedheader}{\mathcal{E}_U}
-\newcommand*{\encodeunsignedheader}[1]{\fnencodeunsignedheader\left(#1\right)}
+\newcommand*{\fnencodeunsignedheader}{\fnencode[U]}
+\newcommand*{\encodeunsignedheader}[1]{\encode[U]{#1}}
 \newcommand*{\parentheader}[1]{{#1}^-}
 \newcommand*{\genesisheader}{\header^0}
 \renewcommand*{\H}{\theheader} % short-hand for \theheader, used in equations when subscripting to a field.
