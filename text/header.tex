@@ -64,8 +64,8 @@ All blocks have an associated public key to identify the author of the block. We
 
 If not $\none$, then the epoch marker specifies key and entropy relevant to the following epoch in case the ticket contest does not complete adequately (a very much unexpected eventuality). Similarly, the winning-tickets marker, if not $\none$, provides the series of 600 slot sealing ``tickets'' for the next epoch (see the next section). Finally, the offenders marker is the sequence of Ed25519 keys of newly misbehaving validators, to be fully explained in section \ref{sec:disputes}. Formally:
 \begin{equation}
-  \H_\¬epochmark \in \optional{\tuple{\hash, \hash, \sequence{\tuple{\bskey, \edkey}}_{\valcount}}}\,,\quad
-  \H_\¬winnersmark \in \optional{\sequence{\safroleticket}_{\epochlen}}\,,\quad
+  \H_\¬epochmark \in \optional{\tuple{\hash, \hash, \sequence[\valcount]{\tuple{\bskey, \edkey}}}}\,,\quad
+  \H_\¬winnersmark \in \optional{\sequence[\epochlen]{\safroleticket}}\,,\quad
   \H_\¬offendersmark \in \sequence{\edkey}
 \end{equation}
 

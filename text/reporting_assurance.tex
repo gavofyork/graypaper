@@ -13,12 +13,12 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 \subsection{State}
 The state of the reporting and availability portion of the protocol is largely contained within $\reports$, which tracks the work-reports which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
 \begin{equation}\label{eq:reportingstate}
-  \reports \in \sequence{
+  \reports \in \sequence[\corecount]{
     \optional{\tuple{
       \isa{\rs¬workreport}{\workreport} ,\,
       \isa{\rs¬timestamp}{\timeslot}
     }}
-  }_\corecount
+  }
 \end{equation}
 
 As usual, intermediate and posterior values ($\reportspostjudgement$, $\reportspostguarantees$, $\reportspostassurances$) are held under the same constraints as the prior value.
@@ -34,7 +34,7 @@ A work-report, of the set $\workreport$, is defined as a tuple of the work-packa
     \isa{\wr¬authorizer}{\hash},\ 
     \isa{\wr¬authtrace}{\blob},\\
     &\isa{\wr¬srlookup}{\dict{\hash}{\hash}},\ 
-    \isa{\wr¬digests}{\sequence{\mathbb{L}}_{1:\mathsf{I}}},\ 
+    \isa{\wr¬digests}{\sequence[1:\mathsf{I}]{\mathbb{L}}},\ 
     \isa{\wr¬authgasused}{\gas}
   \end{aligned}
 }
@@ -129,12 +129,12 @@ We first define $\reportspostguarantees$, the intermediate state to be utilized 
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
 \begin{align}
-  \xtassurances \in \sequence{\tuple{
+  \xtassurances \in \sequence[\mathsf{:\valcount}]{\tuple{
     \isa{\xa¬anchor}{\hash},\,
-    \isa{\xa¬availabilities}{\bitstringoflen{\corecount}},\,
+    \isa{\xa¬availabilities}{\bitstring[\corecount]},\,
     \isa{\xa¬assurer}{\valindex},\,
     \isa{\xa¬signature}{\signature}
-  }}_\mathsf{:\valcount}
+  }}
 \end{align}
 
 The assurances must all be anchored on the parent and ordered by validator index:
@@ -188,7 +188,7 @@ This value is utilized in the definition of both $\accountspost$ and $\reportspo
 
 Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\valcount = 1,023$ validators and $\corecount = 341$ cores, since $\nicefrac{\valcount}{\corecount} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\guarantorassignments$:
 \begin{equation}
-  \guarantorassignments \in \tuple{\sequence{\coreindex}_\valcount, \sequence{\edkey}_\valcount}
+  \guarantorassignments \in \tuple{\sequence[\valcount]{\coreindex}, \sequence[\valcount]{\edkey}}
 \end{equation}
 
 We determine the core to which any given validator is assigned through a shuffle using epochal entropy and a periodic rotation to help guard the security and liveness of the network. We use $\entropy_2$ for the epochal entropy rather than $\entropy_1$ to avoid the possibility of fork-magnification where uncertainty about chain state at the end of an epoch could give rise to two established forks before it naturally resolves.
@@ -235,11 +235,11 @@ We also define $\guarantorassignmentsunderlastrotation$, which is equivalent to 
 
 We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a \emph{work-report}, a credential $\xg¬credential$ and its corresponding timeslot $\xg¬timeslot$. The core index of each guarantee must be unique and guarantees must be in ascending order of this. Formally:
 \begin{align}\label{eq:guaranteesextrinsic}
-  \xtguarantees &\in \sequence{\tuple{
+  \xtguarantees &\in \sequence[:\corecount]{\tuple{
     \isa{\xg¬workreport}{\workreport},\,
     \isa{\xg¬timeslot}{\timeslot},\,
-    \isa{\xg¬credential}{\sequence{\tuple{\valindex, \signature}}_{2:3}}
-  }}_{:\corecount} \\
+    \isa{\xg¬credential}{\sequence[2:3]{\tuple{\valindex, \signature}}}
+  }} \\
   \xtguarantees &= \sqorderby{(g_\xg¬workreport)_\wr¬core}{g \in \xtguarantees}
 \end{align}
 

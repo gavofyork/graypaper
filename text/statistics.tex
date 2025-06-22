@@ -9,15 +9,15 @@ Such performance information cannot directly cover all aspects of validator acti
 The validator statistics are made on a per-epoch basis and we retain one record of completed statistics together with one record which serves as an accumulator for the present epoch. Both are tracked in $\activity$, which is thus a sequence of two elements, with the first being the accumulator and the second the previous epoch's statistics. For each epoch we track a performance record for each validator:
 \begin{align}
   \activity &\equiv \tup{\valstatsaccumulator, \valstatsprevious, \corestats, \servicestats}\\
-  \tuple{\valstatsaccumulator, \valstatsprevious} &\in \sequence{\tuple{
+  \tuple{\valstatsaccumulator, \valstatsprevious} &\in \sequence[\valcount]{\tuple{
     \isa{\vs¬blocks}{\N}\,,
     \isa{\vs¬tickets}{\N}\,,
     \isa{\vs¬preimagecount}{\N}\,,
     \isa{\vs¬preimagesize}{\N}\,,
     \isa{\vs¬guarantees}{\N}\,,
     \isa{\vs¬assurances}{\N}
-%    \isa{\mathbf{u}}{\sequence{\N}_\valcount}
-  }}_\valcount^2
+%    \isa{\mathbf{u}}{\sequence[\valcount]{\N}}
+  }}^2
   \!\!\!\!\!\!\!\!\!\!
 \end{align}
 
@@ -76,7 +76,7 @@ Note that $\reporters$ is the \emph{Reporters} set, as defined in equation \ref{
 
 The other two components of statistics are the core and service activity statistics. These are tracked only on a per-block basis unlike the validator statistics which are tracked over the whole epoch.
 \begin{align}
-  \corestats &\in \sequence{\tuple{
+  \corestats &\in \sequence[\corecount]{\tuple{
     \begin{alignedat}{7}
       \isa{\cs¬daload&}{\N}\,,\;
       \isa{&\cs¬popularity&}{\N}\,,\;
@@ -87,7 +87,7 @@ The other two components of statistics are the core and service activity statist
       \isa{&\cs¬bundlelen&}{\N}\,,\;
       \isa{&\cs¬gasused&}{\gas}
     \end{alignedat}
-  }}_\corecount\\
+  }}\\
   \servicestats &\in \dict{\serviceid}{\tuple{
     \begin{alignedat}{3}
       \isa{\ss¬provision&}{\tup{\N, \N}}\,,\;

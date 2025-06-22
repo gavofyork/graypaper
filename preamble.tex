@@ -130,8 +130,7 @@
 \newcommand*{\is}[2]{#1\tricolon#2}
 \newcommand*{\isa}[2]{#1\in #2}
 \newcommand*{\sq}[1]{\left[#1\right]}
-\newcommand*{\sequence}[1]{\left\lsem#1\right\rsem}
-\newcommand*{\sequenceoflen}[2]{\sequence{#1}_{#2}} % sequence of fixed length
+\newcommand*{\sequence}[2][]{\left\lsem#2\right\rsem_{#1}}
 \newcommand*{\set}[1]{\left\{\,#1\,\right\}}
 \newcommand*{\emset}{\left\{\right\}}
 \newcommand*{\protoset}[1]{\left\{\mkern-5mu\left[\,#1\,\right]\mkern-5mu\right\}}
@@ -248,10 +247,9 @@
 \newcommand*{\transitionstate}{\Upsilon}
 
 %%%%%%%%%%%%
-% Named types (blackboard letters)
+% Simple Universal types (blackboard letters)
 \newcommand*{\serviceaccount}{\mathbb{A}}
-\newcommand*{\bitstring}{\mathbb{B}}
-\newcommand*{\bitstringoflen}[1]{\mathbb{B}_{#1}}
+\newcommand*{\bitstring}[1][]{\mathbb{B}_{#1}}
 \newcommand*{\safroleticket}{\mathbb{C}}
 \newcommand*{\dictionary}{\mathbb{D}}
 \newcommand*{\dict}[2]{\dictionary\anglebar{#1\to#2}}
@@ -281,8 +279,7 @@
 \newcommand*{\writable}[1]{\mathbb{V}^*_{#1}}
 \newcommand*{\workreport}{\mathbb{W}}
 \newcommand*{\workcontext}{\mathbb{X}}
-\newcommand*{\blob}{\mathbb{Y}}
-\newcommand*{\bloboflen}[1]{\mathbb{Y}_{#1}}
+\newcommand*{\blob}[1][]{\mathbb{Y}_{#1}}
 \newcommand*{\Z}{\mathbb{Z}}
 
 %%%%%%%%%%%%
@@ -309,9 +306,9 @@
 \newcommand*{\edkey}{\hash_E}
 \newcommand*{\bskey}{\hash_B}
 \newcommand*{\fnkeccakoutput}{\hash_K}
-\newcommand*{\blskey}{\bloboflen{L}}
-\newcommand*{\metadatakey}{\bloboflen{128}}
-\newcommand*{\ringroot}{\bloboflen{R}}
+\newcommand*{\blskey}{\blob[L]}
+\newcommand*{\metadatakey}{\blob[128]}
+\newcommand*{\ringroot}{\blob[R]}
 
 %%%%%%%%%%%%
 % FIELDS
@@ -470,7 +467,7 @@
 \newcommand*{\vk¬ed}{e}
 \newcommand*{\vk¬bls}{L}  % TODO: Rename to be a single letter.
 \newcommand*{\vk¬metadata}{m}
-\newcommand*{\allvalkeys}{\sequence{\valkey}_{\valcount}}
+\newcommand*{\allvalkeys}{\sequence[\valcount]{\valkey}}
 
 % Fields of partial state \mathbb{U}.
 \newcommand*{\ps¬accounts}{\mathbf{d}}
@@ -661,10 +658,10 @@
 \newcommand*{\alwaysaccers}{\privileges_\mathbf{g}}
 
 \newcommand*{\accumulated}{\xi}
-\newcommand*{\ready}{\vartheta}
+\newcommand*{\ready}{\omega}
 \newcommand*{\lastaccout}{\theta}
 \newcommand*{\authpool}{\alpha}
-\newcommand*{\authqueue}{\varphi}
+\newcommand*{\authqueue}{\phi}
 
 \newcommand*{\recent}{\beta}
 \newcommand*{\recenthistory}{\recent_H}
@@ -714,7 +711,7 @@
 % PVM-SPECIFIC ITEMS
 
 \newcommand*{\gascounter}{\varrho}
-\newcommand*{\registers}{\omega}
+\newcommand*{\registers}{\varphi}
 \newcommand*{\memory}{\mu}
 \newcommand*{\pvmreg}{\N_R}
 

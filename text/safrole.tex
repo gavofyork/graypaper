@@ -58,8 +58,8 @@ $\epochroot$ is the epoch's root, a Bandersnatch ring root composed with the one
 
 Finally, $\ticketaccumulator$ is the ticket accumulator, a series of highest-scoring ticket identifiers to be used for the next epoch. $\sealtickets$ is the current epoch's slot-sealer series, which is either a full complement of $\epochlen$ tickets or, in the case of a fallback mode, a series of $\epochlen$ Bandersnatch keys:
 \begin{align}
-  \ticketaccumulator \in \sequence{\safroleticket}_{:\epochlen} \,,\quad
-  \sealtickets \in \sequence{\safroleticket}_{\epochlen} \cup \sequence{\bskey}_\epochlen
+  \ticketaccumulator \in \sequence[:\epochlen]{\safroleticket} \,,\quad
+  \sealtickets \in \sequence[\epochlen]{\safroleticket} \cup \sequence[\epochlen]{\bskey}
 \end{align}
 
 Here, $\safroleticket$ is used to denote the set of \emph{tickets}, a combination of a verifiably random ticket identifier $\st¬id$ and the ticket's entry-index $\st¬entry$:
@@ -94,7 +94,7 @@ We must introduce $\valkey$, the set of validator key tuples. This is a combinat
 
 The set of validator keys itself is equivalent to the set of 336-octet sequences. However, for clarity, we divide the sequence into four easily denoted components. For any validator key $k$, the Bandersnatch key is denoted $k_\vk¬bs$, and is equivalent to the first 32-octets; the Ed25519 key, $k_\vk¬ed$, is the second 32 octets; the \textsc{bls} key denoted $k_\vk¬bls$ is equivalent to the following 144 octets, and finally the metadata $k_\vk¬metadata$ is the last 128 octets. Formally:
 \begin{align}
-  \valkey &\equiv \bloboflen{336} \\
+  \valkey &\equiv \blob[336] \\
   \forall \vkX \in \valkey : \vkX_\vk¬bs \in \bskey &\equiv \vkX\subrange{0}{32} \\
   \forall \vkX \in \valkey : \vkX_\vk¬ed \in \edkey &\equiv \vkX\subrange{32}{32} \\
   \forall \vkX \in \valkey : \vkX_\vk¬bls \in \blskey &\equiv \vkX\subrange{64}{144} \\
@@ -154,7 +154,7 @@ Sealing using the ticket is of greater security, and we utilize this knowledge w
 
 In addition to the entropy accumulator $\entropyaccumulator$, we retain three additional historical values of the accumulator at the point of each of the three most recently ended epochs, $\entropy_1$, $\entropy_2$ and $\entropy_3$. The second-oldest of these $\entropy_2$ is utilized to help ensure future entropy is unbiased (see equation \ref{eq:ticketsextrinsic}) and seed the fallback seal-key generation function with randomness (see equation \ref{eq:slotkeysequence}). The oldest is used to regenerate this randomness when verifying the seal above (see equations \ref{eq:ticketconditionfalse} and \ref{eq:ticketconditiontrue}).
 \begin{align}\label{eq:entropycomposition}
-  \entropy &\in \sequence{\hash}_4
+  \entropy &\in \sequence[4]{\hash}
 \end{align}
 
 $\entropyaccumulator$ defines the state of the randomness accumulator to which the provably random output of the \textsc{vrf}, the signature over some unbiasable input, is combined each block. $\entropy_1$, $\entropy_2$ and $\entropy_3$ meanwhile retain the state of this accumulator at the end of the three most recently ended epochs in order.
@@ -195,15 +195,15 @@ The posterior slot key sequence $\safroleticket$ is one of three expressions dep
 Here, we use $Z$ as the outside-in sequencer function, defined as follows:
 \begin{equation}
   Z\colon\abracegroup[\,]{
-    \sequence{\safroleticket}_\epochlen &\to \sequence{\safroleticket}_\epochlen\\
+    \sequence[\epochlen]{\safroleticket} &\to \sequence[\epochlen]{\safroleticket}\\
     \mathbf{s} &\mapsto \sq{\mathbf{s}_0, \mathbf{s}_{\len{\mathbf{s}} - 1}, \mathbf{s}_1, \mathbf{s}_{\len{\mathbf{s}} - 2}, \dots}\\
   }
 \end{equation}
 
-Finally, $F$ is the fallback key sequence function which selects an epoch's worth of validator Bandersnatch keys ($\sequence{\bskey}_{\epochlen}$) from the validator key set $\mathbf{k}$ using the entropy collected on-chain $r$:
+Finally, $F$ is the fallback key sequence function which selects an epoch's worth of validator Bandersnatch keys ($\sequence[\epochlen]{\bskey}$) from the validator key set $\mathbf{k}$ using the entropy collected on-chain $r$:
 \begin{equation}\label{eq:fallbackkeysequence}
   F\colon \abracegroup[\ ]{
-    \tuple{\hash,\,\sequence{\valkey}} &\to \sequenceoflen{\bskey}{\epochlen}\\
+    \tuple{\hash,\,\sequence{\valkey}} &\to \sequence[\epochlen]{\bskey}\\
     \tup{r,\, \mathbf{k}} &\mapsto \sq{\build{
       \cyclic{\mathbf{k}\sub{\decode[4]{\blake{r \concat \encode[4]{i}}_{\dots 4}}}}_\vk¬bs
     }{

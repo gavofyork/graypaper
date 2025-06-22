@@ -3,7 +3,7 @@
 The Fisher-Yates shuffle function is defined formally as:
 \begin{equation}\label{eq:suffle}
   \forall T, l \in \N: \fnfyshuffle\colon\abracegroup{
-    \tuple{\sequence{T}\sub{l}, \sequence{\N}\sub{l:}} &\to \sequence{T}\sub{l}\\
+    \tuple{\sequence[l]{T}, \sequence[l:]{\N}} &\to \sequence[l]{T}\\
     \tup{\mathbf{s}, \mathbf{r}} &\mapsto \begin{cases}
       \sq{\mathbf{s}_{\mathbf{r}_0 \bmod l}} \concat \fyshuffle{\mathbf{s}'\sub{\dots l-1}, \mathbf{r}\sub{1\dots}}\ \where \mathbf{s}' = \mathbf{s} \exc \mathbf{s'}\sub{\mathbf{r}_0 \bmod l} = \mathbf{s}\sub{l - 1} &\when \mathbf{s} \ne \sq{}\\
       \sq{} &\otherwise
@@ -14,7 +14,7 @@ The Fisher-Yates shuffle function is defined formally as:
 Since it is often useful to shuffle a sequence based on some random seed in the form of a hash, we provide a secondary form of the shuffle function $\fnfyshuffle$ which accepts a 32-byte hash instead of the numeric sequence. We define $\fnseqfromhash{}$, the numeric-sequence-from-hash function, thus:
 \begin{align}
   \forall l \in \N:\ \fnseqfromhash{l}&\colon\abracegroup{
-    \hash &\to \sequence{\Nbits{32}}\sub{l}\\
+    \hash &\to \sequence[l]{\Nbits{32}}\\
     h &\mapsto \sq{\build{
       \decode[4]{\blake{h \concat \encode[4]{\floor{\nicefrac{i}{8}}}}
       \sub{4i \bmod 32 \dots+4}}
@@ -24,7 +24,7 @@ Since it is often useful to shuffle a sequence based on some random seed in the 
   }\\
   \label{eq:sequencefromhash}
   \forall T, l \in \N:\ \fnfyshuffle&\colon\abracegroup{
-    \tuple{\sequence{T}\sub{l}, \hash} &\to \sequence{T}\sub{l}\\
+    \tuple{\sequence[l]{T}, \hash} &\to \sequence[l]{T}\\
     \tup{\mathbf{s}, h} &\mapsto \fyshuffle{\mathbf{s}, \seqfromhash{l}{h}}
   }
 \end{align}

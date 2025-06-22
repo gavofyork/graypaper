@@ -9,7 +9,7 @@ The serialization of state primarily involves placing all the various components
 We define the state-key constructor functions $C$ as:
 \begin{equation}
   C\colon\abracegroup{
-    \Nbits{8} \cup \tup{\Nbits{8}, \serviceid} \cup \tup{\serviceid, \blob} &\to \bloboflen{31} \\
+    \Nbits{8} \cup \tup{\Nbits{8}, \serviceid} \cup \tup{\serviceid, \blob} &\to \blob[31] \\
     i \in \Nbits{8} &\mapsto \sq{i, 0, 0, \dots} \\
     \tup{i, s \in \serviceid} &\mapsto \sq{i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots}\ \where n = \encode[4]{s} \\
     \tup{s, h} &\mapsto \sq{n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}}\ \where n = \encode[4]{s}, a = \blake{h}\interval{0}{27}
@@ -33,8 +33,8 @@ The state serialization is then defined as the dictionary built from the amalgam
       \pendingset,
       \epochroot,
       \abracegroupboth{
-        0\ &\when \sealtickets \in \sequence{\safroleticket}_\epochlen\\
-        1\ &\when \sealtickets \in \sequence{\bskey}_\epochlen\\
+        0\ &\when \sealtickets \in \sequence[\epochlen]{\safroleticket}\\
+        1\ &\when \sealtickets \in \sequence[\epochlen]{\bskey}\\
       },
       \sealtickets,
       \var{\ticketaccumulator}
@@ -136,11 +136,11 @@ In the case of a regular leaf, the remaining 6 bits of the first byte are zeroed
 Formally, we define the encoding functions $B$ and $L$:
 \begin{align}
   B&\colon\abracegroup{
-    \tuple{\hash, \hash} &\to \bitstringoflen{512}\\
+    \tuple{\hash, \hash} &\to \bitstring[512]\\
     \tup{l, r} &\mapsto \sq{0} \concat \text{bits}(l)\interval{1}{} \concat \text{bits}(r)
   }\\
   L&\colon\abracegroup{
-    \tuple{\bloboflen{31}, \blob} &\to \bitstringoflen{512}\\
+    \tuple{\blob[31], \blob} &\to \bitstring[512]\\
     \tup{k, v} &\mapsto \begin{cases}
       \sq{1, 0} \concat \text{bits}(\encode[1]{\len{v}})\interval{2}{} \concat \text{bits}(k) \concat \text{bits}(v) \concat \sq{0, 0, \dots} &\when \len{v} \le 32\\
       \sq{1, 1, 0, 0, 0, 0, 0, 0} \concat \text{bits}(k) \concat \text{bits}(\blake{v}) &\otherwise
@@ -151,7 +151,7 @@ Formally, we define the encoding functions $B$ and $L$:
 We may then define the basic Merklization function $\fnmerklizestate$ as:
 \begin{align}
   \merklizestate{\thestate} &\equiv M(\set{\build{\kv{\text{bits}(k)}{\tup{k, v}}}{\kv{k}{v} \in T(\thestate) }})\\
-  M(d: \dict{\bitstring}{\tuple{\bloboflen{31}, \blob}}) &\equiv \begin{cases}
+  M(d: \dict{\bitstring}{\tuple{\blob[31], \blob}}) &\equiv \begin{cases}
     \zerohash &\when \len{d} = 0\\
     \blake{\text{bits}^{-1}(L(k, v))} &\when \values{d} = \set{ \tup{k, v} }\\
     \blake{\text{bits}^{-1}(B(M(l), M(r)))} &\otherwise\\
@@ -171,7 +171,7 @@ The Merkle tree is a cryptographic data structure yielding a hash commitment to 
 The underlying function for our Merkle trees is the \emph{node} function $N$, which accepts some sequence of blobs of some length $n$ and provides either such a blob back or a hash:
 \begin{equation}
   N\colon\abracegroup{
-    \tuple{\sequence{\bloboflen{n}}, \blob \to \hash} &\to \bloboflen{n} \cup \hash \\
+    \tuple{\sequence{\blob[n]}, \blob \to \hash} &\to \blob[n] \cup \hash \\
     \tup{\mathbf{v}, H} &\mapsto \begin{cases}
       \zerohash &\when \len{\mathbf{v}} = 0 \\
       \mathbf{v}_0 &\when \len{\mathbf{v}} = 1 \\
@@ -180,12 +180,12 @@ The underlying function for our Merkle trees is the \emph{node} function $N$, wh
   }\label{eq:merklenode}
 \end{equation}
 
-The astute reader will realize that if our $\bloboflen{n}$ happens to be equivalent $\hash$ then this function will always evaluate into $\hash$. That said, for it to be secure care must be taken to ensure there is no possibility of preimage collision. For this purpose we include the hash prefix $\token{\$node}$ to minimize the chance of this; simply ensure any items are hashed with a different prefix and the system can be considered secure.
+The astute reader will realize that if our $\blob[n]$ happens to be equivalent $\hash$ then this function will always evaluate into $\hash$. That said, for it to be secure care must be taken to ensure there is no possibility of preimage collision. For this purpose we include the hash prefix $\token{\$node}$ to minimize the chance of this; simply ensure any items are hashed with a different prefix and the system can be considered secure.
 
 We also define the \emph{trace} function $T$, which returns each opposite node from top to bottom as the tree is navigated to arrive at some leaf corresponding to the item of a given index into the sequence. It is useful in creating justifications of data inclusion.
 \begin{equation}
   T\colon\abracegroup{
-    \tuple{\sequence{\bloboflen{n}}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash}\ &\to \sequence{\bloboflen{n} \cup \hash}\\
+    \tuple{\sequence{\blob[n]}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash}\ &\to \sequence{\blob[n] \cup \hash}\\
     \tup{\mathbf{v}, i, H} &\mapsto \begin{cases}
      \sq{N(P^\bot(\mathbf{v}, i), H)} \concat T(P^\top(\mathbf{v}, i), i - P_I(\mathbf{v}, i), H) &\when \len{\mathbf{v}} > 1\\
       \sq{} &\otherwise\\

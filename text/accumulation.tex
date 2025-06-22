@@ -24,13 +24,13 @@ The proposition of accumulation is in fact quite simple: we merely wish to execu
 
 Accumulation of a work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what has been accumulated. This history, $\accumulated$, is sufficiently large for an epoch worth of work-reports. Formally:
 \begin{align}
-  \accumulated &\in \sequence{\protoset{\hash}}_\epochlen \\
+  \accumulated &\in \sequence[\epochlen]{\protoset{\hash}} \\
   \accumulatedcup &\equiv \bigcup_{x \in \accumulated}(x)
 \end{align}
 
 We also maintain knowledge of ready (\ie available and/or audited) but not-yet-accumulated work-reports in the state item $\ready$. Each of these were made available at most one epoch ago but have or had unfulfilled dependencies. Alongside the work-report itself, we retain its unaccumulated dependencies, a set of work-package hashes. Formally:
 \begin{align}
-  \ready &\in \sequence{\sequence{\tuple{\workreport, \protoset{\hash}}}}_\epochlen
+  \ready &\in \sequence[\epochlen]{\sequence{\tuple{\workreport, \protoset{\hash}}}}
 \end{align}
 
 The newly available work-reports, $\justbecameavailable$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\justbecameavailable^!$, are accumulated immediately. Those not, $\justbecameavailable^Q$, are for queued execution. Formally:
@@ -105,10 +105,10 @@ Our formalisms begin by defining $\partialstate$ as a characterization of (\ie v
   \label{eq:partialstate}
   \partialstate \equiv \tuple{\begin{aligned}
     &\isa{\ps¬accounts}{\dict{\serviceid}{\serviceaccount}} \,,\;
-    \isa{\ps¬stagingset}{\sequence{\valkey}_\valcount} \,,\;
-    \isa{\ps¬authqueue}{\sequence{\sequence{\hash}_\mathsf{Q}}_\corecount} \,,\\
+    \isa{\ps¬stagingset}{\sequence[\valcount]{\valkey}} \,,\;
+    \isa{\ps¬authqueue}{\sequence[_\corecount]{\sequence[\mathsf{Q}]{\hash}}} \,,\\
     &\isa{\ps¬manager}{\serviceid} \,,\;
-    \isa{\ps¬assigners}{\sequence{\serviceid}_\corecount} \,,\;
+    \isa{\ps¬assigners}{\sequence[\corecount]{\serviceid}} \,,\;
     \isa{\ps¬delegator}{\serviceid} \,,\;
     \isa{\ps¬alwaysaccers}{\dict{\serviceid}{\gas}}
   \end{aligned}}
@@ -120,7 +120,7 @@ We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, notin
     \isa{\dx¬source}{\serviceid} ,
     \isa{\dx¬dest}{\serviceid} ,
     \isa{\dx¬amount}{\balance} ,
-    \isa{\dx¬memo}{\bloboflen{\mathsf{W}_T}} ,
+    \isa{\dx¬memo}{\blob[\mathsf{W}_T]} ,
     \isa{\dx¬gas}{\gas}
   }
 \end{align}
