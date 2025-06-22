@@ -40,7 +40,7 @@ Work-packages have two other types of external data associated with them: A cryp
 
 The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\segment$, is an octet sequence of fixed length $\mathsf{W}_G = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term D$^3$L during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the D$^3$L system.
 \begin{equation}\label{eq:segment}
-  \segment \equiv \bloboflen{\mathsf{W}_G}
+  \segment \equiv \blob[\mathsf{W}_G]
 \end{equation}
 
 Exported segments are data which are \emph{generated} through the execution of the Refine logic and thus are a side effect of transforming the work-package into a work-report. Since their data is deterministic based on the execution of the Refine logic, we do not require any particular commitment to them in the work-package beyond knowing how many are associated with each Refine invocation in order that we can supply an exact index.
@@ -67,7 +67,7 @@ We begin by defining a \emph{work-package}, of set $\workpackage$, and its const
     \isa{\wp¬authcodehash}{\hash},\ 
     \isa{\wp¬authconfig}{\blob},\ 
     \isa{\wp¬context}{\workcontext},\ 
-    \isa{\wp¬workitems}{\sequence{\workitem}_{1:\mathsf{I}}}
+    \isa{\wp¬workitems}{\sequence[1:\mathsf{I}]{\workitem}}
   }
 \end{equation}
 
@@ -183,7 +183,7 @@ We now come to the work-report computation function $\computereport$. This forms
   \computereport \colon \abracegroup{
     \tuple{\workpackage, \coreindex} &\to \workreport \\
     \tup{\wpX, \¬core} &\mapsto \begin{cases}
-        \error &\when \wr¬authtrace \not\in \bloboflen{:\mathsf{W}_R} \\
+        \error &\when \wr¬authtrace \not\in \blob[:\mathsf{W}_R] \\
         \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
     \end{cases}
   }
@@ -299,7 +299,7 @@ The functions $\fnmerklizecd$ and $\fnmerklizewb$ are the fixed-depth and simple
 And $\fnzeropad{}$ is the zero-padding function to take an octet array to some multiple of $n$ in length:
 \begin{equation}\label{eq:zeropadding}
   \fnzeropad{n \in \Nclamp{1}{}}\colon\abracegroup{
-    \blob &\to \bloboflen{k \cdot n}\\
+    \blob &\to \blob[k \cdot n]\\
     \mathbf{x} &\mapsto \mathbf{x} \concat \sq{0, 0, \dots}\interval{((\len{x} + n - 1) \bmod n) + 1}{n}
   }
 \end{equation}

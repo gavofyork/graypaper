@@ -3,12 +3,12 @@
 We retain in state information on the most recent $\mathsf{H}$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
 \begin{align}
   \recent &\equiv \tup{\recenthistory, \beefybelt} \label{eq:recenthistory} \\
-  \recenthistory &\in \sequence{\tuple{
+  \recenthistory &\in \sequence[:\mathsf{H}]{\tuple{
     \isa{\rh¬headerhash}{\hash},
     \isa{\rh¬stateroot}{\hash},
     \isa{\rh¬accoutlogsuperpeak}{\hash},
     \isa{\rh¬reportedpackagehashes}{\dict{\hash}{\hash}}
-  }}_{:\mathsf{H}}\\
+  }}\\
   \beefybelt &\in \sequence{\optional{\hash}} \\
   \lastaccout &\in \sequence{\tup{\serviceid, \hash}}
 \end{align}

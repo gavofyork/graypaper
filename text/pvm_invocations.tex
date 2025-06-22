@@ -72,7 +72,7 @@ The Export host-call depends on two pieces of context; one sequence of segments 
 Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\accounts$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work-package $p$ and the index of the work item to be refined, $i$. Additionally, the authorizer trace $\mathbf{r}$ is provided together with all work items' import segments $\overline{\mathbf{i}}$ and an export segment offset $\segoff$. It results in either some error $\workerror$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   &\Psi_R \colon \abracegroup{
-    \tuple{\N, \workpackage, \blob, \sequence{\sequence{\segment}}, \N} &\to \tup{\blob \cup \workerror, \sequence{\segment}, \gas} \\
+    \tuple{\N, \workpackage, \blob, \sequence{\sequence{\segment}}, \N} &\to \tuple{\blob \cup \workerror, \sequence{\segment}, \gas} \\
     \tup{i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff} &\mapsto \begin{cases}
       \tup{\token{BAD}, \sq{}, 0} &\when w_\wi¬service \not\in \keys{\accounts} \vee \histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash) = \none \\
       \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)} > \mathsf{W}_C \\
@@ -192,7 +192,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     &\qquad \where \imX^* = \imX \exc \imX^*_\im¬self = \mathbf{s}
   }\\
   C&\colon\abracegroup{
-    \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \tup{\partialstate, \defxfers, \optional{\hash}, \gas, \sequence{\tuple{\serviceid, \blob}}} \\
+    \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \tuple{\partialstate, \defxfers, \optional{\hash}, \gas, \sequence{\tuple{\serviceid, \blob}}} \\
     \tup{u, \mathbf{o}, \imXY} &\mapsto \begin{cases}
       \tup{
         \imY_\im¬state,

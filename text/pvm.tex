@@ -4,7 +4,7 @@
 
 \subsection{Basic Definition}
 \newcommand*{\instr}[1]{\text{{\small \texttt{#1}}}}
-\newcommand*{\regs}{\sequence{\pvmreg}_{13}}
+\newcommand*{\regs}{\sequence[13]{\pvmreg}}
 \newcommand*{\reg}{{\registers}}
 \newcommand*{\mem}{{\memory}}
 \newcommand*{\memr}{\cyclic{\mem}}
@@ -761,7 +761,7 @@ The software programs which will run in each of the four instances where the \te
 We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} at program start. Given program blob $\mathbf{p}$ and argument data $\mathbf{a}$, we can decode the program code $\mathbf{c}$, registers $\registers$, and \textsc{ram} $\mem$ by invoking the standard initialization function $Y(\mathbf{p}, \mathbf{a})$:
 \begin{equation}
 Y\colon\abracegroup{
-  \tuple{\blob, \bloboflen{:\mathsf{Z}_I}} &\to \tup{\blob, \regs, \ram}? \\
+  \tuple{\blob, \blob[:\mathsf{Z}_I]} &\to \tuple{\blob, \regs, \ram}? \\
   \tup{\mathbf{p}, \mathbf{a}} &\mapsto \begin{cases}
     \tup{\mathbf{c}, \registers, \mem} &\when \exists! \tup{\mathbf{c}, \mathbf{o}, \mathbf{w}, z, s} \text{ which satisfy equation \ref{eq:conditions}}\\
     \none &\otherwise
@@ -825,7 +825,7 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
 \begin{equation}
   \Psi_M\colon \abracegroup{
     \tuple{
-      \blob, \pvmreg, \gas, \bloboflen{:\mathsf{Z}_I}, \Omega\ang{X}, X
+      \blob, \pvmreg, \gas, \blob[:\mathsf{Z}_I], \Omega\ang{X}, X
     } &\to \tuple{\gas, \blob \cup \set{\panic, \oog}, X}\\
     \tup{\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}} &\mapsto \begin{cases}
       \tup{0, \panic, \mathbf{x}} &\when Y(\mathbf{p}, \mathbf{a}) = \none\\

@@ -36,7 +36,7 @@ Each validator shall perform auditing duties on each valid block received. Since
 
 We define the sequence of work-reports which we may be required to audit as $\local¬reports$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
 \begin{align}\label{eq:auditselection}
-  \local¬reports &\in \sequence{\optional{\workreport}}_\corecount \\
+  \local¬reports &\in \sequence[\corecount]{\optional{\workreport}} \\
   \local¬reports &\equiv \sq{\build{
     \begin{rcases}
       \reports\subb{\cX}_\rs¬workreport &\when \reports\subb{\cX}_\rs¬workreport \in \justbecameavailable \\

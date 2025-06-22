@@ -13,7 +13,7 @@ The service account is defined as the tuple of storage dictionary $\sa¬storage$
   \serviceaccount \equiv \tuple{\ \begin{aligned}
     \sa¬storage &\in \dict{\blob}{\blob}\,,\ 
     \sa¬preimages \in \dict{\hash}{\blob}\,,\\
-    \sa¬requests &\in \dict{\tuple{\hash,\bloblength}}{\sequence{\timeslot}_{:3}}\,,\\
+    \sa¬requests &\in \dict{\tuple{\hash,\bloblength}}{\sequence[:3]{\timeslot}}\,,\\
     \sa¬gratis &\in \balance\,,\ 
     \sa¬codehash \in \hash\,,\ 
     \sa¬balance \in \balance\,,\ 
@@ -102,12 +102,12 @@ The state of the lookup system naturally satisfies a number of invariants. First
 
 \subsubsection{Semantics}
 
-The historical status component $h \in \sequence{\timeslot}_{:3}$ is a sequence of up to three time slots and the cardinality of this sequence implies one of four modes:
+The historical status component $h \in \sequence[:3]{\timeslot}$ is a sequence of up to three time slots and the cardinality of this sequence implies one of four modes:
 \begin{itemize}
   \item{$h = \sequence{}$}: The preimage is \emph{requested}, but has not yet been supplied.
-  \item{$h \in \sequence{\timeslot}_1$}: The preimage is \emph{available} and has been from time $h_0$.
-  \item{$h \in \sequence{\timeslot}_2$}: The previously available preimage is now \emph{unavailable} since time $h_1$. It had been available from time $h_0$.
-  \item{$h \in \sequence{\timeslot}_3$}: The preimage is \emph{available} and has been from time $h_2$. It had previously been available from time $h_0$ until time $h_1$.
+  \item{$h \in \sequence[1]{\timeslot}$}: The preimage is \emph{available} and has been from time $h_0$.
+  \item{$h \in \sequence[2]{\timeslot}$}: The previously available preimage is now \emph{unavailable} since time $h_1$. It had been available from time $h_0$.
+  \item{$h \in \sequence[3]{\timeslot}$}: The preimage is \emph{available} and has been from time $h_2$. It had previously been available from time $h_0$ until time $h_1$.
 \end{itemize}
 
 The historical lookup function $\histlookup$ may now be defined as:
@@ -167,7 +167,7 @@ Finally, $\alwaysaccers$ is a small dictionary containing the indices of service
 \begin{align}
   \privileges \equiv \tuple{
     \isa{\manager}{\serviceid} ,
-    \isa{\assigners}{\sequence{\serviceid}_\corecount} ,
+    \isa{\assigners}{\sequence[\corecount]{\serviceid}} ,
     \isa{\delegator}{\serviceid} ,
     \isa{\alwaysaccers}{\dict{\serviceid}{\gas}}
   }
