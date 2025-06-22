@@ -292,7 +292,7 @@
 
 %%%%%%%%%%%%
 % Numeric types (blackboard N subscripts)
-% Unused: J, U, O
+% Unused: U
 \newcommand*{\timeslot}{\N_T}
 \newcommand*{\balance}{\N_B}
 \newcommand*{\serviceid}{\N_S}
@@ -333,6 +333,7 @@
 \newcommand*{\¬importcount}{i}
 \newcommand*{\¬offenderindex}{f}
 \newcommand*{\¬packagehash}{p}
+\newcommand*{\¬partialstate}{\mathbf{e}}
 \newcommand*{\¬payload}{\mathbf{y}}
 \newcommand*{\¬payloadhash}{y}
 \newcommand*{\¬reporthash}{r}
@@ -357,11 +358,12 @@
 \newcommand*{\imX}{\mathbf{x}}
 \newcommand*{\imY}{\mathbf{y}}
 \newcommand*{\im¬id}{s}
-\newcommand*{\im¬state}{\mathbf{u}}
+\newcommand*{\im¬state}{\¬partialstate}
 \newcommand*{\im¬nextfreeid}{i}
 \newcommand*{\im¬xfers}{\mathbf{t}}
 \newcommand*{\im¬yield}{y}
 \newcommand*{\im¬provisions}{\mathbf{p}}
+% Derived fields
 \newcommand*{\im¬self}{\mathbf{s}}
 \newcommand*{\implicationspair}{\tuple{\implications, \implications}}
 \newcommand*{\imXY}{\tup{\imX, \imY}}
@@ -372,8 +374,8 @@
 \newcommand*{\st¬entryindex}{\¬entryindex}
 
 \newcommand*{\ram}{\mathbb{M}}
-\newcommand*{\ram¬value}{\mathbf{V}}
-\newcommand*{\ram¬access}{\mathbf{A}}
+\newcommand*{\ram¬value}{\mathbf{v}}
+\newcommand*{\ram¬access}{\mathbf{a}}
 
 \newcommand*{\workpackage}{\mathbb{P}}
 \newcommand*{\wpX}{\mathbf{p}}
@@ -490,6 +492,7 @@
 \newcommand*{\allvalkeys}{\sequence[\valcount]{\valkey}}
 
 \newcommand*{\partialstate}{\mathbb{S}}
+\newcommand*{\psX}{\mathbf{e}}
 \newcommand*{\ps¬accounts}{\mathbf{d}}
 \newcommand*{\ps¬stagingset}{\mathbf{i}}
 \newcommand*{\ps¬authqueue}{\mathbf{q}}
@@ -625,32 +628,33 @@
 \newcommand*{\genesisheader}{\header^0}
 \renewcommand*{\H}{\theheader} % short-hand for \theheader, used in equations when subscripting to a field.
 % Header fields.
-\newcommand*{\¬parent}{p}
-\newcommand*{\¬priorstateroot}{r}
-\newcommand*{\¬timeslot}{t}
-\newcommand*{\¬extrinsichash}{x}
-\newcommand*{\¬epochmark}{e}
-\newcommand*{\¬winnersmark}{w}
-\newcommand*{\¬offendersmark}{o}
-\newcommand*{\¬authorindex}{i}
-\newcommand*{\¬vrfsig}{v}
-\newcommand*{\¬sealsig}{s}
+\newcommand*{\¬parent}{P}
+\newcommand*{\¬priorstateroot}{R}
+\newcommand*{\¬timeslot}{T}
+\newcommand*{\¬extrinsichash}{X}
+\newcommand*{\¬epochmark}{\mathbf{E}}
+\newcommand*{\¬winnersmark}{\mathbf{W}}
+\newcommand*{\¬offendersmark}{\mathbf{O}}
+\newcommand*{\¬authorindex}{I}
+\newcommand*{\¬vrfsig}{V}
+\newcommand*{\¬sealsig}{S}
 % Derived fields
-\newcommand*{\¬authorbskey}{a}
-
-% Additional iterators.
-\newcommand*{\cX}{c}
-\newcommand*{\wrcX}{\tup{\wrX, \cX}}
+\newcommand*{\¬authorbskey}{A}
 
 %%%%%%%%%%%%
 % Function outputs
 
 % \accone output
-\newcommand*{\ao¬poststate}{\mathbf{o}}
+\newcommand*{\acconeout}{\mathbb{O}}
+\newcommand*{\ao¬gasused}{\¬gasused}
+\newcommand*{\ao¬yield}{y}
+\newcommand*{\ao¬poststate}{\¬partialstate}
 \newcommand*{\ao¬defxfers}{\mathbf{t}}
-\newcommand*{\ao¬account}{b}
-\newcommand*{\ao¬gasused}{u}
 \newcommand*{\ao¬provisions}{\mathbf{p}}
+
+% Additional iterators.
+\newcommand*{\cX}{c}
+\newcommand*{\wrcX}{\tup{\wrX, \cX}}
 
 
 %%%%%%%%%%%%

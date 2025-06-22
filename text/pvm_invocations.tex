@@ -126,7 +126,7 @@ Formally, we define our result context to be $\implications$, and our invocation
     \isa{\im¬provisions}{\protoset{\tuple{\serviceid, \blob}}}
   }\\
   \forall \imX \in \implications :
-    imX_\im¬self &\equiv (imX_\im¬state)_\ps¬accounts\subb{imX_\im¬id}
+    \imX_\im¬self &\equiv (\imX_\im¬state)_\ps¬accounts\subb{\imX_\im¬id}
 \end{align}
 
 We define a convenience equivalence $\imX_\im¬self$ to easily denote the accumulating service account.
@@ -134,18 +134,22 @@ We define a convenience equivalence $\imX_\im¬self$ to easily denote the accumu
 We track both regular and exceptional dimensions within our context mutator, but collapse the result of the invocation to one or the other depending on whether the termination was regular or exceptional (\ie out-of-gas or panic).
 
 We define $\Psi_A$, the Accumulation invocation function as:
-\newcommand*{\local¬basestate}{\mathbf{u}}
+\newcommand*{\local¬basestate}{\ao¬poststate}
 \begin{align}
   \Psi_A& \colon\abracegroup{
     \tuple{
       \partialstate, \timeslot, \serviceid, \gas, \sequence{\operandtuple}
     }
-    &\to \tuple{
-      \partialstate, \defxfers, \optional{\hash}, \gas, \sequence{\tuple{\serviceid, \blob}}
-    }
+    &\to \acconeout
     \\
     \tup{\local¬basestate, t, s, g, \mathbf{o}} &\mapsto \begin{cases}
-      \tup{\local¬basestate, \sq{}, \none, 0, \sq{}}
+      \tup{
+        \ao¬poststate,
+        \is{\ao¬defxfers}{\sq{}},
+        \is{\ao¬yield}{\none},
+        \is{\ao¬gasused}{0},
+        \is{\ao¬provisions}{\sq{}}
+      }
         &\when \mathbf{c} = \none \vee \len{\mathbf{c}} > \mathsf{W}_C \\
       C(\Psi_M(\mathbf{c}, 5, g, \encode{t, s, \len{\mathbf{o}}}, F, I(\local¬basestate, s)^2))
         &\otherwise \\
@@ -192,29 +196,29 @@ We define $\Psi_A$, the Accumulation invocation function as:
     &\qquad \where \imX^* = \imX \exc \imX^*_\im¬self = \mathbf{s}
   }\\
   C&\colon\abracegroup{
-    \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \tuple{\partialstate, \defxfers, \optional{\hash}, \gas, \sequence{\tuple{\serviceid, \blob}}} \\
-    \tup{u, \mathbf{o}, \imXY} &\mapsto \begin{cases}
+    \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \acconeout \\
+    \tup{\ao¬gasused, \mathbf{o}, \imXY} &\mapsto \begin{cases}
       \tup{
-        \imY_\im¬state,
-        \imY_\im¬xfers,
-        \imY_\im¬yield,
-        u,
-        \imY_\im¬provisions
+        \is{\ao¬poststate}{\imY_\im¬state},
+        \is{\ao¬defxfers}{\imY_\im¬xfers},
+        \is{\ao¬yield}{\imY_\im¬yield},
+        \ao¬gasused,
+        \is{\ao¬provisions}{\imY_\im¬provisions}
       } & \when \mathbf{o} \in \set{\oog, \panic} \\
       \tup{
-        \imX_\im¬state,
-        \imX_\im¬xfers,
-        \mathbf{o},
-        u,
-        \imXY_\im¬provisions
-        } & \otherwhen \mathbf{o} \in \hash \\
+        \is{\ao¬poststate}{\imX_\im¬state},
+        \is{\ao¬defxfers}{\imX_\im¬xfers},
+        \is{\ao¬yield}{\mathbf{o}},
+        \ao¬gasused,
+        \is{\ao¬provisions}{\imXY_\im¬provisions}
+      } & \otherwhen \mathbf{o} \in \hash \\
       \tup{
-        \imX_\im¬state,
-        \imX_\im¬xfers,
-        \imX_\im¬yield,
-        u,
-        \imX_\im¬provisions
-        } & \otherwise \\
+        \is{\ao¬poststate}{\imX_\im¬state},
+        \is{\ao¬defxfers}{\imX_\im¬xfers},
+        \is{\ao¬yield}{\imX_\im¬yield},
+        \ao¬gasused,
+        \is{\ao¬provisions}{\imX_\im¬provisions}
+      } & \otherwise \\
     \end{cases}
   }
 \end{align}
