@@ -135,16 +135,16 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
     \label{eq:ticketconditiontrue}
     \safroleticket \in \sequence{\safroleticket} &\implies \abracegroup[\,]{
         &i_\st¬id = \banderout{\H_\¬sealsig}\,,\\
-        &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entry}{\encodeunsignedheader{\H}}\,,\\
+        &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entry}{\encodeunsignedheader{\H}}\,,\\
         &\isticketed = 1
     }\\
     \label{eq:ticketconditionfalse}
     \safroleticket \in \sequence{\bskey} &\implies \abracegroup[\,]{
         &i = \H_\¬authorbskey\,,\\
-        &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_F \concat \entropy'_3}{\encodeunsignedheader{\H}}\,,\\
+        &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\mathsf{X}_F \concat \entropy'_3}{\encodeunsignedheader{\H}}\,,\\
         &\isticketed = 0
     }\\
-  \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E \concat \banderout{\H_\¬sealsig}}{\sq{}} \\
+  \H_\¬vrfsig &\in \bssignature{\H_\¬authorbskey}{\mathsf{X}_E \concat \banderout{\H_\¬sealsig}}{\sq{}} \\
   \mathsf{X}_E &= \token{\$jam\_entropy}\\
   \mathsf{X}_F &= \token{\$jam\_fallback\_seal}\\
   \mathsf{X}_T &= \token{\$jam\_ticket\_seal}
@@ -269,7 +269,7 @@ We define the extrinsic as a sequence of proofs of valid tickets, each of which 
 \begin{align}\label{eq:ticketsextrinsic}
   \xttickets &\in \sequence{\tuple{
     \isa{\xt¬entry}{\Nmax{\ticketentries}},\,
-    \isa{\xt¬proof}{\bandersnatch{\epochroot'}{\mathsf{X}_T \concat \entropy'_2 \append \xt¬entry}{\sq{}}}
+    \isa{\xt¬proof}{\bsringproof{\epochroot'}{\mathsf{X}_T \concat \entropy'_2 \append \xt¬entry}{\sq{}}}
   }} \\
   \len{\xttickets} &\le \begin{cases}
       \mathsf{K} &\when m' < \mathsf{Y} \\

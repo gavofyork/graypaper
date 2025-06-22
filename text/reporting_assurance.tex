@@ -34,7 +34,7 @@ A work-report, of the set $\workreport$, is defined as a tuple of the work-packa
     \isa{\wr¬authorizer}{\hash},\ 
     \isa{\wr¬authtrace}{\blob},\\
     &\isa{\wr¬srlookup}{\dictionary{\hash}{\hash}},\ 
-    \isa{\wr¬digests}{\sequence[1:\mathsf{I}]{\mathbb{L}}},\ 
+    \isa{\wr¬digests}{\sequence[1:\mathsf{I}]{\workdigest}},\ 
     \isa{\wr¬authgasused}{\gas}
   \end{aligned}
 }
@@ -78,7 +78,7 @@ The \emph{segment-root} ($\as¬segroot$) is the root of a constant-depth, left-b
 \subsubsection{Work Digest}
 We finally come to define a \emph{work-digest}, $\workdigest$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
 \begin{equation}\label{eq:workdigest}
-  \mathbb{L} \equiv \tuple{
+  \workdigest \equiv \tuple{
     \begin{alignedat}{9}
       \isa{\wd¬service&}{\serviceid}\,,\;
       \isa{&\wd¬codehash&}{\hash}\,,\;
@@ -133,7 +133,7 @@ The assurances extrinsic is a sequence of \emph{assurance} values, at most one p
     \isa{\xa¬anchor}{\hash},\,
     \isa{\xa¬availabilities}{\bitstring[\corecount]},\,
     \isa{\xa¬assurer}{\valindex},\,
-    \isa{\xa¬signature}{\signature}
+    \isa{\xa¬signature}{\edsignaturebase}
   }}
 \end{align}
 
@@ -145,7 +145,7 @@ The assurances must all be anchored on the parent and ordered by validator index
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\H_\¬parent$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \xtassurances : a_\xa¬signature \in \sig{\activeset\subb{a_\xa¬assurer}_\vk¬ed}{\mathsf{X}_A \concat \blake{\encode{\H_\¬parent, a_\xa¬availabilities}}} \\
+  &\forall a \in \xtassurances : a_\xa¬signature \in \edsignature{\activeset\subb{a_\xa¬assurer}_\vk¬ed}{\mathsf{X}_A \concat \blake{\encode{\H_\¬parent, a_\xa¬availabilities}}} \\
   &\mathsf{X}_A \equiv \token{\$jam\_available}
 \end{align}
 
@@ -238,7 +238,7 @@ We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emp
   \xtguarantees &\in \sequence[:\corecount]{\tuple{
     \isa{\xg¬workreport}{\workreport},\,
     \isa{\xg¬timeslot}{\timeslot},\,
-    \isa{\xg¬credential}{\sequence[2:3]{\tuple{\valindex, \signature}}}
+    \isa{\xg¬credential}{\sequence[2:3]{\tuple{\valindex, \edsignaturebase}}}
   }} \\
   \xtguarantees &= \sqorderby{(g_\xg¬workreport)_\wr¬core}{g \in \xtguarantees}
 \end{align}
@@ -256,7 +256,7 @@ The signature must be one whose public key is that of the validator identified i
       \forall \tup{v, s} &\in \xg¬credential
     \end{aligned} :
       \abracegroup[\,]{
-        &s \in \sig{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\concat\blake{\xg¬workreport}}\\
+        &s \in \edsignature{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\concat\blake{\xg¬workreport}}\\
         &\mathbf{c}\sub{v} = \wrX_\wr¬core \wedge \mathsf{R}(\floor{\nicefrac{\thetime'}{\mathsf{R}}} - 1) \le \xg¬timeslot \le \thetime'\\
       }\\
       &k \in \reporters \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists \tup{v, s} \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\

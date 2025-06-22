@@ -4,6 +4,7 @@
 
 \subsubsection{Regular Notation}
 \begin{description}
+  \item[$\finitefield$] The set of finite fields.
   \item[$\N$] The set of non-negative integers. Subscript denotes one greater than the maximum. See section \ref{sec:numbers}.
   \begin{description}
     \item[$\N^+$] The set of positive integers (not including zero).
@@ -15,7 +16,6 @@
     \item[$\timeslot$] The set of timeslot values. Equivalent to $\Nbits{32}$. See equation \ref{eq:time}.
   \end{description}
   \item[$\mathbb{Q}$] The set of rational numbers. Unused.
-  \item[$\mathbb{R}$] The set of real numbers. Unused.
   \item[$\mathbb{Z}$] The set of integers. Subscript denotes range. See section \ref{sec:numbers}.
   \begin{description}
     \item[$\signedgas$] The set of signed gas values. Equivalent to $\mathbb{Z}_{-2^{63}\dots2^{63}}$. See equation \ref{eq:gasregentry}.
@@ -25,37 +25,39 @@
 \subsubsection{Custom Notation}
 \begin{description}
   \item[$\dictionary{K}{V}$] The set of dictionaries making a partial bijection of domain $k$ to range $v$. See section \ref{sec:dictionaries}.
-  \item[$\serviceaccount$] The set of service accounts. See equation \ref{eq:serviceaccount}.
-  \item[$\bitstring$] The set of Boolean sequences/bitstrings. Subscript denotes length. See section \ref{sec:sequences}.
-  \item[$\safroleticket$] The set of seal-key tickets. See equation \ref{eq:ticket}. \emph{Not used as the set of complex numbers.}
-  \item[$\sig{k}{m}$] The set of valid Ed25519 signatures of the key $k$ and message $m$. A subset of $\blob[64]$. See section \ref{sec:cryptography}.
-  \item[$\bandersig{k}{c}{m}$] The set of Bandersnatch signatures of the public key $k$, context $c$ and message $m$. A subset of $\blob[64]$. See section \ref{sec:cryptography}. \emph{NOTE: Not used as finite fields.}
-  \item[$\bandersnatch{r}{c}{m}$] The set of Bandersnatch Ring\textsc{vrf} proofs of the root $r$, context $c$ and message $m$. See section \ref{sec:cryptography}.
-  \item[$\segment$] The set of data segments, equivalent to octet sequences of length $\mathsf{W}_G$. See equation \ref{eq:segment}.
-  \item[$\hash$] The set of 32-octet cryptographic values. A subset of $\blob[32]$. $\hash$ without a subscript generally implies a hash function result. See section \ref{sec:cryptography}. \emph{NOTE: Not used as quaternions.}
+  \item[$\serviceaccount$] The set of service $\mathbb{A}$ccounts. See equation \ref{eq:serviceaccount}.
+  \item[$\bitstring$] The set of $\mathbb{b}$itstrings (Boolean sequences). Subscript denotes length. See section \ref{sec:sequences}.
+  \item[$\blob$] The set of $\mathbb{B}$lobs (octet sequences). Subscript denotes length. See section \ref{sec:sequences}.
   \begin{description}
-    \item[$\bskey$] The set of Bandersnatch public keys. A subset of $\blob[32]$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
-    \item[$\edkey$] The set of Ed25519 public keys. A subset of $\blob[32]$. See section \ref{sec:signing}.
-  \end{description}
-  \item[$\workitem$] The set of work items. See equation \ref{eq:workitem}.
-  \item[$\workerror$] The set of work execution errors.
-  \item[$\valkey$] The set of validator key-sets. See equation \ref{eq:validatorkeys}.
-  \item[$\mathbb{L}$] The set of work-digests.
-  \item[$\ram$] The set of \textsc{pvm} \textsc{ram} states. See equation \ref{eq:pvmmemory}.
-  \item[$\operandtuple$] The accumulation operand element, corresponding to a single work-item.
-  \item[$\workpackage$] The set of work-packages. See equation \ref{eq:workpackage}.
-  \item[$\avspec$] The set of availability specifications.
-  \item[$\mathbb{T}$] The set of deferred transfers.
-  \item[$\mathbb{U}$] The set of partial state, used during accumulation. See equation \ref{eq:partialstate}.
-  \item[$\readable{\memory}$] The set of validly readable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
-  \item[$\writable{\memory}$] The set of validly writable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
-  \item[$\workreport$] The set of work-reports.
-  \item[$\workcontext$] The set of refinement contexts.
-  \item[$\blob$] The set of octet strings/``blobs''. Subscript denotes length. See section \ref{sec:sequences}.
-  \begin{description}
+    \item[$\segment$] The set of data segments, equivalent to $\blob[\mathsf{W}_G]$. See equation \ref{eq:segment}.
     \item[$\blskey$] The set of \textsc{bls} public keys. A subset of $\blob[144]$. See section \ref{sec:signing}.
     \item[$\ringroot$] The set of Bandersnatch ring roots. A subset of $\blob[144]$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
   \end{description}
+  \item[$\workcontext$] The set of work-$\mathbb{C}$ontexts. \emph{Not used as the set of complex numbers.}
+  \item[$\workdigest$] The set of work-$\mathbb{D}$igests.
+  \item[$\workerror$] The set of work execution $\mathbb{E}$rrors.
+  \item[$\pvmguest$] The set representing the state of a $\mathbb{G}$uest \textsc{pvm} instance. See equation \ref{eq:pvmguest}.
+  \item[$\hash$] The set of 32-octet cryptographic values, equivalent to $\blob[32]$. Often a $\mathbb{H}$ash function's result. See section \ref{sec:cryptography}.
+  \begin{description}
+    \item[$\edkey$] The set of Ed25519 public keys. A subset of $\blob[32]$. See section \ref{sec:signing}.
+    \item[$\bskey$] The set of Bandersnatch public keys. A subset of $\blob[32]$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
+  \end{description}
+  \item[$\operandtuple$] The $\mathbb{I}$nformation concerning a single work-item once prepared as an operand for the accumulation function. See equation \ref{eq:operandtuple}.
+  \item[$\valkey$] The set of validator $\mathbb{K}$ey-sets. See equation \ref{eq:validatorkeys}.
+  \item[$\implications$] The set representing implications of accumulation. See equation \ref{eq:implication}.
+  \item[$\ram$] The set of \textsc{pvm} $\mathbb{M}$emory (\textsc{ram}) states. See equation \ref{eq:pvmmemory}.
+  \item[$\workpackage$] The set of work-$\mathbb{P}$ackages. See equation \ref{eq:workpackage}.
+  \item[$\workreport$] The set of work-$\mathbb{R}$eports. \emph{Note used for the set of real numbers.}
+  \item[$\partialstate$] The set representating a portion of overall $\mathbb{S}$tate, used during accumulation. See equation \ref{eq:partialstate}.
+  \item[$\safroleticket$] The set of seal-key $\mathbb{T}$ickets. See equation \ref{eq:ticket}.
+  \item[$\readable{\memory}$] The set of $\mathbb{V}$alidly readable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
+  \item[$\writable{\memory}$] The set of $\mathbb{V}$alidly writable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
+  \item[$\edsignature{k}{m}$] The set of $\mathbb{V}$alid Ed25519 signatures of the key $k$ and message $m$. A subset of $\blob[64]$. See section \ref{sec:cryptography}.
+  \item[$\bssignature{k}{c}{m}$] The set of $\mathbb{V}$alid Bandersnatch signatures of the public key $k$, context $c$ and message $m$. A subset of $\blob[64]$. See section \ref{sec:cryptography}.
+  \item[$\bsringproof{r}{c}{m}$] The set of $\mathbb{V}$alid Bandersnatch Ring\textsc{vrf} proofs of the root $r$, context $c$ and message $m$. See section \ref{sec:cryptography}.
+  \item[$\workitem$] The set of $\mathbb{W}$ork items. See equation \ref{eq:workitem}.
+  \item[$\defxfer$] The set of deferred transfers.
+  \item[$\avspec$] The set of availability specifications.
 \end{description}
 
 \subsection{Functions}
@@ -142,7 +144,7 @@
   \item[$\zeropad{n}{\dots}$] The octet-array zero-padding function. See equation \ref{eq:zeropadding}.
   \item[$\seqfromhash{}{\dots}$] The numeric-sequence-from-hash function. See equation \ref{eq:sequencefromhash}.
   \item[$\ecrecover{\dots}$] The group of erasure-coding piece-recovery functions.
-  \item[$\signdata{k}{\dots}$] The general signature function. See section \ref{sec:cryptography}.
+  \item[$\fnsigndata{k}{\dots}$] The general signature function. See section \ref{sec:cryptography}.
   \item[$\wallclock$] The current time expressed in seconds after the start of the \Jam Common Era. See section \ref{sec:commonera}.
   \item[$\subifnone{\dots}$] The substitute-if-nothing function. See equation \ref{eq:substituteifnothing}.
   \item[$\values{\dots}$] The range, or set of values, of a dictionary or sequence. See section \ref{sec:dictionaries}.

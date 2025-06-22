@@ -30,6 +30,7 @@
 \usepackage{ifthen}
 \usepackage{hyperref}
 \usepackage{changepage}
+\usepackage{accents}
 
 \numberwithin{equation}{section}
 \renewcommand{\theequation}{\thesection.\arabic{equation}}
@@ -220,7 +221,6 @@
 \newcommand*{\zeropad}[2]{\fnzeropad{#1}\left(#2\right)}
 \newcommand*{\seqfromhash}[2]{\fnseqfromhash{#1}\left(#2\right)}
 \newcommand*{\ecrecover}[1]{\fnecrecover\left(#1\right)}
-\newcommand*{\signdata}[2]{\fnsigndata{#1}\left(#2\right)}
 \newcommand*{\subifnone}[1]{\fnsubifnone\left(#1\right)}
 \newcommand*{\values}[1]{\mathcal{V}\left(#1\right)}
 \newcommand*{\sext}[2]{\fnsext{#1}\left(#2\right)}
@@ -249,26 +249,50 @@
 
 %%%%%%%%%%%%
 % Simple Universal types (blackboard letters)
-\newcommand*{\bitstring}[1][]{\mathbb{B}_{#1}}
-\newcommand*{\signature}{\mathbb{E}}
-\newcommand*{\sig}[2]{\signature_{#1}\ang{#2}}
-\newcommand*{\bssignature}{\mathbb{F}}
-\newcommand*{\bsringproof}{\bar{\mathbb{F}}}
-\newcommand*{\bandersnatch}[3]{\bsringproof_{#1}^{#3}\ang{#2}}
-\newcommand*{\bandersig}[3]{\bssignature_{#1}^{#3}\ang{#2}}
-\newcommand*{\segment}{\mathbb{G}}
-\renewcommand*{\hash}{\mathbb{H}}
-\newcommand*{\workerror}{\mathbb{J}}
+\newcommand*{\bitstring}[1][]{\mathbb{b}_{#1}}
+\newcommand*{\blob}[1][]{\mathbb{B}_{#1}}
+\newcommand*{\finitefield}{\mathbb{F}}
+\newcommand*{\segment}{\accentset{\triangleleft}{\blob}}
+\renewcommand*{\hash}[1][]{\mathbb{H}_{#1}}
+\newcommand*{\workerror}{\mathbb{E}}
 \newcommand*{\N}{\mathbb{N}}
+\newcommand*{\ramaccess}[1][]{\mathbb{V}_{#1}}
+\newcommand*{\Z}{\mathbb{Z}}
+
+% D unused
 % Q unused
 % R unused
-\newcommand*{\readable}[1]{\mathbb{V}_{#1}}
-\newcommand*{\writable}[1]{\mathbb{V}^*_{#1}}
-\newcommand*{\blob}[1][]{\mathbb{Y}_{#1}}
-\newcommand*{\Z}{\mathbb{Z}}
+
+%%%%%%%%%%%%
+% RAM access variants
+\newcommand*{\readable}[1]{\ramaccess[#1]}
+\newcommand*{\writable}[1]{\ramaccess[#1]^*}
+
+%%%%%%%%%%%%
+% Crypto filters
+\newcommand*{\signaturebase}{\mathbb{V}}
+\newcommand*{\edsignaturebase}{\bar{\signaturebase}}
+\newcommand*{\bssignaturebase}{\accentset{\backsim}{\signaturebase}}
+\newcommand*{\bsringproofbase}{\accentset{\circ}{\signaturebase}}
+\newcommand*{\blssignaturebase}{\accentset{\mathrm{B\!L\!S}}{\signaturebase}}
+
+\newcommand*{\edsignature}[2]{\edsignaturebase_{#1}\ang{#2}}
+\newcommand*{\bssignature}[3]{\bssignaturebase_{#1}^{#3}\ang{#2}}
+\newcommand*{\bsringproof}[3]{\bsringproofbase_{#1}^{#3}\ang{#2}}
+\newcommand*{\blssignature}[2]{\blssignaturebase_{#1}\ang{#2}}
+
+\newcommand*{\edkey}{\bar{\hash}}
+\newcommand*{\bskey}{\accentset{\backsim}{\hash}}
+\newcommand*{\ringroot}{\accentset{\circ}{\blob}}
+\newcommand*{\blskey}{\accentset{\mathrm{B\!L\!S}}{\blob}}
+
+\newcommand*{\edsigndata}[2]{\bar{\fnsigndata{#1}}\left(#2\right)}
+\newcommand*{\bssigndata}[2]{\accentset{\backsim}{\fnsigndata{#1}}\left(#2\right)}
+\newcommand*{\blssigndata}[2]{\accentset{\mathrm{B\!L\!S}}{\fnsigndata{#1}}\left(#2\right)}
 
 %%%%%%%%%%%%
 % Numeric types (blackboard N subscripts)
+% Unused: J, U, O
 \newcommand*{\timeslot}{\N_T}
 \newcommand*{\balance}{\N_B}
 \newcommand*{\serviceid}{\N_S}
@@ -287,13 +311,9 @@
 %%%%%%%%%%%%
 % Hash & blob specializations
 % The hash & blob types have a bunch of peripheral definitions.
-\newcommand*{\zerohash}{\hash_0}
-\newcommand*{\edkey}{\hash_E}
-\newcommand*{\bskey}{\hash_B}
-\newcommand*{\fnkeccakoutput}{\hash_K}
-\newcommand*{\blskey}{\blob[L]}
+\newcommand*{\zerohash}{\hash[0]}
+\newcommand*{\fnkeccakoutput}{\hash[K]} % TODO: Use some symbol.
 \newcommand*{\metadatakey}{\blob[128]}
-\newcommand*{\ringroot}{\blob[R]}
 
 %%%%%%%%%%%%
 % FIELDS
@@ -326,8 +346,25 @@
 %%%%%%%%%%%%
 % Named types (blackboard)
 
-% TODO make this local.
-\newcommand*{\safroleticket}{\mathbb{C}}
+\newcommand*{\pvmguest}{\mathbb{G}}
+\newcommand*{\pg¬code}{\mathbf{p}}
+\newcommand*{\pg¬ram}{\mathbf{u}}
+\newcommand*{\pg¬pc}{i}
+
+\newcommand*{\implications}{\mathbb{L}}
+\newcommand*{\imX}{\mathbf{x}}
+\newcommand*{\imY}{\mathbf{y}}
+\newcommand*{\im¬id}{s}
+\newcommand*{\im¬state}{\mathbf{u}}
+\newcommand*{\im¬nextfreeid}{i}
+\newcommand*{\im¬xfers}{\mathbf{t}}
+\newcommand*{\im¬yield}{y}
+\newcommand*{\im¬provisions}{\mathbf{p}}
+\newcommand*{\im¬self}{\mathbf{s}}
+\newcommand*{\implicationspair}{\tuple{\implications, \implications}}
+\newcommand*{\imXY}{\tup{\imX, \imY}}
+
+\newcommand*{\safroleticket}{\mathbb{T}}
 \newcommand*{\stX}{x}
 \newcommand*{\st¬id}{y}
 \newcommand*{\st¬entry}{\¬entry}
@@ -337,18 +374,20 @@
 \newcommand*{\ram¬access}{\mathbf{A}}
 
 \newcommand*{\workpackage}{\mathbb{P}}
+\newcommand*{\wpX}{p}
 \newcommand*{\wp¬authtoken}{\mathbf{j}}
 \newcommand*{\wp¬authcodehost}{h}
 \newcommand*{\wp¬authcodehash}{u}
 \newcommand*{\wp¬authconfig}{\mathbf{p}}
-\newcommand*{\wp¬context}{\mathbf{x}} % Consider rename to \mathbf{c}
+\newcommand*{\wp¬context}{\mathbf{x}}
 \newcommand*{\wp¬workitems}{\mathbf{w}}
 % derived fields
 \newcommand*{\wp¬authorizer}{\¬authorizer}
 \newcommand*{\wp¬authcode}{\mathbf{c}}
 \newcommand*{\wp¬metadata}{\mathbf{m}}
 
-\newcommand*{\workitem}{\mathbb{I}}
+\newcommand*{\workitem}{\mathbb{W}}
+\newcommand*{\wiX}{w}
 \newcommand*{\wi¬service}{\¬service}
 \newcommand*{\wi¬codehash}{\¬codehash}
 \newcommand*{\wi¬payload}{\¬payload}
@@ -358,7 +397,8 @@
 \newcommand*{\wi¬importsegments}{\mathbf{i}}
 \newcommand*{\wi¬extrinsics}{\mathbf{x}}
 
-\newcommand*{\workreport}{\mathbb{W}}
+\newcommand*{\workreport}{\mathbb{R}}
+\newcommand*{\wrX}{r}
 \newcommand*{\wr¬avspec}{s} % O/L ¬service TODO: make bold
 \newcommand*{\wr¬context}{x} % TODO: Make bold like package. Consider renaming to \mathbf{c}
 \newcommand*{\wr¬core}{\¬core}
@@ -366,16 +406,18 @@
 \newcommand*{\wr¬authgasused}{g}
 \newcommand*{\wr¬authtrace}{\¬authtrace} % TODO: Consider renaming to \mathbf{u} to free up \mathbf{o}
 \newcommand*{\wr¬srlookup}{\mathbf{l}}
-\newcommand*{\wr¬digests}{\mathbf{r}} % TODO: Consider renaming to \mathbf{t}/{g} avoid overloading \mathbf{r} reports vs results; maybe \mathbf{t} for results
+\newcommand*{\wr¬digests}{\mathbf{d}}
+
 % TODO: Standardize and fully check this:
 % p P: work Packages
-% w I: work Items
-% w W: work Reports
-% r L: work digests TODO: Rename d D
-% d: work output data (digest)
+% w W: Work items
+% w R: work Reports
+% r D: work Digests
+% d: work output data
 % y: work payload
 
-\newcommand*{\workdigest}{\mathbb{L}}
+\newcommand*{\workdigest}{\mathbb{D}}
+\newcommand*{\wdX}{d}
 \newcommand*{\wd¬service}{\¬service}
 \newcommand*{\wd¬codehash}{\¬codehash}
 \newcommand*{\wd¬payloadhash}{\¬payloadhash}
@@ -387,7 +429,7 @@
 \newcommand*{\wd¬exportcount}{\¬exportcount}
 \newcommand*{\wd¬result}{\¬result}
 
-\newcommand*{\operandtuple}{\mathbb{O}}
+\newcommand*{\operandtuple}{\mathbb{I}}
 \newcommand{\otX}{x}
 \newcommand*{\ot¬packagehash}{h} % O/L ¬codehash TODO: RENAME to k
 \newcommand*{\ot¬segroot}{e} % O/L ¬exportcount TODO: RENAME to r?
@@ -397,7 +439,7 @@
 \newcommand*{\ot¬gaslimit}{\¬gaslimit}
 \newcommand*{\ot¬result}{\¬result}
 
-\newcommand*{\avspec}{\mathbb{S}}
+\newcommand*{\avspec}{\mathbb{Y}}
 \newcommand*{\asX}{x}
 % TODO: Is it \as¬packagehash or \as¬bundlehash? Unclear whether this was changed to the hash of the work-package bundle or still the hash of the work-package itself.
 \newcommand*{\as¬packagehash}{h}
@@ -408,7 +450,7 @@
 
 % TODO: Move \mathbf{p} from here into the \workreport and work-package - it's really not part of the context.
 
-\newcommand*{\workcontext}{\mathbb{X}}
+\newcommand*{\workcontext}{\mathbb{C}}
 \newcommand*{\wcX}{x}
 \newcommand*{\wc¬anchorhash}{a}
 \newcommand*{\wc¬anchorpoststate}{s}
@@ -438,7 +480,7 @@
 \newcommand*{\sa¬code}{\mathbf{c}}
 
 % Fields of deferred transfer.
-\newcommand*{\defxfer}{\mathbb{T}}
+\newcommand*{\defxfer}{\mathbb{X}}
 \newcommand*{\defxfers}{\sequence\defxfer}
 \newcommand*{\dxX}{x}
 \newcommand*{\dx¬source}{s}
@@ -449,13 +491,14 @@
 
 % Derived fields of validator keys.
 \newcommand*{\valkey}{\mathbb{K}}
+\newcommand*{\vkX}{k}
 \newcommand*{\vk¬bs}{b}
 \newcommand*{\vk¬ed}{e}
 \newcommand*{\vk¬bls}{L}  % TODO: Rename to be a single letter.
 \newcommand*{\vk¬metadata}{m}
 \newcommand*{\allvalkeys}{\sequence[\valcount]{\valkey}}
 
-\newcommand*{\partialstate}{\mathbb{U}}
+\newcommand*{\partialstate}{\mathbb{S}}
 \newcommand*{\ps¬accounts}{\mathbf{d}}
 \newcommand*{\ps¬stagingset}{\mathbf{i}}
 \newcommand*{\ps¬authqueue}{\mathbf{q}}
@@ -508,19 +551,6 @@
 
 
 %%%%%%%%%%%%
-% Standard iterators for the tuples
-
-\newcommand*{\wpX}{p}
-\newcommand*{\wiX}{w} % TODO: consider change to i
-\newcommand*{\wrX}{r}
-\newcommand*{\wdX}{d}
-\newcommand*{\xgX}{g}
-\newcommand*{\vkX}{k}
-\newcommand*{\cX}{c}
-\newcommand*{\wrcX}{\tup{\wrX, \cX}}
-
-
-%%%%%%%%%%%%
 % Incidental item tuples (fields of uppercase bold roman letters)
 
 % Blocks.
@@ -567,6 +597,7 @@
 \newcommand*{\xa¬assurer}{v}
 \newcommand*{\xa¬signature}{\¬signature}
 
+\newcommand*{\xgX}{g}
 \newcommand*{\xg¬workreport}{\¬workreport}
 \newcommand*{\xg¬timeslot}{t}
 \newcommand*{\xg¬credential}{a}
@@ -615,6 +646,10 @@
 \newcommand*{\¬sealsig}{s}
 % Derived fields
 \newcommand*{\¬authorbskey}{a}
+
+% Additional iterators.
+\newcommand*{\cX}{c}
+\newcommand*{\wrcX}{\tup{\wrX, \cX}}
 
 %%%%%%%%%%%%
 % Function outputs
@@ -701,27 +736,11 @@
 \newcommand*{\memory}{\mu}
 \newcommand*{\pvmreg}{\N_R}
 
-\newcommand*{\pvm}{\mathbf{M}} % TODO: Would be nice for this to be a blackboard
-\newcommand*{\pvm¬code}{\mathbf{p}}
-\newcommand*{\pvm¬ram}{\mathbf{u}}
-\newcommand*{\pvm¬pc}{i}
-
 \newcommand*{\segoff}{\varsigma}
 \newcommand*{\execst}{\varepsilon}
 
-\newcommand*{\implications}{\mathbf{X}}
-\newcommand*{\imX}{\mathbf{x}}
-\newcommand*{\imY}{\mathbf{y}}
-\newcommand*{\im¬id}{s}
-\newcommand*{\im¬state}{\mathbf{u}}
-\newcommand*{\im¬nextfreeid}{i}
-\newcommand*{\im¬xfers}{\mathbf{t}}
-\newcommand*{\im¬yield}{y}
-\newcommand*{\im¬provisions}{\mathbf{p}}
-\newcommand*{\im¬self}{\mathbf{s}}
 
-\newcommand*{\implicationspair}{\tuple{\implications, \implications}}
-\newcommand*{\imXY}{\tup{\imX, \imY}}
+\newcommand*{\contextmutator}[1][]{\Omega\ang{#1}}
 
 %%%%%%%%%%%%
 % Other stuff
