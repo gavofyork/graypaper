@@ -80,7 +80,7 @@ We finally come to define a \emph{work-digest}, $\workdigest$, which is the data
 \begin{equation}\label{eq:workdigest}
   \workdigest \equiv \tuple{
     \begin{alignedat}{9}
-      \isa{\wd¬service&}{\serviceid}\,,\;
+      \isa{\wd¬serviceindex&}{\serviceid}\,,\;
       \isa{&\wd¬codehash&}{\hash}\,,\;
       \isa{&\wd¬payloadhash&}{\hash}\,,\;
       \isa{&\wd¬gaslimit&}{\gas}\,,\;
@@ -94,7 +94,7 @@ We finally come to define a \emph{work-digest}, $\workdigest$, which is the data
   }
 \end{equation}
 
-Work-digests are a tuple comprising several items. Firstly $\wd¬service$, the index of the service whose state is to be altered and thus whose refine code was already executed. We include the hash of the code of the service at the time of being reported $\wd¬codehash$, which must be accurately predicted within the work-report according to equation \ref{eq:reportcodesarecorrect}.
+Work-digests are a tuple comprising several items. Firstly $\wd¬serviceindex$, the index of the service whose state is to be altered and thus whose refine code was already executed. We include the hash of the code of the service at the time of being reported $\wd¬codehash$, which must be accurately predicted within the work-report according to equation \ref{eq:reportcodesarecorrect}.
 
 Next, the hash of the payload ($\wd¬payloadhash$) within the work item which was executed in the refine stage to give this result. This has no immediate relevance, but is something provided to the accumulation logic of the service. We follow with the gas limit $\wd¬gaslimit$ for executing this item's accumulate.
 
@@ -288,7 +288,7 @@ We require that the gas allotted for accumulation of each work-digest in each wo
 \begin{equation}
   \forall \wrX \in \incomingreports:
     \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \mathsf{G}_A \ \wedge \ 
-    \forall \wdX \in \wrX_\wr¬digests: \wdX_\wd¬gaslimit \ge \accounts\subb{\wdX_\wd¬service}_\sa¬minaccgas
+    \forall \wdX \in \wrX_\wr¬digests: \wdX_\wd¬gaslimit \ge \accounts\subb{\wdX_\wd¬serviceindex}_\sa¬minaccgas
 \end{equation}
 
 
@@ -379,7 +379,7 @@ We require that any segment roots mentioned in the segment-root lookup be verifi
 
 Finally, we require that all work-digests within the extrinsic predicted the correct code hash for their corresponding service:
 \begin{align}\label{eq:reportcodesarecorrect}
-  \forall \wrX \in \incomingreports, \forall \wdX \in \wrX_\wr¬digests : \wdX_\wd¬codehash = \accounts\subb{\wdX_\wd¬service}_\sa¬codehash
+  \forall \wrX \in \incomingreports, \forall \wdX \in \wrX_\wr¬digests : \wdX_\wd¬codehash = \accounts\subb{\wdX_\wd¬serviceindex}_\sa¬codehash
 \end{align}
 
 

@@ -62,12 +62,12 @@ Finally, $\ticketaccumulator$ is the ticket accumulator, a series of highest-sco
   \sealtickets \in \sequence[\epochlen]{\safroleticket} \cup \sequence[\epochlen]{\bskey}
 \end{align}
 
-Here, $\safroleticket$ is used to denote the set of \emph{tickets}, a combination of a verifiably random ticket identifier $\st¬id$ and the ticket's entry-index $\st¬entry$:
+Here, $\safroleticket$ is used to denote the set of \emph{tickets}, a combination of a verifiably random ticket identifier $\st¬id$ and the ticket's entry-index $\st¬entryindex$:
 \begin{align}\label{eq:ticket}
   % TODO make this local.
   \safroleticket &\equiv \tuple{
     \isa{\st¬id}{\hash},\,
-    \isa{\st¬entry}{\ticketentryindex}
+    \isa{\st¬entryindex}{\ticketentryindex}
   }
 \end{align}
 
@@ -135,7 +135,7 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
     \label{eq:ticketconditiontrue}
     \safroleticket \in \sequence{\safroleticket} &\implies \abracegroup[\,]{
         &i_\st¬id = \banderout{\H_\¬sealsig}\,,\\
-        &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entry}{\encodeunsignedheader{\H}}\,,\\
+        &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entryindex}{\encodeunsignedheader{\H}}\,,\\
         &\isticketed = 1
     }\\
     \label{eq:ticketconditionfalse}
@@ -268,8 +268,8 @@ Towards the end of the epoch (\ie $\mathsf{Y}$ slots from the start) this contes
 We define the extrinsic as a sequence of proofs of valid tickets, each of which is a tuple of an entry index (a natural number less than $\ticketentries$) and a proof of ticket validity. Formally:
 \begin{align}\label{eq:ticketsextrinsic}
   \xttickets &\in \sequence{\tuple{
-    \isa{\xt¬entry}{\Nmax{\ticketentries}},\,
-    \isa{\xt¬proof}{\bsringproof{\epochroot'}{\mathsf{X}_T \concat \entropy'_2 \append \xt¬entry}{\sq{}}}
+    \isa{\xt¬entryindex}{\Nmax{\ticketentries}},\,
+    \isa{\xt¬proof}{\bsringproof{\epochroot'}{\mathsf{X}_T \concat \entropy'_2 \append \xt¬entryindex}{\sq{}}}
   }} \\
   \len{\xttickets} &\le \begin{cases}
       \mathsf{K} &\when m' < \mathsf{Y} \\
@@ -282,7 +282,7 @@ We define $\mathbf{n}$ as the set of new tickets, with the ticket identifier, a 
   \mathbf{n} &\equiv \sq{\build{
     \tup{
       \is{\st¬id}{\banderout{i_\xt¬proof}},\,
-      \is{\st¬entry}{i_\st¬entry}
+      \is{\st¬entryindex}{i_\st¬entryindex}
     }
   }{
     i \orderedin \xttickets

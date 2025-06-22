@@ -251,10 +251,10 @@
 % Simple Universal types (blackboard letters)
 \newcommand*{\bitstring}[1][]{\mathbb{b}_{#1}}
 \newcommand*{\blob}[1][]{\mathbb{B}_{#1}}
-\newcommand*{\finitefield}{\mathbb{F}}
-\newcommand*{\segment}{\accentset{\triangleleft}{\blob}}
-\renewcommand*{\hash}[1][]{\mathbb{H}_{#1}}
 \newcommand*{\workerror}{\mathbb{E}}
+\newcommand*{\finitefield}{\mathbb{F}}
+\renewcommand*{\hash}[1][]{\mathbb{H}_{#1}}
+\newcommand*{\segment}{\mathbb{J}}
 \newcommand*{\N}{\mathbb{N}}
 \newcommand*{\ramaccess}[1][]{\mathbb{V}_{#1}}
 \newcommand*{\Z}{\mathbb{Z}}
@@ -322,26 +322,29 @@
 % Common fields
 
 % TODO: Use non-prefixed items for common fields:
+\newcommand*{\¬authorizer}{a} % O/L ¬accgaslimit
+\newcommand*{\¬authtrace}{\mathbf{t}}
+\newcommand*{\¬codehash}{c} % O/L core
+\newcommand*{\¬context}{\mathbf{c}}
+\newcommand*{\¬core}{c} % O/L codehash
+\newcommand*{\¬entryindex}{e} % O/L exportcount, segroot
+\newcommand*{\¬exportcount}{e} % O/L entryindex, segroot
 \newcommand*{\¬gaslimit}{g}
 \newcommand*{\¬gasused}{u}
-\newcommand*{\¬service}{s}
-\newcommand*{\¬payloadhash}{y}
-\newcommand*{\¬payload}{\mathbf{y}}
-\newcommand*{\¬result}{\mathbf{d}}
-\newcommand*{\¬authtrace}{\mathbf{o}}
-\newcommand*{\¬core}{c} % O/L ¬codehash
-\newcommand*{\¬authorizer}{a} % O/L ¬accgaslimit
-\newcommand*{\¬codehash}{h} % O/L \ot¬packagehash
-\newcommand*{\¬exportcount}{e}
 \newcommand*{\¬importcount}{i}
+\newcommand*{\¬offenderindex}{f}
+\newcommand*{\¬packagehash}{p}
+\newcommand*{\¬payload}{\mathbf{y}}
+\newcommand*{\¬payloadhash}{y}
+\newcommand*{\¬reporthash}{r}
+\newcommand*{\¬result}{\mathbf{l}}
+\newcommand*{\¬segroot}{e} % O/L exportcount, entryindex
+\newcommand*{\¬serviceindex}{s} % O/L signature
+\newcommand*{\¬signature}{s} % O/L service
+\newcommand*{\¬validity}{v}
+\newcommand*{\¬workreport}{\mathbf{r}}
 \newcommand*{\¬xtcount}{x}
 \newcommand*{\¬xtsize}{z}
-\newcommand*{\¬workreport}{w}
-\newcommand*{\¬offender}{k}
-\newcommand*{\¬validity}{v}
-\newcommand*{\¬reporthash}{r}
-\newcommand*{\¬signature}{s}
-\newcommand*{\¬entry}{r} % TODO: Rename to entryindex
 
 %%%%%%%%%%%%
 % Named types (blackboard)
@@ -367,58 +370,50 @@
 \newcommand*{\safroleticket}{\mathbb{T}}
 \newcommand*{\stX}{x}
 \newcommand*{\st¬id}{y}
-\newcommand*{\st¬entry}{\¬entry}
+\newcommand*{\st¬entryindex}{\¬entryindex}
 
 \newcommand*{\ram}{\mathbb{M}}
 \newcommand*{\ram¬value}{\mathbf{V}}
 \newcommand*{\ram¬access}{\mathbf{A}}
 
 \newcommand*{\workpackage}{\mathbb{P}}
-\newcommand*{\wpX}{p}
+\newcommand*{\wpX}{\mathbf{p}}
 \newcommand*{\wp¬authtoken}{\mathbf{j}}
 \newcommand*{\wp¬authcodehost}{h}
 \newcommand*{\wp¬authcodehash}{u}
-\newcommand*{\wp¬authconfig}{\mathbf{p}}
-\newcommand*{\wp¬context}{\mathbf{x}}
+\newcommand*{\wp¬authconfig}{\mathbf{f}}
+\newcommand*{\wp¬context}{\¬context}
 \newcommand*{\wp¬workitems}{\mathbf{w}}
 % derived fields
 \newcommand*{\wp¬authorizer}{\¬authorizer}
-\newcommand*{\wp¬authcode}{\mathbf{c}}
+\newcommand*{\wp¬authcode}{\mathbf{u}}
 \newcommand*{\wp¬metadata}{\mathbf{m}}
 
 \newcommand*{\workitem}{\mathbb{W}}
-\newcommand*{\wiX}{w}
-\newcommand*{\wi¬service}{\¬service}
+\newcommand*{\wiX}{\mathbf{w}}
+\newcommand*{\wi¬serviceindex}{\¬serviceindex}
 \newcommand*{\wi¬codehash}{\¬codehash}
 \newcommand*{\wi¬payload}{\¬payload}
-\newcommand*{\wi¬refgaslimit}{g} % O/L ¬gaslimit TODO: use r instead
+\newcommand*{\wi¬refgaslimit}{g}
 \newcommand*{\wi¬accgaslimit}{a} % O/L ¬authorizer
 \newcommand*{\wi¬exportcount}{\¬exportcount}
 \newcommand*{\wi¬importsegments}{\mathbf{i}}
 \newcommand*{\wi¬extrinsics}{\mathbf{x}}
 
 \newcommand*{\workreport}{\mathbb{R}}
-\newcommand*{\wrX}{r}
-\newcommand*{\wr¬avspec}{s} % O/L ¬service TODO: make bold
-\newcommand*{\wr¬context}{x} % TODO: Make bold like package. Consider renaming to \mathbf{c}
+\newcommand*{\wrX}{\mathbf{r}}
+\newcommand*{\wr¬avspec}{\mathbf{s}}
+\newcommand*{\wr¬context}{\¬context}
 \newcommand*{\wr¬core}{\¬core}
 \newcommand*{\wr¬authorizer}{\¬authorizer}
 \newcommand*{\wr¬authgasused}{g}
-\newcommand*{\wr¬authtrace}{\¬authtrace} % TODO: Consider renaming to \mathbf{u} to free up \mathbf{o}
+\newcommand*{\wr¬authtrace}{\¬authtrace}
 \newcommand*{\wr¬srlookup}{\mathbf{l}}
 \newcommand*{\wr¬digests}{\mathbf{d}}
 
-% TODO: Standardize and fully check this:
-% p P: work Packages
-% w W: Work items
-% w R: work Reports
-% r D: work Digests
-% d: work output data
-% y: work payload
-
 \newcommand*{\workdigest}{\mathbb{D}}
-\newcommand*{\wdX}{d}
-\newcommand*{\wd¬service}{\¬service}
+\newcommand*{\wdX}{\mathbf{d}}
+\newcommand*{\wd¬serviceindex}{\¬serviceindex}
 \newcommand*{\wd¬codehash}{\¬codehash}
 \newcommand*{\wd¬payloadhash}{\¬payloadhash}
 \newcommand*{\wd¬gaslimit}{\¬gaslimit}
@@ -430,9 +425,9 @@
 \newcommand*{\wd¬result}{\¬result}
 
 \newcommand*{\operandtuple}{\mathbb{I}}
-\newcommand{\otX}{x}
-\newcommand*{\ot¬packagehash}{h} % O/L ¬codehash TODO: RENAME to k
-\newcommand*{\ot¬segroot}{e} % O/L ¬exportcount TODO: RENAME to r?
+\newcommand{\otX}{\mathbf{x}}
+\newcommand*{\ot¬packagehash}{\¬packagehash}
+\newcommand*{\ot¬segroot}{\¬segroot}
 \newcommand*{\ot¬authorizer}{\¬authorizer}
 \newcommand*{\ot¬authtrace}{\¬authtrace}
 \newcommand*{\ot¬payloadhash}{\¬payloadhash}
@@ -440,24 +435,23 @@
 \newcommand*{\ot¬result}{\¬result}
 
 \newcommand*{\avspec}{\mathbb{Y}}
-\newcommand*{\asX}{x}
+\newcommand*{\asX}{\mathbf{x}}
 % TODO: Is it \as¬packagehash or \as¬bundlehash? Unclear whether this was changed to the hash of the work-package bundle or still the hash of the work-package itself.
-\newcommand*{\as¬packagehash}{h}
+\newcommand*{\as¬packagehash}{\¬packagehash}
 \newcommand*{\as¬bundlelen}{l}
 \newcommand*{\as¬erasureroot}{u}
-\newcommand*{\as¬segroot}{r} % Inconsistent with other segroot. TODO: RENAME to e?
+\newcommand*{\as¬segroot}{\¬segroot}
 \newcommand*{\as¬segcount}{n}
 
-% TODO: Move \mathbf{p} from here into the \workreport and work-package - it's really not part of the context.
-
 \newcommand*{\workcontext}{\mathbb{C}}
-\newcommand*{\wcX}{x}
+\newcommand*{\wcX}{\mathbf{x}}
 \newcommand*{\wc¬anchorhash}{a}
 \newcommand*{\wc¬anchorpoststate}{s}
 \newcommand*{\wc¬anchoraccoutlog}{b}
 \newcommand*{\wc¬lookupanchorhash}{l}
 \newcommand*{\wc¬lookupanchortime}{t}
 \newcommand*{\wc¬prerequisites}{\mathbf{p}}
+% TODO: Move \mathbf{p} from here into the \workreport and work-package - it's really not part of the context.
 
 \newcommand*{\serviceaccount}{\mathbb{A}}
 \newcommand*{\saX}{\mathbf{a}}
@@ -494,7 +488,7 @@
 \newcommand*{\vkX}{k}
 \newcommand*{\vk¬bs}{b}
 \newcommand*{\vk¬ed}{e}
-\newcommand*{\vk¬bls}{L}  % TODO: Rename to be a single letter.
+\newcommand*{\vk¬bls}{l}
 \newcommand*{\vk¬metadata}{m}
 \newcommand*{\allvalkeys}{\sequence[\valcount]{\valkey}}
 
@@ -602,10 +596,10 @@
 \newcommand*{\xg¬timeslot}{t}
 \newcommand*{\xg¬credential}{a}
 
-\newcommand*{\xp¬service}{\¬service}
+\newcommand*{\xp¬serviceindex}{\¬serviceindex}
 \newcommand*{\xp¬data}{\mathbf{p}} % TODO: Consider using mathbf{d}
 
-\newcommand*{\xt¬entry}{\¬entry}
+\newcommand*{\xt¬entryindex}{\¬entryindex}
 \newcommand*{\xt¬proof}{p}
 
 \newcommand*{\xv¬reporthash}{\¬reporthash}
@@ -617,12 +611,12 @@
 \newcommand*{\xvj¬signature}{\¬signature}
 
 \newcommand*{\xc¬reporthash}{\¬reporthash}
-\newcommand*{\xc¬offender}{\¬offender}
+\newcommand*{\xc¬offenderindex}{\¬offenderindex}
 \newcommand*{\xc¬signature}{\¬signature}
 
 \newcommand*{\xf¬reporthash}{\¬reporthash}
 \newcommand*{\xf¬validity}{\¬validity}
-\newcommand*{\xf¬offender}{\¬offender}
+\newcommand*{\xf¬offenderindex}{\¬offenderindex}
 \newcommand*{\xf¬signature}{\¬signature}
 
 % Headers.

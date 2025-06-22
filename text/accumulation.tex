@@ -167,7 +167,7 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
     &\text{where:}\\
     &\ \begin{aligned}
       \using \mathbf{s} &= \set{\build{
-        \mathbf{r}_\wd¬service
+        \mathbf{r}_\wd¬serviceindex
         }{
           w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests
         }} \cup \keys{\mathbf{f}} \\
@@ -273,7 +273,7 @@ The single-service accumulation function, $\accone$, transforms an initial state
     \end{aligned} \\
     &\text{where:} \\
     &\ \begin{aligned}
-      g &= \subifnone{\mathbf{f}\sub{s}, 0} + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests , \mathbf{r}_\wd¬service = s}\!\!\!\!(\mathbf{r}_\wr¬authgasused) \\
+      g &= \subifnone{\mathbf{f}\sub{s}, 0} + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests , \mathbf{r}_\wd¬serviceindex = s}\!\!\!\!(\mathbf{r}_\wr¬authgasused) \\
       \mathbf{i} &= \sq{\build{
         \tup{\begin{alignedat}{3}
           % TODO: Rename \mathbf{o} to something else, to allow mathbf{a} to become \mathbf{o}.
@@ -289,7 +289,7 @@ The single-service accumulation function, $\accone$, transforms an initial state
       }{
         \begin{alignedat}{2}
           w& \orderedin \mathbf{w},&\\
-          \mathbf{r}& \orderedin w_\wr¬digests,&\ \mathbf{r}_\wd¬service = s
+          \mathbf{r}& \orderedin w_\wr¬digests,&\ \mathbf{r}_\wd¬serviceindex = s
         \end{alignedat}
       }}
     \end{aligned}
@@ -334,7 +334,7 @@ We compose $\accumulationstatistics$, our accumulation statistics, which is a ma
   \where &N(s) \equiv \sq{\build{r}{
     w \orderedin \justbecameavailable^*\sub{\dots n} ,
     r \orderedin w_\wr¬digests ,
-    r_\wd¬service = s
+    r_\wd¬serviceindex = s
   }}
 \end{align}
 
@@ -407,7 +407,7 @@ After accumulation, we must integrate all preimages provided in the lookup extri
 \begin{align}
   \xtpreimages &\in \sequence{\tuple{ \serviceid,\, \blob }} \\
   \label{eq:preimagesareordered}\xtpreimages &= \sqorderuniqby{i}{i \in \xtpreimages} \\
-  \forall \tup{\xp¬service, \xp¬data} &\in \xtpreimages : Y(\accountspre, \xp¬service, \blake{\xp¬data}, \len{\xp¬data}) \\
+  \forall \tup{\xp¬serviceindex, \xp¬data} &\in \xtpreimages : Y(\accountspre, \xp¬serviceindex, \blake{\xp¬data}, \len{\xp¬data}) \\
   \where Y(\mathbf{d}, s, h, l) &\Leftrightarrow
   h \not\in \mathbf{d}\subb{s}_\sa¬preimages \wedge
     \mathbf{d}\subb{s}_\sa¬requests\subb{\tup{h, l}} = \sq{}
@@ -416,12 +416,12 @@ After accumulation, we must integrate all preimages provided in the lookup extri
 We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
 \begin{align}
   \using \mathbf{p} = \set{\build{
-    \tup{\xp¬service, \xp¬data}
+    \tup{\xp¬serviceindex, \xp¬data}
   }{
-    \tup{\xp¬service, \xp¬data} \in \xtpreimages, Y(\accountspostxfer, \xp¬service, \blake{\xp¬data}, \len{\xp¬data})
+    \tup{\xp¬serviceindex, \xp¬data} \in \xtpreimages, Y(\accountspostxfer, \xp¬serviceindex, \blake{\xp¬data}, \len{\xp¬data})
   }}\\
-  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{\xp¬service,\,\xp¬data} \in \mathbf{p} : \abracegroup[\,]{
-      \quad\accountspostpreimage\subb{\xp¬service}_\sa¬preimages\subb{\blake{\xp¬data}} &= \xp¬data \\
-      \accountspostpreimage\subb{\xp¬service}_\sa¬requests\subb{\blake{\xp¬data}, \len{\xp¬data}} &= \sq{\thetime'}
+  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{\xp¬serviceindex,\,\xp¬data} \in \mathbf{p} : \abracegroup[\,]{
+      \quad\accountspostpreimage\subb{\xp¬serviceindex}_\sa¬preimages\subb{\blake{\xp¬data}} &= \xp¬data \\
+      \accountspostpreimage\subb{\xp¬serviceindex}_\sa¬requests\subb{\blake{\xp¬data}, \len{\xp¬data}} &= \sq{\thetime'}
     }\!\!\!\!
 \end{align}
