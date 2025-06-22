@@ -761,7 +761,7 @@ The software programs which will run in each of the four instances where the \te
 We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} at program start. Given program blob $\mathbf{p}$ and argument data $\mathbf{a}$, we can decode the program code $\mathbf{c}$, registers $\registers$, and \textsc{ram} $\mem$ by invoking the standard initialization function $Y(\mathbf{p}, \mathbf{a})$:
 \begin{equation}
 Y\colon\abracegroup{
-  \tuple{\blob, \bloboflen{:\mathsf{Z}_I}} &\to \tup{\blob, \regs, \ram}? \\
+  \tuple{\blob, \bloboflen{:\mathsf{Z}_I}} &\to \tuple{\blob, \regs, \ram}? \\
   \tup{\mathbf{p}, \mathbf{a}} &\mapsto \begin{cases}
     \tup{\mathbf{c}, \registers, \mem} &\when \exists! \tup{\mathbf{c}, \mathbf{o}, \mathbf{w}, z, s} \text{ which satisfy equation \ref{eq:conditions}}\\
     \none &\otherwise
