@@ -65,7 +65,7 @@ Offender signatures must be similarly valid and reference work-reports with judg
     &k \in \mathbf{k} \,,\\
     &s \in \sig{\xf¬offender}{\mathsf{X}\sub{v} \concat \xf¬reporthash}\\
   }\\
-  \nonumber\where \mathbf{k} &= \set{i_\vk¬ed \mid i \in \previousset \cup \activeset} \setminus \offenders
+  \nonumber\where \mathbf{k} &= \set{\build{i_\vk¬ed}{i \in \previousset \cup \activeset}} \setminus \offenders
 \end{align}
 
 Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
@@ -73,7 +73,7 @@ Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtc
   &\xtverdicts = \sqorderuniqby{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}\\
   &\xtculprits = \sqorderuniqby{\xc¬offender}{\tup{\xc¬reporthash, \xc¬offender, \xc¬signature} \in \xtculprits} \,,\ 
   \xtfaults = \sqorderuniqby{\xf¬offender}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offender, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!\\
-  &\set{\xv¬reporthash \mid \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts} \disjoint \goodset \cup \badset \cup \wonkyset
+  &\set{\build{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}} \disjoint \goodset \cup \badset \cup \wonkyset
 \end{align}
 
 The judgments of all verdicts must be ordered by validator index and there may be no duplicates:

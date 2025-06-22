@@ -22,7 +22,7 @@ During the accumulation stage, a value with the partial transition of this state
 
 We define the new Accumulation Output Log $\beefybelt$. This is formed from the block's accumulation-output sequence $\lastaccout'$ (defined in section \ref{sec:accumulation}), taking its root using the basic binary Merklization function ($\fnmerklizewb$, defined in appendix \ref{sec:merklization}) and appending it to the previous log value with the \textsc{mmb} append function (defined in appendix \ref{sec:mmr}). Throughout, the Keccak hash function is used to maximize compatibility with legacy systems:
 \begin{align}
-  \using \mathbf{s} &= \sq{\fixedencode{4}{s} \concat \encode{h} \mid \tup{s, h} \orderedin \lastaccout'}\\
+  \using \mathbf{s} &= \sq{\build{\encode[4]{s} \concat \encode{h}}{\tup{s, h} \orderedin \lastaccout'}}\\
   \label{eq:buildbeefymap}
   \beefybelt' &\equiv \mmrappend{\beefybelt, \merklizewb{\mathbf{s}, \fnkeccak}, \fnkeccak}
 \end{align}

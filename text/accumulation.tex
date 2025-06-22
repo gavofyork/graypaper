@@ -35,11 +35,11 @@ We also maintain knowledge of ready (\ie available and/or audited) but not-yet-a
 
 The newly available work-reports, $\justbecameavailable$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\justbecameavailable^!$, are accumulated immediately. Those not, $\justbecameavailable^Q$, are for queued execution. Formally:
 \begin{align}
-  \justbecameavailable^! &\equiv \sq{\build{w}{w \orderedin \justbecameavailable, |(w_\wr¬context)_\wc¬prerequisites| = 0 \wedge w_\wr¬srlookup = \emset}} \\
+  \justbecameavailable^! &\equiv \sq{\build{w}{w \orderedin \justbecameavailable, \len{(w_\wr¬context)_\wc¬prerequisites} = 0 \wedge w_\wr¬srlookup = \emset}} \\
   \justbecameavailable^Q &\equiv E(\sq{
     D(w) \mid
     w \orderedin \justbecameavailable,
-    |(w_\wr¬context)_\wc¬prerequisites| > 0 \vee w_\wr¬srlookup \ne \emset
+    \len{(w_\wr¬context)_\wc¬prerequisites} > 0 \vee w_\wr¬srlookup \ne \emset
   }, \accumulatedcup)\!\!\!\!\\
   D(w) &\equiv (w, \set{(w_\wr¬context)_\wc¬prerequisites} \cup \keys{w_\wr¬srlookup})
 \end{align}
@@ -64,7 +64,7 @@ We further define the accumulation priority queue function $Q$, which provides t
   Q\colon\abracegroup{
     &\sequence{\tuple{\workreport, \protoset{\hash}}} \to \sequence{\workreport} \\
     &\mathbf{r} \mapsto \begin{cases}
-      [] &\when \mathbf{g} = [] \\
+      \sq{} &\when \mathbf{g} = \sq{} \\
       \mathbf{g} \concat Q(E(\mathbf{r}, \srmap(\mathbf{g})))\!\!\!\! &\otherwise \\
       \multicolumn{2}{l}{\,\where \mathbf{g} = \sq{\build{w}{\tup{w, \emset} \orderedin \mathbf{r}}}}
     \end{cases}
@@ -103,7 +103,7 @@ Only once all such accumulation is executed do we integrate the results and thus
 Our formalisms begin by defining $\partialstate$ as a characterization of (\ie values capable of representing) state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\accountspre$), the upcoming validator keys $\stagingset$, the queue of authorizers $\authqueue$ and the privileges state $\privileges$. Formally:
 \begin{equation}
   \label{eq:partialstate}
-  \partialstate \equiv \left(\begin{aligned}
+  \partialstate \equiv \tuple{\begin{aligned}
     &\isa{\ps¬accounts}{\dict{\serviceid}{\serviceaccount}} \,,\;
     \isa{\ps¬stagingset}{\sequence{\valkey}_\valcount} \,,\;
     \isa{\ps¬authqueue}{\sequence{\sequence{\hash}_\mathsf{Q}}_\corecount} \,,\\
@@ -111,7 +111,7 @@ Our formalisms begin by defining $\partialstate$ as a characterization of (\ie v
     \isa{\ps¬assigners}{\sequence{\serviceid}_\corecount} \,,\;
     \isa{\ps¬delegator}{\serviceid} \,,\;
     \isa{\ps¬alwaysaccers}{\dict{\serviceid}{\gas}}
-  \end{aligned}\right)
+  \end{aligned}}
 \end{equation}
 
 We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $\dx¬memo$ of $\mathsf{W}_T = 128$ octets, together with the service index of the sender $\dx¬source$, the service index of the receiver $\dx¬dest$, the balance to be transferred $\dx¬amount$ and the gas limit $\dx¬gas$ for the transfer. Formally:
@@ -233,7 +233,7 @@ And $\fnprovide$ is the preimage integration function, which transforms a dictio
     &\quad\forall \tup{s, \mathbf{i}} \in \mathbf{p},\;
       s \in \keys{\mathbf{d}},\;
       \mathbf{d}\subb{s}_\sa¬requests\subb{\blake{\mathbf{i}}, \len{\mathbf{i}}} = \sq{}:\\
-    &\qquad \mathbf{d}'\subb{s}_\sa¬requests\subb{\blake{\mathbf{i}}, \len{\mathbf{i}}} = [\thetime']\\
+    &\qquad \mathbf{d}'\subb{s}_\sa¬requests\subb{\blake{\mathbf{i}}, \len{\mathbf{i}}} =\sq{\thetime'}\\
     &\qquad \mathbf{d}'\subb{s}_\sa¬preimages\subb{\blake{\mathbf{i}}} = \mathbf{i}
   }
 \end{equation}
@@ -273,23 +273,24 @@ The single-service accumulation function, $\accone$, transforms an initial state
     &\text{where:} \\
     &\ \begin{aligned}
       g &= \subifnone{\mathbf{f}\sub{s}, 0} + \!\!\!\!\sum_{w \in \mathbf{w}, \mathbf{r} \in w_\wr¬digests , \mathbf{r}_\wd¬service = s}\!\!\!\!(\mathbf{r}_\wr¬authgasused) \\
-      \mathbf{i} &= \left[ \tup{\begin{alignedat}{3}
-        % TODO: Rename \mathbf{o} to something else, to allow mathbf{a} to become \mathbf{o}.
-        % TODO: Rename k to h. Then 5 of the 6 fields keep their names.
-        \is{\ot¬result}{\mathbf{r}_\wd¬result},\,
-        \is{\ot¬gaslimit}{\mathbf{r}_\wd¬gaslimit},\,
-        \is{\ot¬payloadhash}{\mathbf{r}_\wd¬payloadhash},\,
-        \is{&\ot¬authtrace\;&}{w_\wr¬authtrace&},\\
-        \is{\ot¬segroot}{(w_\wr¬avspec)_\as¬segroot},\,
-        \is{\ot¬packagehash}{(w_\wr¬avspec)_\as¬packagehash},\,
-        \is{&\ot¬authorizer\;&}{w_\wr¬authorizer&}
-      \end{alignedat}}
-      \,\middle\vert\ 
-      \begin{alignedat}{2}
-        w& \orderedin \mathbf{w},&\\
-        \mathbf{r}& \orderedin w_\wr¬digests,&\ \mathbf{r}_\wd¬service = s
-      \end{alignedat}
-    \,\right]
+      \mathbf{i} &= \sq{\build{
+        \tup{\begin{alignedat}{3}
+          % TODO: Rename \mathbf{o} to something else, to allow mathbf{a} to become \mathbf{o}.
+          % TODO: Rename k to h. Then 5 of the 6 fields keep their names.
+          \is{\ot¬result}{\mathbf{r}_\wd¬result},\,
+          \is{\ot¬gaslimit}{\mathbf{r}_\wd¬gaslimit},\,
+          \is{\ot¬payloadhash}{\mathbf{r}_\wd¬payloadhash},\,
+          \is{&\ot¬authtrace\;&}{w_\wr¬authtrace&},\\
+          \is{\ot¬segroot}{(w_\wr¬avspec)_\as¬segroot},\,
+          \is{\ot¬packagehash}{(w_\wr¬avspec)_\as¬packagehash},\,
+          \is{&\ot¬authorizer\;&}{w_\wr¬authorizer&}
+        \end{alignedat}}
+      }{
+        \begin{alignedat}{2}
+          w& \orderedin \mathbf{w},&\\
+          \mathbf{r}& \orderedin w_\wr¬digests,&\ \mathbf{r}_\wd¬service = s
+        \end{alignedat}
+      }}
     \end{aligned}
   }\!\!\!\!
 \end{align}
@@ -413,12 +414,12 @@ After accumulation, we must integrate all preimages provided in the lookup extri
 
 We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
 \begin{align}
-  \using \mathbf{P} = \set{\build{
+  \using \mathbf{p} = \set{\build{
     \tup{\xp¬service, \xp¬data}
   }{
     \tup{\xp¬service, \xp¬data} \in \xtpreimages, Y(\accountspostxfer, \xp¬service, \blake{\xp¬data}, \len{\xp¬data})
   }}\\
-  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{\xp¬service,\,\xp¬data} \in \mathbf{P} : \abracegroup[\,]{
+  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{\xp¬service,\,\xp¬data} \in \mathbf{p} : \abracegroup[\,]{
       \quad\accountspostpreimage\subb{\xp¬service}_\sa¬preimages\subb{\blake{\xp¬data}} &= \xp¬data \\
       \accountspostpreimage\subb{\xp¬service}_\sa¬requests\subb{\blake{\xp¬data}, \len{\xp¬data}} &= \sq{\thetime'}
     }\!\!\!\!

@@ -148,7 +148,7 @@ We define the work-package's implied authorizer as $\wpX_\wp¬authorizer$, the h
 \begin{equation}
   \forall \wpX \in \workpackage: \abracegroup[\,]{
     \wpX_\wp¬authorizer &\equiv \blake{\wpX_\wp¬authcodehash \concat \wpX_\wp¬authconfig} \\
-    \encode{\var{\wpX_\wp¬metadata}, \wpX_\wp¬authcode} &\equiv \histlookup(\accounts[\wpX_\wp¬authcodehost], (\wpX_\wp¬context)_\wc¬lookupanchortime, \wpX_\wp¬authcodehash) \\
+    \encode{\var{\wpX_\wp¬metadata}, \wpX_\wp¬authcode} &\equiv \histlookup(\accounts\subb{\wpX_\wp¬authcodehost}, (\wpX_\wp¬context)_\wc¬lookupanchortime, \wpX_\wp¬authcodehash) \\
     \tup{\wpX_\wp¬metadata, \wpX_\wp¬authcode} &\in \tuple{\blob, \blob}
   }
 \end{equation}
@@ -164,13 +164,14 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
 \begin{equation}\label{eq:pagedproofs}
   \!\!\pagedproofs\colon\abracegroup{
     \sequence{\segment} \to \,&\sequence{\segment} \\
-    \mathbf{s} \mapsto \,&\sq{
+    \mathbf{s} \mapsto \,&\sq{\build{
       \zeropad{l}{\encode{
         \var{\fnmerklejustsubpath{6}{\mathbf{s}, i}},
         \var{\fnmerklesubtreepage{6}{\mathbf{s}, i}}
       }}
-      \mid i \orderedin \Nmax{\ceil{\nicefrac{\len{\mathbf{s}}}{64}}}
-    } \\
+    }{
+      i \orderedin \Nmax{\ceil{\nicefrac{\len{\mathbf{s}}}{64}}}
+    }} \\
     & \where l = \mathsf{W}_G
   }\!\!\!\!
 \end{equation}
@@ -192,14 +193,14 @@ We now come to the work-report computation function $\computereport$. This forms
 \newcommand*{\local¬theitem}{m}
 Where:
 \begin{align*}
-  \keys{\wr¬srlookup} \equiv \,&\set{ h \mid \wiX \in \wpX_\wp¬workitems, \tup{h^\boxplus, n} \in \wiX_\wi¬importsegments } \ ,\quad\len{\wr¬srlookup} \le 8\\
+  \keys{\wr¬srlookup} \equiv \,&\set{\build{h}{\wiX \in \wpX_\wp¬workitems, \tup{h^\boxplus, n} \in \wiX_\wi¬importsegments}} \ ,\quad\len{\wr¬srlookup} \le 8\\
   \tup{\wr¬authtrace, \wr¬authgasused} = \,&\Psi_I(\wpX, \¬core) \\
-  \tup{\wr¬digests, \allexports} = \,&\transpose[
+  \tup{\wr¬digests, \allexports} = \,&\transpose \sq{\build{
     (\itemtodigest(\wpX_\wp¬workitems\subb{j}, r, u), \mathbf{e})
-    \mid
+  }{
     \tup{r, u, \mathbf{e}} = \countupexports(\wpX, j),\,
     j \orderedin \Nmax{\len{\wpX_\wp¬workitems}}
-  ] \\
+  }} \\
   \countupexports(\wpX, j) \equiv \,&\begin{cases}
     \tup{\oversize, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\when \len{r} + z > \mathsf{W}_R\\
     \tup{\badexports, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\otherwhen \len{\mathbf{e}} \ne \local¬theitem_\wi¬exportcount \\
@@ -221,13 +222,14 @@ We immediately define the segment-root lookup function $\segrootlookup$, depende
 \begin{equation}
   \segrootlookup(r \in \hash \cup \hash^\boxplus) \equiv \begin{cases}
     r &\when r \in \hash \\
-    \wr¬srlookup[h] &\when \exists h \in \hash: r = h^\boxplus
+    \wr¬srlookup\subb{h} &\when \exists h \in \hash: r = h^\boxplus
   \end{cases}
 \end{equation}
 
 In order to expect to be compensated for a work-report they are building, guarantors must compose a value for $\wr¬srlookup$ to ensure not only the above but also a further constraint that all pairs of work-package hashes and segment-roots do properly correspond:
 \begin{equation}
-  \forall (h \mapsto e) \in \wr¬srlookup : \exists \wpX, \¬core \in \workpackage, \coreindex : \blake{\wpX} = h \wedge (\computereport(\wpX, \¬core)_\wr¬avspec)_\as¬segroot = e\!\!\!\!
+  \forall \kv{h}{e} \in \wr¬srlookup : \exists \wpX, \¬core \in \workpackage, \coreindex : \blake{\wpX} = h \wedge (\computereport(\wpX, \¬core)_\wr¬avspec)_\as¬segroot = e
+  \!\!\!\!
 \end{equation}
 
 As long as the guarantor is unable to satisfy the above constraints, then it should consider the work-package unable to be guaranteed. Auditors are not expected to populate this but rather to reuse the value in the work-report they are auditing.
@@ -238,7 +240,7 @@ The above relies on two functions, $\importsegmentdata$ and $\extrinsicdata$ whi
 \begin{equation}
   \begin{aligned}
     \extrinsicdata(\wiX \in \workitem) &\equiv \sq{\build{\mathbf{d}}{(\blake{\mathbf{d}}, \len{\mathbf{d}}) \orderedin \wiX_\wi¬extrinsics}} \\
-    \importsegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\segsX[n]}{\merklizecd{\segsX} = \segrootlookup(r), \tup{r, n} \orderedin \wiX_\wi¬importsegments}} \\
+    \importsegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\segsX\subb{n}}{\merklizecd{\segsX} = \segrootlookup(r), \tup{r, n} \orderedin \wiX_\wi¬importsegments}} \\
     \justifysegmentdata(\wiX \in \workitem) &\equiv \sq{\build{\var{\fnmerklejustsubpath{0}{\segsX, n}}}{\merklizecd{\segsX} = \segrootlookup(r), \tup{r, n} \orderedin \wiX_\wi¬importsegments}}
   \end{aligned}
 \end{equation}
@@ -267,28 +269,27 @@ Once done, then imported segments must be reconstructed. This process may in fac
 
 Validators, in their role as availability assurers, should index such chunks according to the index of the segments-tree whose reconstruction they facilitate. Since the data for segment chunks is so small at 12 octets, fixed communications costs should be kept to a bare minimum. A good network protocol (out of scope at present) will allow guarantors to specify only the segments-tree root and index together with a Boolean to indicate whether the proof chunk need be supplied. Since we assume at least 341 other validators are online and benevolent, we can assume that the guarantor can compute $\importsegmentdata$ and $\justifysegmentdata$ above with confidence, based on the general availability of data committed to with $\mathbf{s}^\clubsuit$, which is specified below.
 
-%TODO: Make result an error if the number of exported segments > stated number of exports. (If less, then additional ones are assumed to be zeroed.)
-
 \subsubsection{Availability Specifier}\label{sec:availabiltyspecifier}
 We define the availability specifier function $\newavailabilityspecifier$, which creates an availability specifier from the package hash, an octet sequence of the audit-friendly work-package bundle (comprising the work-package itself, the extrinsic data and the concatenated import segments along with their proofs of correctness), and the sequence of exported segments:
 \begin{equation}
-  \!\!\!\newavailabilityspecifier\colon\abracegroup[\,]{
+  \!\!\!
+  \newavailabilityspecifier\colon\abracegroup[\,]{
     \tuple{\hash, \blob, \sequence{\segment}} &\to \avspec\\
-    \tup{h, \mathbf{b},\,\mathbf{s}} &\mapsto \tup{
-      h,\,
-      \is{l}{\len{\mathbf{b}}},\,
-      u,\,
-      \is{e}{\merklizecd{\mathbf{s}}},\,
-      \is{n}{\len{\mathbf{s}}}
+    \tup{\as¬packagehash, \mathbf{b},\,\mathbf{s}} &\mapsto \tup{
+      \as¬packagehash,\,
+      \is{\as¬bundlelen}{\len{\mathbf{b}}},\,
+      \as¬erasureroot,\,
+      \is{\as¬segroot}{\merklizecd{\mathbf{s}}},\,
+      \is{\as¬segcount}{\len{\mathbf{s}}}
     }
   }\!\!\!\!\!
 \end{equation}
 \begin{align*}
-  \where u &= \merklizewb{
-    \sq{\build{\concatall{\mathbf{x}}}{\mathbf{x} \orderedin \transpose\sq{\mathbf{b}^\clubsuit, \mathbf{s}^\clubsuit}}}
+  \where \as¬erasureroot &= \merklizewb{
+    \sq{\build{\concatall{\mathbf{x}}}{\mathbf{x} \orderedin \transpose \sq{\mathbf{b}^\clubsuit, \mathbf{s}^\clubsuit}}}
   }\\
   \also \mathbf{b}^\clubsuit &= \blakemany{\erasurecode[\ceil{\nicefrac{\len{\mathbf{b}}}{\mathsf{W}_E}}]{\zeropad{\mathsf{W}_E}{\mathbf{b}}}}\\
-  \also \mathbf{s}^\clubsuit &= \merklizewbmany{\transpose\erasurecodeplex[6]{\mathbf{s} \concat \pagedproofs(\mathbf{s})}}
+  \also \mathbf{s}^\clubsuit &= \merklizewbmany{\transpose\erasurecodemany[6]{\mathbf{s} \concat \pagedproofs(\mathbf{s})}}
 \end{align*}
 
 The paged-proofs function $\pagedproofs$, defined earlier in equation \ref{eq:pagedproofs}, accepts a sequence of segments and returns a sequence of paged-proofs sufficient to justify the correctness of every segment. There are exactly $\ceil{\nicefrac{1}{64}}$ paged-proof segments as the number of yielded segments, each composed of a page of 64 hashes of segments, together with a Merkle proof from the root to the subtree-root which includes those 64 segments.

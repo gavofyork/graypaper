@@ -144,7 +144,7 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
         &\H_\¬sealsig \in \bandersig{\H_\¬authorbskey}{\mathsf{X}_F \concat \entropy'_3}{\encodeunsignedheader{\H}}\,,\\
         &\isticketed = 0
     }\\
-  \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E \concat \banderout{\H_\¬sealsig}}{[]} \\
+  \H_\¬vrfsig &\in \bandersig{\H_\¬authorbskey}{\mathsf{X}_E \concat \banderout{\H_\¬sealsig}}{\sq{}} \\
   \mathsf{X}_E &= \token{\$jam\_entropy}\\
   \mathsf{X}_F &= \token{\$jam\_fallback\_seal}\\
   \mathsf{X}_T &= \token{\$jam\_ticket\_seal}
@@ -205,7 +205,7 @@ Finally, $F$ is the fallback key sequence function which selects an epoch's wort
   F\colon \abracegroup[\ ]{
     \tuple{\hash,\,\sequence{\valkey}} &\to \sequenceoflen{\bskey}{\epochlen}\\
     \tup{r,\, \mathbf{k}} &\mapsto \sq{\build{
-      \cyclic{\mathbf{k}\sub{\decode{\blakeprefix{4}{r \concat \fixedencode{4}{i}}}}}_\vk¬bs
+      \cyclic{\mathbf{k}\sub{\decode[4]{\blake{r \concat \encode[4]{i}}_{\dots 4}}}}_\vk¬bs
     }{
       i \in \epochindex
     }}
@@ -230,7 +230,11 @@ The epoch and winning-tickets markers are information placed in the header in or
 As mentioned earlier, the header's epoch marker $\H_\¬epochmark$ is either empty or, if the block is the first in a new epoch, then a tuple of the next and current epoch randomness, along with a sequence of tuples containing both Bandersnatch keys and Ed25519 keys for each validator defining the validator keys beginning in the next epoch. Formally:
 \begin{align}\label{eq:epochmarker}
   \H_\¬epochmark &\equiv \begin{cases}
-    \tup{ \entropyaccumulator, \entropy_1, \sq{ \tup{k_\vk¬bs, k_\vk¬ed} \mid k \orderedin \pendingset' } } \qquad\qquad &\when e' > e \\
+    \tup{ \entropyaccumulator, \entropy_1, \sq{\build{
+      \tup{k_\vk¬bs, k_\vk¬ed}
+    }{
+      k \orderedin \pendingset'
+    }} } \qquad\qquad &\when e' > e \\
     \none & \otherwise
   \end{cases}
 \end{align}
@@ -275,18 +279,20 @@ We define the extrinsic as a sequence of proofs of valid tickets, each of which 
 
 We define $\mathbf{n}$ as the set of new tickets, with the ticket identifier, a hash, defined as the output component of the Bandersnatch Ring\textsc{vrf} proof:
 \begin{align}
-  \mathbf{n} &\equiv \sq{
+  \mathbf{n} &\equiv \sq{\build{
     \tup{
       \is{\st¬id}{\banderout{i_\xt¬proof}},\,
       \is{\st¬entry}{i_\st¬entry}
-    } \mid i \orderedin \xttickets
-  }
+    }
+  }{
+    i \orderedin \xttickets
+  }}
 \end{align}
 
 The tickets submitted via the extrinsic must already have been placed in order of their implied identifier. Duplicate identifiers are never allowed lest a validator submit the same ticket multiple times:
 \begin{align}
   \mathbf{n} &= \sqorderuniqby{x_\st¬id}{x \in \mathbf{n}} \\
-  \set{ x_\st¬id \mid x \in \mathbf{n} } &\disjoint \set{ x_\st¬id \mid x \in \ticketaccumulator }
+  \set{ \build{ x_\st¬id }{ x \in \mathbf{n} }} &\disjoint \set{ \build { x_\st¬id }{ x \in \ticketaccumulator }}
 \end{align}
 
 The new ticket accumulator $\ticketaccumulator'$ is constructed by merging new tickets into the previous accumulator value (or the empty sequence if it is a new epoch):

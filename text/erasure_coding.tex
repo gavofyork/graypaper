@@ -3,7 +3,7 @@
 \newcommand{\join}{\text{join}}
 \newcommand{\spl}[1]{\text{split}_{#1}}
 
-The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\bloboflen{2}$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\fnfixedencode{2}$. From this we may assume the encoding function $\fnerasurecode: \sequence{\bloboflen{2}}_{342} \to \sequence{\bloboflen{2}}_{1023}$ and the recovery function $\ecrecover: \protoset{\tuple{\bloboflen{2}, \Nmax{1023}}}_{342} \to \sequence{\bloboflen{2}}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\fnerasurecode$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
+The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\bloboflen{2}$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\fnencode[2]$. From this we may assume the encoding function $\fnerasurecode: \sequence{\bloboflen{2}}_{342} \to \sequence{\bloboflen{2}}_{1023}$ and the recovery function $\ecrecover: \protoset{\tuple{\bloboflen{2}, \Nmax{1023}}}_{342} \to \sequence{\bloboflen{2}}_{342}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\fnerasurecode$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
 
 Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of 684 octets. Data whose length is not divisible by 684 must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit \textsc{da} and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import \textsc{da} system.
 
@@ -40,15 +40,18 @@ The original data may be reconstructed with any 342 of the 1,023 resultant items
     \protoset{\tuple{\bloboflen{2k}, \Nmax{1023}}}_{342} &\to \bloboflen{684k} \\
     \mathbf{c} &\mapsto \begin{cases}
       \encode{\sq{\build{\mathbf{x}}{\tup{\mathbf{x}, i} \orderedin \sqorderby{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}}}} &\when \set{\build{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}} = \Nmax{342}\\
-      \join(\join^\#({}^\text{T}[
-        \ecrecover{}{\set{\build{
-          (\spl{2}(\mathbf{x})\sub{p}, i)
+      \join(\join^\#({}^\text{T}\sq{
+        \build{
+          \ecrecover{}{\set{\build{
+           (\spl{2}(\mathbf{x})\sub{p}, i)
+          }{
+            \tup{\mathbf{x}, i} \in \mathbf{c}
+          }}}
         }{
-          \tup{\mathbf{x}, i} \in \mathbf{c}
-        }}}
-      \mid p \in \Nmax{k}])) &\text{always}\\
+          p \in \Nmax{k}
+        }
+      })) &\text{always}\\
     \end{cases}
-%      [ \ecrecover{\mathbf{y}, i} \mid \mathbf{y} \orderedin \transpose\sq{\build{\spl{2}(\mathbf{x})}{\tup{\mathbf{x}, i} \orderedin \mathbf{c}}} ]
   }
 \end{equation}
 
@@ -65,7 +68,7 @@ x^{16} + x^5 + x^3 + x^2 + 1
 
 Hence:
 \begin{equation}
-\mathbb{F}_{16} \equiv \frac{\mathbb{F}_2[x]}{x^{16}} + x^5 + x^3 + x^2 + 1
+\mathbb{F}_{16} \equiv \frac{\mathbb{F}_2\subb{x}}{x^{16}} + x^5 + x^3 + x^2 + 1
 \end{equation}
 
 We name the generator of $\frac{\mathbb{F}_{16}}{\mathbb{F}_2}$, the root of the above polynomial, $\authpool$ as such: $\mathbb{F}_{16} = \mathbb{F}_2(\authpool)$.

@@ -49,7 +49,7 @@ We define the sequence of work-reports which we may be required to audit as $\lo
 
 We define our initial audit tranche in terms of a verifiable random quantity $\local¬seed\sub{0}$ created specifically for it:
 \begin{align}
-  \local¬seed\sub{0} &\in \bandersig{\activeset[v]_\vk¬bs}{\mathsf{X}_U \concat \banderout{\H_\¬vrfsig}}{\sq{}} \\
+  \local¬seed\sub{0} &\in \bandersig{\activeset\subb{v}_\vk¬bs}{\mathsf{X}_U \concat \banderout{\H_\¬vrfsig}}{\sq{}} \\
   \mathsf{X}_U &= \token{\$jam\_audit}
 \end{align}
 
@@ -71,7 +71,7 @@ In all cases, we publish a signed statement of which of the cores we believe we 
 Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $\local¬seed\sub{n}$ and all signed data. Validator's announcement statements must be in the set $S$:
 \begin{align}
   S &\equiv \sig{\activeset\subb{v}_\vk¬ed}{\mathsf{X}_I \append n \concat \mathbf{x}\sub{n} \concat \blake{\H}} \\
-  \where \mathbf{x}\sub{n} &= \encode{\set{\build{\fixedencode{2}{\cX} \concat \blake{\wrX}}{\wrcX \in \local¬tranche\sub{n}}}}\\
+  \where \mathbf{x}\sub{n} &= \encode{\set{\build{\encode[2]{\cX} \concat \blake{\wrX}}{\wrcX \in \local¬tranche\sub{n}}}}\\
   \mathsf{X}_I &= \token{\$jam\_announce}
 \end{align}
 
@@ -92,7 +92,7 @@ We are able to define $\local¬tranche\sub{n}$ for tranches beyond the first on 
 We can thus define $\local¬tranche\sub{n}$ beyond the initial tranche through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
 \begin{align}
   \nonumber\forall n > 0:&\\
-  \ \local¬seed\sub{n}(\wrX) &\in \bandersig{\activeset[v]_\vk¬bs}{\mathsf{X}_U \concat \banderout{\H_\¬vrfsig}\concat\blake{\wrX}\append n}{[]} \\
+  \ \local¬seed\sub{n}(\wrX) &\in \bandersig{\activeset\subb{v}_\vk¬bs}{\mathsf{X}_U \concat \banderout{\H_\¬vrfsig}\concat\blake{\wrX}\append n}{\sq{}} \\
   \ \local¬tranche\sub{n} &\equiv \set{ \build{ \wrX }{\textstyle\frac{\valcount}{256\mathsf{F}}\banderout{\local¬seed\sub{n}(\wrX)}\sub{0} < m\sub{n}, \wrX \in \local¬reports, \wrX \ne \none }}\!\!\!\!\\
   \nonumber \where m\sub{n} &= \len{A_{n - 1}(\wrX) \setminus J_\top(\wrX)}
 \end{align}
@@ -134,7 +134,7 @@ From this mapping the validator issues a set of judgments $\mathbf{j}\sub{n}$:
 %\begin{aligned}
 %    \guarantorassignments(\wrX) &\equiv \sq{\build{v}{\tup{s, v} \orderedin a}} \\
 %    \where \tup{\cX, \wrX, a} &\in \xtguarantees \\
-%    \tup{\H, \mathbf{E}} &\in \ancestors
+%    \tup{\H, \extrinsic} &\in \ancestors
 %\end{aligned}
 %\end{equation}
 
@@ -144,7 +144,7 @@ We consider a work-report as audited under two circumstances. Either, when it ha
 \begin{align}
   U(\wrX) &\Leftrightarrow \bigvee\,\abracegroup[\,]{
     &J_\bot(\wrX) = \emptyset \wedge \exists n : A\sub{n}(\wrX) \subset J_\top(\wrX) \\
-    &|J_\top(\wrX)| > \twothirds\valcount
+    &\len{J_\top(\wrX)} > \twothirds\valcount
   }
 \end{align}
 
