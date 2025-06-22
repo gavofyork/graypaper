@@ -155,7 +155,7 @@ We may then define the basic Merklization function $\fnmerklizestate$ as:
     \zerohash &\when \len{d} = 0\\
     \blake{\text{bits}^{-1}(L(k, v))} &\when \values{d} = \set{ \tup{k, v} }\\
     \blake{\text{bits}^{-1}(B(M(l), M(r)))} &\otherwise\\
-    \multicolumn{2}{l}{\quad\where \forall b, p: (b \mapsto p) \in d \Leftrightarrow (b\interval{1}{} \mapsto p) \in \begin{cases}
+    \multicolumn{2}{l}{\quad\where \forall b, p: \kv{b}{p} \in d \Leftrightarrow \kv{b\interval{1}{}}{p} \in \begin{cases}
       l &\when b_0 = 0 \\
       r &\when b_0 = 1
     \end{cases}
