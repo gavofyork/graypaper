@@ -88,7 +88,7 @@ The other two components of statistics are the core and service activity statist
       \isa{&\cs¬gasused&}{\gas}
     \end{alignedat}
   }}\\
-  \servicestats &\in \dict{\serviceid}{\tuple{
+  \servicestats &\in \dictionary{\serviceid}{\tuple{
     \begin{alignedat}{3}
       \isa{\ss¬provision&}{\tup{\N, \N}}\,,\;
       \isa{&\ss¬refinement&}{\tup{\N, \gas}}\,,\;\\
@@ -156,7 +156,7 @@ Finally, the service statistics are updated using the same intermediate values a
       \is{&\ss¬refinement&}{\span\span\tup{R(s)_\local¬counter, R(s)_\¬gasused}}\,,\;\\
       \is{\ss¬provision&}{
         \span\span\textstyle
-        \sum_{\tup{\xp¬service, \xp¬data}\,\in \xtpreimages}\tup{1, \len{\xp¬data}}
+        \sum_{\tup{\xp¬serviceindex, \xp¬data}\,\in \xtpreimages}\tup{1, \len{\xp¬data}}
       }\,,\;\\
       \is{\ss¬accumulation&}{
         \span\span
@@ -174,14 +174,14 @@ Finally, the service statistics are updated using the same intermediate values a
     \keys{\accumulationstatistics} \cup
     \keys{\deferredtransfersstatistics}\\
   \also \local¬servicesreported &= \set{
-    \build{\wdX_\wd¬service}{\wdX \in \wrX_\wr¬digests, \wrX \in \incomingreports}
+    \build{\wdX_\wd¬serviceindex}{\wdX \in \wrX_\wr¬digests, \wrX \in \incomingreports}
   }\\
   \also \local¬servicesprovided &= \set{
     \build{s}{\exists x: \tup{s, x} \in \xtpreimages}
   }\\
   \also R(s \in \serviceid) &\equiv
     \!\!\!\!\!\!\!\!\!\!\!
-    \sum_{\wdX \in \wrX_\wr¬digests, \wrX \in \incomingreports, \wdX_\wd¬service = s}
+    \sum_{\wdX \in \wrX_\wr¬digests, \wrX \in \incomingreports, \wdX_\wd¬serviceindex = s}
     \!\!\!\!\!\!\!\!\!\!\!
     \tup{
       \is{\local¬counter}{1},

@@ -76,7 +76,7 @@ A sequence of bits $b \in \bitstring$ is a special case since encoding each indi
 \subsubsection{Dictionary Encoding}
 In general, dictionaries are placed in the Merkle trie directly (see appendix \ref{sec:merklization} for details). However, small dictionaries may reasonably be encoded as a sequence of pairs ordered by the key. Formally:
 \begin{equation}
-  \forall K, V: \encode{d \in \dict{K}{V}} \equiv
+  \forall K, V: \encode{d \in \dictionary{K}{V}} \equiv
     \encode{
       \var{\sq{
         \orderby{k}{
@@ -138,9 +138,9 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \\
   \encodepreimages{\xtpreimages} &= \encode{
     \var{\sq{\build{
-      \tup{\xp¬service, \var{\xp¬data}}
+      \tup{\xp¬serviceindex, \var{\xp¬data}}
     }{
-      \tup{\xp¬service, \xp¬data} \orderedin \xtpreimages}
+      \tup{\xp¬serviceindex, \xp¬data} \orderedin \xtpreimages}
     }}}
   \\
   \encodeguarantees{\xtguarantees} &= \encode{
@@ -207,18 +207,19 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \encode[2]{\asX_\as¬segcount}
   }
   \\
-  \encode{\wdX \in \mathbb{L}} &\equiv \encode{
-    \encode[4]{\wdX_\wd¬service},
+  \encode{\wdX \in \workdigest} &\equiv \encode{
+    \encode[4]{\wdX_\wd¬serviceindex},
     \wdX_\wd¬codehash,
     \wdX_\wd¬payloadhash,
     \encode[8]{\wdX_\wd¬gaslimit},
-    % TODO: Consider making these fixed length.
+    \encoderesult{\wdX_\wd¬result}
+    % These are variable length, since we never access them individually, digests
+    % are never accessed directly by the PVM and space is at a premium here.
     \wdX_\wd¬gasused,
     \wdX_\wd¬importcount,
     \wdX_\wd¬xtcount,
     \wdX_\wd¬xtsize,
     \wdX_\wd¬exportcount,
-    \encoderesult{\wdX_\wd¬result}
   }
   \\
   \encode{\wrX \in \workreport} &\equiv \encode{
@@ -241,9 +242,8 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \var{\wpX_\wp¬workitems}
   }
   \\
-  % TODO: \encode[4]{i} should be just \encode{i}, but we should wait for this to be written.
   \encode{\wiX \in \workitem} &\equiv \encode{
-    \encode[4]{\wiX_\wi¬service},
+    \encode[4]{\wiX_\wi¬serviceindex},
     \wiX_\wi¬codehash,
     \encode[8]{\wiX_\wi¬refgaslimit},
     \encode[8]{\wiX_\wi¬accgaslimit},
@@ -259,7 +259,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \\
   \encode{\stX \in \safroleticket} &\equiv \encode{
     \stX_\st¬id,
-    \stX_\st¬entry
+    \stX_\st¬entryindex
   }
   \\
   \encode{\dxX \in \defxfer} &\equiv \encode{

@@ -49,7 +49,7 @@ On the other hand, imported segments are segments which were exported by previou
 
 \subsubsection{Data Collection and Justification}
 
-% TODO: Mention core affinity and guarantor-guarantor distribution.
+% TODO: #447 Mention core affinity and guarantor-guarantor distribution.
 
 It is the task of a guarantor to reconstitute all imported segments through fetching said segments' erasure-coded chunks from enough unique validators. Reconstitution alone is not enough since corruption of the data would occur if one or more validators provided an incorrect chunk. For this reason we ensure that the import segment specification (a Merkle root and an index into the tree) be a kind of cryptographic commitment capable of having a justification applied to demonstrate that any particular segment is indeed correct.
 
@@ -71,10 +71,10 @@ We begin by defining a \emph{work-package}, of set $\workpackage$, and its const
   }
 \end{equation}
 
-A work item includes: $\wi¬service$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $\wi¬codehash$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\wi¬payload$, gas limits for Refinement and Accumulation $\wi¬refgaslimit$ \& $\wi¬accgaslimit$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportcount$ the number of data segments exported by this work item.
+A work item includes: $\wi¬serviceindex$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $\wi¬codehash$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\wi¬payload$, gas limits for Refinement and Accumulation $\wi¬refgaslimit$ \& $\wi¬accgaslimit$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of blob hashes and lengths to be introduced in this block (and which we assume the validator knows) and $\wi¬exportcount$ the number of data segments exported by this work item.
 \begin{equation}\label{eq:workitem}
   \workitem \equiv \tuple{\begin{aligned}
-    &\isa{\wi¬service}{\serviceid},
+    &\isa{\wi¬serviceindex}{\serviceid},
     \isa{\wi¬codehash}{\hash},
     \isa{\wi¬payload}{\blob},
     \isa{\wi¬refgaslimit}{\gas},
@@ -124,13 +124,13 @@ We limit the sums of each of the two gas limits to be at most the maximum gas al
 Given the result $\wd¬result$ and gas used $\wd¬gasused$ of some work-item, we define the item-to-digest function $\itemtodigest$ as:
 \begin{equation}
   \itemtodigest\colon\abracegroup{
-    \tuple{\workitem, \blob \cup \workerror, \gas} &\to \mathbb{L}\\
+    \tuple{\workitem, \blob \cup \workerror, \gas} &\to \workdigest\\
     \tup{\tup{\begin{aligned}
-      &\¬service, \¬codehash, \¬payload,\\
+      &\¬serviceindex, \¬codehash, \¬payload,\\
       &\wi¬accgaslimit, \¬exportcount, \wi¬importsegments, \wi¬extrinsics
     \end{aligned}
     }, \wd¬result, \wd¬gasused} &\mapsto \tup{\begin{aligned}
-      &\wd¬service,\,
+      &\wd¬serviceindex,\,
       \wd¬codehash,\,
       \is{\wd¬payloadhash}{\blake{\¬payload}},\,
       \is{\wd¬gaslimit}{\wi¬accgaslimit},\,
@@ -166,8 +166,8 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
     \sequence{\segment} \to \,&\sequence{\segment} \\
     \mathbf{s} \mapsto \,&\sq{\build{
       \zeropad{l}{\encode{
-        \var{\fnmerklejustsubpath{6}{\mathbf{s}, i}},
-        \var{\fnmerklesubtreepage{6}{\mathbf{s}, i}}
+        \var{\merklejustsubpath{6}{\mathbf{s}, i}},
+        \var{\merklesubtreepage{6}{\mathbf{s}, i}}
       }}
     }{
       i \orderedin \Nmax{\ceil{\nicefrac{\len{\mathbf{s}}}{64}}}
@@ -183,12 +183,11 @@ We now come to the work-report computation function $\computereport$. This forms
   \computereport \colon \abracegroup{
     \tuple{\workpackage, \coreindex} &\to \workreport \\
     \tup{\wpX, \¬core} &\mapsto \begin{cases}
-        \error &\when \wr¬authtrace \not\in \blob[:\mathsf{W}_R] \\
-        \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
+      \error &\when \wr¬authtrace \not\in \blob[:\mathsf{W}_R] \\
+      \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
     \end{cases}
   }
 \end{equation}
-% TODO: Decide on whether context is bold or not.
 
 \newcommand*{\local¬theitem}{m}
 Where:
@@ -210,7 +209,7 @@ Where:
       j, \wpX, \mathbf{o}, \sq{\build{\importsegmentdata(w)}{w \orderedin \wpX_\wp¬workitems}}, \ell
     )}\\
     \multicolumn{2}{l}{\also h = \blake{\wpX}\,,\; \local¬theitem = \wpX_\wp¬workitems\subb{j}\,,\; \ell = \sum_{k < j}\wpX_\wp¬workitems\subb{k}_\wi¬exportcount}\\
-    \multicolumn{2}{l}{\also z = \len{\mathbf{o}} + \sum_{k < j, \tup{r \in \blob, \dots} = I(p, k)} \len{r}}
+    \multicolumn{2}{l}{\also z = \len{\mathbf{o}} + \sum_{k < j, \tup{r \in \blob, \dots} = I(\wpX, k)} \len{r}}
   \end{cases}
 \end{align*}
 

@@ -42,7 +42,7 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
       \multicolumn{2}{l}{\where \tup{u, \mathbf{r}, \none} = \Psi_M(\wpX_\wp¬authcode, 0, \mathsf{G}_I, \encode[2]{c}, F, \none)}\\
     \end{cases}\\
   } \\
-  \label{eq:isauthorizedmutator}F \in \Omega\ang{\emset} &\colon
+  \label{eq:isauthorizedmutator}F \in \contextmutator{\emset} &\colon
     \tup{n, \gascounter, \registers, \memory} \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
       \Omega_Y(\gascounter, \registers, \memory, \wpX, \none, \none, \none, \none, \none, \none, \none) &\when n = \mathtt{fetch} \\
@@ -62,9 +62,9 @@ The historical-lookup host-call function, $\Omega_H$, is designed to give the sa
 \end{equation}
 
 
-The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvm$. It holds some program code, instruction counter and \textsc{ram}:
-\begin{equation}
-  \pvm \equiv \tuple{\isa{\pvm¬code}{\blob}, \isa{\pvm¬ram}{\ram}, \isa{\pvm¬pc}{\pvmreg}}
+The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvmguest$. It holds some program code, instruction counter and \textsc{ram}:
+\begin{equation}\label{eq:pvmguest}
+  \pvmguest \equiv \tuple{\isa{\pg¬code}{\blob}, \isa{\pg¬ram}{\ram}, \isa{\pg¬pc}{\pvmreg}}
 \end{equation}
 
 The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\mathsf{W}_G$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
@@ -74,22 +74,22 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &\Psi_R \colon \abracegroup{
     \tuple{\N, \workpackage, \blob, \sequence{\sequence{\segment}}, \N} &\to \tuple{\blob \cup \workerror, \sequence{\segment}, \gas} \\
     \tup{i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff} &\mapsto \begin{cases}
-      \tup{\token{BAD}, \sq{}, 0} &\when w_\wi¬service \not\in \keys{\accounts} \vee \histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash) = \none \\
-      \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)} > \mathsf{W}_C \\
+      \tup{\token{BAD}, \sq{}, 0} &\when w_\wi¬serviceindex \not\in \keys{\accounts} \vee \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash) = \none \\
+      \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)} > \mathsf{W}_C \\
       &\otherwise: \\
-      &\quad\using a = \encode{i, w_\wi¬service, \var{w_\wi¬payload}, \blake{p}}\;,\ \encode{\var{\mathbf{z}}, \mathbf{c}} = \histlookup(\accounts\subb{w_\wi¬service}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
-      &\quad\also (u, \mathbf{o}, \tup{\mathbf{m}, \mathbf{e}}) = \Psi_M(\mathbf{c}, 0, w_\wi¬refgaslimit, a, F, \tup{\emptyset, \sq{}})\ \colon\\
+      &\quad\using a = \encode{i, w_\wi¬serviceindex, \var{w_\wi¬payload}, \blake{p}}\;,\ \encode{\var{\mathbf{z}}, \mathbf{c}} = \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
+      &\quad\also \tup{u, \mathbf{o}, \tup{\mathbf{m}, \mathbf{e}}} = \Psi_M(\mathbf{c}, 0, w_\wi¬refgaslimit, a, F, \tup{\emptyset, \sq{}})\ \colon\\
       \tup{\mathbf{o}, \sq{}, u} &\quad\when \mathbf{o} \in \set{ \oog, \panic }  \\
       \tup{\mathbf{o}, \mathbf{e}, u} &\quad\otherwise \\
       \multicolumn{2}{l}{\where w = p_\wp¬workitems\subb{i}}
     \end{cases} \\
   } \\
   \label{eq:refinemutator}
-  &F \in \Omega\ang{\tuple{\dict{\N}{\pvm}, \sequence{\segment}}} \colon
+  &F \in \contextmutator{\tuple{\dictionary{\N}{\pvmguest}, \sequence{\segment}}} \colon
     (n, \gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{gas} \\
       \Omega_Y(\gascounter, \registers, \memory, p, \zerohash, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \none, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{fetch}\\
-      \Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, w_\wi¬service, \accounts, (p_\wp¬context)_\wc¬lookupanchortime) &\when n = \mathtt{historical\_lookup}\\
+      \Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, w_\wi¬serviceindex, \accounts, (p_\wp¬context)_\wc¬lookupanchortime) &\when n = \mathtt{historical\_lookup}\\
       \Omega_E(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, \segoff) &\when n = \mathtt{export}\\
       \Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{machine}\\
       \Omega_P(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{peek}\\
@@ -116,17 +116,17 @@ Unlike the other invocation functions, the Refine invocation function implicitly
 Since this is a transition which can directly affect a substantial amount of on-chain state, our invocation context is accordingly complex. It is a tuple with elements for each of the aspects of state which can be altered through this invocation and beyond the account of the service itself includes the deferred transfer list and several dictionaries for alterations to preimage lookup state, core assignments, validator key assignments, newly created accounts and alterations to account privilege levels.
 
 Formally, we define our result context to be $\implications$, and our invocation context to be a pair of these contexts, $\implications \times \implications$ (and thus for any value $\imX \in \implications$ there exists $\imX^2 \in \implications \times \implications$), with one dimension being the regular dimension and generally named $\imX$ and the other being the exceptional dimension and being named $\imY$. The only function which actually alters this second dimension is $\mathtt{checkpoint}$, $\Omega_C$ and so it is rarely seen.
-\begin{align}
+\begin{align}\label{eq:implications}
   \implications &\equiv \tuple{
     \isa{\im¬id}{\serviceid},
     \isa{\im¬state}{\partialstate},
     \isa{\im¬nextfreeid}{\serviceid},
-    \isa{\im¬xfers}{\sequence{\mathbb{T}}},
+    \isa{\im¬xfers}{\defxfers},
     \isa{\im¬yield}{\optional{\hash}},
     \isa{\im¬provisions}{\protoset{\tuple{\serviceid, \blob}}}
   }\\
   \forall \imX \in \implications :
-    imX_\im¬self &\equiv (imX_\im¬state)_\ps¬accounts\subb{imX_\im¬id}
+    \imX_\im¬self &\equiv (\imX_\im¬state)_\ps¬accounts\subb{\imX_\im¬id}
 \end{align}
 
 We define a convenience equivalence $\imX_\im¬self$ to easily denote the accumulating service account.
@@ -134,18 +134,22 @@ We define a convenience equivalence $\imX_\im¬self$ to easily denote the accumu
 We track both regular and exceptional dimensions within our context mutator, but collapse the result of the invocation to one or the other depending on whether the termination was regular or exceptional (\ie out-of-gas or panic).
 
 We define $\Psi_A$, the Accumulation invocation function as:
-\newcommand*{\local¬basestate}{\mathbf{u}}
+\newcommand*{\local¬basestate}{\ao¬poststate}
 \begin{align}
   \Psi_A& \colon\abracegroup{
     \tuple{
       \partialstate, \timeslot, \serviceid, \gas, \sequence{\operandtuple}
     }
-    &\to \tuple{
-      \partialstate, \defxfers, \optional{\hash}, \gas, \sequence{\tuple{\serviceid, \blob}}
-    }
+    &\to \acconeout
     \\
     \tup{\local¬basestate, t, s, g, \mathbf{o}} &\mapsto \begin{cases}
-      \tup{\local¬basestate, \sq{}, \none, 0, \sq{}}
+      \tup{
+        \ao¬poststate,
+        \is{\ao¬defxfers}{\sq{}},
+        \is{\ao¬yield}{\none},
+        \is{\ao¬gasused}{0},
+        \is{\ao¬provisions}{\sq{}}
+      }
         &\when \mathbf{c} = \none \vee \len{\mathbf{c}} > \mathsf{W}_C \\
       C(\Psi_M(\mathbf{c}, 5, g, \encode{t, s, \len{\mathbf{o}}}, F, I(\local¬basestate, s)^2))
         &\otherwise \\
@@ -164,7 +168,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     }\\
     &\qquad\where \im¬nextfreeid = \text{check}((\decode[4]{\blake{\encode{\im¬id, \entropyaccumulator', \H_\¬timeslot}}} \bmod (2^{32}-2^9)) + 2^8) \\
   }\\
-  F \in \Omega\ang{\implicationspair} &\colon \tup{n, \gascounter, \registers, \memory, \imXY} \mapsto \begin{cases}
+  F \in \contextmutator{\implicationspair} &\colon \tup{n, \gascounter, \registers, \memory, \imXY} \mapsto \begin{cases}
   \Omega_G(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{gas} \\
     \Omega_Y(\gascounter, \registers, \memory, \none, \entropyaccumulator', \none, \none, \none, \none, \mathbf{o}, \none, \imXY) &\when n = \mathtt{fetch}\\
     G(\Omega_R(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id, (\imX_\im¬state)_\ps¬accounts), \imXY) &\when n = \mathtt{read} \\
@@ -192,29 +196,29 @@ We define $\Psi_A$, the Accumulation invocation function as:
     &\qquad \where \imX^* = \imX \exc \imX^*_\im¬self = \mathbf{s}
   }\\
   C&\colon\abracegroup{
-    \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \tuple{\partialstate, \defxfers, \optional{\hash}, \gas, \sequence{\tuple{\serviceid, \blob}}} \\
-    \tup{u, \mathbf{o}, \imXY} &\mapsto \begin{cases}
+    \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \acconeout \\
+    \tup{\ao¬gasused, \mathbf{o}, \imXY} &\mapsto \begin{cases}
       \tup{
-        \imY_\im¬state,
-        \imY_\im¬xfers,
-        \imY_\im¬yield,
-        u,
-        \imY_\im¬provisions
+        \is{\ao¬poststate}{\imY_\im¬state},
+        \is{\ao¬defxfers}{\imY_\im¬xfers},
+        \is{\ao¬yield}{\imY_\im¬yield},
+        \ao¬gasused,
+        \is{\ao¬provisions}{\imY_\im¬provisions}
       } & \when \mathbf{o} \in \set{\oog, \panic} \\
       \tup{
-        \imX_\im¬state,
-        \imX_\im¬xfers,
-        \mathbf{o},
-        u,
-        \imXY_\im¬provisions
-        } & \otherwhen \mathbf{o} \in \hash \\
+        \is{\ao¬poststate}{\imX_\im¬state},
+        \is{\ao¬defxfers}{\imX_\im¬xfers},
+        \is{\ao¬yield}{\mathbf{o}},
+        \ao¬gasused,
+        \is{\ao¬provisions}{\imXY_\im¬provisions}
+      } & \otherwhen \mathbf{o} \in \hash \\
       \tup{
-        \imX_\im¬state,
-        \imX_\im¬xfers,
-        \imX_\im¬yield,
-        u,
-        \imX_\im¬provisions
-        } & \otherwise \\
+        \is{\ao¬poststate}{\imX_\im¬state},
+        \is{\ao¬defxfers}{\imX_\im¬xfers},
+        \is{\ao¬yield}{\imX_\im¬yield},
+        \ao¬gasused,
+        \is{\ao¬provisions}{\imX_\im¬provisions}
+      } & \otherwise \\
     \end{cases}
   }
 \end{align}
@@ -239,7 +243,7 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
 \begin{align}
   \Psi_T &: \begin{cases}
-    \tuple{\dict{\serviceid}{\serviceaccount}, \timeslot, \serviceid, \defxfers}
+    \tuple{\dictionary{\serviceid}{\serviceaccount}, \timeslot, \serviceid, \defxfers}
     &\to \tuple{\serviceaccount, \gas} \\
     \tup{\mathbf{d}, t, s, \mathbf{t}} &\mapsto \begin{cases}
       \tup{\mathbf{s}, 0}
@@ -262,7 +266,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
       }
     \end{cases} \\
   \end{cases} \\
-  \also F &\in \Omega\ang{\serviceaccount}\colon \tup{n, \gascounter, \registers, \memory, \mathbf{s}} \equiv \begin{cases}
+  \also F &\in \contextmutator{\serviceaccount}\colon \tup{n, \gascounter, \registers, \memory, \mathbf{s}} \equiv \begin{cases}
     \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
     \Omega_Y(\gascounter, \registers, \memory, \none, \entropyaccumulator', \none, \none, \none, \none, \none, \mathbf{t}) &\when n = \mathtt{fetch}\\
     \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{lookup} \\
@@ -368,7 +372,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \encode{p_\wp¬context} &\when p \ne \none \wedge \registers_{10} = 10 \\
       \encode{\var{\sq{\build{S(w)}{w \orderedin p_\wp¬workitems}}}} &\when p \ne \none \wedge \registers_{10} = 11 \\
       S(p_\wp¬workitems[\registers_{11}]) &\when p \ne \none \wedge \registers_{10} = 12 \wedge \registers_{11} < \len{p_\wp¬workitems} \\
-      \multicolumn{2}{l}{\where S(w) \equiv \encode{\encode[4]{w_\wi¬service}, w_\wi¬codehash, \encode[8]{w_\wi¬refgaslimit, w_\wi¬accgaslimit}, \encode[2]{w_\wi¬exportcount, \len{w_\wi¬importsegments}, \len{w_\wi¬extrinsics}}, \encode[4]{\len{w_\wi¬payload}}}} \\
+      \multicolumn{2}{l}{\where S(w) \equiv \encode{\encode[4]{w_\wi¬serviceindex}, w_\wi¬codehash, \encode[8]{w_\wi¬refgaslimit, w_\wi¬accgaslimit}, \encode[2]{w_\wi¬exportcount, \len{w_\wi¬importsegments}, \len{w_\wi¬extrinsics}}, \encode[4]{\len{w_\wi¬payload}}}} \\
       p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when p \ne \none \wedge \registers_{10} = 13 \wedge \registers_{11} < \len{p_\wp¬workitems} \\
       \encode{\var{\mathbf{o}}} &\when \mathbf{o} \ne \none \wedge \registers_{10} = 14 \\
       \encode{\mathbf{o}[\registers_{11}]} &\when \mathbf{o} \ne \none \wedge \registers_{10} = 15 \wedge \registers_{11} < \len{\mathbf{o}} \\
@@ -501,7 +505,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
 
 \subsection{Refine Functions}\label{sec:refinefunctions}
 
-These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\dict{\N}{\pvm}, \sequence{\segment}}$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
+These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\dictionary{\N}{\pvmguest}, \sequence{\segment}}$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
   \gascounter' &\equiv \gascounter - g\\
   \tup{\execst', \registers', \memory'} &\equiv \begin{cases}
@@ -549,7 +553,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \using p &= \registers_7 \\
     \using z &= \min(\registers_8, \mathsf{W}_G) \\
     \using \mathbf{x} &= \begin{cases}
-      \zeropad{\mathsf{W}_G}{\mem\subrange{p}{z}} &\when \Nrange{p}{z} \subseteq \mathbb{V}_\memory\\
+      \zeropad{\mathsf{W}_G}{\mem\subrange{p}{z}} &\when \Nrange{p}{z} \subseteq \readable[\memory]\\
       \error &\otherwise
     \end{cases}\\
     \tup{\execst', \registers'_7, \mathbf{e}'} &\equiv \begin{cases}
@@ -585,11 +589,11 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   $\begin{aligned}
     \using \sq{n, o, s, z} &= \registers\subrange{7}{4} \\
     \tup{\execst', \registers'_7, \mem'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mem} &\when \Nrange{o}{z} \not\subseteq \mathbb{V}^*_\memory \\
+      \tup{\panic, \registers_7, \mem} &\when \Nrange{o}{z} \not\subseteq \writable[\memory] \\
       \tup{\continue, \mathtt{WHO}, \mem} &\otherwhen n \not\in \keys{\mathbf{m}} \\
-      \tup{\continue, \mathtt{OOB}, \mem} &\otherwhen \Nrange{s}{z} \not\subseteq \readable{\mathbf{m}\subb{n}_\pvm¬ram} \\
+      \tup{\continue, \mathtt{OOB}, \mem} &\otherwhen \Nrange{s}{z} \not\subseteq \readable{\mathbf{m}\subb{n}_\pg¬ram} \\
       \tup{\continue, \mathtt{OK}, \mem'} &\otherwise \\
-      \multicolumn{2}{l}{\where \mem' = \mem \exc \mem\subrange{o}{z} = (\mathbf{m}\subb{n}_\pvm¬ram)\subrange{s}{z}}
+      \multicolumn{2}{l}{\where \mem' = \mem \exc \mem\subrange{o}{z} = (\mathbf{m}\subb{n}_\pg¬ram)\subrange{s}{z}}
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -600,11 +604,11 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   $\begin{aligned}
     \using \sq{n, s, o, z} &= \registers\subrange{7}{4} \\
     \tup{\execst', \registers'_7, \mathbf{m}'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mathbf{m}} &\when \Nrange{s}{z} \not\subseteq \mathbb{V}_\memory \\
+      \tup{\panic, \registers_7, \mathbf{m}} &\when \Nrange{s}{z} \not\subseteq \readable[\memory] \\
       \tup{\continue, \mathtt{WHO}, \mathbf{m}} &\otherwhen n \not\in \keys{\mathbf{m}} \\
-      \tup{\continue, \mathtt{OOB}, \mathbf{m}} &\otherwhen \Nrange{o}{z} \not\subseteq \writable{\mathbf{m}\subb{n}_\pvm¬ram} \\
+      \tup{\continue, \mathtt{OOB}, \mathbf{m}} &\otherwhen \Nrange{o}{z} \not\subseteq \writable{\mathbf{m}\subb{n}_\pg¬ram} \\
       \tup{\continue, \mathtt{OK}, \mathbf{m}'}  &\otherwise \\
-      \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'\subb{n}_\pvm¬ram)\subrange{o}{z} = \mem\subrange{s}{z}}
+      \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'\subb{n}_\pg¬ram)\subrange{o}{z} = \mem\subrange{s}{z}}
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -615,7 +619,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   $\begin{aligned}
     \using \sq{n, p, c, r} &= \registers\subrange{7}{4} \\
     \using \mathbf{u} &= \begin{cases}
-      \mathbf{m}\subb{n}_\pvm¬ram &\when n \in \keys{\mathbf{m}} \\
+      \mathbf{m}\subb{n}_\pg¬ram &\when n \in \keys{\mathbf{m}} \\
       \error &\otherwise\\
     \end{cases} \\
     \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
@@ -633,7 +637,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \tup{\mathtt{WHO}, \mathbf{m}} &\when \mathbf{u} = \error \\
       \tup{\mathtt{HUH}, \mathbf{m}} &\otherwhen r > 4 \vee p < 16 \vee p+c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \\
       \tup{\mathtt{HUH}, \mathbf{m}} &\otherwhen r > 2 \wedge (\mathbf{u}_\ram¬access)\subrange{p}{c} \ni \none \\
-      \tup{\mathtt{OK}, \mathbf{m}'} &\otherwise\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'\subb{n}_\pvm¬ram = \mathbf{u}' \\
+      \tup{\mathtt{OK}, \mathbf{m}'} &\otherwise\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'\subb{n}_\pg¬ram = \mathbf{u}' \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -648,11 +652,11 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       %\tup{\decode[8]{\memr\subrange{o}{8}}, \sq{\build{\decode[4]{\memr\subrange{o+8+8x}{8}}}{x \orderedin \Nmax{13}}}} &\when \Nrange{o}{60} \subset \writable_\mem} \\
       \tup{\error, \error} &\otherwise
     \end{cases} \\
-    \using \tup{c, i', g', \mathbf{w}', \mathbf{u}'} &= \Psi(\mathbf{m}\subb{n}_\pvm¬code, \mathbf{m}\subb{n}_\pvm¬pc, g, \mathbf{w}, \mathbf{m}\subb{n}_\pvm¬ram)\\
+    \using \tup{c, i', g', \mathbf{w}', \mathbf{u}'} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram)\\
     \using \mem^* &= \mem \exc \mem^*\subrange{o}{112} = \encode[8]{g'} \concat \encode[8]{\mathbf{w}'}\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
-      \mathbf{m}^*\subb{n}_\pvm¬ram = \mathbf{u}'\\
-      \mathbf{m}^*\subb{n}_\pvm¬pc = \begin{cases}
+      \mathbf{m}^*\subb{n}_\pg¬ram = \mathbf{u}'\\
+      \mathbf{m}^*\subb{n}_\pg¬pc = \begin{cases}
         i' + 1 &\when c \in \set{ \host } \times \pvmreg\\
         i' &\otherwise
       \end{cases}
@@ -676,7 +680,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \using n &= \registers_7 \\
     \tup{\registers'_7, \mathbf{m}'} &\equiv \begin{cases}
       \tup{\mathtt{WHO}, \mathbf{m}} &\when n \not\in \keys{\mathbf{m}} \\
-      \tup{\mathbf{m}\subb{n}_\pvm¬pc, \mathbf{m} \setminus n} &\otherwise \\
+      \tup{\mathbf{m}\subb{n}_\pg¬pc, \mathbf{m} \setminus n} &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \bottomrule
@@ -828,7 +832,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using \sq{\dx¬dest, \dx¬amount, l, o} &= \registers\subrange{7}{4},  \\
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts\\
-    \using \mathbf{t} \in \mathbb{T} \cup \set{\error} &= \begin{cases}
+    \using \mathbf{t} \in \defxfer \cup \set{\error} &= \begin{cases}
       \tup{
         \is{\dx¬source}{\imX_\im¬id},
         \dx¬dest,

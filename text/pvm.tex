@@ -1,6 +1,6 @@
 \section{Polkadot Virtual Machine}\label{sec:virtualmachine}
 
-%TODO: First 64KB of memory is always inaccessible.
+%TODO: #446 First 64KB of memory is always inaccessible.
 
 \subsection{Basic Definition}
 \newcommand*{\instr}[1]{\text{{\small \texttt{#1}}}}
@@ -22,10 +22,6 @@
 \newcommand*{\unbits}[1]{\unbitsn{8}{#1}}
 \newcommand*{\bitsn}[2]{\bitsfunc{#1}(#2)}
 \newcommand*{\unbitsn}[2]{\unbitsfunc{#1}(#2)}
-%\newcommand*{\signed}[1]{{{}^{\mathord{\mp}}#1}}
-%\newcommand*{\unsigned}[1]{{{}^{\mathord{+}}#1}}
-%\newcommand*{\signedn}[2]{{{}_{#1}^{\mathord{\mp}}#2}}
-%\newcommand*{\unsignedn}[2]{{{}_{#1}^{\mathord{+}}#2}}
 \newcommand*{\RA}{\token{RA}}
 \newcommand*{\SP}{\token{SP}}
 \newcommand*{\T}{\token{T}}
@@ -54,7 +50,7 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
     \end{cases}
   }\\
   \deblob&\colon\abracegroup{
-    \blob &\to \tuple{\blob, \mathbb{B}, \sequence{\pvmreg}} \cup \error \\
+    \blob &\to \tuple{\blob, \bitstring, \sequence{\pvmreg}} \cup \error \\
     \mathbf{p} &\mapsto \begin{cases}
       \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
       \error &\otherwise
@@ -129,7 +125,7 @@ We denote this set, as opcode indices rather than names, as $T$, which is a subs
 We must now define the single-step \textsc{pvm} state-transition function $\Psi_1$:
 \begin{equation}
   \Psi_1\colon \abracegroup{
-    \tuple{\blob, \mathbb{B}, \sequence{\pvmreg}, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
+    \tuple{\blob, \bitstring, \sequence{\pvmreg}, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
     \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem} &\mapsto \tup{\varepsilon, \imath', \gascounter', \registers', \mem'}
   }
 \end{equation}
@@ -175,20 +171,20 @@ We define signed/unsigned transitions for various octet widths:
   }\\
   \label{eq:bitsfunc}
   \bitsfunc{n\in\N}&\colon\abracegroup{
-    \Nbits{8n} &\to \mathbb{B}_{8n}\\
+    \Nbits{8n} &\to \bitstring[8n]\\
     x &\mapsto \mathbf{y}: \forall i \in \Nmax{8n} : \mathbf{y}\subb{i} \Leftrightarrow \ffrac{x}{2^i}\bmod 2
   }\\
   \unbitsfunc{n\in\N}&\colon\abracegroup{
-    \mathbb{B}_{8n} &\to \Nbits{8n}\\
+    \bitstring[8n] &\to \Nbits{8n}\\
     \mathbf{x} &\mapsto y: \sum_{i \in \Nmax{8n}} \mathbf{x}\sub{i} \cdot 2^i
   }\\
   \label{eq:revbitsfunc}
   \revbitsfunc{n\in\N}&\colon\abracegroup{
-    \Nbits{8n} &\to \mathbb{B}_{8n}\\
+    \Nbits{8n} &\to \bitstring[8n]\\
     x &\mapsto \mathbf{y}: \forall i \in \Nmax{8n} : \mathbf{y}[8n - 1 - i] \Leftrightarrow \ffrac{x}{2^i}\bmod 2
   }\\
   \revunbitsfunc{n\in\N}&\colon\abracegroup{
-    \mathbb{B}_{8n} &\to \Nbits{8n}\\
+    \bitstring[8n] &\to \Nbits{8n}\\
     \mathbf{x} &\mapsto y: \sum_{i \in \Nmax{8n}} \mathbf{x}\sub{8n - 1 - i} \cdot 2^i
   }
 \end{align}
@@ -697,7 +693,7 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 Note that the two signed modulo operations have an idiosyncratic definition, operating as the modulo of the absolute values, but with the sign of the numerator. Formally:
 \begin{equation}
   \smod\colon\abracegroup{
-    \tuple{\mathbb{Z}, \mathbb{Z}} &\to \mathbb{Z}\\
+    \tuple{\Z, \Z} &\to \Z\\
     \tup{a, b} &\mapsto \begin{cases}
       a &\when b = 0\\
       \text{sgn}(a)(\len{a} \bmod \len{b}) &\otherwise \\
@@ -708,7 +704,7 @@ Note that the two signed modulo operations have an idiosyncratic definition, ope
 Division operations always round their result towards zero. Formally:
 \begin{equation}
   \rtz\colon\abracegroup{
-    \mathbb{Z} &\to \mathbb{Z}\\
+    \Z &\to \Z\\
     x &\mapsto \begin{cases}
       \ceil{x} &\when x < 0\\
       \floor{x} &\otherwise \\
@@ -722,7 +718,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
 \begin{align}
   &\Psi_H\colon \abracegroup{
     \tuple{\begin{aligned}
-      &\blob, \pvmreg, \gas, \regs,\\&\ram, \Omega\ang{X}, X
+      &\blob, \pvmreg, \gas, \regs,\\&\ram, \contextmutator{X}, X
     \end{aligned}
     }
     &\to
@@ -746,7 +742,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
       }\\[8pt]
     \end{cases} \\
     }\!\!\!\!\!\!\!\!\\
-    &\Omega\ang{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X} \cup \set{\fault} \times \pvmreg
+    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X} \cup \set{\fault} \times \pvmreg
 \end{align}
 
 On exit, the instruction counter $\imath'$ references the instruction \emph{which caused the exit}. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed. This is sensible when the instruction is one which necessarily needs re-executing such as in the case of an out-of-gas or page fault reason.
@@ -825,7 +821,7 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
 \begin{equation}
   \Psi_M\colon \abracegroup{
     \tuple{
-      \blob, \pvmreg, \gas, \blob[:\mathsf{Z}_I], \Omega\ang{X}, X
+      \blob, \pvmreg, \gas, \blob[:\mathsf{Z}_I], \contextmutator{X}, X
     } &\to \tuple{\gas, \blob \cup \set{\panic, \oog}, X}\\
     \tup{\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}} &\mapsto \begin{cases}
       \tup{0, \panic, \mathbf{x}} &\when Y(\mathbf{p}, \mathbf{a}) = \none\\

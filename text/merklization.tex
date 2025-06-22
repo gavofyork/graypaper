@@ -151,7 +151,7 @@ Formally, we define the encoding functions $B$ and $L$:
 We may then define the basic Merklization function $\fnmerklizestate$ as:
 \begin{align}
   \merklizestate{\thestate} &\equiv M(\set{\build{\kv{\text{bits}(k)}{\tup{k, v}}}{\kv{k}{v} \in T(\thestate) }})\\
-  M(d: \dict{\bitstring}{\tuple{\blob[31], \blob}}) &\equiv \begin{cases}
+  M(d: \dictionary{\bitstring}{\tuple{\blob[31], \blob}}) &\equiv \begin{cases}
     \zerohash &\when \len{d} = 0\\
     \blake{\text{bits}^{-1}(L(k, v))} &\when \values{d} = \set{ \tup{k, v} }\\
     \blake{\text{bits}^{-1}(B(M(l), M(r)))} &\otherwise\\

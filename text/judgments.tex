@@ -33,18 +33,18 @@ The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise i
       \sequence[\floor{\twothirds\valcount} + 1]{\tuple{
         \set{\top, \bot},
         \valindex,
-        \signature
+        \edsignaturebase
       }}
     }}\\
-    \also \xtculprits &\in \sequence{\tuple{\hash, \edkey, \signature}} \,,\quad
-    \xtfaults \in \sequence{\tuple{\hash, \set{\top,\bot}, \edkey, \signature}}
+    \also \xtculprits &\in \sequence{\tuple{\hash, \edkey, \edsignaturebase}} \,,\quad
+    \xtfaults \in \sequence{\tuple{\hash, \set{\top,\bot}, \edkey, \edsignaturebase}}
   \end{aligned}
 \end{equation}
 
 The signatures of all judgments must be valid in terms of one of the two allowed validator key-sets, identified by the verdict's second term which must be either the epoch index of the prior state or one less. Formally:
 \begin{align}
   &\begin{aligned}
-    &\forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts, \forall \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments : \xvj¬signature \in \sig{\mathbf{k}[\xvj¬judgeindex]_\vk¬ed}{\mathsf{X}\sub{v} \concat \xv¬reporthash}\\
+    &\forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts, \forall \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments : \xvj¬signature \in \edsignature{\mathbf{k}[\xvj¬judgeindex]_\vk¬ed}{\mathsf{X}\sub{v} \concat \xv¬reporthash}\\
     &\quad\where \mathbf{k} = \begin{cases}
       \activeset &\when \xv¬epochindex = \displaystyle \ffrac{\thetime}{\epochlen}\\
       \previousset &\otherwise\\
@@ -55,15 +55,15 @@ The signatures of all judgments must be valid in terms of one of the two allowed
 
 Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set:
 \begin{align}
-  \forall \tup{\xc¬reporthash, \xc¬offender, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
+  \forall \tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
     &\xc¬reporthash \in \badset' \,,\\
-    &\xc¬offender \in \mathbf{k} \,,\\
-    &\xc¬signature \in \sig{\xc¬offender}{\mathsf{X}_G \concat \xc¬reporthash}
+    &\xc¬offenderindex \in \mathbf{k} \,,\\
+    &\xc¬signature \in \edsignature{\xc¬offenderindex}{\mathsf{X}_G \concat \xc¬reporthash}
   }\\
-  \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offender, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
+  \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
     &\xf¬reporthash \in \badset' \Leftrightarrow \xf¬reporthash \not\in \goodset' \Leftrightarrow \xf¬validity \,,\\
     &k \in \mathbf{k} \,,\\
-    &s \in \sig{\xf¬offender}{\mathsf{X}\sub{v} \concat \xf¬reporthash}\\
+    &s \in \edsignature{\xf¬offenderindex}{\mathsf{X}\sub{v} \concat \xf¬reporthash}\\
   }\\
   \nonumber\where \mathbf{k} &= \set{\build{i_\vk¬ed}{i \in \previousset \cup \activeset}} \setminus \offenders
 \end{align}
@@ -71,8 +71,8 @@ Offender signatures must be similarly valid and reference work-reports with judg
 Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
 \begin{align}
   &\xtverdicts = \sqorderuniqby{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}\\
-  &\xtculprits = \sqorderuniqby{\xc¬offender}{\tup{\xc¬reporthash, \xc¬offender, \xc¬signature} \in \xtculprits} \,,\ 
-  \xtfaults = \sqorderuniqby{\xf¬offender}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offender, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!\\
+  &\xtculprits = \sqorderuniqby{\xc¬offenderindex}{\tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} \in \xtculprits} \,,\ 
+  \xtfaults = \sqorderuniqby{\xf¬offenderindex}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!\\
   &\set{\build{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}} \disjoint \goodset \cup \badset \cup \wonkyset
 \end{align}
 
@@ -138,13 +138,13 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
       \tup{\vs¬reporthash, \floor{\onethird\valcount}} \in \verdicts
     }} \\
   \offenders' &\equiv \offenders \cup \set{\build{
-      \¬offender
+      \¬offenderindex
     }{
-      \tup{\¬offender, \dots} \in \xtculprits
+      \tup{\¬offenderindex, \dots} \in \xtculprits
     }} \cup \set{\build{
-      \¬offender
+      \¬offenderindex
     }{
-      \tup{\¬offender, \dots} \in \xtfaults
+      \tup{\¬offenderindex, \dots} \in \xtfaults
     }}\!\!\!\!
 \end{align}
 
@@ -153,7 +153,7 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
 The offenders markers must contain exactly the keys of all new offenders, respectively. Formally:
 \begin{align}
   \H_\¬offendersmark &\equiv
-    \sq{\build{\¬offender}{\tup{\¬offender,\dots} \orderedin \xtculprits}}
+    \sq{\build{\¬offenderindex}{\tup{\¬offenderindex,\dots} \orderedin \xtculprits}}
     \concat
-    \sq{\build{\¬offender}{\tup{\¬offender,\dots} \orderedin \xtfaults}}
+    \sq{\build{\¬offenderindex}{\tup{\¬offenderindex,\dots} \orderedin \xtfaults}}
 \end{align}
