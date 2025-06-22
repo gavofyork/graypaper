@@ -78,7 +78,7 @@ We define the Skip function $\Fskip$ which provides the number of octets, minus 
 \begin{equation}
   \Fskip\colon\abracegroup{
     \N &\to \N\\
-    i &\mapsto \min(24,\ j \in \N : \tup{\mathbf{k} \concat\sq{1, 1, \dots}}_{i + 1 + j} = 1)
+    i &\mapsto \min(24,\ j \in \N : \tup{\mathbf{k} \concat \sq{1, 1, \dots}}_{i + 1 + j} = 1)
   }
 \end{equation}
 
@@ -274,7 +274,7 @@ We assume the skip length $\ell$ is well-defined:
 \subsubsection{Instructions with Arguments of One Register and One Extended Width Immediate}
 \begin{equation}
   \using r_A = \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad
-  \reg'_A \equiv \reg'\sub{r_A} \,,\quad
+  \reg'_A \equiv \reg'_{r_A} \,,\quad
   \immed_X \equiv \decode[8]{\instructions\subrange{\imath+2}{8}}
 \end{equation}
 
@@ -333,8 +333,8 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
     \using r_A &= \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad&
-    \reg_A &\equiv \reg\sub{r_A} \,,\quad
-    \reg'_A \equiv \reg'\sub{r_A} \\
+    \reg_A &\equiv \reg_{r_A} \,,\quad
+    \reg'_A \equiv \reg'_{r_A} \\
     \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
     \immed_X &\equiv \sext{l_X}{\decode[l_X]{\instructions\subrange{\imath+2}{l_X}}}
 \end{aligned}
@@ -366,8 +366,8 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
     \using r_A &= \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad&
-    \reg_A &\equiv \reg\sub{r_A} \,,\quad
-    \reg'_A \equiv \reg'\sub{r_A} \\
+    \reg_A &\equiv \reg_{r_A} \,,\quad
+    \reg'_A \equiv \reg'_{r_A} \\
     \using l_X &= \min(4, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
     \immed_X &= \sext{l_X}{\decode[l_X]{\instructions\subrange{\imath+2}{l_X}}} \\
     \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
@@ -392,8 +392,8 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
   \begin{aligned}
       \using r_A &= \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad&
-      \reg_A &\equiv \reg\sub{r_A} \,,\quad
-      \reg'_A \equiv \reg'\sub{r_A} \\
+      \reg_A &\equiv \reg_{r_A} \,,\quad
+      \reg'_A \equiv \reg'_{r_A} \\
       \using l_X &= \min(4, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
       \immed_X &= \sext{l_X}{\decode[l_X]{\instructions\subrange{\imath+2}{l_X}}} \\
       \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
@@ -428,8 +428,8 @@ We assume the skip length $\ell$ is well-defined:
   \reg_D &\equiv \reg_{r_D} \,,\quad
   \reg'_D \equiv \reg'_{r_D} \\
   \using r_A &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
-  \reg_A &\equiv \reg\sub{r_A} \,,\quad
-  \reg'_A \equiv \reg'\sub{r_A} \\
+  \reg_A &\equiv \reg_{r_A} \,,\quad
+  \reg'_A \equiv \reg'_{r_A} \\
 \end{aligned}
 \end{equation}
 
@@ -466,8 +466,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \begin{equation}
 \begin{aligned}
   \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
-  \reg_A &\equiv \reg\sub{r_A} \,,\quad
-  \reg'_A \equiv \reg'\sub{r_A} \\
+  \reg_A &\equiv \reg_{r_A} \,,\quad
+  \reg'_A \equiv \reg'_{r_A} \\
   \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
   \reg_B &\equiv \reg_{r_B} \,,\quad
   \reg'_B \equiv \reg'_{r_B} \\
@@ -538,8 +538,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \begin{equation}
   \begin{aligned}
     \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
-    \reg_A &\equiv \reg\sub{r_A} \,,\quad
-    \reg'_A \equiv \reg'\sub{r_A} \\
+    \reg_A &\equiv \reg_{r_A} \,,\quad
+    \reg'_A \equiv \reg'_{r_A} \\
     \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
@@ -568,8 +568,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \begin{equation}
   \begin{aligned}
     \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
-    \reg_A &\equiv \reg\sub{r_A} \,,\quad
-    \reg'_A \equiv \reg'\sub{r_A} \\
+    \reg_A &\equiv \reg_{r_A} \,,\quad
+    \reg'_A \equiv \reg'_{r_A} \\
     \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
@@ -597,8 +597,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \begin{equation}
 \begin{aligned}
   \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
-  \reg_A &\equiv \reg\sub{r_A} \,,\quad
-  \reg'_A \equiv \reg'\sub{r_A} \\
+  \reg_A &\equiv \reg_{r_A} \,,\quad
+  \reg'_A \equiv \reg'_{r_A} \\
   \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
   \reg_B &\equiv \reg_{r_B} \,,\quad
   \reg'_B \equiv \reg'_{r_B} \\

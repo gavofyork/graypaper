@@ -269,7 +269,7 @@ We define the On-Transfer service-account invocation function as $\Psi_T$; it is
     \Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{read} \\
     \Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s) &\when n = \mathtt{write} \\
     \Omega_I(\gascounter, \registers, \memory, s, \mathbf{d}) &\when n = \mathtt{info} \\
-    \tup{\continue, \gascounter - 10,\sq{\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots}, \memory, \mathbf{s}} &\otherwise
+    \tup{\continue, \gascounter - 10, \sq{\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots}, \memory, \mathbf{s}} &\otherwise
   \end{cases}
 \end{align}
 
@@ -826,7 +826,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{transfer} = 20 \\
   $g = 10 + \registers_9 $} &
   $\begin{aligned}
-    \using\sq{\dx¬dest, \dx¬amount, l, o} &= \registers\subrange{7}{4},  \\
+    \using \sq{\dx¬dest, \dx¬amount, l, o} &= \registers\subrange{7}{4},  \\
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts\\
     \using \mathbf{t} \in \mathbb{T} \cup \set{\error} &= \begin{cases}
       \tup{
