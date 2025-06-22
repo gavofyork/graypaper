@@ -212,13 +212,14 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \wdX_\wd¬codehash,
     \wdX_\wd¬payloadhash,
     \encode[8]{\wdX_\wd¬gaslimit},
-    % TODO: Consider making these fixed length.
+    \encoderesult{\wdX_\wd¬result}
+    % These are variable length, since we never access them individually, digests
+    % are never accessed directly by the PVM and space is at a premium here.
     \wdX_\wd¬gasused,
     \wdX_\wd¬importcount,
     \wdX_\wd¬xtcount,
     \wdX_\wd¬xtsize,
     \wdX_\wd¬exportcount,
-    \encoderesult{\wdX_\wd¬result}
   }
   \\
   \encode{\wrX \in \workreport} &\equiv \encode{
@@ -241,7 +242,6 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \var{\wpX_\wp¬workitems}
   }
   \\
-  % TODO: \encode[4]{i} should be just \encode{i}, but we should wait for this to be written.
   \encode{\wiX \in \workitem} &\equiv \encode{
     \encode[4]{\wiX_\wi¬serviceindex},
     \wiX_\wi¬codehash,

@@ -247,8 +247,6 @@ We describe this pipeline in detail in the relevant sections later.
 
 \subsubsection{On Services and Accounts}
 
-% TODO Move these next two sections elsewhere.
-
 In \emph{YP} Ethereum, we have two kinds of accounts: \emph{contract accounts} (whose actions are defined deterministically based on the account's associated code and state) and \emph{simple accounts} which act as gateways for data to arrive into the world state and are controlled by knowledge of some secret key. In \Jam, all accounts are \emph{service accounts}. Like Ethereum's contract accounts, they have an associated balance, some code and state. Since they are not controlled by a secret key, they do not need a nonce.
 
 The question then arises: how can external data be fed into the world state of \Jam? And, by extension, how does overall payment happen if not by deducting the account balances of those who sign transactions? The answer to the first lies in the fact that our service definition actually includes \emph{multiple} code entry-points, one concerning \emph{refinement} and the other concerning \emph{accumulation}. The former acts as a sort of high-performance stateless processor, able to accept arbitrary input data and distill it into some much smaller amount of output data, which together with some metadata is known as a \emph{digest}. The latter code is more stateful, providing access to certain on-chain functionality including the possibility of transferring balance and invoking the execution of code in other services. Being stateful this might be said to more closely correspond to the code of an Ethereum contract account.

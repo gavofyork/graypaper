@@ -49,7 +49,7 @@ On the other hand, imported segments are segments which were exported by previou
 
 \subsubsection{Data Collection and Justification}
 
-% TODO: Mention core affinity and guarantor-guarantor distribution.
+% TODO: #447 Mention core affinity and guarantor-guarantor distribution.
 
 It is the task of a guarantor to reconstitute all imported segments through fetching said segments' erasure-coded chunks from enough unique validators. Reconstitution alone is not enough since corruption of the data would occur if one or more validators provided an incorrect chunk. For this reason we ensure that the import segment specification (a Merkle root and an index into the tree) be a kind of cryptographic commitment capable of having a justification applied to demonstrate that any particular segment is indeed correct.
 
@@ -183,12 +183,11 @@ We now come to the work-report computation function $\computereport$. This forms
   \computereport \colon \abracegroup{
     \tuple{\workpackage, \coreindex} &\to \workreport \\
     \tup{\wpX, \¬core} &\mapsto \begin{cases}
-        \error &\when \wr¬authtrace \not\in \blob[:\mathsf{W}_R] \\
-        \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
+      \error &\when \wr¬authtrace \not\in \blob[:\mathsf{W}_R] \\
+      \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
     \end{cases}
   }
 \end{equation}
-% TODO: Decide on whether context is bold or not.
 
 \newcommand*{\local¬theitem}{m}
 Where:
