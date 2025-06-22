@@ -16,7 +16,7 @@ Since it is often useful to shuffle a sequence based on some random seed in the 
   \forall l \in \N:\ \fnseqfromhash{l}&\colon\abracegroup{
     \hash &\to \sequence{\Nbits{32}}\sub{l}\\
     h &\mapsto \sq{\build{
-      \fixeddecode{4}{\blake{h \concat \fixedencode{4}{\floor{\nicefrac{i}{8}}}}
+      \decode[4]{\blake{h \concat \encode[4]{\floor{\nicefrac{i}{8}}}}
       \sub{4i \bmod 32 \dots+4}}
     }{
       i \orderedin \N\sub{l}

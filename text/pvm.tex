@@ -56,7 +56,7 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
   \deblob&\colon\abracegroup{
     \blob &\to \tuple{\blob, \mathbb{B}, \sequence{\pvmreg}} \cup \error \\
     \mathbf{p} &\mapsto \begin{cases}
-      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \encode{\len{\mathbf{j}}} \concat \fixedencode{1}{z} \concat \encode{\len{\mathbf{c}}} \concat \fixedencode{z}{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
       \error &\otherwise
     \end{cases} \\
   }
@@ -78,7 +78,7 @@ We define the Skip function $\Fskip$ which provides the number of octets, minus 
 \begin{equation}
   \Fskip\colon\abracegroup{
     \N &\to \N\\
-    i &\mapsto \min(24,\ j \in \N : \tup{\mathbf{k} \concat [1, 1, \dots]}_{i + 1 + j} = 1)
+    i &\mapsto \min(24,\ j \in \N : \tup{\mathbf{k} \concat\sq{1, 1, \dots}}_{i + 1 + j} = 1)
   }
 \end{equation}
 
@@ -176,7 +176,7 @@ We define signed/unsigned transitions for various octet widths:
   \label{eq:bitsfunc}
   \bitsfunc{n\in\N}&\colon\abracegroup{
     \Nbits{8n} &\to \mathbb{B}_{8n}\\
-    x &\mapsto \mathbf{y}: \forall i \in \Nmax{8n} : \mathbf{y}[i] \Leftrightarrow \ffrac{x}{2^i}\bmod 2
+    x &\mapsto \mathbf{y}: \forall i \in \Nmax{8n} : \mathbf{y}\subb{i} \Leftrightarrow \ffrac{x}{2^i}\bmod 2
   }\\
   \unbitsfunc{n\in\N}&\colon\abracegroup{
     \mathbb{B}_{8n} &\to \Nbits{8n}\\
@@ -257,7 +257,7 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
   \using l_X = \min(4, \ell) \,,\quad
-  \immed_X \equiv \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+1}{l_X}}}
+  \immed_X \equiv \sext{l_X}{\decode[l_X]{\instructions\subrange{\imath+1}{l_X}}}
 \end{aligned}
 \end{equation}
 
@@ -274,8 +274,8 @@ We assume the skip length $\ell$ is well-defined:
 \subsubsection{Instructions with Arguments of One Register and One Extended Width Immediate}
 \begin{equation}
   \using r_A = \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad
-  \reg'_A \equiv \reg'_{r_A} \,,\quad
-  \immed_X \equiv \decode{8}{\instructions\subrange{\imath+2}{8}}
+  \reg'_A \equiv \reg'\sub{r_A} \,,\quad
+  \immed_X \equiv \decode[8]{\instructions\subrange{\imath+2}{8}}
 \end{equation}
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-4}}
@@ -292,9 +292,9 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
     \using l_X &= \min(4, \instructions_{\imath+1} \bmod 8) \,,\quad&
-    \immed_X &\equiv \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}} \\
+    \immed_X &\equiv \sext{l_X}{\decode[l_X]{\instructions\subrange{\imath+2}{l_X}}} \\
     \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
-    \immed_Y &\equiv \sext{l_Y}{\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}}}
+    \immed_Y &\equiv \sext{l_Y}{\decode[l_Y]{\instructions\subrange{\imath+2+l_X}{l_Y}}}
 \end{aligned}
 \end{equation}
 
@@ -305,9 +305,9 @@ We assume the skip length $\ell$ is well-defined:
   \midrule
   \endhead
   30&\token{store\_imm\_u8}&1&$\memwr_{\immed_X} = \immed_Y \bmod 2^8 $\\ \mrule
-  31&\token{store\_imm\_u16}&1&$\memwr\subrange{\immed_X}{2} = \fixedencode{2}{\immed_Y \bmod 2^{16}}$\\ \mrule
-  32&\token{store\_imm\_u32}&1&$\memwr\subrange{\immed_X}{4} = \fixedencode{4}{\immed_Y \bmod 2^{32}}$\\ \mrule
-  33&\token{store\_imm\_u64}&1&$\memwr\subrange{\immed_X}{8} = \fixedencode{8}{\immed_Y}$\\
+  31&\token{store\_imm\_u16}&1&$\memwr\subrange{\immed_X}{2} = \encode[2]{\immed_Y \bmod 2^{16}}$\\ \mrule
+  32&\token{store\_imm\_u32}&1&$\memwr\subrange{\immed_X}{4} = \encode[4]{\immed_Y \bmod 2^{32}}$\\ \mrule
+  33&\token{store\_imm\_u64}&1&$\memwr\subrange{\immed_X}{8} = \encode[8]{\immed_Y}$\\
 \bottomrule
 \end{longtable}
 
@@ -315,7 +315,7 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
   \using l_X = \min(4, \ell) \,,\quad
-  \immed_X \equiv \imath + \signfunc{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+1}{l_X}})
+  \immed_X \equiv \imath + \signfunc{l_X}(\decode[l_X]{\instructions\subrange{\imath+1}{l_X}})
 \end{aligned}
 \end{equation}
 
@@ -333,10 +333,10 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
     \using r_A &= \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad&
-    \reg_A &\equiv \reg_{r_A} \,,\quad
-    \reg'_A \equiv \reg'_{r_A} \\
+    \reg_A &\equiv \reg\sub{r_A} \,,\quad
+    \reg'_A \equiv \reg'\sub{r_A} \\
     \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
-    \immed_X &\equiv \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}}
+    \immed_X &\equiv \sext{l_X}{\decode[l_X]{\instructions\subrange{\imath+2}{l_X}}}
 \end{aligned}
 \end{equation}
 
@@ -350,15 +350,15 @@ We assume the skip length $\ell$ is well-defined:
   51&\token{load\_imm}&1&$\reg'_A = \immed_X$\\ \mrule
   52&\token{load\_u8}&1&$\reg'_A = \memr_{\immed_X}$\\ \mrule
   53&\token{load\_i8}&1&$\reg'_A = \sext{1}{\memr_{\immed_X}}$\\ \mrule
-  54&\token{load\_u16}&1&$\reg'_A = \decode{2}{\memr\subrange{\immed_X}{2}}$\\ \mrule
-  55&\token{load\_i16}&1&$\reg'_A = \sext{2}{\decode{2}{\memr\subrange{\immed_X}{2}}}$\\ \mrule
-  56&\token{load\_u32}&1&$\reg'_A = \decode{4}{\memr\subrange{\immed_X}{4}}$\\ \mrule
-  57&\token{load\_i32}&1&$\reg'_A = \sext{4}{\decode{4}{\memr\subrange{\immed_X}{4}}}$\\ \mrule
-  58&\token{load\_u64}&1&$\reg'_A = \decode{8}{\memr\subrange{\immed_X}{8}}$\\ \mrule
+  54&\token{load\_u16}&1&$\reg'_A = \decode[2]{\memr\subrange{\immed_X}{2}}$\\ \mrule
+  55&\token{load\_i16}&1&$\reg'_A = \sext{2}{\decode[2]{\memr\subrange{\immed_X}{2}}}$\\ \mrule
+  56&\token{load\_u32}&1&$\reg'_A = \decode[4]{\memr\subrange{\immed_X}{4}}$\\ \mrule
+  57&\token{load\_i32}&1&$\reg'_A = \sext{4}{\decode[4]{\memr\subrange{\immed_X}{4}}}$\\ \mrule
+  58&\token{load\_u64}&1&$\reg'_A = \decode[8]{\memr\subrange{\immed_X}{8}}$\\ \mrule
   59&\token{store\_u8}&1&$\memwr_{\immed_X} = \reg_A \bmod 2^8$\\ \mrule
-  60&\token{store\_u16}&1&$\memwr\subrange{\immed_X}{2} = \fixedencode{2}{\reg_A \bmod 2^{16}}$\\ \mrule
-  61&\token{store\_u32}&1&$\memwr\subrange{\immed_X}{4} = \fixedencode{4}{\reg_A \bmod 2^{32}}$\\ \mrule
-  62&\token{store\_u64}&1&$\memwr\subrange{\immed_X}{8} = \fixedencode{8}{\reg_A}$\\
+  60&\token{store\_u16}&1&$\memwr\subrange{\immed_X}{2} = \encode[2]{\reg_A \bmod 2^{16}}$\\ \mrule
+  61&\token{store\_u32}&1&$\memwr\subrange{\immed_X}{4} = \encode[4]{\reg_A \bmod 2^{32}}$\\ \mrule
+  62&\token{store\_u64}&1&$\memwr\subrange{\immed_X}{8} = \encode[8]{\reg_A}$\\
 \bottomrule
 \end{longtable}
 
@@ -366,12 +366,12 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
 \begin{aligned}
     \using r_A &= \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad&
-    \reg_A &\equiv \reg_{r_A} \,,\quad
-    \reg'_A \equiv \reg'_{r_A} \\
+    \reg_A &\equiv \reg\sub{r_A} \,,\quad
+    \reg'_A \equiv \reg'\sub{r_A} \\
     \using l_X &= \min(4, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
-    \immed_X &= \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}} \\
+    \immed_X &= \sext{l_X}{\decode[l_X]{\instructions\subrange{\imath+2}{l_X}}} \\
     \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
-    \immed_Y &= \sext{l_Y}{\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}}}
+    \immed_Y &= \sext{l_Y}{\decode[l_Y]{\instructions\subrange{\imath+2+l_X}{l_Y}}}
 \end{aligned}
 \end{equation}
 
@@ -382,9 +382,9 @@ We assume the skip length $\ell$ is well-defined:
   \midrule
   \endhead
   70&\token{store\_imm\_ind\_u8}&1&$\memwr_{\reg_A + \immed_X} = \immed_Y \bmod 2^8$\\ \mrule
-  71&\token{store\_imm\_ind\_u16}&1&$\memwr\subrange{\reg_A + \immed_X}{2} = \fixedencode{2}{\immed_Y \bmod 2^{16}}$\\ \mrule
-  72&\token{store\_imm\_ind\_u32}&1&$\memwr\subrange{\reg_A + \immed_X}{4} = \fixedencode{4}{\immed_Y \bmod 2^{32}}$\\ \mrule
-  73&\token{store\_imm\_ind\_u64}&1&$\memwr\subrange{\reg_A + \immed_X}{8} = \fixedencode{8}{\immed_Y}$\\
+  71&\token{store\_imm\_ind\_u16}&1&$\memwr\subrange{\reg_A + \immed_X}{2} = \encode[2]{\immed_Y \bmod 2^{16}}$\\ \mrule
+  72&\token{store\_imm\_ind\_u32}&1&$\memwr\subrange{\reg_A + \immed_X}{4} = \encode[4]{\immed_Y \bmod 2^{32}}$\\ \mrule
+  73&\token{store\_imm\_ind\_u64}&1&$\memwr\subrange{\reg_A + \immed_X}{8} = \encode[8]{\immed_Y}$\\
   \bottomrule
 \end{longtable}
 
@@ -392,12 +392,12 @@ We assume the skip length $\ell$ is well-defined:
 \begin{equation}
   \begin{aligned}
       \using r_A &= \min(12, \instructions_{\imath+1} \bmod 16) \,,\quad&
-      \reg_A &\equiv \reg_{r_A} \,,\quad
-      \reg'_A \equiv \reg'_{r_A} \\
+      \reg_A &\equiv \reg\sub{r_A} \,,\quad
+      \reg'_A \equiv \reg'\sub{r_A} \\
       \using l_X &= \min(4, \ffrac{\instructions_{\imath+1}}{16} \bmod 8) \,,\quad&
-      \immed_X &= \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}} \\
+      \immed_X &= \sext{l_X}{\decode[l_X]{\instructions\subrange{\imath+2}{l_X}}} \\
       \using l_Y &= \min(4, \max(0, \ell - l_X - 1)) \,,\quad&
-      \immed_Y &= \imath + \signfunc{l_Y}(\fixeddecode{l_Y}{\instructions\subrange{\imath+2+l_X}{l_Y}})
+      \immed_Y &= \imath + \signfunc{l_Y}(\decode[l_Y]{\instructions\subrange{\imath+2+l_X}{l_Y}})
   \end{aligned}
 \end{equation}
 
@@ -428,8 +428,8 @@ We assume the skip length $\ell$ is well-defined:
   \reg_D &\equiv \reg_{r_D} \,,\quad
   \reg'_D \equiv \reg'_{r_D} \\
   \using r_A &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
-  \reg_A &\equiv \reg_{r_A} \,,\quad
-  \reg'_A \equiv \reg'_{r_A} \\
+  \reg_A &\equiv \reg\sub{r_A} \,,\quad
+  \reg'_A \equiv \reg'\sub{r_A} \\
 \end{aligned}
 \end{equation}
 
@@ -455,7 +455,7 @@ We assume the skip length $\ell$ is well-defined:
   108&\token{sign\_extend\_8}&1&$\reg'_D = \unsigned{\signedn{1}{\reg_A \bmod 2^8}}$\\ \mrule
   109&\token{sign\_extend\_16}&1&$\reg'_D = \unsigned{\signedn{2}{\reg_A \bmod 2^{16}}}$\\ \mrule
   110&\token{zero\_extend\_16}&1&$\reg'_D = \reg_A \bmod 2^{16}$\\ \mrule
-  111&\token{reverse\_bytes}&1&$\forall i \in \N_8 : \fixedencode{8}{\reg'_D}\sub{i} = \fixedencode{8}{\reg_A}_{7-i}$\\
+  111&\token{reverse\_bytes}&1&$\forall i \in \N_8 : \encode[8]{\reg'_D}\sub{i} = \encode[8]{\reg_A}_{7-i}$\\
 %  10X&\token{}&1&$\reg'_D = ...$\\ \mrule
 \bottomrule
 \end{longtable}
@@ -466,13 +466,13 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \begin{equation}
 \begin{aligned}
   \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
-  \reg_A &\equiv \reg_{r_A} \,,\quad
-  \reg'_A \equiv \reg'_{r_A} \\
+  \reg_A &\equiv \reg\sub{r_A} \,,\quad
+  \reg'_A \equiv \reg'\sub{r_A} \\
   \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
   \reg_B &\equiv \reg_{r_B} \,,\quad
   \reg'_B \equiv \reg'_{r_B} \\
   \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
-  \immed_X &\equiv \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}}}
+  \immed_X &\equiv \sext{l_X}{\decode[l_X]{\instructions\subrange{\imath+2}{l_X}}}
 \end{aligned}
 \end{equation}
 
@@ -483,16 +483,16 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \midrule
   \endhead
   120&\token{store\_ind\_u8}&1&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
-  121&\token{store\_ind\_u16}&1&$\memwr\subrange{\reg_B + \immed_X}{2} = \fixedencode{2}{\reg_A \bmod 2^{16}}$\\ \mrule
-  122&\token{store\_ind\_u32}&1&$\memwr\subrange{\reg_B + \immed_X}{4} = \fixedencode{4}{\reg_A \bmod 2^{32}}$\\ \mrule
-  123&\token{store\_ind\_u64}&1&$\memwr\subrange{\reg_B + \immed_X}{8} = \fixedencode{8}{\reg_A}$\\ \mrule
+  121&\token{store\_ind\_u16}&1&$\memwr\subrange{\reg_B + \immed_X}{2} = \encode[2]{\reg_A \bmod 2^{16}}$\\ \mrule
+  122&\token{store\_ind\_u32}&1&$\memwr\subrange{\reg_B + \immed_X}{4} = \encode[4]{\reg_A \bmod 2^{32}}$\\ \mrule
+  123&\token{store\_ind\_u64}&1&$\memwr\subrange{\reg_B + \immed_X}{8} = \encode[8]{\reg_A}$\\ \mrule
   124&\token{load\_ind\_u8}&1&$\reg'_A = \memr_{\reg_B + \immed_X}$\\ \mrule
   125&\token{load\_ind\_i8}&1&$\reg'_A = \unsigned{\signedn{1}{\memr_{\reg_B + \immed_X}}}$\\ \mrule
-  126&\token{load\_ind\_u16}&1&$\reg'_A = \decode{2}{\memr\subrange{\reg_B + \immed_X}{2}}$\\ \mrule
-  127&\token{load\_ind\_i16}&1&$\reg'_A = \unsigned{\signedn{2}{\decode{2}{\memr\subrange{\reg_B + \immed_X}{2}}}}$\\ \mrule
-  128&\token{load\_ind\_u32}&1&$\reg'_A = \decode{4}{\memr\subrange{\reg_B + \immed_X}{4}}$\\ \mrule
-  129&\token{load\_ind\_i32}&1&$\reg'_A = \unsigned{\signedn{4}{\decode{4}{\memr\subrange{\reg_B + \immed_X}{4}}}}$\\ \mrule
-  130&\token{load\_ind\_u64}&1&$\reg'_A = \decode{8}{\memr\subrange{\reg_B + \immed_X}{8}}$\\ \mrule
+  126&\token{load\_ind\_u16}&1&$\reg'_A = \decode[2]{\memr\subrange{\reg_B + \immed_X}{2}}$\\ \mrule
+  127&\token{load\_ind\_i16}&1&$\reg'_A = \unsigned{\signedn{2}{\decode[2]{\memr\subrange{\reg_B + \immed_X}{2}}}}$\\ \mrule
+  128&\token{load\_ind\_u32}&1&$\reg'_A = \decode[4]{\memr\subrange{\reg_B + \immed_X}{4}}$\\ \mrule
+  129&\token{load\_ind\_i32}&1&$\reg'_A = \unsigned{\signedn{4}{\decode[4]{\memr\subrange{\reg_B + \immed_X}{4}}}}$\\ \mrule
+  130&\token{load\_ind\_u64}&1&$\reg'_A = \decode[8]{\memr\subrange{\reg_B + \immed_X}{8}}$\\ \mrule
   131&\token{add\_imm\_32}&1&$\reg'_A = \sext{4}{(\reg_B + \immed_X) \bmod 2^{32}}$\\ \mrule
   132&\token{and\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \wedge \bits{\immed_X}\sub{i}$\\ \mrule
   133&\token{xor\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \oplus \bits{\immed_X}\sub{i}$\\ \mrule
@@ -538,13 +538,13 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \begin{equation}
   \begin{aligned}
     \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
-    \reg_A &\equiv \reg_{r_A} \,,\quad
-    \reg'_A \equiv \reg'_{r_A} \\
+    \reg_A &\equiv \reg\sub{r_A} \,,\quad
+    \reg'_A \equiv \reg'\sub{r_A} \\
     \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
     \using l_X &= \min(4, \max(0, \ell - 1)) \,,\quad&
-    \immed_X &\equiv \imath + \signfunc{l_X}(\fixeddecode{l_X}{\instructions\subrange{\imath+2}{l_X}})
+    \immed_X &\equiv \imath + \signfunc{l_X}(\decode[l_X]{\instructions\subrange{\imath+2}{l_X}})
   \end{aligned}
 \end{equation}
 
@@ -568,15 +568,15 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \begin{equation}
   \begin{aligned}
     \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
-    \reg_A &\equiv \reg_{r_A} \,,\quad
-    \reg'_A \equiv \reg'_{r_A} \\
+    \reg_A &\equiv \reg\sub{r_A} \,,\quad
+    \reg'_A \equiv \reg'\sub{r_A} \\
     \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
     \reg_B &\equiv \reg_{r_B} \,,\quad
     \reg'_B \equiv \reg'_{r_B} \\
     \using l_X &= \min(4, \instructions_{\imath+2} \bmod 8) \,,\quad&
-    \immed_X &= \sext{l_X}{\fixeddecode{l_X}{\instructions\subrange{\imath+3}{l_X}}} \\
+    \immed_X &= \sext{l_X}{\decode[l_X]{\instructions\subrange{\imath+3}{l_X}}} \\
     \using l_Y &= \min(4, \max(0, \ell - l_X - 2)) \,,\quad&
-    \immed_Y &= \sext{l_Y}{\fixeddecode{l_Y}{\instructions\subrange{\imath+3+l_X}{l_Y}}}
+    \immed_Y &= \sext{l_Y}{\decode[l_Y]{\instructions\subrange{\imath+3+l_X}{l_Y}}}
   \end{aligned}
 \end{equation}
 
@@ -597,8 +597,8 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \begin{equation}
 \begin{aligned}
   \using r_A &= \min(12, (\instructions_{\imath+1}) \bmod 16) \,,\quad&
-  \reg_A &\equiv \reg_{r_A} \,,\quad
-  \reg'_A \equiv \reg'_{r_A} \\
+  \reg_A &\equiv \reg\sub{r_A} \,,\quad
+  \reg'_A \equiv \reg'\sub{r_A} \\
   \using r_B &= \min(12, \ffrac{\instructions_{\imath+1}}{16}) \,,\quad&
   \reg_B &\equiv \reg_{r_B} \,,\quad
   \reg'_B \equiv \reg'_{r_B} \\
@@ -838,7 +838,7 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
         }} \mapsto \begin{cases}
           \tup{u, \oog, \mathbf{x}'} &\when \varepsilon = \oog \\
           \tup{u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \subseteq \readable{\mem'} \\
-          \tup{u, [], \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \not\subseteq \readable{\mem'} \\
+          \tup{u, \sq{}, \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \not\subseteq \readable{\mem'} \\
           \tup{u, \panic, \mathbf{x}'} &\otherwise \\
           \multicolumn{2}{l}{\quad \where u = \gascounter - \max(\gascounter', 0)}
         \end{cases}

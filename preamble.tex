@@ -181,7 +181,6 @@
 \newcommand*{\fnmmrencode}{\fnencode_M}
 \newcommand*{\fnfyshuffle}{\mathcal{F}}
 \newcommand*{\fnblake}{\mathcal{H}}
-\newcommand*{\fnblakeprefix}[1]{\mathcal{H}_{#1}}
 \newcommand*{\fnkeccak}{\mathcal{H}_K}
 \newcommand*{\fnmerklejustsubpath}[1]{\mathcal{J}_{#1}}
 \newcommand*{\fnmerklesubtreepage}[1]{\mathcal{L}_{#1}}
@@ -200,20 +199,19 @@
 \newcommand*{\fntosigned}[1]{\mathcal{Z}_{#1}}
 \newcommand*{\wallclock}{\mathcal{T}}
 
-\newcommand*{\encode}[1]{\fnencode\left(#1\right)}
+\newcommand*{\encode}[2][]{\fnfixedencode{#1}\left(#2\right)}
 \newcommand*{\fixedencode}[2]{\fnfixedencode{#1}\left(#2\right)}
-\newcommand*{\decode}[1]{\fndecode\left(#1\right)}
+\newcommand*{\decode}[2][]{\fnfixeddecode{#1}\left(#2\right)}
 \newcommand*{\fixeddecode}[2]{\fnfixeddecode{#1}\left(#2\right)}
 \newcommand*{\mmrencode}[1]{\fnmmrencode\left(#1\right)}
 \newcommand*{\keys}[1]{\mathcal{K}\left(#1\right)}
 \newcommand*{\values}[1]{\mathcal{V}\left(#1\right)}
-\newcommand*{\blake}[1]{\fnblake\left(#1\right)}
-\newcommand*{\blakemany}[1]{\fnblake^\#\left(#1\right)}
-\newcommand*{\blakeprefix}[2]{\fnblakeprefix{#1}\left(#2\right)}
+\newcommand*{\blake}[2][]{\fnblake_{#1}\left(#2\right)}
+\newcommand*{\blakemany}[2][]{\fnblake^\#_{#1}\left(#2\right)}
 \newcommand*{\keccak}[1]{\fnkeccak\left(#1\right)}
 \newcommand*{\mmrappend}[1]{\fnmmrappend\left(#1\right)}
 \newcommand*{\erasurecode}[2][]{\fnerasurecode_{#1}\left(#2\right)}
-\newcommand*{\erasurecodeplex}[2][]{\fnerasurecode^\#_{#1}\left(#2\right)}
+\newcommand*{\erasurecodemany}[2][]{\fnerasurecode^\#_{#1}\left(#2\right)}
 \newcommand*{\fyshuffle}[1]{\fnfyshuffle\left(#1\right)}
 \newcommand*{\merklejustsubpath}[2]{\fnmerklejustsubpath{#1}\left(#2\right)}
 \newcommand*{\merklesubtreepage}[2]{\fnmerklesubtreepage{#1}\left(#2\right)}
@@ -741,6 +739,9 @@
 \newcommand*{\im¬yield}{y}
 \newcommand*{\im¬provisions}{\mathbf{p}}
 \newcommand*{\im¬self}{\mathbf{s}}
+
+\newcommand*{\implicationspair}{\tuple{\implications, \implications}}
+\newcommand*{\imXY}{\tup{\imX, \imY}}
 
 %%%%%%%%%%%%
 % Other stuff

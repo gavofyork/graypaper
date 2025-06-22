@@ -7,7 +7,7 @@ Our codec function $\mathcal{E}$ is used to serialize some term into a sequence 
 \subsubsection{Trivial Encodings}
 We define the serialization of $\none$ as the empty sequence:
 \begin{equation}
-  \encode{\none} \equiv []
+  \encode{\none} \equiv \sq{}
 \end{equation}
 
 We also define the serialization of an octet-sequence as itself:
@@ -30,9 +30,9 @@ We define general natural number serialization, able to encode naturals of up to
   \fnencode\colon\abracegroup{
     \Nbits{64} &\to \bloboflen{1:9} \\
     x &\mapsto \begin{cases}
-      [0] &\when x = 0 \\
-      \left[2^8-2^{8-l} + \ffrac{x}{2^{8l}}\right] \concat \fixedencode{l}{x \bmod 2^{8l}} &\when \exists l \in \N_8 : 2^{7l} \le x < 2^{7(l+1)} \\
-      [2^8-1] \concat \fixedencode{8}{x} &\otherwhen x < 2^{64} \\
+     \sq{0} &\when x = 0 \\
+      \sq{2^8-2^{8-l} + \ffrac{x}{2^{8l}}} \concat \encode[l]{x \bmod 2^{8l}} &\when \exists l \in \N_8 : 2^{7l} \le x < 2^{7(l+1)} \\
+     \sq{2^8-1} \concat \encode[8]{x} &\otherwhen x < 2^{64} \\
     \end{cases}
   }
 \end{equation}
@@ -81,7 +81,7 @@ In general, dictionaries are placed in the Merkle trie directly (see appendix \r
       \var{\sq{
         \orderby{k}{
           \build{
-            \tup{\encode{k}, \encode{d[k]}}
+            \tup{\encode{k}, \encode{d\subb{k}}}
           }{
             k \in \keys{d}
           }
@@ -103,16 +103,16 @@ We first define the trivial natural number serialization functions which are sub
     \Nbits{8l} &\to \bloboflen{l} \\
     x &\mapsto \begin{cases}
       \sq{} &\when l = 0 \\
-      \sq{x \bmod 256} \concat \fixedencode{l - 1}{\floor{\frac{x}{256}}} &\otherwise
+      \sq{x \bmod 256} \concat \encode[l - 1]{\floor{\frac{x}{256}}} &\otherwise
     \end{cases}
   }
 \end{equation}
 
 For non-natural arguments, $\fnfixedencode{l \in \N}$ corresponds to the definitions of $\fnencode$, except that recursive elements are made as $\fnfixedencode{l}$ rather than $\fnencode$. Thus:
 \begin{align}
-  \fixedencode{l \in \N}{a, b, \dots} &\equiv \fixedencode{l}{\tup{a, b, \dots}}\\
-  \fixedencode{l \in \N}{\tup{a, b, \dots}} &\equiv \fixedencode{l}{a} \concat \fixedencode{l}{b} \concat \dots\\
-  \fixedencode{l \in \N}{\sq{\mathbf{i}_0, \mathbf{i}_1, \dots}} &\equiv \fixedencode{l}{\mathbf{i}_0} \concat \fixedencode{l}{\mathbf{i}_1} \concat \dots
+  \encode[l \in \N]{a, b, \dots} &\equiv \encode[l]{\tup{a, b, \dots}}\\
+  \encode[l \in \N]{\tup{a, b, \dots}} &\equiv \encode[l]{a} \concat \encode[l]{b} \concat \dots\\
+  \encode[l \in \N]{\sq{\mathbf{i}_0, \mathbf{i}_1, \dots}} &\equiv \encode[l]{\mathbf{i}_0} \concat \encode[l]{\mathbf{i}_1} \concat \dots
 \end{align}
 
 And so on.
@@ -145,23 +145,23 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \\
   \encodeguarantees{\xtguarantees} &= \encode{
     \var{\sq{\build{
-      \tup{\xg¬workreport, \fixedencode{4}{\xg¬timeslot}, \var{\xg¬credential}}
+      \tup{\xg¬workreport, \encode[4]{\xg¬timeslot}, \var{\xg¬credential}}
     }{
       \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \orderedin \xtguarantees}
     }}}
   \\
   \encodeassurances{\xtassurances} &= \encode{
     \var{\sq{\build{
-      \tup{\xa¬anchor, \xa¬availabilities, \fixedencode{2}{\xa¬assurer}, \xa¬signature}
+      \tup{\xa¬anchor, \xa¬availabilities, \encode[2]{\xa¬assurer}, \xa¬signature}
     }{
       \tup{\xa¬anchor, \xa¬availabilities, \xa¬assurer, \xa¬signature} \orderedin \xtassurances}
     }}}
   \\
   \encodedisputes{\tup{\mathbf{v}, \mathbf{c}, \mathbf{f}}} &= \encode{
     \var{\sq{\build{
-      \tup{\xv¬reporthash, \fixedencode{4}{\xv¬epochindex},
+      \tup{\xv¬reporthash, \encode[4]{\xv¬epochindex},
         \sq{\build{
-          \tup{\xvj¬validity, \fixedencode{2}{\xvj¬judgeindex}, \xvj¬signature}
+          \tup{\xvj¬validity, \encode[2]{\xvj¬judgeindex}, \xvj¬signature}
         }{
           \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \orderedin \xv¬judgments
         }}
@@ -182,10 +182,10 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \H_\¬parent,
     \H_\¬priorstateroot,
     \H_\¬extrinsichash
-    \fixedencode{4}{\H_\¬timeslot}
+    \encode[4]{\H_\¬timeslot}
     \maybe{\H_\¬epochmark},
     \maybe{\H_\¬winnersmark},
-    \fixedencode{2}{\H_\¬authorindex},
+    \encode[2]{\H_\¬authorindex},
     \H_\¬vrfsig,
     \var{\H_\¬offendersmark}
   }
@@ -195,23 +195,23 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \wcX_\wc¬anchorpoststate,
     \wcX_\wc¬anchoraccoutlog,
     \wcX_\wc¬lookupanchorhash,
-    \fixedencode{4}{\wcX_\wc¬lookupanchortime},
+    \encode[4]{\wcX_\wc¬lookupanchortime},
     \var{\wcX_\wc¬prerequisites}
   }
   \\
   \encode{\asX \in \avspec} &\equiv \encode{
     \asX_\as¬packagehash,
-    \fixedencode{4}{\asX_\as¬bundlelen},
+    \encode[4]{\asX_\as¬bundlelen},
     \asX_\as¬erasureroot,
     \asX_\as¬segroot,
-    \fixedencode{2}{\asX_\as¬segcount}
+    \encode[2]{\asX_\as¬segcount}
   }
   \\
   \encode{\wdX \in \mathbb{L}} &\equiv \encode{
-    \fixedencode{4}{\wdX_\wd¬service},
+    \encode[4]{\wdX_\wd¬service},
     \wdX_\wd¬codehash,
     \wdX_\wd¬payloadhash,
-    \fixedencode{8}{\wdX_\wd¬gaslimit},
+    \encode[8]{\wdX_\wd¬gaslimit},
     % TODO: Consider making these fixed length.
     \wdX_\wd¬gasused,
     \wdX_\wd¬importcount,
@@ -233,7 +233,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   }
   \\
   \encode{\wpX \in \workpackage} &\equiv \encode{
-    \fixedencode{4}{\wpX_\wp¬authcodehost},
+    \encode[4]{\wpX_\wp¬authcodehost},
     \wpX_\wp¬authcodehash,
     \wpX_\wp¬context,
     \var{\wpX_\wp¬authtoken},
@@ -241,17 +241,17 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \var{\wpX_\wp¬workitems}
   }
   \\
-  % TODO: \fixedencode{4}{i} should be just \encode{i}, but we should wait for this to be written.
+  % TODO: \encode[4]{i} should be just \encode{i}, but we should wait for this to be written.
   \encode{\wiX \in \workitem} &\equiv \encode{
-    \fixedencode{4}{\wiX_\wi¬service},
+    \encode[4]{\wiX_\wi¬service},
     \wiX_\wi¬codehash,
-    \fixedencode{8}{\wiX_\wi¬refgaslimit},
-    \fixedencode{8}{\wiX_\wi¬accgaslimit},
-    \fixedencode{2}{\wiX_\wi¬exportcount},
+    \encode[8]{\wiX_\wi¬refgaslimit},
+    \encode[8]{\wiX_\wi¬accgaslimit},
+    \encode[2]{\wiX_\wi¬exportcount},
     \var{\wiX_\wi¬payload},
     \var{\encodeimportrefs{\wiX_\wi¬importsegments}},
     \var{\sq{\build{
-      \tup{h, \fixedencode{4}{i}}
+      \tup{h, \encode[4]{i}}
     }{
       \tup{h, i} \orderedin \wiX_\wi¬extrinsics
     }}}
@@ -263,11 +263,11 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   }
   \\
   \encode{\dxX \in \defxfer} &\equiv \encode{
-    \fixedencode{4}{\dxX_\dx¬source},
-    \fixedencode{4}{\dxX_\dx¬dest},
-    \fixedencode{8}{\dxX_\dx¬amount},
+    \encode[4]{\dxX_\dx¬source},
+    \encode[4]{\dxX_\dx¬dest},
+    \encode[8]{\dxX_\dx¬amount},
     \dxX_\dx¬memo,
-    \fixedencode{8}{\dxX_\dx¬gas}
+    \encode[8]{\dxX_\dx¬gas}
   }
   \\
   \encode{\otX \in \operandtuple} &\equiv \encode{
@@ -295,8 +295,8 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     h \in \hash \cup \hash^\boxplus,
     i \in \Nbits{15}
   }} &\equiv \begin{cases}
-    \tup{h, \fixedencode{2}{i}} &\when h \in \hash\\
-    \tup{r, \fixedencode{2}{i + 2^{15}}} &\when \exists r \in \hash, h = r^\boxplus\\
+    \tup{h, \encode[2]{i}} &\when h \in \hash\\
+    \tup{r, \encode[2]{i + 2^{15}}} &\when \exists r \in \hash, h = r^\boxplus\\
   \end{cases}
 \end{align}
 

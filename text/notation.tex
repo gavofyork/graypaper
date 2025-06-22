@@ -21,7 +21,7 @@ We define the precedes relation to indicate that one term is defined in terms of
 %We denote the general fold operator as $\fold$:
 %\begin{align}
 %  \fold^{S}_{I} F \equiv \begin{cases}
-%    I &\when S = [] \\
+%    I &\when S = \sq{} \\
 %    \displaystyle \fold^{[S_1, \dots ]}_{F(I, S_0)} F &\otherwise
 %  \end{cases}
 %\end{align}
@@ -79,7 +79,7 @@ In the context of a dictionary we denote the pairs with a mapping notation:
 
 This assertion allows us to unambiguously define the subscript and subtraction operator for a dictionary $d$:
 \begin{align}
-  \forall \mathbf{d} \in \dictionary&: \mathbf{d}[k] \equiv \begin{cases}
+  \forall \mathbf{d} \in \dictionary&: \mathbf{d}\subb{k} \equiv \begin{cases}
     v & \text{if}\ \exists k : \kv{k}{v} \in \mathbf{d} \\
     \none & \otherwise
   \end{cases}\\
@@ -113,7 +113,7 @@ A sequence is a series of elements with particular ordering not dependent on the
 
 Sequences are subscriptable, thus a specific item at index $i$ within a sequence $\mathbf{s}$ may be denoted $\mathbf{s}\subb{i}$, or where unambiguous, $\mathbf{s}\sub{i}$. A range may be denoted using an ellipsis for example: $\sq{0, 1, 2, 3}\sub{\dots2} = \sq{0, 1}$ and $\sq{0, 1, 2, 3}\sub{1\dots+2} = \sq{1, 2}$. The length of such a sequence may be denoted $\len{\mathbf{s}}$.
 
-We denote modulo subscription as $\cyclic{\mathbf{s}[i]} \equiv \mathbf{s}[\,i \rem \len{\mathbf{s}}\,]$. We denote the final element $x$ of a sequence $\mathbf{s} = \sq{..., x}$ through the function $\text{last}(\mathbf{s}) \equiv x$.
+We denote modulo subscription as $\cyclic{\mathbf{s}\subb{i}} \equiv \mathbf{s}[\,i \rem \len{\mathbf{s}}\,]$. We denote the final element $x$ of a sequence $\mathbf{s} = \sq{..., x}$ through the function $\text{last}(\mathbf{s}) \equiv x$.
 
 \subsubsection{Construction}
 We may wish to define a sequence in terms of incremental subscripts of other values: $\sq{\mathbf{x}_0, \mathbf{x}_1, \dots }\sub{\dots n}$ denotes a sequence of $n$ values beginning $\mathbf{x}_0$ continuing up to $\mathbf{x}_{n-1}$. Furthermore, we may also wish to define a sequence as elements each of which are a function of their index $i$; in this case we denote $\sq{\build{f(i)}{i \orderedin \Nmax{n}}} \equiv \sq{f(0), f(1), \dots, f(n - 1)}$. Thus, when the ordering of elements matters we use $\orderedin$ rather than the unordered notation $\in$. The latter may also be written in short form $\sq{f(i \orderedin \Nmax{n})}$. This applies to any set which has an unambiguous ordering, particularly sequences, thus $\sq{\build{i^2}{i \orderedin \sq{1, 2, 3}}} = \sq{1, 4, 9}$. Multiple sequences may be combined, thus $\sq{\build{i \cdot j}{i \orderedin \sq{1, 2, 3}, j \orderedin \sq{2, 3, 4}}} = \sq{2, 6, 12}$.
@@ -129,7 +129,7 @@ Sets may be constructed from sequences with the regular set construction syntax,
 Sequences of values which themselves have a defined ordering have an implied ordering akin to a regular dictionary, thus $\sq{1, 2, 3} < \sq{1, 2, 4}$ and $\sq{1, 2, 3} < \sq{1, 2, 3, 1}$.
 
 \subsubsection{Editing}
-We define the sequence concatenation operator $\concat$ such that $\sq{\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{y}_0, \mathbf{y}_1, \dots} \equiv \mathbf{x} \concat \mathbf{y}$. For sequences of sequences, we define a unary concatenate-all operator: $\concatall{\mathbf{x}}\equiv\mathbf{x}_0 \concat \mathbf{x}_1 \concat \dots$. Further, we denote element concatenation as $x \append i \equiv x \concat [i]$. We denote the sequence made up of the first $n$ elements of sequence $\mathbf{s}$ to be ${\overrightarrow{\mathbf{s}}}^n \equiv [\mathbf{s}_0, \mathbf{s}_1, \dots, \mathbf{s}_{n-1}]$, and only the final elements as ${\overleftarrow{\mathbf{s}}}^n$.
+We define the sequence concatenation operator $\concat$ such that $\sq{\mathbf{x}_0, \mathbf{x}_1, \dots, \mathbf{y}_0, \mathbf{y}_1, \dots} \equiv \mathbf{x} \concat \mathbf{y}$. For sequences of sequences, we define a unary concatenate-all operator: $\concatall{\mathbf{x}}\equiv\mathbf{x}_0 \concat \mathbf{x}_1 \concat \dots$. Further, we denote element concatenation as $x \append i \equiv x \concat\sq{i}$. We denote the sequence made up of the first $n$ elements of sequence $\mathbf{s}$ to be ${\overrightarrow{\mathbf{s}}}^n \equiv\sq{\mathbf{s}_0, \mathbf{s}_1, \dots, \mathbf{s}_{n-1}}$, and only the final elements as ${\overleftarrow{\mathbf{s}}}^n$.
 
 We define ${}^\text{T}\mathbf{x}$ as the transposition of the sequence-of-sequences $\mathbf{x}$, fully defined in equation \ref{eq:transpose}. We may also apply this to sequences-of-tuples to yield a tuple of sequences.
 
@@ -152,9 +152,9 @@ We define the sequence-shuffle function $\fnfyshuffle$, originally introduced by
 
 \subsubsection{Hashing}
 
-$\hash$ denotes the set of 256-bit values typically expected to be arrived at through a cryptographic function, equivalent to $\bloboflen{32}$, with $\zerohash$ being equal to $[0]_{32}$. We assume a function $\blake{m \in \blob} \in \hash$ denoting the Blake2b 256-bit hash introduced by \cite{rfc7693} and a function $\keccak{m \in \blob} \in \hash$ denoting the Keccak 256-bit hash as proposed by \cite{bertoni2013keccak} and utilized by \cite{wood2014ethereum}.
+$\hash$ denotes the set of 256-bit values typically expected to be arrived at through a cryptographic function, equivalent to $\bloboflen{32}$, with $\zerohash$ being equal to $\sq{0}_{32}$. We assume a function $\blake{m \in \blob} \in \hash$ denoting the Blake2b 256-bit hash introduced by \cite{rfc7693} and a function $\keccak{m \in \blob} \in \hash$ denoting the Keccak 256-bit hash as proposed by \cite{bertoni2013keccak} and utilized by \cite{wood2014ethereum}.
 
-We may sometimes wish to take only the first $x$ octets of a hash, in which case we denote $\blakeprefix{x}{m} \in \bloboflen{x}$ to be the first $x$ octets of $\blake{m}$. The inputs of a hash function should be expected to be passed through our serialization codec $\mathcal{E}$ to yield an octet sequence to which the cryptography may be applied. (Note that an octet sequence conveniently yields an identity transform.) We may wish to interpret a sequence of octets as some other kind of value with the assumed decoder function $\decode{x \in \blob}$. In both cases, we may subscript the transformation function with the number of octets we expect the octet sequence term to have. Thus, $r = \mathcal{E}_4(x \in \N)$ would assert $x \in \Nbits{32}$ and $r \in \bloboflen{4}$, whereas $s = \decode{8}{y}$ would assert $y \in \bloboflen{8}$ and $s \in \Nbits{64}$.
+We may sometimes wish to take only the first $x$ octets of a hash, in which case we denote $\blake[x]{m} \in \bloboflen{x}$ to be the first $x$ octets of $\blake{m}$. The inputs of a hash function should be expected to be passed through our serialization codec $\mathcal{E}$ to yield an octet sequence to which the cryptography may be applied. (Note that an octet sequence conveniently yields an identity transform.) We may wish to interpret a sequence of octets as some other kind of value with the assumed decoder function $\decode{x \in \blob}$. In both cases, we may subscript the transformation function with the number of octets we expect the octet sequence term to have. Thus, $r = \mathcal{E}_4(x \in \N)$ would assert $x \in \Nbits{32}$ and $r \in \bloboflen{4}$, whereas $s = \decode[8]{y}$ would assert $y \in \bloboflen{8}$ and $s \in \Nbits{64}$.
 
 \subsubsection{Signing Schemes}\label{sec:signing}
 
@@ -168,4 +168,4 @@ $\bandersnatch{r \in \ringroot}{x \in \blob}{m \in \blob} \subset \bloboflen{784
 
 Both the Bandersnatch signature and Ring\textsc{vrf} proof strictly imply that a member utilized their secret key in combination with both the context $x$ and the message $m$; the difference is that the member is identified in the former and is anonymous in the latter. Furthermore, both define a \textsc{vrf} \emph{output}, a high entropy hash influenced by $x$ but not by $m$, formally denoted $\banderout{\bandersnatch{r}{x}{m}} \subset \hash$ and $\banderout{\bandersig{k}{x}{m}} \subset \hash$.
 
-We define the function $\fnsigndata{}$ as the signature function, such that $\signdata{k}{m} \in \bandersig{k}{[]}{m} \cup \sig{k}{m}$. We assert that the ability to compute a result for this function relies on knowledge of a secret key.
+We define the function $\fnsigndata{}$ as the signature function, such that $\signdata{k}{m} \in \bandersig{k}{\sq{}}{m} \cup \sig{k}{m}$. We assert that the ability to compute a result for this function relies on knowledge of a secret key.
