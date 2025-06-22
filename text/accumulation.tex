@@ -104,13 +104,13 @@ Our formalisms begin by defining $\partialstate$ as a characterization of (\ie v
 \begin{equation}
   \label{eq:partialstate}
   \partialstate \equiv \tuple{\begin{aligned}
-    &\isa{\ps¬accounts}{\dict{\serviceid}{\serviceaccount}} \,,\;
+    &\isa{\ps¬accounts}{\dictionary{\serviceid}{\serviceaccount}} \,,\;
     \isa{\ps¬stagingset}{\sequence[\valcount]{\valkey}} \,,\;
     \isa{\ps¬authqueue}{\sequence[_\corecount]{\sequence[\mathsf{Q}]{\hash}}} \,,\\
     &\isa{\ps¬manager}{\serviceid} \,,\;
     \isa{\ps¬assigners}{\sequence[\corecount]{\serviceid}} \,,\;
     \isa{\ps¬delegator}{\serviceid} \,,\;
-    \isa{\ps¬alwaysaccers}{\dict{\serviceid}{\gas}}
+    \isa{\ps¬alwaysaccers}{\dictionary{\serviceid}{\gas}}
   \end{aligned}}
 \end{equation}
 
@@ -134,7 +134,7 @@ Finally, we denote the set of service/hash pairs, utilized as a service-indexed 
 We define the outer accumulation function $\accseq$ which transforms a gas-limit, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the number of work-results accumulated, a posterior state-context, the resultant deferred-transfers and accumulation-output pairings:
 \begin{equation}
   \accseq\colon\abracegroup{
-    &\tuple{\gas, \sequence{\workreport}, \partialstate, \dict{\serviceid}{\gas}} \to \tuple{\N, \partialstate, \defxfers, \servouts, \gasused} \\
+    &\tuple{\gas, \sequence{\workreport}, \partialstate, \dictionary{\serviceid}{\gas}} \to \tuple{\N, \partialstate, \defxfers, \servouts, \gasused} \\
     &\tup{g, \mathbf{w}, \mathbf{o}, \mathbf{f}} \!\mapsto\! \begin{cases}
       \tup{0, \mathbf{o}, \sq{}, \emset, \sq{}} &
         \when i = 0 \\
@@ -158,7 +158,7 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
 We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution, a posterior state-context and the resultant accumulation-output pairings and deferred-transfers:
 \begin{equation}
   \accpar\colon\abracegroup[\;]{\begin{aligned}
-    &\tuple{\partialstate, \sequence{\workreport}, \dict{\serviceid}{\gas}} \to \tuple{\partialstate, \defxfers, \servouts, \gasused} \\
+    &\tuple{\partialstate, \sequence{\workreport}, \dictionary{\serviceid}{\gas}} \to \tuple{\partialstate, \defxfers, \servouts, \gasused} \\
     &\tup{\mathbf{o}, \mathbf{w}, \mathbf{f}} \mapsto \tup{
       \tup{
         \local¬accounts', \local¬stagingset', \local¬authqueue', \local¬manager', \local¬assigners', \local¬delegator', \local¬alwaysaccers'
@@ -228,7 +228,7 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
 And $\fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/hash pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
 \begin{equation}
   \fnprovide\colon\abracegroup{
-    &\tuple{\dict{\serviceid}{\serviceaccount}, \protoset{\tuple{\serviceid, \blob}}} \to \dict{\serviceid}{\serviceaccount} \\
+    &\tuple{\dictionary{\serviceid}{\serviceaccount}, \protoset{\tuple{\serviceid, \blob}}} \to \dictionary{\serviceid}{\serviceaccount} \\
     &\tup{\mathbf{d}, \mathbf{p}} \mapsto \mathbf{d}'\;\where \mathbf{d}' = \mathbf{d}\;\text{except:} \\
     &\quad\forall \tup{s, \mathbf{i}} \in \mathbf{p},\;
       s \in \keys{\mathbf{d}},\;
@@ -257,7 +257,7 @@ The single-service accumulation function, $\accone$, transforms an initial state
     &\begin{aligned}
       \tuple{\begin{aligned}
         &\partialstate, \sequence{\workreport},\\
-        &\dict{\serviceid}{\gas}, \serviceid
+        &\dictionary{\serviceid}{\gas}, \serviceid
       \end{aligned}}
       &\to \tuple{
         \begin{alignedat}{3}
@@ -322,7 +322,7 @@ From this formulation, we also receive $\deferredtransfers$, the grand sequence 
 
 We compose $\accumulationstatistics$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-items accumulated. Formally:
 \begin{align}
-  &\accumulationstatistics \in \dict{\serviceid}{\tuple{\gas, \N}} \\
+  &\accumulationstatistics \in \dictionary{\serviceid}{\tuple{\gas, \N}} \\
   &\textstyle \accumulationstatistics \equiv \set{\build{
     \kv{s}{
       \tup{\sum_{\tup{s, u} \in \mathbf{u}}(u), \len{N(s)}}
@@ -371,7 +371,7 @@ The second intermediate state $\accountspostxfer$ may then be defined with all t
 Furthermore we build the deferred transfers statistics value $\deferredtransfersstatistics$ as the number of transfers and the total gas used in transfer processing for each \emph{destination} service index. Formally:
 \begin{align}
   \label{eq:deferredtransfers}
-  &\deferredtransfersstatistics \in \dict{\serviceid}{\tuple{\N, \gas}} \\
+  &\deferredtransfersstatistics \in \dictionary{\serviceid}{\tuple{\N, \gas}} \\
   &\textstyle \deferredtransfersstatistics \equiv \set{ \build { \kv{d}{\tup{\len{\selectxfers(d)}, u}} }{
     \begin{aligned}
       \selectxfers(d) &\ne \sq{},\\

@@ -5,15 +5,15 @@ As we already noted, a service in \Jam is somewhat analogous to a smart contract
 Service accounts are held in state under $\accounts$, a partial mapping from a service identifier $\serviceid$ into a tuple of named elements which specify the attributes of the service relevant to the \Jam protocol. Formally:
 \begin{align}\label{eq:serviceaccounts}
   \serviceid &\equiv \Nbits{32} \\
-  \accounts &\in \dict{\serviceid}{\serviceaccount}
+  \accounts &\in \dictionary{\serviceid}{\serviceaccount}
 \end{align}
 
 The service account is defined as the tuple of storage dictionary $\sa¬storage$, preimage lookup dictionaries $\sa¬preimages$ and $\sa¬requests$, code hash $\sa¬codehash$, balance $\sa¬balance$ and gratis storage offset $\sa¬gratis$, as well as the two code gas limits $\sa¬minaccgas$ \& $\sa¬minmemogas$. We also record certain usage characteristics concerning the account: the time slot at creation $\sa¬created$, the time slot at the most recent accumulation $\sa¬lastacc$ and the parent service $\sa¬parent$. Formally:
 \begin{align}\label{eq:serviceaccount}
   \serviceaccount \equiv \tuple{\ \begin{aligned}
-    \sa¬storage &\in \dict{\blob}{\blob}\,,\ 
-    \sa¬preimages \in \dict{\hash}{\blob}\,,\\
-    \sa¬requests &\in \dict{\tuple{\hash,\bloblength}}{\sequence[:3]{\timeslot}}\,,\\
+    \sa¬storage &\in \dictionary{\blob}{\blob}\,,\ 
+    \sa¬preimages \in \dictionary{\hash}{\blob}\,,\\
+    \sa¬requests &\in \dictionary{\tuple{\hash,\bloblength}}{\sequence[:3]{\timeslot}}\,,\\
     \sa¬gratis &\in \balance\,,\ 
     \sa¬codehash \in \hash\,,\ 
     \sa¬balance \in \balance\,,\ 
@@ -169,6 +169,6 @@ Finally, $\alwaysaccers$ is a small dictionary containing the indices of service
     \isa{\manager}{\serviceid} ,
     \isa{\assigners}{\sequence[\corecount]{\serviceid}} ,
     \isa{\delegator}{\serviceid} ,
-    \isa{\alwaysaccers}{\dict{\serviceid}{\gas}}
+    \isa{\alwaysaccers}{\dictionary{\serviceid}{\gas}}
   }
 \end{align}

@@ -85,7 +85,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
     \end{cases} \\
   } \\
   \label{eq:refinemutator}
-  &F \in \Omega\ang{\tuple{\dict{\N}{\pvm}, \sequence{\segment}}} \colon
+  &F \in \Omega\ang{\tuple{\dictionary{\N}{\pvm}, \sequence{\segment}}} \colon
     (n, \gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{gas} \\
       \Omega_Y(\gascounter, \registers, \memory, p, \zerohash, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \none, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{fetch}\\
@@ -239,7 +239,7 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
 \begin{align}
   \Psi_T &: \begin{cases}
-    \tuple{\dict{\serviceid}{\serviceaccount}, \timeslot, \serviceid, \defxfers}
+    \tuple{\dictionary{\serviceid}{\serviceaccount}, \timeslot, \serviceid, \defxfers}
     &\to \tuple{\serviceaccount, \gas} \\
     \tup{\mathbf{d}, t, s, \mathbf{t}} &\mapsto \begin{cases}
       \tup{\mathbf{s}, 0}
@@ -501,7 +501,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
 
 \subsection{Refine Functions}\label{sec:refinefunctions}
 
-These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\dict{\N}{\pvm}, \sequence{\segment}}$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
+These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\dictionary{\N}{\pvm}, \sequence{\segment}}$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
   \gascounter' &\equiv \gascounter - g\\
   \tup{\execst', \registers', \memory'} &\equiv \begin{cases}
