@@ -301,27 +301,34 @@
 
 %%%%%%%%%%%%
 % Simple Universal types (blackboard letters)
-\newcommand*{\bitstring}[1][]{\mathbb{b}_{#1}}
-\newcommand*{\blob}[1][]{\mathbb{B}_{#1}}
+% Unused: U
+
+% Terms defined as being in these sets never get bolded
 \newcommand*{\workerror}{\mathbb{E}}
 \newcommand*{\finitefield}{\mathbb{F}}
 \renewcommand*{\hash}[1][]{\mathbb{H}_{#1}}
 \newcommand*{\segment}{\mathbb{J}}
 \newcommand*{\N}{\mathbb{N}}
-\newcommand*{\ramaccess}[1][]{\mathbb{V}_{#1}}
 \newcommand*{\Z}{\mathbb{Z}}
+\newcommand*{\zerohash}{\hash[0]}
 
-% D unused
-% Q unused
-% R unused
+%%%%%%%%%%%%
+% Blob and bitstring
+% Bolded only if unbounded.
+\newcommand*{\bitstring}[1][]{\mathbb{b}_{#1}}
+\newcommand*{\blob}[1][]{\mathbb{B}_{#1}}
+\newcommand*{\metadatakey}{\blob[128]}
 
 %%%%%%%%%%%%
 % RAM access variants
+% Bold.
+\newcommand*{\ramaccess}[1][]{\mathbb{V}_{#1}}
 \newcommand*{\readable}[1]{\ramaccess[#1]}
 \newcommand*{\writable}[1]{\ramaccess[#1]^*}
 
 %%%%%%%%%%%%
-% Crypto filters
+% Crypto signatures, proofs, keys and verifiers
+% Regular
 \newcommand*{\signaturebase}{\mathbb{V}}
 \newcommand*{\edsignaturebase}{\bar{\signaturebase}}
 \newcommand*{\bssignaturebase}{\accentset{\backsim}{\signaturebase}}
@@ -343,8 +350,7 @@
 \newcommand*{\blssigndata}[2]{\accentset{\mathrm{B\!L\!S}}{\fnsigndata{#1}}\left(#2\right)}
 
 %%%%%%%%%%%%
-% Numeric types (blackboard N subscripts)
-% Unused: U
+% Specialized numeric types (blackboard N subscripts)
 \newcommand*{\timeslot}{\N_T}
 \newcommand*{\balance}{\N_B}
 \newcommand*{\serviceid}{\N_S}
@@ -361,17 +367,12 @@
 \newcommand*{\epochindex}{\Nmax{\Cepochlen}}
 
 %%%%%%%%%%%%
-% Hash & blob specializations
-% The hash & blob types have a bunch of peripheral definitions.
-\newcommand*{\zerohash}{\hash[0]}
-\newcommand*{\metadatakey}{\blob[128]}
-
-%%%%%%%%%%%%
-% FIELDS
+% STRUCTURED TYPES AND FIELDS
 
 %%%%%%%%%%%%
 % Common fields
-
+% Helpful when we make assertions of fields having shared labels during
+% destructure/restructure logic.
 \newcommand*{\¬authorizer}{a} % O/L ¬accgaslimit
 \newcommand*{\¬authtrace}{\mathbf{t}}
 \newcommand*{\¬bundlelen}{l}
@@ -400,7 +401,6 @@
 
 %%%%%%%%%%%%
 % Named types (blackboard)
-
 \newcommand*{\pvmguest}{\mathbb{G}}
 \newcommand*{\pg¬code}{\mathbf{p}}
 \newcommand*{\pg¬ram}{\mathbf{u}}
