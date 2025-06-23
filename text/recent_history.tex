@@ -1,9 +1,9 @@
 \section{Recent History}\label{sec:recenthistory}
 
-We retain in state information on the most recent $\mathsf{H}$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
+We retain in state information on the most recent $\Crecenthistorylen$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
 \begin{align}
   \recent &\equiv \tup{\recenthistory, \beefybelt} \label{eq:recenthistory} \\
-  \recenthistory &\in \sequence[:\mathsf{H}]{\tuple{
+  \recenthistory &\in \sequence[:\Crecenthistorylen]{\tuple{
     \isa{\rh¬headerhash}{\hash},
     \isa{\rh¬stateroot}{\hash},
     \isa{\rh¬accoutlogsuperpeak}{\hash},
@@ -13,7 +13,7 @@ We retain in state information on the most recent $\mathsf{H}$ blocks. This is u
   \lastaccout &\in \sequence{\tup{\serviceid, \hash}}
 \end{align}
 
-For each recent block, we retain its header hash, its state root, its accumulation-result \textsc{mmb} and the corresponding work-package hashes of each item reported (which is no more than the total number of cores, $\corecount = 341$).
+For each recent block, we retain its header hash, its state root, its accumulation-result \textsc{mmb} and the corresponding work-package hashes of each item reported (which is no more than the total number of cores, $\Ccorecount = 341$).
 
 During the accumulation stage, a value with the partial transition of this state is provided which contains the correction for the newly-known state-root of the parent block:
 \begin{equation}\label{eq:correctlaststateroot}
@@ -35,7 +35,7 @@ The final state transition for $\recenthistory$ appends a new item including the
       \is{\rh¬headerhash}{\blake{\theheader}},
       \is{\rh¬stateroot}{\zerohash},
       \is{\rh¬accoutlogsuperpeak}{\mmrsuperpeak{\beefybelt'}}
-      }}}^\mathsf{H} \\
+      }}}^\Crecenthistorylen \\
     \where \rh¬reportedpackagehashes &= \set{\build{
         \kv{
           ((g_\xg¬workreport)_\wr¬avspec)_\as¬packagehash

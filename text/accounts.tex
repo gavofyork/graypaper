@@ -81,7 +81,7 @@ Restated, we must be able to define some \emph{historical} lookup function $\his
 \begin{equation}
 \begin{aligned}
   \histlookup\colon \abracegroup[\ ]{
-    \tuple{\serviceaccount, \Nmax{(\H_\¬timeslot - \mathsf{D}) \dots \H_\¬timeslot}, \hash} &\to \optional{\blob} \\
+    \tuple{\serviceaccount, \Nmax{(\H_\¬timeslot - \Cexpungeperiod) \dots \H_\¬timeslot}, \hash} &\to \optional{\blob} \\
     (\mathbf{a}, t, \blake{\mathbf{p}}) &\mapsto v : v \in \set{ \mathbf{p}, \none }
   }
 \end{aligned}
@@ -149,9 +149,9 @@ We may then define a third dependent term $\sa¬minbalance$, the minimum, or \em
     &\phantom{\equiv\ } + \sum\limits_{\tup{x, y} \in \mathbf{a}_\sa¬storage} 34 + \len{y} + \len{x} \\
     \mathbf{a}_\sa¬minbalance \in \balance &\equiv
       \max(0,
-        \mathsf{B}_S
-        + \mathsf{B}_I \cdot \mathbf{a}_\sa¬items
-        + \mathsf{B}_L \cdot \mathbf{a}_\sa¬octets
+        \Cbasedeposit
+        + \Citemdeposit \cdot \mathbf{a}_\sa¬items
+        + \Cbytedeposit \cdot \mathbf{a}_\sa¬octets
         - \mathbf{a}_\sa¬gratis
       )
   }
@@ -167,7 +167,7 @@ Finally, $\alwaysaccers$ is a small dictionary containing the indices of service
 \begin{align}
   \privileges \equiv \tuple{
     \isa{\manager}{\serviceid} ,
-    \isa{\assigners}{\sequence[\corecount]{\serviceid}} ,
+    \isa{\assigners}{\sequence[\Ccorecount]{\serviceid}} ,
     \isa{\delegator}{\serviceid} ,
     \isa{\alwaysaccers}{\dictionary{\serviceid}{\gas}}
   }

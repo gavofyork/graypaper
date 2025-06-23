@@ -29,8 +29,8 @@ The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise i
     \xtdisputes &\equiv \tuple{\xtverdicts, \xtculprits, \xtfaults} \\
     \where \xtverdicts &\in \sequence{\tuple{
       \hash,
-      \ffrac{\thetime}{\epochlen} - \N_2,
-      \sequence[\floor{\twothirds\valcount} + 1]{\tuple{
+      \ffrac{\thetime}{\Cepochlen} - \N_2,
+      \sequence[\floor{\twothirds\Cvalcount} + 1]{\tuple{
         \set{\top, \bot},
         \valindex,
         \edsignaturebase
@@ -46,7 +46,7 @@ The signatures of all judgments must be valid in terms of one of the two allowed
   &\begin{aligned}
     &\forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts, \forall \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments : \xvj¬signature \in \edsignature{\mathbf{k}[\xvj¬judgeindex]_\vk¬ed}{\mathsf{X}\sub{v} \concat \xv¬reporthash}\\
     &\quad\where \mathbf{k} = \begin{cases}
-      \activeset &\when \xv¬epochindex = \displaystyle \ffrac{\thetime}{\epochlen}\\
+      \activeset &\when \xv¬epochindex = \displaystyle \ffrac{\thetime}{\Cepochlen}\\
       \previousset &\otherwise\\
     \end{cases}
   \end{aligned}\\
@@ -89,7 +89,7 @@ We define $\verdicts$ to derive from the sequence of verdicts introduced in the 
 \begin{align}\label{eq:verdicts}
   \verdicts &\in \sequence{\tup{
     \hash,
-    \set{0, \floor{\onethird\valcount}, \floor{\twothirds\valcount} + 1}
+    \set{0, \floor{\onethird\Cvalcount}, \floor{\twothirds\Cvalcount} + 1}
   }} \\
   \verdicts &= \sq{\build{
       \tup{
@@ -104,7 +104,7 @@ We define $\verdicts$ to derive from the sequence of verdicts introduced in the 
 
 There are some constraints placed on the composition of this extrinsic: any verdict containing solely valid judgments implies the same report having at least one valid entry in the faults sequence $\xtfaults$. Any verdict containing solely invalid judgments implies the same report having at least two valid entries in the culprits sequence $\xtculprits$. Formally:
 \begin{align}
-  \forall \tup{\¬reporthash, \floor{\twothirds\valcount} + 1} \in \verdicts &:
+  \forall \tup{\¬reporthash, \floor{\twothirds\Cvalcount} + 1} \in \verdicts &:
     \exists \tup{\¬reporthash, \dots} \in \xtfaults \\
   \forall \tup{\¬reporthash, 0} \in \verdicts &:
     \len{\set{\tup{\¬reporthash, \dots} \in \xtculprits}} \ge 2
@@ -115,7 +115,7 @@ We clear any work-reports which we judged as uncertain or invalid from their cor
   \forall c \in \coreindex : \reportspostjudgement\subb{c} = \begin{cases}
     \none &\!\!\!\!\when
       \tup{\blake{\reports\subb{c}_\rs¬workreport}, \vs¬approval} \in \verdicts,
-      \vs¬approval < \floor{\twothirds\valcount} \\
+      \vs¬approval < \floor{\twothirds\Cvalcount} \\
     \reports\subb{c} &\!\!\!\!\otherwise
   \end{cases}\!\!\!\!\!\!\!
 \end{equation}
@@ -125,7 +125,7 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
   \goodset' &\equiv \goodset \cup \set{\build{
       \vs¬reporthash
     }{
-      \tup{\vs¬reporthash, \floor{\twothirds\valcount} + 1} \in \verdicts
+      \tup{\vs¬reporthash, \floor{\twothirds\Cvalcount} + 1} \in \verdicts
     }} \\
   \badset' &\equiv \badset \cup \set{\build{
       \vs¬reporthash
@@ -135,7 +135,7 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
   \!\!\wonkyset' &\equiv \wonkyset \cup \set{\build{
       \vs¬reporthash
     }{
-      \tup{\vs¬reporthash, \floor{\onethird\valcount}} \in \verdicts
+      \tup{\vs¬reporthash, \floor{\onethird\Cvalcount}} \in \verdicts
     }} \\
   \offenders' &\equiv \offenders \cup \set{\build{
       \¬offenderindex

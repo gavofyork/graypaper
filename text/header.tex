@@ -20,7 +20,7 @@ $\fngetparent$ is thus defined as being the mapping from one block header to its
   h \in \ancestors \Leftrightarrow h = \header \vee (\exists i \in \ancestors : h = \getparent{i})
 \end{align}
 
-We only require implementations to store headers of ancestors which were authored in the previous $\mathsf{L} = 24$ hours of any block $\block$ they wish to validate.
+We only require implementations to store headers of ancestors which were authored in the previous $\Cmaxlookupanchorage = 24$ hours of any block $\block$ they wish to validate.
 
 The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports to individually have their inclusion proven. Given any block $\block = \tup{\header, \extrinsic}$, then formally:
 \begin{align}
@@ -43,7 +43,7 @@ The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking 
 A block may only be regarded as valid once the time-slot index $\H_\¬timeslot$ is in the past. It is always strictly greater than that of its parent. Formally:
 \begin{equation}
   \H_\¬timeslot \in \timeslot \,,\quad
-  \getparent{\H}_\¬timeslot < \H_\¬timeslot\ \wedge\ \H_\¬timeslot\cdot\mathsf{P} \leq \wallclock
+  \getparent{\H}_\¬timeslot < \H_\¬timeslot\ \wedge\ \H_\¬timeslot\cdot\Cslotseconds \leq \wallclock
 \end{equation}
 
 Blocks considered invalid by this rule may become valid as $\wallclock$ advances.
@@ -64,8 +64,8 @@ All blocks have an associated public key to identify the author of the block. We
 
 If not $\none$, then the epoch marker specifies key and entropy relevant to the following epoch in case the ticket contest does not complete adequately (a very much unexpected eventuality). Similarly, the winning-tickets marker, if not $\none$, provides the series of 600 slot sealing ``tickets'' for the next epoch (see the next section). Finally, the offenders marker is the sequence of Ed25519 keys of newly misbehaving validators, to be fully explained in section \ref{sec:disputes}. Formally:
 \begin{equation}
-  \H_\¬epochmark \in \optional{\tuple{\hash, \hash, \sequence[\valcount]{\tuple{\bskey, \edkey}}}}\,,\quad
-  \H_\¬winnersmark \in \optional{\sequence[\epochlen]{\safroleticket}}\,,\quad
+  \H_\¬epochmark \in \optional{\tuple{\hash, \hash, \sequence[\Cvalcount]{\tuple{\bskey, \edkey}}}}\,,\quad
+  \H_\¬winnersmark \in \optional{\sequence[\Cepochlen]{\safroleticket}}\,,\quad
   \H_\¬offendersmark \in \sequence{\edkey}
 \end{equation}
 

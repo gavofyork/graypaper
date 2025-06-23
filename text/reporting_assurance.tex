@@ -13,7 +13,7 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 \subsection{State}
 The state of the reporting and availability portion of the protocol is largely contained within $\reports$, which tracks the work-reports which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
 \begin{equation}\label{eq:reportingstate}
-  \reports \in \sequence[\corecount]{
+  \reports \in \sequence[\Ccorecount]{
     \optional{\tuple{
       \isa{\rs¬workreport}{\workreport} ,\,
       \isa{\rs¬timestamp}{\timeslot}
@@ -34,15 +34,15 @@ A work-report, of the set $\workreport$, is defined as a tuple of the work-packa
     \isa{\wr¬authorizer}{\hash},\ 
     \isa{\wr¬authtrace}{\blob},\\
     &\isa{\wr¬srlookup}{\dictionary{\hash}{\hash}},\ 
-    \isa{\wr¬digests}{\sequence[1:\mathsf{I}]{\workdigest}},\ 
+    \isa{\wr¬digests}{\sequence[1:\Cmaxpackageitems]{\workdigest}},\ 
     \isa{\wr¬authgasused}{\gas}
   \end{aligned}
 }
 \end{equation}
 
-We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\mathsf{J} = 8$:
+We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\Cmaxreportdeps = 8$:
 \begin{equation}
-  \forall \wrX \in \workreport : \len{\wrX_\wr¬srlookup} + \len{(\wrX_\wr¬context)_\wc¬prerequisites} \le \mathsf{J}
+  \forall \wrX \in \workreport : \len{\wrX_\wr¬srlookup} + \len{(\wrX_\wr¬context)_\wc¬prerequisites} \le \Cmaxreportdeps
 \end{equation}
 
 \subsubsection{Refinement Context}
@@ -103,15 +103,15 @@ There is the work \emph{result}, the output blob or error of the execution of th
   \workerror \in \set{ \oog, \panic, \badexports, \oversize, \token{BAD}, \token{BIG} }
 \end{equation}
 
-The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining four, the first indicates that the number of exports made was invalidly reported, the second that the size of the digest (refinement output) would cross the acceptable limit, the third indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The fourth indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
+The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining four, the first indicates that the number of exports made was invalidly reported, the second that the size of the digest (refinement output) would cross the acceptable limit, the third indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The fourth indicates that the code was available but was beyond the maximum size allowed $\Cmaxservicecodesize$.
 
 Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the result to bear. We include $\wd¬gasused$ the actual amount of gas used during refinement; $\wd¬importcount$ and $\wd¬exportcount$ the number of segments imported from, and exported into, the D$^3$L respectively; and $\wd¬xtcount$ and $\wd¬xtsize$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
 
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful refinement output blobs together with the authorizer trace, effectively limiting their overall size:
 \begin{align}
   &\forall \wrX \in \workreport:
-    \len{\wrX_\wr¬authtrace} + \sum_{\wdX \in \wrX_\wr¬digests \cap \blob} \len{\wdX_\wd¬result} \le \mathsf{W}_R \\
-  &\mathsf{W}_R \equiv 48\cdot2^{10}
+    \len{\wrX_\wr¬authtrace} + \sum_{\wdX \in \wrX_\wr¬digests \cap \blob} \len{\wdX_\wd¬result} \le \Cmaxreportvarsize \\
+  &\Cmaxreportvarsize \equiv 48\cdot2^{10}
 \end{align}
 
 
@@ -129,9 +129,9 @@ We first define $\reportspostguarantees$, the intermediate state to be utilized 
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
 \begin{align}
-  \xtassurances \in \sequence[\mathsf{:\valcount}]{\tuple{
+  \xtassurances \in \sequence[\mathsf{:\Cvalcount}]{\tuple{
     \isa{\xa¬anchor}{\hash},\,
-    \isa{\xa¬availabilities}{\bitstring[\corecount]},\,
+    \isa{\xa¬availabilities}{\bitstring[\Ccorecount]},\,
     \isa{\xa¬assurer}{\valindex},\,
     \isa{\xa¬signature}{\edsignaturebase}
   }}
@@ -162,14 +162,14 @@ A work-report is said to become \emph{available} if and only if there are a clea
       \reportspostjudgement\subb{\cX}_\rs¬workreport
     }{
       \cX \orderedin \coreindex,\;
-      \sum_{a \in \xtassurances}\!a_\xa¬availabilities\subb{\cX}\,>\,\twothirds\,\valcount
+      \sum_{a \in \xtassurances}\!a_\xa¬availabilities\subb{\cX}\,>\,\twothirds\,\Cvalcount
     }}
 \end{align}
 
 This value is utilized in the definition of both $\accountspost$ and $\reportspostguarantees$ which we will define presently as equivalent to $\reportspostjudgement$ except for the removal of items which are either now available or have timed out:
 \begin{align}
   \forall \cX \in \coreindex: \reportspostguarantees\subb{\cX} \equiv \begin{cases}
-    \none &\when\reports\subb{\cX}_\rs¬workreport \in \justbecameavailable \vee \H_\¬timeslot \ge \reportspostjudgement\subb{\cX}_\rs¬timestamp + \mathsf{U}\\
+    \none &\when\reports\subb{\cX}_\rs¬workreport \in \justbecameavailable \vee \H_\¬timeslot \ge \reportspostjudgement\subb{\cX}_\rs¬timestamp + \Cassurancetimeoutperiod\\
     \reportspostjudgement\subb{\cX} &\otherwise
   \end{cases}
 \end{align}
@@ -186,19 +186,19 @@ This value is utilized in the definition of both $\accountspost$ and $\reportspo
 
 \subsection{Guarantor Assignments}\label{sec:coresandvalidators}
 
-Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\valcount = 1,023$ validators and $\corecount = 341$ cores, since $\nicefrac{\valcount}{\corecount} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\guarantorassignments$:
+Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\Cvalcount = 1,023$ validators and $\Ccorecount = 341$ cores, since $\nicefrac{\Cvalcount}{\Ccorecount} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\guarantorassignments$:
 \begin{equation}
-  \guarantorassignments \in \tuple{\sequence[\valcount]{\coreindex}, \sequence[\valcount]{\edkey}}
+  \guarantorassignments \in \tuple{\sequence[\Cvalcount]{\coreindex}, \sequence[\Cvalcount]{\edkey}}
 \end{equation}
 
 We determine the core to which any given validator is assigned through a shuffle using epochal entropy and a periodic rotation to help guard the security and liveness of the network. We use $\entropy_2$ for the epochal entropy rather than $\entropy_1$ to avoid the possibility of fork-magnification where uncertainty about chain state at the end of an epoch could give rise to two established forks before it naturally resolves.
 
 We define the permute function $P$, the rotation function $R$ and finally the guarantor assignments  $\guarantorassignments$ as follows:
 \begin{align}
-  R(\mathbf{c}, n) &\equiv \sq{\build{(x + n) \bmod \corecount}{x \orderedin \mathbf{c}}}\\
+  R(\mathbf{c}, n) &\equiv \sq{\build{(x + n) \bmod \Ccorecount}{x \orderedin \mathbf{c}}}\\
   P(e, t) &\equiv R\left(
-    \fyshuffle{\sq{\build{\ffrac{\corecount \cdot i}{\valcount}}{i \orderedin \valindex}}, e},
-    \ffrac{t \bmod \epochlen}{\mathsf{R}}
+    \fyshuffle{\sq{\build{\ffrac{\Ccorecount \cdot i}{\Cvalcount}}{i \orderedin \valindex}}, e},
+    \ffrac{t \bmod \Cepochlen}{\Crotationperiod}
   \right)\\
   \guarantorassignments &\equiv \tup{P(\entropy'_2, \thetime'), \Phi(\activeset')}
 \end{align}
@@ -208,11 +208,11 @@ We also define $\guarantorassignmentsunderlastrotation$, which is equivalent to 
   \label{eq:priorassignments}
   \begin{aligned}
     \using \tup{e, \mathbf{k}} &= \begin{cases}
-      \tup{\entropy'_2, \activeset'} &\when \displaystyle\ffrac{\thetime' - \mathsf{R}}{\epochlen} = \ffrac{\thetime'}{\epochlen}\\
+      \tup{\entropy'_2, \activeset'} &\when \displaystyle\ffrac{\thetime' - \Crotationperiod}{\Cepochlen} = \ffrac{\thetime'}{\Cepochlen}\\
       \tup{\entropy'_3, \previousset'} &\otherwise
     \end{cases} \\
     \guarantorassignmentsunderlastrotation &\equiv \tup{
-      P(e, \thetime' - \mathsf{R}),
+      P(e, \thetime' - \Crotationperiod),
       \Phi(\mathbf{k})
     }
   \end{aligned}
@@ -235,7 +235,7 @@ We also define $\guarantorassignmentsunderlastrotation$, which is equivalent to 
 
 We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a \emph{work-report}, a credential $\xg¬credential$ and its corresponding timeslot $\xg¬timeslot$. The core index of each guarantee must be unique and guarantees must be in ascending order of this. Formally:
 \begin{align}\label{eq:guaranteesextrinsic}
-  \xtguarantees &\in \sequence[:\corecount]{\tuple{
+  \xtguarantees &\in \sequence[:\Ccorecount]{\tuple{
     \isa{\xg¬workreport}{\workreport},\,
     \isa{\xg¬timeslot}{\timeslot},\,
     \isa{\xg¬credential}{\sequence[2:3]{\tuple{\valindex, \edsignaturebase}}}
@@ -257,11 +257,11 @@ The signature must be one whose public key is that of the validator identified i
     \end{aligned} :
       \abracegroup[\,]{
         &s \in \edsignature{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\concat\blake{\xg¬workreport}}\\
-        &\mathbf{c}\sub{v} = \wrX_\wr¬core \wedge \mathsf{R}(\floor{\nicefrac{\thetime'}{\mathsf{R}}} - 1) \le \xg¬timeslot \le \thetime'\\
+        &\mathbf{c}\sub{v} = \wrX_\wr¬core \wedge \Crotationperiod(\floor{\nicefrac{\thetime'}{\Crotationperiod}} - 1) \le \xg¬timeslot \le \thetime'\\
       }\\
       &k \in \reporters \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists \tup{v, s} \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
       &\quad\where \tup{\mathbf{c}, \mathbf{k}} = \begin{cases}
-        \guarantorassignments &\when \displaystyle \ffrac{\thetime'}{\mathsf{R}} = \ffrac{t}{\mathsf{R}} \\
+        \guarantorassignments &\when \displaystyle \ffrac{\thetime'}{\Crotationperiod} = \ffrac{t}{\Crotationperiod} \\
         \guarantorassignmentsunderlastrotation &\otherwise
       \end{cases}
   \end{aligned}\\
@@ -284,10 +284,10 @@ No reports may be placed on cores with a report pending availability on it. A re
     \reportspostguarantees\subb{\wrX_\wr¬core} = \none \wedge \wrX_\wr¬authorizer \in \authpool_{\wrX_\wr¬core}
 \end{equation}
 
-We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\mathsf{G}_A$:
+We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\Creportaccgas$:
 \begin{equation}
   \forall \wrX \in \incomingreports:
-    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \mathsf{G}_A \ \wedge \ 
+    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \Creportaccgas \ \wedge \ 
     \forall \wdX \in \wrX_\wr¬digests: \wdX_\wd¬gaslimit \ge \accounts\subb{\wdX_\wd¬serviceindex}_\sa¬minaccgas
 \end{equation}
 
@@ -315,17 +315,17 @@ There must be no duplicate work-package hashes (\ie two work-reports of the same
   \len{\incomingpackagehashes} = \len{\incomingreports}
 \end{equation}
 
-We require that the anchor block be within the last $\mathsf{H}$ blocks and that its details be correct by ensuring that it appears within our most recent blocks $\recenthistorypostparentstaterootupdate$:
+We require that the anchor block be within the last $\Crecenthistorylen$ blocks and that its details be correct by ensuring that it appears within our most recent blocks $\recenthistorypostparentstaterootupdate$:
 \begin{align}
   \forall x \in \incomingcontexts : \exists y \in \recenthistorypostparentstaterootupdate : x_\wc¬anchorhash = y_\rh¬headerhash \wedge x_\wc¬anchorpoststate = y_\rh¬stateroot \wedge x_\wc¬anchoraccoutlog = y_\rh¬accoutlogsuperpeak \!\!\!\!\!\!
 \end{align}
 
-We require that each lookup-anchor block be within the last $\mathsf{L}$ timeslots:
+We require that each lookup-anchor block be within the last $\Cmaxlookupanchorage$ timeslots:
 \begin{align}
-  \forall x \in \incomingcontexts :\ x_\wc¬lookupanchortime \ge \H_\¬timeslot - \mathsf{L}
+  \forall x \in \incomingcontexts :\ x_\wc¬lookupanchortime \ge \H_\¬timeslot - \Cmaxlookupanchorage
 \end{align}
 
-We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\mathsf{L}$ headers as the ancestor set $\ancestors$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
+We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\Cmaxlookupanchorage$ headers as the ancestor set $\ancestors$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
 \begin{align}
   \forall x \in \incomingcontexts :\ \exists h \in \ancestors: h_\¬timeslot = x_\wc¬lookupanchortime \wedge \blake{h} = x_\wc¬lookupanchorhash
 \end{align}

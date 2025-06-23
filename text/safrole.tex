@@ -8,7 +8,7 @@ To achieve this, Safrole limits the possible author of any block within any give
 
 Because of its tightly scoped role, the core of Safrole's state, $\safrole$, is independent of the rest of the protocol. It interacts with other portions of the protocol through $\stagingset$ and $\activeset$, the prospective and active sets of validator keys respectively; $\thetime$, the most recent block's timeslot; and $\entropy$, the entropy accumulator.
 
-The Safrole protocol generates, once per epoch, a sequence of $\epochlen$ \emph{sealing keys}, one for each potential block within a whole epoch. Each block header includes its timeslot index $\H_\¬timeslot$ (the number of six-second periods since the \Jam Common Era began) and a valid seal signature $\H_\¬sealsig$, signed by the sealing key corresponding to the timeslot within the aforementioned sequence. Each sealing key is in fact a pseudonym for some validator which was agreed the privilege of authoring a block in the corresponding timeslot.
+The Safrole protocol generates, once per epoch, a sequence of $\Cepochlen$ \emph{sealing keys}, one for each potential block within a whole epoch. Each block header includes its timeslot index $\H_\¬timeslot$ (the number of six-second periods since the \Jam Common Era began) and a valid seal signature $\H_\¬sealsig$, signed by the sealing key corresponding to the timeslot within the aforementioned sequence. Each sealing key is in fact a pseudonym for some validator which was agreed the privilege of authoring a block in the corresponding timeslot.
 
 In order to generate this sequence of sealing keys in regular operation, and in particular to do so without making public the correspondence relation between them and the validator set, we use a novel cryptographic structure known as a Ring\textsc{vrf}, utilizing the Bandersnatch curve. Bandersnatch Ring\textsc{vrf} allows for a proof to be provided which simultaneously guarantees the author controlled a key within a set (in our case validators), and secondly provides an output, an unbiasable deterministic hash giving us a secure verifiable random function (\textsc{vrf}). This anonymous and secure random output is a \emph{ticket} and validators' tickets with the best score define the new sealing keys allowing the chosen validators to exercise their privilege and create a new block at the appropriate time.
 
@@ -27,8 +27,8 @@ Here, $\thetime$ defines the most recent block's slot index, which we transition
 
 We track the slot index in state as $\thetime$ in order that we are able to easily both identify a new epoch and determine the slot at which the prior block was authored. We denote $e$ as the prior's epoch index and $m$ as the prior's slot phase index within that epoch and $e'$ and $m'$ are the corresponding values for the present block:
 \begin{align}
-  \mathrm{let}\quad e \remainder m = \frac{\thetime}{\epochlen} \,,\quad
-  e' \remainder m' = \frac{\thetime'}{\epochlen}
+  \mathrm{let}\quad e \remainder m = \frac{\thetime}{\Cepochlen} \,,\quad
+  e' \remainder m' = \frac{\thetime'}{\Cepochlen}
 \end{align}
 
 
@@ -56,10 +56,10 @@ $\epochroot$ is the epoch's root, a Bandersnatch ring root composed with the one
   \epochroot &\in \ringroot
 \end{align}
 
-Finally, $\ticketaccumulator$ is the ticket accumulator, a series of highest-scoring ticket identifiers to be used for the next epoch. $\sealtickets$ is the current epoch's slot-sealer series, which is either a full complement of $\epochlen$ tickets or, in the case of a fallback mode, a series of $\epochlen$ Bandersnatch keys:
+Finally, $\ticketaccumulator$ is the ticket accumulator, a series of highest-scoring ticket identifiers to be used for the next epoch. $\sealtickets$ is the current epoch's slot-sealer series, which is either a full complement of $\Cepochlen$ tickets or, in the case of a fallback mode, a series of $\Cepochlen$ Bandersnatch keys:
 \begin{align}
-  \ticketaccumulator \in \sequence[:\epochlen]{\safroleticket} \,,\quad
-  \sealtickets \in \sequence[\epochlen]{\safroleticket} \cup \sequence[\epochlen]{\bskey}
+  \ticketaccumulator \in \sequence[:\Cepochlen]{\safroleticket} \,,\quad
+  \sealtickets \in \sequence[\Cepochlen]{\safroleticket} \cup \sequence[\Cepochlen]{\bskey}
 \end{align}
 
 Here, $\safroleticket$ is used to denote the set of \emph{tickets}, a combination of a verifiably random ticket identifier $\st¬id$ and the ticket's entry-index $\st¬entryindex$:
@@ -185,7 +185,7 @@ On an epoch transition (identified as the condition $e' > e$), we therefore rota
 The posterior slot key sequence $\safroleticket$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\sealtickets$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it takes the value of the prior ticket accumulator $\ticketaccumulator$. Otherwise, it takes the value of the fallback key sequence. Formally:
 \begin{align}\label{eq:slotkeysequence}
   \safroleticket &\equiv \begin{cases}
-    Z(\ticketaccumulator) &\when e' = e + 1 \wedge m \geq \mathsf{Y} \wedge \len{\ticketaccumulator} = \epochlen\!\!\\
+    Z(\ticketaccumulator) &\when e' = e + 1 \wedge m \geq \Cepochtailstart \wedge \len{\ticketaccumulator} = \Cepochlen\!\!\\
     \sealtickets &\when e' = e \\
     F(\entropy'_2, \activeset') \!\!\!&\otherwise
   \end{cases}
@@ -194,15 +194,15 @@ The posterior slot key sequence $\safroleticket$ is one of three expressions dep
 Here, we use $Z$ as the outside-in sequencer function, defined as follows:
 \begin{equation}
   Z\colon\abracegroup[\,]{
-    \sequence[\epochlen]{\safroleticket} &\to \sequence[\epochlen]{\safroleticket}\\
+    \sequence[\Cepochlen]{\safroleticket} &\to \sequence[\Cepochlen]{\safroleticket}\\
     \mathbf{s} &\mapsto \sq{\mathbf{s}_0, \mathbf{s}_{\len{\mathbf{s}} - 1}, \mathbf{s}_1, \mathbf{s}_{\len{\mathbf{s}} - 2}, \dots}\\
   }
 \end{equation}
 
-Finally, $F$ is the fallback key sequence function which selects an epoch's worth of validator Bandersnatch keys ($\sequence[\epochlen]{\bskey}$) from the validator key set $\mathbf{k}$ using the entropy collected on-chain $r$:
+Finally, $F$ is the fallback key sequence function which selects an epoch's worth of validator Bandersnatch keys ($\sequence[\Cepochlen]{\bskey}$) from the validator key set $\mathbf{k}$ using the entropy collected on-chain $r$:
 \begin{equation}\label{eq:fallbackkeysequence}
   F\colon \abracegroup[\ ]{
-    \tuple{\hash,\,\sequence{\valkey}} &\to \sequence[\epochlen]{\bskey}\\
+    \tuple{\hash,\,\sequence{\valkey}} &\to \sequence[\Cepochlen]{\bskey}\\
     \tup{r,\, \mathbf{k}} &\mapsto \sq{\build{
       \cyclic{\mathbf{k}\sub{\decode[4]{\blake{r \concat \encode[4]{i}}_{\dots 4}}}}_\vk¬bs
     }{
@@ -241,7 +241,7 @@ As mentioned earlier, the header's epoch marker $\H_\¬epochmark$ is either empt
 The winning-tickets marker $\H_\¬winnersmark$ is either empty or, if the block is the first after the end of the submission period for tickets and if the ticket accumulator is saturated, then the final sequence of ticket identifiers. Formally:
 \begin{align}\label{eq:winningticketsmarker}
   \H_\¬winnersmark &\equiv \begin{cases}
-    Z(\ticketaccumulator) &\when e' = e \wedge m < \mathsf{Y} \le m' \wedge \len{\ticketaccumulator} = \epochlen \\
+    Z(\ticketaccumulator) &\when e' = e \wedge m < \Cepochtailstart \le m' \wedge \len{\ticketaccumulator} = \Cepochlen \\
     \none & \otherwise
   \end{cases}
 \end{align}
@@ -262,16 +262,16 @@ The winning-tickets marker $\H_\¬winnersmark$ is either empty or, if the block 
 
 The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index together with a proof of ticket's validity. The proof implies a ticket identifier, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
 
-Towards the end of the epoch (\ie $\mathsf{Y}$ slots from the start) this contest is closed implying successive blocks within the same epoch must have an empty tickets extrinsic. At this point, the following epoch's seal key sequence becomes fixed.
+Towards the end of the epoch (\ie $\Cepochtailstart$ slots from the start) this contest is closed implying successive blocks within the same epoch must have an empty tickets extrinsic. At this point, the following epoch's seal key sequence becomes fixed.
 
-We define the extrinsic as a sequence of proofs of valid tickets, each of which is a tuple of an entry index (a natural number less than $\ticketentries$) and a proof of ticket validity. Formally:
+We define the extrinsic as a sequence of proofs of valid tickets, each of which is a tuple of an entry index (a natural number less than $\Cticketentries$) and a proof of ticket validity. Formally:
 \begin{align}\label{eq:ticketsextrinsic}
   \xttickets &\in \sequence{\tuple{
-    \isa{\xt¬entryindex}{\Nmax{\ticketentries}},\,
+    \isa{\xt¬entryindex}{\Nmax{\Cticketentries}},\,
     \isa{\xt¬proof}{\bsringproof{\epochroot'}{\mathsf{X}_T \concat \entropy'_2 \append \xt¬entryindex}{\sq{}}}
   }} \\
   \len{\xttickets} &\le \begin{cases}
-      \mathsf{K} &\when m' < \mathsf{Y} \\
+      \Cmaxblocktickets &\when m' < \Cepochtailstart \\
       0 &\otherwise
   \end{cases}
 \end{align}
@@ -297,13 +297,13 @@ The tickets submitted via the extrinsic must already have been placed in order o
 The new ticket accumulator $\ticketaccumulator'$ is constructed by merging new tickets into the previous accumulator value (or the empty sequence if it is a new epoch):
 \begin{equation}
   \begin{aligned}
-    \ticketaccumulator' &\equiv  {\overrightarrow{\sqorderby{x_\st¬id}{x \in \mathbf{n} \cup \begin{cases} \none\ &\when e' > e \\ \ticketaccumulator\ &\otherwise \end{cases}}~}}^\epochlen \\
+    \ticketaccumulator' &\equiv  {\overrightarrow{\sqorderby{x_\st¬id}{x \in \mathbf{n} \cup \begin{cases} \none\ &\when e' > e \\ \ticketaccumulator\ &\otherwise \end{cases}}~}}^\Cepochlen \\
   \end{aligned}
 \end{equation}
 
-The maximum size of the ticket accumulator is $\epochlen$. On each block, the accumulator becomes the lowest items of the sorted union of tickets from prior accumulator $\ticketaccumulator$ and the submitted tickets. It is invalid to include useless tickets in the extrinsic, so all submitted tickets must exist in their posterior ticket accumulator. Formally:
+The maximum size of the ticket accumulator is $\Cepochlen$. On each block, the accumulator becomes the lowest items of the sorted union of tickets from prior accumulator $\ticketaccumulator$ and the submitted tickets. It is invalid to include useless tickets in the extrinsic, so all submitted tickets must exist in their posterior ticket accumulator. Formally:
 \begin{align}
   \mathbf{n} \subseteq \ticketaccumulator'
 \end{align}
 
-Note that it can be shown that in the case of an empty extrinsic $\xttickets = \sq{}$, as implied by $m' \ge \mathsf{Y}$, and unchanged epoch ($e' = e$), then $\ticketaccumulator' = \ticketaccumulator$.
+Note that it can be shown that in the case of an empty extrinsic $\xttickets = \sq{}$, as implied by $m' \ge \Cepochtailstart$, and unchanged epoch ($e' = e$), then $\ticketaccumulator' = \ticketaccumulator$.

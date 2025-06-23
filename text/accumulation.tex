@@ -24,13 +24,13 @@ The proposition of accumulation is in fact quite simple: we merely wish to execu
 
 Accumulation of a work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what has been accumulated. This history, $\accumulated$, is sufficiently large for an epoch worth of work-reports. Formally:
 \begin{align}
-  \accumulated &\in \sequence[\epochlen]{\protoset{\hash}} \\
+  \accumulated &\in \sequence[\Cepochlen]{\protoset{\hash}} \\
   \accumulatedcup &\equiv \bigcup_{x \in \accumulated}(x)
 \end{align}
 
 We also maintain knowledge of ready (\ie available and/or audited) but not-yet-accumulated work-reports in the state item $\ready$. Each of these were made available at most one epoch ago but have or had unfulfilled dependencies. Alongside the work-report itself, we retain its unaccumulated dependencies, a set of work-package hashes. Formally:
 \begin{align}
-  \ready &\in \sequence[\epochlen]{\sequence{\tuple{\workreport, \protoset{\hash}}}}
+  \ready &\in \sequence[\Cepochlen]{\sequence{\tuple{\workreport, \protoset{\hash}}}}
 \end{align}
 
 The newly available work-reports, $\justbecameavailable$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\justbecameavailable^!$, are accumulated immediately. Those not, $\justbecameavailable^Q$, are for queued execution. Formally:
@@ -83,7 +83,7 @@ Finally, we define the mapping function $\srmap$ which extracts the correspondin
 
 We may now define the sequence of accumulatable work-reports in this block as $\justbecameavailable^*$:
 \begin{align}
-  \using m &= \H_\¬timeslot \bmod \epochlen\\
+  \using m &= \H_\¬timeslot \bmod \Cepochlen\\
   \justbecameavailable^* &\equiv \justbecameavailable^! \concat Q(\mathbf{q}) \\
   \quad\where \mathbf{q} &= E(\concatall{\ready\interval{m}{}} \concat \concatall{\ready\interval{}{m}} \concat \justbecameavailable^Q, \srmap(\justbecameavailable^!))
 \end{align}
@@ -105,22 +105,22 @@ Our formalisms begin by defining $\partialstate$ as a characterization of (\ie v
   \label{eq:partialstate}
   \partialstate \equiv \tuple{\begin{aligned}
     &\isa{\ps¬accounts}{\dictionary{\serviceid}{\serviceaccount}} \,,\;
-    \isa{\ps¬stagingset}{\sequence[\valcount]{\valkey}} \,,\;
-    \isa{\ps¬authqueue}{\sequence[_\corecount]{\sequence[\mathsf{Q}]{\hash}}} \,,\\
+    \isa{\ps¬stagingset}{\sequence[\Cvalcount]{\valkey}} \,,\;
+    \isa{\ps¬authqueue}{\sequence[_\Ccorecount]{\sequence[\Cauthqueuesize]{\hash}}} \,,\\
     &\isa{\ps¬manager}{\serviceid} \,,\;
-    \isa{\ps¬assigners}{\sequence[\corecount]{\serviceid}} \,,\;
+    \isa{\ps¬assigners}{\sequence[\Ccorecount]{\serviceid}} \,,\;
     \isa{\ps¬delegator}{\serviceid} \,,\;
     \isa{\ps¬alwaysaccers}{\dictionary{\serviceid}{\gas}}
   \end{aligned}}
 \end{equation}
 
-We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $\dx¬memo$ of $\mathsf{W}_T = 128$ octets, together with the service index of the sender $\dx¬source$, the service index of the receiver $\dx¬dest$, the balance to be transferred $\dx¬amount$ and the gas limit $\dx¬gas$ for the transfer. Formally:
+We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $\dx¬memo$ of $\Cmemosize = 128$ octets, together with the service index of the sender $\dx¬source$, the service index of the receiver $\dx¬dest$, the balance to be transferred $\dx¬amount$ and the gas limit $\dx¬gas$ for the transfer. Formally:
 \begin{align}
   \defxfer \equiv \tuple{
     \isa{\dx¬source}{\serviceid} ,
     \isa{\dx¬dest}{\serviceid} ,
     \isa{\dx¬amount}{\balance} ,
-    \isa{\dx¬memo}{\blob[\mathsf{W}_T]} ,
+    \isa{\dx¬memo}{\blob[\Cmemosize]} ,
     \isa{\dx¬gas}{\gas}
   }
 \end{align}
@@ -307,8 +307,8 @@ This introduces $\operandtuple$, the set of wrangled \emph{operand tuples}, used
 Given the result of the top-level $\accseq$, we may define the posterior state $\privileges'$, $\authqueue'$ and $\stagingset'$ as well as the first intermediate state of the service-accounts $\accountspostacc$ and the Accumulation Output Log $\lastaccout'$:
 \begin{align}
   &\using g = \max\left(
-    \mathsf{G}_T,
-    \mathsf{G}_A \cdot \corecount + \textstyle \sum_{x \in \values{\alwaysaccers}}(x)
+    \Cblockaccgas,
+    \Creportaccgas \cdot \Ccorecount + \textstyle \sum_{x \in \values{\alwaysaccers}}(x)
   \right)\\
   &\also \psX = \tup{
     \is{\ps¬accounts}{\accountspre},
@@ -402,12 +402,12 @@ Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such th
 
 We define the final state of the ready queue and the accumulated map by integrating those work-reports which were accumulated in this block and shifting any from the prior state with the oldest such items being dropped entirely:
 \begin{align}
-  \accumulated'_{\epochlen - 1} &= \srmap(\justbecameavailable^*\sub{\dots n}) \\
-  \forall i \in \Nmax{\epochlen - 1}: \accumulated'\sub{i} &\equiv \accumulated\sub{i + 1} \\
-  \forall i \in \N_\epochlen : \cyclic{\ready'}\sub{m - i} &\equiv \begin{cases}
-    E(\justbecameavailable^Q, \accumulated'\sub{\epochlen - 1}) &\when i = 0 \\
+  \accumulated'_{\Cepochlen - 1} &= \srmap(\justbecameavailable^*\sub{\dots n}) \\
+  \forall i \in \Nmax{\Cepochlen - 1}: \accumulated'\sub{i} &\equiv \accumulated\sub{i + 1} \\
+  \forall i \in \N_\Cepochlen : \cyclic{\ready'}\sub{m - i} &\equiv \begin{cases}
+    E(\justbecameavailable^Q, \accumulated'\sub{\Cepochlen - 1}) &\when i = 0 \\
     \sq{} &\when 1 \le i < \thetime' - \thetime \\
-    E(\cyclic{\ready}\sub{m - i}, \accumulated'\sub{\epochlen - 1}) &\when i \ge \thetime' - \thetime
+    E(\cyclic{\ready}\sub{m - i}, \accumulated'\sub{\Cepochlen - 1}) &\when i \ge \thetime' - \thetime
   \end{cases}
   \!\!\!\!
 \end{align}

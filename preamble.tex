@@ -232,12 +232,6 @@
 \newcommand*{\signedn}[2]{\signfunc{#1}(#2)}
 \newcommand*{\unsignedn}[2]{\unsignfunc{#1}(#2)}
 
-% Constants (Sans-serif upper letters)
-\newcommand*{\corecount}{\mathsf{C}}
-\newcommand*{\epochlen}{\mathsf{E}}
-\newcommand*{\ticketentries}{\mathsf{N}}
-\newcommand*{\valcount}{\mathsf{V}}
-
 % Big Functions (Upper-greek letters)
 \newcommand*{\accumulate}{\Delta}
 \newcommand*{\accone}{\Delta_1}
@@ -246,6 +240,53 @@
 \newcommand*{\histlookup}{\Lambda}
 \newcommand*{\computereport}{\Xi}
 \newcommand*{\transitionstate}{\Upsilon}
+
+%%%%%%%%%%%%
+% CONSTANTS (Sans-serif upper letters)
+
+% Numeric
+\newcommand*{\Ctrancheseconds}{\mathsf{A}}
+\newcommand*{\Citemdeposit}{\mathsf{B}_I}
+\newcommand*{\Cbytedeposit}{\mathsf{B}_L}
+\newcommand*{\Cbasedeposit}{\mathsf{B}_S}
+\newcommand*{\Ccorecount}{\mathsf{C}}
+\newcommand*{\Cexpungeperiod}{\mathsf{D}}
+\newcommand*{\Cepochlen}{\mathsf{E}}
+\newcommand*{\Cauditbiasfactor}{\mathsf{F}}
+\newcommand*{\Creportaccgas}{\mathsf{G}_A}
+\newcommand*{\Cpackageauthgas}{\mathsf{G}_I}
+\newcommand*{\Cpackagerefgas}{\mathsf{G}_R}
+\newcommand*{\Cblockaccgas}{\mathsf{G}_T}
+\newcommand*{\Crecenthistorylen}{\mathsf{H}}
+\newcommand*{\Cmaxpackageitems}{\mathsf{I}}
+\newcommand*{\Cmaxreportdeps}{\mathsf{J}}
+\newcommand*{\Cmaxblocktickets}{\mathsf{K}}
+\newcommand*{\Cmaxlookupanchorage}{\mathsf{L}}
+\newcommand*{\Cticketentries}{\mathsf{N}}
+\newcommand*{\Cauthpoolsize}{\mathsf{O}}
+\newcommand*{\Cslotseconds}{\mathsf{P}}
+\newcommand*{\Cauthqueuesize}{\mathsf{Q}}
+\newcommand*{\Crotationperiod}{\mathsf{R}}
+\newcommand*{\Cmaxpackagexts}{\mathsf{T}}
+\newcommand*{\Cassurancetimeoutperiod}{\mathsf{U}}
+\newcommand*{\Cvalcount}{\mathsf{V}}
+\newcommand*{\Cmaxauthcodesize}{\mathsf{W}_A}
+\newcommand*{\Cmaxbundlesize}{\mathsf{W}_B}
+\newcommand*{\Cmaxservicecodesize}{\mathsf{W}_C}
+\newcommand*{\Cecpiecesize}{\mathsf{W}_E}
+\newcommand*{\Csegmentsize}{\mathsf{W}_G}
+\newcommand*{\Cmaxpackageimports}{\mathsf{W}_M}
+\newcommand*{\Csegmentecpieces}{\mathsf{W}_P}
+\newcommand*{\Cmaxreportvarsize}{\mathsf{W}_R}
+\newcommand*{\Cmemosize}{\mathsf{W}_T}
+\newcommand*{\Cmaxpackageexports}{\mathsf{W}_X}
+\newcommand*{\Cepochtailstart}{\mathsf{Y}}
+\newcommand*{\Cpvmdynaddralign}{\mathsf{Z}_A}
+\newcommand*{\Cpvminitinputsize}{\mathsf{Z}_I}
+\newcommand*{\Cpvmpagesize}{\mathsf{Z}_P}
+\newcommand*{\Cpvminitzonesize}{\mathsf{Z}_Z}
+
+% String
 
 %%%%%%%%%%%%
 % Simple Universal types (blackboard letters)
@@ -303,10 +344,10 @@
 \newcommand*{\Nclamp}[2]{\N_{#1 \dots #2}}
 \newcommand*{\Nrange}[2]{\N_{#1 \dots+ #2}}
 \newcommand*{\Nbits}[1]{\Nmax{2^{#1}}}
-\newcommand*{\coreindex}{\Nmax{\corecount}}
-\newcommand*{\valindex}{\Nmax{\valcount}}
-\newcommand*{\ticketentryindex}{\Nmax{\ticketentries}}
-\newcommand*{\epochindex}{\Nmax{\epochlen}}
+\newcommand*{\coreindex}{\Nmax{\Ccorecount}}
+\newcommand*{\valindex}{\Nmax{\Cvalcount}}
+\newcommand*{\ticketentryindex}{\Nmax{\Cticketentries}}
+\newcommand*{\epochindex}{\Nmax{\Cepochlen}}
 
 %%%%%%%%%%%%
 % Hash & blob specializations
@@ -489,7 +530,7 @@
 \newcommand*{\vk¬ed}{e}
 \newcommand*{\vk¬bls}{l}
 \newcommand*{\vk¬metadata}{m}
-\newcommand*{\allvalkeys}{\sequence[\valcount]{\valkey}}
+\newcommand*{\allvalkeys}{\sequence[\Cvalcount]{\valkey}}
 
 \newcommand*{\partialstate}{\mathbb{S}}
 \newcommand*{\psX}{\mathbf{e}}
