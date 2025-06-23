@@ -50,7 +50,7 @@ The signatures of all judgments must be valid in terms of one of the two allowed
       \previousset &\otherwise\\
     \end{cases}
   \end{aligned}\\
-  &\mathsf{X}_\top \equiv \text{{\small \texttt{\$jam\_valid}}}\,,\ \mathsf{X}_\bot \equiv \text{{\small \texttt{\$jam\_invalid}}}
+  &\Xvalid \equiv \text{{\small \texttt{\$jam\_valid}}}\,,\ \Xinvalid \equiv \text{{\small \texttt{\$jam\_invalid}}}
 \end{align}
 
 Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set:
@@ -58,7 +58,7 @@ Offender signatures must be similarly valid and reference work-reports with judg
   \forall \tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
     &\xc¬reporthash \in \badset' \,,\\
     &\xc¬offenderindex \in \mathbf{k} \,,\\
-    &\xc¬signature \in \edsignature{\xc¬offenderindex}{\mathsf{X}_G \concat \xc¬reporthash}
+    &\xc¬signature \in \edsignature{\xc¬offenderindex}{\Xguarantee \concat \xc¬reporthash}
   }\\
   \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
     &\xf¬reporthash \in \badset' \Leftrightarrow \xf¬reporthash \not\in \goodset' \Leftrightarrow \xf¬validity \,,\\

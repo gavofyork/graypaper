@@ -145,8 +145,8 @@ The assurances must all be anchored on the parent and ordered by validator index
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\H_\¬parent$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \xtassurances : a_\xa¬signature \in \edsignature{\activeset\subb{a_\xa¬assurer}_\vk¬ed}{\mathsf{X}_A \concat \blake{\encode{\H_\¬parent, a_\xa¬availabilities}}} \\
-  &\mathsf{X}_A \equiv \token{\$jam\_available}
+  &\forall a \in \xtassurances : a_\xa¬signature \in \edsignature{\activeset\subb{a_\xa¬assurer}_\vk¬ed}{\Xavailable \concat \blake{\encode{\H_\¬parent, a_\xa¬availabilities}}} \\
+  &\Xavailable \equiv \token{\$jam\_available}
 \end{align}
 
 A bit may only be set if the corresponding core has a report pending availability on it:
@@ -256,7 +256,7 @@ The signature must be one whose public key is that of the validator identified i
       \forall \tup{v, s} &\in \xg¬credential
     \end{aligned} :
       \abracegroup[\,]{
-        &s \in \edsignature{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\concat\blake{\xg¬workreport}}\\
+        &s \in \edsignature{(\mathbf{k}\sub{v})_\vk¬ed}{\Xguarantee\concat\blake{\xg¬workreport}}\\
         &\mathbf{c}\sub{v} = \wrX_\wr¬core \wedge \Crotationperiod(\floor{\nicefrac{\thetime'}{\Crotationperiod}} - 1) \le \xg¬timeslot \le \thetime'\\
       }\\
       &k \in \reporters \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists \tup{v, s} \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
@@ -265,7 +265,7 @@ The signature must be one whose public key is that of the validator identified i
         \guarantorassignmentsunderlastrotation &\otherwise
       \end{cases}
   \end{aligned}\\
-  &\mathsf{X}_G \equiv \token{\$jam\_guarantee}
+  &\Xguarantee \equiv \token{\$jam\_guarantee}
 \end{align}
 
 We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\reporters$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.

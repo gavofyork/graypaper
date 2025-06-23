@@ -134,19 +134,19 @@ The header must contain a valid seal and valid \textsc{vrf} output. These are tw
     \label{eq:ticketconditiontrue}
     \safroleticket \in \sequence{\safroleticket} &\implies \abracegroup[\,]{
         &i_\st¬id = \banderout{\H_\¬sealsig}\,,\\
-        &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\mathsf{X}_T \concat \entropy'_3 \append i_\st¬entryindex}{\encodeunsignedheader{\H}}\,,\\
+        &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\Xticket \concat \entropy'_3 \append i_\st¬entryindex}{\encodeunsignedheader{\H}}\,,\\
         &\isticketed = 1
     }\\
     \label{eq:ticketconditionfalse}
     \safroleticket \in \sequence{\bskey} &\implies \abracegroup[\,]{
         &i = \H_\¬authorbskey\,,\\
-        &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\mathsf{X}_F \concat \entropy'_3}{\encodeunsignedheader{\H}}\,,\\
+        &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\Xfallback \concat \entropy'_3}{\encodeunsignedheader{\H}}\,,\\
         &\isticketed = 0
     }\\
-  \H_\¬vrfsig &\in \bssignature{\H_\¬authorbskey}{\mathsf{X}_E \concat \banderout{\H_\¬sealsig}}{\sq{}} \\
-  \mathsf{X}_E &= \token{\$jam\_entropy}\\
-  \mathsf{X}_F &= \token{\$jam\_fallback\_seal}\\
-  \mathsf{X}_T &= \token{\$jam\_ticket\_seal}
+  \H_\¬vrfsig &\in \bssignature{\H_\¬authorbskey}{\Xentropy \concat \banderout{\H_\¬sealsig}}{\sq{}} \\
+  \Xentropy &= \token{\$jam\_entropy}\\
+  \Xfallback &= \token{\$jam\_fallback\_seal}\\
+  \Xticket &= \token{\$jam\_ticket\_seal}
   \end{align}
 
 Sealing using the ticket is of greater security, and we utilize this knowledge when determining a candidate block on which to extend the chain, detailed in section \ref{sec:bestchain}. We thus note that the block was sealed under the regular security with the boolean marker $\isticketed$. We define this only for the purpose of ease of later specification.
@@ -268,7 +268,7 @@ We define the extrinsic as a sequence of proofs of valid tickets, each of which 
 \begin{align}\label{eq:ticketsextrinsic}
   \xttickets &\in \sequence{\tuple{
     \isa{\xt¬entryindex}{\Nmax{\Cticketentries}},\,
-    \isa{\xt¬proof}{\bsringproof{\epochroot'}{\mathsf{X}_T \concat \entropy'_2 \append \xt¬entryindex}{\sq{}}}
+    \isa{\xt¬proof}{\bsringproof{\epochroot'}{\Xticket \concat \entropy'_2 \append \xt¬entryindex}{\sq{}}}
   }} \\
   \len{\xttickets} &\le \begin{cases}
       \Cmaxblocktickets &\when m' < \Cepochtailstart \\
