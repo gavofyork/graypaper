@@ -32,7 +32,7 @@ Formally, we aim to select $\block^\best$ to maximize the value $m$ where:
   m = \sum_{\header^A \in \ancestors^\best} \isticketed^A
 \end{equation}
 
-The specific data to be voted on in \textsc{Grandpa} shall be the block header of the best block, $\block^\best$ together with its \emph{posterior} state root, $\merklizestate(\thestate')$. The state root has no direct relevance to the \textsc{Grandpa} protocol, but is included alongside the header during voting/signing into order to ensure that systems utilizing the output of \textsc{Grandpa} are able to verify the most recent chain state as possible.
+The specific data to be voted on in \textsc{Grandpa} shall be the block header of the best block, $\block^\best$ together with its \emph{posterior} state root, $\merklizestate{\thestate'}$. The state root has no direct relevance to the \textsc{Grandpa} protocol, but is included alongside the header during voting/signing into order to ensure that systems utilizing the output of \textsc{Grandpa} are able to verify the most recent chain state as possible.
 
 This implies that the posterior state must be known at the time that \textsc{Grandpa} voting occurs in order to finalize the block. However, since \textsc{Grandpa} is relied on primarily for state-root verification it makes little sense to finalize a block without an associated commitment to the posterior state.
 

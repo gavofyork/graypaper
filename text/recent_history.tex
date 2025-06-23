@@ -3,14 +3,14 @@
 We retain in state information on the most recent $\mathsf{H}$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
 \begin{align}
   \recent &\equiv \tup{\recenthistory, \beefybelt} \label{eq:recenthistory} \\
-  \recenthistory &\in \seq{\tuple{
+  \recenthistory &\in \sequence[:\mathsf{H}]{\tuple{
     \isa{\rh¬headerhash}{\hash},
     \isa{\rh¬stateroot}{\hash},
     \isa{\rh¬accoutlogsuperpeak}{\hash},
-    \isa{\rh¬reportedpackagehashes}{\dict{\hash}{\hash}}
-  }}_{:\mathsf{H}}\\
-  \beefybelt &\in \seq{\optional{\hash}} \\
-  \lastaccout &\in \seq{\tup{\serviceid, \hash}}
+    \isa{\rh¬reportedpackagehashes}{\dictionary{\hash}{\hash}}
+  }}\\
+  \beefybelt &\in \sequence{\optional{\hash}} \\
+  \lastaccout &\in \sequence{\tup{\serviceid, \hash}}
 \end{align}
 
 For each recent block, we retain its header hash, its state root, its accumulation-result \textsc{mmb} and the corresponding work-package hashes of each item reported (which is no more than the total number of cores, $\corecount = 341$).
@@ -20,11 +20,11 @@ During the accumulation stage, a value with the partial transition of this state
   \recenthistorypostparentstaterootupdate \equiv \recenthistory\quad\exc\quad\recenthistorypostparentstaterootupdate\subb{\len{\recenthistory} - 1}_\rh¬stateroot = \H_\¬priorstateroot
 \end{equation}
 
-We define the new Accumulation Output Log $\beefybelt$. This is formed from the block's accumulation-output sequence $\lastaccout'$ (defined in section \ref{sec:accumulation}), taking its root using the basic binary Merklization function ($\merklizewb$, defined in appendix \ref{sec:merklization}) and appending it to the previous log value with the \textsc{mmb} append function (defined in appendix \ref{sec:mmr}). Throughout, the Keccak hash function is used to maximize compatibility with legacy systems:
+We define the new Accumulation Output Log $\beefybelt$. This is formed from the block's accumulation-output sequence $\lastaccout'$ (defined in section \ref{sec:accumulation}), taking its root using the basic binary Merklization function ($\fnmerklizewb$, defined in appendix \ref{sec:merklization}) and appending it to the previous log value with the \textsc{mmb} append function (defined in appendix \ref{sec:mmr}). Throughout, the Keccak hash function is used to maximize compatibility with legacy systems:
 \begin{align}
-  \using \mathbf{s} &= \sq{\se_4(s) \concat \se(h) \mid \tup{s, h} \orderedin \lastaccout'}\\
+  \using \mathbf{s} &= \sq{\build{\encode[4]{s} \concat \encode{h}}{\tup{s, h} \orderedin \lastaccout'}}\\
   \label{eq:buildbeefymap}
-  \beefybelt' &\equiv \Fmmrappend{\beefybelt, \merklizewb{\mathbf{s}, \keccak}, \keccak}
+  \beefybelt' &\equiv \mmrappend{\beefybelt, \merklizewb{\mathbf{s}, \fnkeccak}, \fnkeccak}
 \end{align}
 
 The final state transition for $\recenthistory$ appends a new item including the new block's header hash, a Merkle commitment to the block's Accumulation Output Log and the set of work-reports made into it (for which we use the guarantees extrinsic, $\xtguarantees$). Formally:
@@ -32,9 +32,9 @@ The final state transition for $\recenthistory$ appends a new item including the
   \begin{aligned}
     \recenthistory' &\equiv {\overleftarrow{\recenthistorypostparentstaterootupdate \append \tup{
       \rh¬reportedpackagehashes,
-      \is{\rh¬headerhash}{\blake(\theheader)},
+      \is{\rh¬headerhash}{\blake{\theheader}},
       \is{\rh¬stateroot}{\zerohash},
-      \is{\rh¬accoutlogsuperpeak}{\mmrsuperpeak(\beefybelt')}
+      \is{\rh¬accoutlogsuperpeak}{\mmrsuperpeak{\beefybelt'}}
       }}}^\mathsf{H} \\
     \where \rh¬reportedpackagehashes &= \set{\build{
         \kv{
