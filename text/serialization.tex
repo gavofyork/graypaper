@@ -138,14 +138,20 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \\
   \encodepreimages{\xtpreimages} &= \encode{
     \var{\sq{\build{
-      \tup{\xp¬serviceindex, \var{\xp¬data}}
+      \tup{\encode[4]{\xp¬serviceindex}, \var{\xp¬data}}
     }{
       \tup{\xp¬serviceindex, \xp¬data} \orderedin \xtpreimages}
     }}}
   \\
   \encodeguarantees{\xtguarantees} &= \encode{
     \var{\sq{\build{
-      \tup{\xg¬workreport, \encode[4]{\xg¬timeslot}, \var{\xg¬credential}}
+      \tup{\xg¬workreport, \encode[4]{\xg¬timeslot}, \var{
+        \sq{\build{
+          \tup{\encode[2]{v}, s}
+        }{
+          \tup{v, s} \orderedin \xg¬credential
+        }}
+      }}
     }{
       \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \orderedin \xtguarantees}
     }}}
