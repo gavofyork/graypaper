@@ -1,4 +1,5 @@
-\section{Reporting and Assurance}\label{sec:reporting}
+\section{Reporting and Assurance}
+\label{sec:reporting}
 
 Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make their way into the state of service accounts, $\accounts$. A \emph{work-package}, which comprises several \emph{work-items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work-digests} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After enough assurances the work-report is considered \emph{available}, and the work-digests transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}. The report may also be \emph{timed-out}, implying it may be replaced by another report without accumulation.
 
@@ -12,8 +13,9 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 
 \subsection{State}
 The state of the reporting and availability portion of the protocol is largely contained within $\reports$, which tracks the work-reports which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
-\begin{equation}\label{eq:reportingstate}
-  \reports \in \sequence[\corecount]{
+\begin{equation}
+  \label{eq:reportingstate}
+  \reports \in \sequence[\Ccorecount]{
     \optional{\tuple{
       \isa{\rs¬workreport}{\workreport} ,\,
       \isa{\rs¬timestamp}{\timeslot}
@@ -23,32 +25,36 @@ The state of the reporting and availability portion of the protocol is largely c
 
 As usual, intermediate and posterior values ($\reportspostjudgement$, $\reportspostguarantees$, $\reportspostassurances$) are held under the same constraints as the prior value.
 
-\subsubsection{Work Report}\label{sec:workreport}
+\subsubsection{Work Report}
+\label{sec:workreport}
 A work-report, of the set $\workreport$, is defined as a tuple of the work-package specification, $\wr¬avspec$; the refinement context, $\wr¬context$; the core-index (\ie on which the work is done), $\wr¬core$; as well as the authorizer hash $\wr¬authorizer$ and trace $\wr¬authtrace$; a segment-root lookup dictionary $\wr¬srlookup$; the gas consumed during the Is-Authorized invocation, $\wr¬authgasused$; and finally the work-digests $\wr¬digests$ which comprise the results of the evaluation of each of the items in the package together with some associated data. Formally:
-\begin{equation}\label{eq:workreport}
-\workreport \equiv \tuple{
-  \begin{aligned}
-    &\isa{\wr¬avspec}{\avspec},\ 
-    \isa{\wr¬context}{\workcontext},\ 
-    \isa{\wr¬core}{\coreindex},\ 
-    \isa{\wr¬authorizer}{\hash},\ 
-    \isa{\wr¬authtrace}{\blob},\\
-    &\isa{\wr¬srlookup}{\dictionary{\hash}{\hash}},\ 
-    \isa{\wr¬digests}{\sequence[1:\mathsf{I}]{\workdigest}},\ 
-    \isa{\wr¬authgasused}{\gas}
-  \end{aligned}
-}
+\begin{equation}
+  \label{eq:workreport}
+  \workreport \equiv \tuple{
+    \begin{aligned}
+      &\isa{\wr¬avspec}{\avspec},\ 
+      \isa{\wr¬context}{\workcontext},\ 
+      \isa{\wr¬core}{\coreindex},\ 
+      \isa{\wr¬authorizer}{\hash},\ 
+      \isa{\wr¬authtrace}{\blob},\\
+      &\isa{\wr¬srlookup}{\dictionary{\hash}{\hash}},\ 
+      \isa{\wr¬digests}{\sequence[1:\Cmaxpackageitems]{\workdigest}},\ 
+      \isa{\wr¬authgasused}{\gas}
+    \end{aligned}
+  }
 \end{equation}
 
-We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\mathsf{J} = 8$:
+We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\Cmaxreportdeps = 8$:
 \begin{equation}
-  \forall \wrX \in \workreport : \len{\wrX_\wr¬srlookup} + \len{(\wrX_\wr¬context)_\wc¬prerequisites} \le \mathsf{J}
+  \label{eq:limitreportdeps}
+  \forall \wrX \in \workreport : \len{\wrX_\wr¬srlookup} + \len{(\wrX_\wr¬context)_\wc¬prerequisites} \le \Cmaxreportdeps
 \end{equation}
 
 \subsubsection{Refinement Context}
 
 A \emph{refinement context}, denoted by the set $\workcontext$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $\wc¬anchorhash$ along with its associated posterior state-root $\wc¬anchorpoststate$ and accumulation output log super-peak $\wc¬anchoraccoutlog$; and the \emph{lookup-anchor}, header hash $\wc¬lookupanchorhash$ and of timeslot $\wc¬lookupanchortime$. Finally, it identifies the hash of any prerequisite work-packages $\wc¬prerequisites$. Formally:
 \begin{equation}
+  \label{eq:workcontext}
   \workcontext \equiv \tuple{\,\begin{alignedat}{5}
     \isa{\wc¬anchorhash&}{\hash}\,,\;
     \isa{&\wc¬anchorpoststate&}{\hash}\,,\;
@@ -62,6 +68,7 @@ A \emph{refinement context}, denoted by the set $\workcontext$, describes the co
 \subsubsection{Availability}
 We define the set of \emph{availability specifications}, $\avspec$, as the tuple of the work-package's hash $\as¬packagehash$, an auditable work bundle length $\as¬bundlelen$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $\as¬erasureroot$, a segment-root $\as¬segroot$ and segment-count $\as¬segcount$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
 \begin{align}
+  \label{eq:avspec}
   \avspec &\equiv \tuple{
     \isa{\as¬packagehash}{\hash}\,,\;
     \isa{\as¬bundlelen}{\bloblength}\,,\;
@@ -77,7 +84,8 @@ The \emph{segment-root} ($\as¬segroot$) is the root of a constant-depth, left-b
 
 \subsubsection{Work Digest}
 We finally come to define a \emph{work-digest}, $\workdigest$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
-\begin{equation}\label{eq:workdigest}
+\begin{equation}
+  \label{eq:workdigest}
   \workdigest \equiv \tuple{
     \begin{alignedat}{9}
       \isa{\wd¬serviceindex&}{\serviceid}\,,\;
@@ -100,18 +108,20 @@ Next, the hash of the payload ($\wd¬payloadhash$) within the work item which wa
 
 There is the work \emph{result}, the output blob or error of the execution of the code, $\wd¬result$, which may be either an octet sequence in case it was successful, or a member of the set $\workerror$, if not. This latter set is defined as the set of possible errors, formally:
 \begin{equation}
+  \label{eq:workerror}
   \workerror \in \set{ \oog, \panic, \badexports, \oversize, \token{BAD}, \token{BIG} }
 \end{equation}
 
-The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining four, the first indicates that the number of exports made was invalidly reported, the second that the size of the digest (refinement output) would cross the acceptable limit, the third indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The fourth indicates that the code was available but was beyond the maximum size allowed $\mathsf{W}_C$.
+The first two are special values concerning execution of the virtual machine, $\oog$ denoting an out-of-gas error and $\panic$ denoting an unexpected program termination. Of the remaining four, the first indicates that the number of exports made was invalidly reported, the second that the size of the digest (refinement output) would cross the acceptable limit, the third indicates that the service's code was not available for lookup in state at the posterior state of the lookup-anchor block. The fourth indicates that the code was available but was beyond the maximum size allowed $\Cmaxservicecodesize$.
 
 Finally, we have five fields describing the level of activity which this workload imposed on the core in bringing the result to bear. We include $\wd¬gasused$ the actual amount of gas used during refinement; $\wd¬importcount$ and $\wd¬exportcount$ the number of segments imported from, and exported into, the D$^3$L respectively; and $\wd¬xtcount$ and $\wd¬xtsize$ the number of, and total size in octets of, the extrinsics used in computing the workload. See section \ref{sec:workpackagesandworkreports} for more information on the meaning of these values.
 
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful refinement output blobs together with the authorizer trace, effectively limiting their overall size:
 \begin{align}
+  \label{eq:limitworkreportsize}
   &\forall \wrX \in \workreport:
-    \len{\wrX_\wr¬authtrace} + \sum_{\wdX \in \wrX_\wr¬digests \cap \blob} \len{\wdX_\wd¬result} \le \mathsf{W}_R \\
-  &\mathsf{W}_R \equiv 48\cdot2^{10}
+    \len{\wrX_\wr¬authtrace} + \sum_{\wdX \in \wrX_\wr¬digests \cap \blob} \len{\wdX_\wd¬result} \le \Cmaxreportvarsize \\
+  &\Cmaxreportvarsize \equiv 48\cdot2^{10}
 \end{align}
 
 
@@ -129,9 +139,10 @@ We first define $\reportspostguarantees$, the intermediate state to be utilized 
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
 \begin{align}
-  \xtassurances \in \sequence[\mathsf{:\valcount}]{\tuple{
+  \label{eq:xtassurances}
+  \xtassurances \in \sequence[\mathsf{:\Cvalcount}]{\tuple{
     \isa{\xa¬anchor}{\hash},\,
-    \isa{\xa¬availabilities}{\bitstring[\corecount]},\,
+    \isa{\xa¬availabilities}{\bitstring[\Ccorecount]},\,
     \isa{\xa¬assurer}{\valindex},\,
     \isa{\xa¬signature}{\edsignaturebase}
   }}
@@ -145,8 +156,9 @@ The assurances must all be anchored on the parent and ordered by validator index
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\H_\¬parent$ and the aforementioned bitstring:
 \begin{align}
-  &\forall a \in \xtassurances : a_\xa¬signature \in \edsignature{\activeset\subb{a_\xa¬assurer}_\vk¬ed}{\mathsf{X}_A \concat \blake{\encode{\H_\¬parent, a_\xa¬availabilities}}} \\
-  &\mathsf{X}_A \equiv \token{\$jam\_available}
+  \label{eq:assurancesig}
+  &\forall a \in \xtassurances : a_\xa¬signature \in \edsignature{\activeset\subb{a_\xa¬assurer}_\vk¬ed}{\Xavailable \concat \blake{\encode{\H_\¬parent, a_\xa¬availabilities}}} \\
+  &\Xavailable \equiv \token{\$jam\_available}
 \end{align}
 
 A bit may only be set if the corresponding core has a report pending availability on it:
@@ -157,19 +169,21 @@ A bit may only be set if the corresponding core has a report pending availabilit
 
 \subsubsection{Available Reports}
 A work-report is said to become \emph{available} if and only if there are a clear \twothirds super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\justbecameavailable$ as:
-\begin{align}\label{eq:availableworkreports}
+\begin{align}
+  \label{eq:availableworkreports}
   \justbecameavailable &\equiv \sq{\build{
       \reportspostjudgement\subb{\cX}_\rs¬workreport
     }{
       \cX \orderedin \coreindex,\;
-      \sum_{a \in \xtassurances}\!a_\xa¬availabilities\subb{\cX}\,>\,\twothirds\,\valcount
+      \sum_{a \in \xtassurances}\!a_\xa¬availabilities\subb{\cX}\,>\,\twothirds\,\Cvalcount
     }}
 \end{align}
 
 This value is utilized in the definition of both $\accountspost$ and $\reportspostguarantees$ which we will define presently as equivalent to $\reportspostjudgement$ except for the removal of items which are either now available or have timed out:
 \begin{align}
+  \label{eq:reportspostguaranteesdef}
   \forall \cX \in \coreindex: \reportspostguarantees\subb{\cX} \equiv \begin{cases}
-    \none &\when\reports\subb{\cX}_\rs¬workreport \in \justbecameavailable \vee \H_\¬timeslot \ge \reportspostjudgement\subb{\cX}_\rs¬timestamp + \mathsf{U}\\
+    \none &\when\reports\subb{\cX}_\rs¬workreport \in \justbecameavailable \vee \H_\¬timeslot \ge \reportspostjudgement\subb{\cX}_\rs¬timestamp + \Cassurancetimeoutperiod\\
     \reportspostjudgement\subb{\cX} &\otherwise
   \end{cases}
 \end{align}
@@ -186,19 +200,19 @@ This value is utilized in the definition of both $\accountspost$ and $\reportspo
 
 \subsection{Guarantor Assignments}\label{sec:coresandvalidators}
 
-Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\valcount = 1,023$ validators and $\corecount = 341$ cores, since $\nicefrac{\valcount}{\corecount} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\guarantorassignments$:
+Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\Cvalcount = 1,023$ validators and $\Ccorecount = 341$ cores, since $\nicefrac{\Cvalcount}{\Ccorecount} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\guarantorassignments$:
 \begin{equation}
-  \guarantorassignments \in \tuple{\sequence[\valcount]{\coreindex}, \sequence[\valcount]{\edkey}}
+  \guarantorassignments \in \tuple{\sequence[\Cvalcount]{\coreindex}, \sequence[\Cvalcount]{\edkey}}
 \end{equation}
 
 We determine the core to which any given validator is assigned through a shuffle using epochal entropy and a periodic rotation to help guard the security and liveness of the network. We use $\entropy_2$ for the epochal entropy rather than $\entropy_1$ to avoid the possibility of fork-magnification where uncertainty about chain state at the end of an epoch could give rise to two established forks before it naturally resolves.
 
 We define the permute function $P$, the rotation function $R$ and finally the guarantor assignments  $\guarantorassignments$ as follows:
 \begin{align}
-  R(\mathbf{c}, n) &\equiv \sq{\build{(x + n) \bmod \corecount}{x \orderedin \mathbf{c}}}\\
+  R(\mathbf{c}, n) &\equiv \sq{\build{(x + n) \bmod \Ccorecount}{x \orderedin \mathbf{c}}}\\
   P(e, t) &\equiv R\left(
-    \fyshuffle{\sq{\build{\ffrac{\corecount \cdot i}{\valcount}}{i \orderedin \valindex}}, e},
-    \ffrac{t \bmod \epochlen}{\mathsf{R}}
+    \fyshuffle{\sq{\build{\ffrac{\Ccorecount \cdot i}{\Cvalcount}}{i \orderedin \valindex}}, e},
+    \ffrac{t \bmod \Cepochlen}{\Crotationperiod}
   \right)\\
   \guarantorassignments &\equiv \tup{P(\entropy'_2, \thetime'), \Phi(\activeset')}
 \end{align}
@@ -208,11 +222,11 @@ We also define $\guarantorassignmentsunderlastrotation$, which is equivalent to 
   \label{eq:priorassignments}
   \begin{aligned}
     \using \tup{e, \mathbf{k}} &= \begin{cases}
-      \tup{\entropy'_2, \activeset'} &\when \displaystyle\ffrac{\thetime' - \mathsf{R}}{\epochlen} = \ffrac{\thetime'}{\epochlen}\\
+      \tup{\entropy'_2, \activeset'} &\when \displaystyle\ffrac{\thetime' - \Crotationperiod}{\Cepochlen} = \ffrac{\thetime'}{\Cepochlen}\\
       \tup{\entropy'_3, \previousset'} &\otherwise
     \end{cases} \\
     \guarantorassignmentsunderlastrotation &\equiv \tup{
-      P(e, \thetime' - \mathsf{R}),
+      P(e, \thetime' - \Crotationperiod),
       \Phi(\mathbf{k})
     }
   \end{aligned}
@@ -235,7 +249,7 @@ We also define $\guarantorassignmentsunderlastrotation$, which is equivalent to 
 
 We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a \emph{work-report}, a credential $\xg¬credential$ and its corresponding timeslot $\xg¬timeslot$. The core index of each guarantee must be unique and guarantees must be in ascending order of this. Formally:
 \begin{align}\label{eq:guaranteesextrinsic}
-  \xtguarantees &\in \sequence[:\corecount]{\tuple{
+  \xtguarantees &\in \sequence[:\Ccorecount]{\tuple{
     \isa{\xg¬workreport}{\workreport},\,
     \isa{\xg¬timeslot}{\timeslot},\,
     \isa{\xg¬credential}{\sequence[2:3]{\tuple{\valindex, \edsignaturebase}}}
@@ -249,29 +263,30 @@ The credential is a sequence of two or three tuples of a unique validator index 
 \end{align}
 
 The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the hash of the work-report. The signing validators must be assigned to the core in question in either this block $\guarantorassignments$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\guarantorassignmentsunderlastrotation$:
-\begin{align}\label{eq:guarantorsig}
+\begin{align}
+  \label{eq:guarantorsig}
   &\begin{aligned}
     &\begin{aligned}
       \forall \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} &\in \xtguarantees,\\
       \forall \tup{v, s} &\in \xg¬credential
     \end{aligned} :
       \abracegroup[\,]{
-        &s \in \edsignature{(\mathbf{k}\sub{v})_\vk¬ed}{\mathsf{X}_G\concat\blake{\xg¬workreport}}\\
-        &\mathbf{c}\sub{v} = \wrX_\wr¬core \wedge \mathsf{R}(\floor{\nicefrac{\thetime'}{\mathsf{R}}} - 1) \le \xg¬timeslot \le \thetime'\\
+        &s \in \edsignature{(\mathbf{k}\sub{v})_\vk¬ed}{\Xguarantee\concat\blake{\xg¬workreport}}\\
+        &\mathbf{c}\sub{v} = \wrX_\wr¬core \wedge \Crotationperiod(\floor{\nicefrac{\thetime'}{\Crotationperiod}} - 1) \le \xg¬timeslot \le \thetime'\\
       }\\
       &k \in \reporters \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists \tup{v, s} \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
       &\quad\where \tup{\mathbf{c}, \mathbf{k}} = \begin{cases}
-        \guarantorassignments &\when \displaystyle \ffrac{\thetime'}{\mathsf{R}} = \ffrac{t}{\mathsf{R}} \\
+        \guarantorassignments &\when \displaystyle \ffrac{\thetime'}{\Crotationperiod} = \ffrac{t}{\Crotationperiod} \\
         \guarantorassignmentsunderlastrotation &\otherwise
       \end{cases}
   \end{aligned}\\
-  &\mathsf{X}_G \equiv \token{\$jam\_guarantee}
+  &\Xguarantee \equiv \token{\$jam\_guarantee}
 \end{align}
 
 We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\reporters$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
 
-\newcommand*{\incomingcontexts}{\mathbf{x}}
-\newcommand*{\incomingpackagehashes}{\mathbf{p}}
+\newcommand*{\local¬incomingcontexts}{\mathbf{x}}
+\newcommand*{\local¬incomingpackagehashes}{\mathbf{p}}
 
 We denote $\incomingreports$ to be the set of work-reports in the present extrinsic $\theextrinsic$:
 \begin{align}\label{eq:incomingworkreports}
@@ -284,10 +299,10 @@ No reports may be placed on cores with a report pending availability on it. A re
     \reportspostguarantees\subb{\wrX_\wr¬core} = \none \wedge \wrX_\wr¬authorizer \in \authpool_{\wrX_\wr¬core}
 \end{equation}
 
-We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\mathsf{G}_A$:
+We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\Creportaccgas$:
 \begin{equation}
   \forall \wrX \in \incomingreports:
-    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \mathsf{G}_A \ \wedge \ 
+    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \Creportaccgas \ \wedge \ 
     \forall \wdX \in \wrX_\wr¬digests: \wdX_\wd¬gaslimit \ge \accounts\subb{\wdX_\wd¬serviceindex}_\sa¬minaccgas
 \end{equation}
 
@@ -304,30 +319,31 @@ We require that the gas allotted for accumulation of each work-digest in each wo
 
 \subsubsection{Contextual Validity of Reports}\label{sec:contextualvalidity}
 
-For convenience, we define two equivalences $\incomingcontexts$ and $\incomingpackagehashes$ to be, respectively, the set of all contexts and work-package hashes within the extrinsic:
+For convenience, we define two equivalences $\local¬incomingcontexts$ and $\local¬incomingpackagehashes$ to be, respectively, the set of all contexts and work-package hashes within the extrinsic:
 \begin{equation}
-    \using \incomingcontexts \equiv \set{ \build { \wrX_\wr¬context }{ \wrX \in \incomingreports } }\ ,\quad
-    \incomingpackagehashes \equiv \set{ \build { (\wrX_\wr¬avspec)_\as¬packagehash }{ \wrX \in \incomingreports } }
+    \using \local¬incomingcontexts \equiv \set{ \build { \wrX_\wr¬context }{ \wrX \in \incomingreports } }\ ,\quad
+    \local¬incomingpackagehashes \equiv \set{ \build { (\wrX_\wr¬avspec)_\as¬packagehash }{ \wrX \in \incomingreports } }
 \end{equation}
 
-There must be no duplicate work-package hashes (\ie two work-reports of the same package). Therefore, we require the cardinality of $\incomingpackagehashes$ to be the length of the work-report sequence $\incomingreports$:
+There must be no duplicate work-package hashes (\ie two work-reports of the same package). Therefore, we require the cardinality of $\local¬incomingpackagehashes$ to be the length of the work-report sequence $\incomingreports$:
 \begin{equation}
-  \len{\incomingpackagehashes} = \len{\incomingreports}
+  \len{\local¬incomingpackagehashes} = \len{\incomingreports}
 \end{equation}
 
-We require that the anchor block be within the last $\mathsf{H}$ blocks and that its details be correct by ensuring that it appears within our most recent blocks $\recenthistorypostparentstaterootupdate$:
+We require that the anchor block be within the last $\Crecenthistorylen$ blocks and that its details be correct by ensuring that it appears within our most recent blocks $\recenthistorypostparentstaterootupdate$:
 \begin{align}
-  \forall x \in \incomingcontexts : \exists y \in \recenthistorypostparentstaterootupdate : x_\wc¬anchorhash = y_\rh¬headerhash \wedge x_\wc¬anchorpoststate = y_\rh¬stateroot \wedge x_\wc¬anchoraccoutlog = y_\rh¬accoutlogsuperpeak \!\!\!\!\!\!
+  \forall x \in \local¬incomingcontexts : \exists y \in \recenthistorypostparentstaterootupdate : x_\wc¬anchorhash = y_\rh¬headerhash \wedge x_\wc¬anchorpoststate = y_\rh¬stateroot \wedge x_\wc¬anchoraccoutlog = y_\rh¬accoutlogsuperpeak \!\!\!\!\!\!
 \end{align}
 
-We require that each lookup-anchor block be within the last $\mathsf{L}$ timeslots:
+We require that each lookup-anchor block be within the last $\Cmaxlookupanchorage$ timeslots:
 \begin{align}
-  \forall x \in \incomingcontexts :\ x_\wc¬lookupanchortime \ge \H_\¬timeslot - \mathsf{L}
+  \label{eq:limitlookupanchorage}
+  \forall x \in \local¬incomingcontexts :\ x_\wc¬lookupanchortime \ge \H_\¬timeslot - \Cmaxlookupanchorage
 \end{align}
 
-We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\mathsf{L}$ headers as the ancestor set $\ancestors$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
+We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\Cmaxlookupanchorage$ headers as the ancestor set $\ancestors$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
 \begin{align}
-  \forall x \in \incomingcontexts :\ \exists h \in \ancestors: h_\¬timeslot = x_\wc¬lookupanchortime \wedge \blake{h} = x_\wc¬lookupanchorhash
+  \forall x \in \local¬incomingcontexts :\ \exists h \in \ancestors: h_\¬timeslot = x_\wc¬lookupanchortime \wedge \blake{h} = x_\wc¬lookupanchorhash
 \end{align}
 
 We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:
@@ -342,7 +358,7 @@ We require that the work-package of the report not be the work-package of some o
     }{
       \wrX \in \reports, \wrX \ne \none
     }} \\
-  &\forall p \in \incomingpackagehashes,
+  &\forall p \in \local¬incomingpackagehashes,
     p \not\in \bigcup_{x \in \recenthistory}\keys{x_\rh¬reportedpackagehashes}
       \cup
       \bigcup_{x \in \accumulated}x
@@ -356,14 +372,14 @@ We require that the prerequisite work-packages, if present, and any work-package
     &\forall \wrX \in \incomingreports,
     \forall p \in (\wrX_\wr¬context)_\wc¬prerequisites \cup
       \keys{\wrX_\wr¬srlookup} :\\
-    &\quad p \in \incomingpackagehashes \cup \set{
+    &\quad p \in \local¬incomingpackagehashes \cup \set{
       \build{x}{x \in \keys{b_\rh¬reportedpackagehashes},\, b \in \recenthistory}}
   \end{aligned}
 \end{align}
 
 We require that any segment roots mentioned in the segment-root lookup be verified as correct based on our recent work-package history and the present block:
 \begin{align}
-  &\using \incomingpackagehashes = \set{ \build {
+  &\using \local¬incomingpackagehashes = \set{ \build {
     \kv{
       ((g_\xg¬workreport)_\wr¬avspec)_\as¬packagehash
     }{
@@ -372,7 +388,7 @@ We require that any segment roots mentioned in the segment-root lookup be verifi
   }{
     g \in \xtguarantees
   } } \\
-  &\forall \wrX \in \incomingreports: \wrX_\wr¬srlookup \subseteq \incomingpackagehashes \cup \bigcup_{b \in \recenthistory} b_\rh¬reportedpackagehashes
+  &\forall \wrX \in \incomingreports: \wrX_\wr¬srlookup \subseteq \local¬incomingpackagehashes \cup \bigcup_{b \in \recenthistory} b_\rh¬reportedpackagehashes
 \end{align}
 
 (Note that these checks leave open the possibility of accepting work-reports in apparent dependency loops. We do not consider this a problem: the pre-accumulation stage effectively guarantees that accumulation never happens in these cases and the reports are simply ignored.)

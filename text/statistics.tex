@@ -7,16 +7,16 @@ The \Jam chain does not explicitly issue rewards---we leave this as a job to be 
 Such performance information cannot directly cover all aspects of validator activity; whereas block production, guarantor reports and availability assurance can easily be tracked on-chain, \textsc{Grandpa}, \textsc{Beefy} and auditing activity cannot. In the latter case, this is instead tracked with validator voting activity: validators vote on their impression of each other's efforts and a median may be accepted as the truth for any given validator. With an assumption of 50\% honest validators, this gives an adequate means of oraclizing this information.
 
 The validator statistics are made on a per-epoch basis and we retain one record of completed statistics together with one record which serves as an accumulator for the present epoch. Both are tracked in $\activity$, which is thus a sequence of two elements, with the first being the accumulator and the second the previous epoch's statistics. For each epoch we track a performance record for each validator:
-\begin{align}
+\begin{align}\label{eq:activityspec}
   \activity &\equiv \tup{\valstatsaccumulator, \valstatsprevious, \corestats, \servicestats}\\
-  \tuple{\valstatsaccumulator, \valstatsprevious} &\in \sequence[\valcount]{\tuple{
+  \tuple{\valstatsaccumulator, \valstatsprevious} &\in \sequence[\Cvalcount]{\tuple{
     \isa{\vs¬blocks}{\N}\,,
     \isa{\vs¬tickets}{\N}\,,
     \isa{\vs¬preimagecount}{\N}\,,
     \isa{\vs¬preimagesize}{\N}\,,
     \isa{\vs¬guarantees}{\N}\,,
     \isa{\vs¬assurances}{\N}
-%    \isa{\mathbf{u}}{\sequence[\valcount]{\N}}
+%    \isa{\mathbf{u}}{\sequence[\Cvalcount]{\N}}
   }}^2
   \!\!\!\!\!\!\!\!\!\!
 \end{align}
@@ -36,7 +36,7 @@ The six validator statistics we track are:
 
 The objective statistics are updated in line with their description, formally:
 \begin{align}
-  \using e =\; &\ffrac{\thetime}{\epochlen} \ ,\quad e' = \ffrac{\thetime'}{\epochlen}\\
+  \using e =\; &\ffrac{\thetime}{\Cepochlen} \ ,\quad e' = \ffrac{\thetime'}{\Cepochlen}\\
   \!\tup{\mathbf{a}, \valstatsprevious'} \equiv\;&\begin{cases}
       \tup{\valstatsaccumulator, \valstatsprevious} &\when e' = e \\
       \tup{\sq{\tup{0, \dots, \sq{0, \dots}}, \dots}, \valstatsaccumulator}\!\!\!\! &\otherwise
@@ -76,7 +76,7 @@ Note that $\reporters$ is the \emph{Reporters} set, as defined in equation \ref{
 
 The other two components of statistics are the core and service activity statistics. These are tracked only on a per-block basis unlike the validator statistics which are tracked over the whole epoch.
 \begin{align}
-  \corestats &\in \sequence[\corecount]{\tuple{
+  \corestats &\in \sequence[\Ccorecount]{\tuple{
     \begin{alignedat}{7}
       \isa{\cs¬daload&}{\N}\,,\;
       \isa{&\cs¬popularity&}{\N}\,,\;
@@ -137,7 +137,7 @@ The core statistics are updated using several intermediate values from across th
     \sum_{\wrX \in \justbecameavailable, \wrX_\wr¬core = c}
     \!\!\!\!\!\!
     (\wrX_\wr¬avspec)_\as¬bundlelen +
-    \mathsf{W}_G\ceil{(\wrX_\wr¬avspec)_\as¬segcount\nicefrac{65}{64}}
+    \Csegmentsize\ceil{(\wrX_\wr¬avspec)_\as¬segcount\nicefrac{65}{64}}
 \end{align}
 
 \newcommand*{\local¬servicesactive}{\mathbf{s}}

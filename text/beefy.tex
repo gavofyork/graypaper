@@ -1,9 +1,10 @@
-\section{Beefy Distribution}\label{sec:beefy}
+\section{Beefy Distribution}
+\label{sec:beefy}
 
 For each finalized block $\block$ which a validator imports, said validator shall make a \textsc{bls} signature on the \textsc{bls}\oldstylenums{12}-\oldstylenums{381} curve, as defined by \cite{bls12-381}, affirming the Keccak hash of the block's most recent \textsc{Beefy} \textsc{mmr}. This should be published and distributed freely, along with the signed material. These signatures may be aggregated in order to provide concise proofs of finality to third-party systems. The signing and aggregation mechanism is defined fully by \cite{cryptoeprint:2022/1611}.
 
-Formally, let $\beefycommitment{v}$ be the signed commitment of validator index $v$ which will be published:
-\begin{align}\label{eq:beefysignedcommitment}
-  \beefycommitment{v} &\equiv \blssigndata{\activeset'\sub{v}}{\mathsf{X}_B \concat \text{last}(\recenthistory)_\rh¬accoutlogsuperpeak}\\
-  \mathsf{X}_B &= \token{\$jam\_beefy}
+Formally, let $\accoutcommitment{v}$ be the signed commitment of validator index $v$ which will be published:
+\begin{align}\label{eq:accoutsignedcommitment}
+  \accoutcommitment{v} &\equiv \blssigndata{\activeset'\sub{v}}{\Xbeefy \concat \text{last}(\recenthistory)_\rh¬accoutlogsuperpeak}\\
+  \Xbeefy &= \token{\$jam\_beefy}
 \end{align}

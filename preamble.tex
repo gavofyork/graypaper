@@ -232,44 +232,103 @@
 \newcommand*{\signedn}[2]{\signfunc{#1}(#2)}
 \newcommand*{\unsignedn}[2]{\unsignfunc{#1}(#2)}
 
-% Constants (Sans-serif upper letters)
-\newcommand*{\corecount}{\mathsf{C}}
-\newcommand*{\epochlen}{\mathsf{E}}
-\newcommand*{\ticketentries}{\mathsf{N}}
-\newcommand*{\valcount}{\mathsf{V}}
-
 % Big Functions (Upper-greek letters)
 \newcommand*{\accumulate}{\Delta}
-\newcommand*{\accone}{\Delta_1}
-\newcommand*{\accpar}{\Delta_*}
-\newcommand*{\accseq}{\Delta_+}
+\newcommand*{\accone}{\accumulate_1}
+\newcommand*{\accpar}{\accumulate_*}
+\newcommand*{\accseq}{\accumulate_+}
 \newcommand*{\histlookup}{\Lambda}
 \newcommand*{\computereport}{\Xi}
 \newcommand*{\transitionstate}{\Upsilon}
 
 %%%%%%%%%%%%
+% CONSTANTS (Sans-serif upper letters)
+
+% Numeric
+\newcommand*{\Ctrancheseconds}{\mathsf{A}}
+\newcommand*{\Citemdeposit}{\mathsf{B}_I}
+\newcommand*{\Cbytedeposit}{\mathsf{B}_L}
+\newcommand*{\Cbasedeposit}{\mathsf{B}_S}
+\newcommand*{\Ccorecount}{\mathsf{C}}
+\newcommand*{\Cexpungeperiod}{\mathsf{D}}
+\newcommand*{\Cepochlen}{\mathsf{E}}
+\newcommand*{\Cauditbiasfactor}{\mathsf{F}}
+\newcommand*{\Creportaccgas}{\mathsf{G}_A}
+\newcommand*{\Cpackageauthgas}{\mathsf{G}_I}
+\newcommand*{\Cpackagerefgas}{\mathsf{G}_R}
+\newcommand*{\Cblockaccgas}{\mathsf{G}_T}
+\newcommand*{\Crecenthistorylen}{\mathsf{H}}
+\newcommand*{\Cmaxpackageitems}{\mathsf{I}}
+\newcommand*{\Cmaxreportdeps}{\mathsf{J}}
+\newcommand*{\Cmaxblocktickets}{\mathsf{K}}
+\newcommand*{\Cmaxlookupanchorage}{\mathsf{L}}
+\newcommand*{\Cticketentries}{\mathsf{N}}
+\newcommand*{\Cauthpoolsize}{\mathsf{O}}
+\newcommand*{\Cslotseconds}{\mathsf{P}}
+\newcommand*{\Cauthqueuesize}{\mathsf{Q}}
+\newcommand*{\Crotationperiod}{\mathsf{R}}
+\newcommand*{\Cmaxpackagexts}{\mathsf{T}}
+\newcommand*{\Cassurancetimeoutperiod}{\mathsf{U}}
+\newcommand*{\Cvalcount}{\mathsf{V}}
+\newcommand*{\Cmaxauthcodesize}{\mathsf{W}_A}
+\newcommand*{\Cmaxbundlesize}{\mathsf{W}_B}
+\newcommand*{\Cmaxservicecodesize}{\mathsf{W}_C}
+\newcommand*{\Cecpiecesize}{\mathsf{W}_E}
+\newcommand*{\Csegmentsize}{\mathsf{W}_G}
+\newcommand*{\Cmaxpackageimports}{\mathsf{W}_M}
+\newcommand*{\Csegmentecpieces}{\mathsf{W}_P}
+\newcommand*{\Cmaxreportvarsize}{\mathsf{W}_R}
+\newcommand*{\Cmemosize}{\mathsf{W}_T}
+\newcommand*{\Cmaxpackageexports}{\mathsf{W}_X}
+\newcommand*{\Cepochtailstart}{\mathsf{Y}}
+\newcommand*{\Cpvmdynaddralign}{\mathsf{Z}_A}
+\newcommand*{\Cpvminitinputsize}{\mathsf{Z}_I}
+\newcommand*{\Cpvmpagesize}{\mathsf{Z}_P}
+\newcommand*{\Cpvminitzonesize}{\mathsf{Z}_Z}
+
+% String
+\newcommand*{\Xavailable}{\mathsf{X}_A}
+\newcommand*{\Xbeefy}{\mathsf{X}_B}
+\newcommand*{\Xentropy}{\mathsf{X}_E}
+\newcommand*{\Xfallback}{\mathsf{X}_F}
+\newcommand*{\Xguarantee}{\mathsf{X}_G}
+\newcommand*{\Xannounce}{\mathsf{X}_I}
+\newcommand*{\Xticket}{\mathsf{X}_T}
+\newcommand*{\Xaudit}{\mathsf{X}_U}
+\newcommand*{\Xvalid}{\mathsf{X}_\top}
+\newcommand*{\Xinvalid}{\mathsf{X}_\bot}
+\newcommand*{\Xvalidif}[1]{\mathsf{X}_{#1}}
+
+%%%%%%%%%%%%
 % Simple Universal types (blackboard letters)
-\newcommand*{\bitstring}[1][]{\mathbb{b}_{#1}}
-\newcommand*{\blob}[1][]{\mathbb{B}_{#1}}
+% Unused: U
+
+% Terms defined as being in these sets never get bolded
 \newcommand*{\workerror}{\mathbb{E}}
 \newcommand*{\finitefield}{\mathbb{F}}
 \renewcommand*{\hash}[1][]{\mathbb{H}_{#1}}
 \newcommand*{\segment}{\mathbb{J}}
 \newcommand*{\N}{\mathbb{N}}
-\newcommand*{\ramaccess}[1][]{\mathbb{V}_{#1}}
 \newcommand*{\Z}{\mathbb{Z}}
+\newcommand*{\zerohash}{\hash[0]}
 
-% D unused
-% Q unused
-% R unused
+%%%%%%%%%%%%
+% Blob and bitstring
+% Bolded only if unbounded.
+\newcommand*{\bitstring}[1][]{\mathbb{b}_{#1}}
+\newcommand*{\blob}[1][]{\mathbb{B}_{#1}}
+\newcommand*{\metadatakey}{\blob[128]}
 
 %%%%%%%%%%%%
 % RAM access variants
+% Bold.
+\newcommand*{\ramaccess}[1][]{\mathbb{V}_{#1}}
 \newcommand*{\readable}[1]{\ramaccess[#1]}
 \newcommand*{\writable}[1]{\ramaccess[#1]^*}
 
 %%%%%%%%%%%%
-% Crypto filters
+% Crypto signatures, proofs, keys and verifiers
+% Regular
 \newcommand*{\signaturebase}{\mathbb{V}}
 \newcommand*{\edsignaturebase}{\bar{\signaturebase}}
 \newcommand*{\bssignaturebase}{\accentset{\backsim}{\signaturebase}}
@@ -291,8 +350,7 @@
 \newcommand*{\blssigndata}[2]{\accentset{\mathrm{B\!L\!S}}{\fnsigndata{#1}}\left(#2\right)}
 
 %%%%%%%%%%%%
-% Numeric types (blackboard N subscripts)
-% Unused: U
+% Specialized numeric types (blackboard N subscripts)
 \newcommand*{\timeslot}{\N_T}
 \newcommand*{\balance}{\N_B}
 \newcommand*{\serviceid}{\N_S}
@@ -303,23 +361,18 @@
 \newcommand*{\Nclamp}[2]{\N_{#1 \dots #2}}
 \newcommand*{\Nrange}[2]{\N_{#1 \dots+ #2}}
 \newcommand*{\Nbits}[1]{\Nmax{2^{#1}}}
-\newcommand*{\coreindex}{\Nmax{\corecount}}
-\newcommand*{\valindex}{\Nmax{\valcount}}
-\newcommand*{\ticketentryindex}{\Nmax{\ticketentries}}
-\newcommand*{\epochindex}{\Nmax{\epochlen}}
+\newcommand*{\coreindex}{\Nmax{\Ccorecount}}
+\newcommand*{\valindex}{\Nmax{\Cvalcount}}
+\newcommand*{\ticketentryindex}{\Nmax{\Cticketentries}}
+\newcommand*{\epochindex}{\Nmax{\Cepochlen}}
 
 %%%%%%%%%%%%
-% Hash & blob specializations
-% The hash & blob types have a bunch of peripheral definitions.
-\newcommand*{\zerohash}{\hash[0]}
-\newcommand*{\metadatakey}{\blob[128]}
-
-%%%%%%%%%%%%
-% FIELDS
+% STRUCTURED TYPES AND FIELDS
 
 %%%%%%%%%%%%
 % Common fields
-
+% Helpful when we make assertions of fields having shared labels during
+% destructure/restructure logic.
 \newcommand*{\¬authorizer}{a} % O/L ¬accgaslimit
 \newcommand*{\¬authtrace}{\mathbf{t}}
 \newcommand*{\¬bundlelen}{l}
@@ -348,7 +401,6 @@
 
 %%%%%%%%%%%%
 % Named types (blackboard)
-
 \newcommand*{\pvmguest}{\mathbb{G}}
 \newcommand*{\pg¬code}{\mathbf{p}}
 \newcommand*{\pg¬ram}{\mathbf{u}}
@@ -489,7 +541,7 @@
 \newcommand*{\vk¬ed}{e}
 \newcommand*{\vk¬bls}{l}
 \newcommand*{\vk¬metadata}{m}
-\newcommand*{\allvalkeys}{\sequence[\valcount]{\valkey}}
+\newcommand*{\allvalkeys}{\sequence[\Cvalcount]{\valkey}}
 
 \newcommand*{\partialstate}{\mathbb{S}}
 \newcommand*{\psX}{\mathbf{e}}
@@ -564,7 +616,7 @@
 \newcommand*{\isticketed}{\mathbf{T}}
 \newcommand*{\isaudited}{\mathbf{U}}
 \newcommand*{\deferredtransfersstatistics}{\mathbf{X}}
-\newcommand*{\beefycommitment}[1]{\mathbf{F}_{#1}}
+\newcommand*{\accoutcommitment}[1]{\mathbf{F}_{#1}}
 
 % Extrinsics.
 \newcommand*{\extrinsic}{\mathbf{E}}
@@ -674,6 +726,8 @@
 \newcommand*{\alwaysaccers}{\privileges_Z}
 
 \newcommand*{\accumulated}{\xi}
+\newcommand*{\accumulatedcup}{\overbrace{\accumulated}}
+
 \newcommand*{\ready}{\omega}
 \newcommand*{\lastaccout}{\theta}
 \newcommand*{\authpool}{\alpha}
@@ -681,7 +735,7 @@
 
 \newcommand*{\recent}{\beta}
 \newcommand*{\recenthistory}{\recent_H}
-\newcommand*{\beefybelt}{\recent_B}
+\newcommand*{\accoutbelt}{\recent_B}
 \newcommand*{\recentpostparentstaterootupdate}{\recent^\dagger}
 \newcommand*{\recenthistorypostparentstaterootupdate}{\recenthistory^\dagger}
 

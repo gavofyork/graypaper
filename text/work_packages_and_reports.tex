@@ -28,7 +28,7 @@ Beyond the production of blocks, incentivized honest behavior includes:
 
 \subsection{Segments and the Manifest}
 
-Our basic erasure-coding segment size is $\mathsf{W}_E = 684$ octets, derived from the fact we wish to be able to reconstruct even should almost two-thirds of our 1023 participants be malicious or incapacitated, the 16-bit Galois field on which the erasure-code is based and the desire to efficiently support encoding data of close to, but no less than, 4\textsc{kb}.
+Our basic erasure-coding segment size is $\Cecpiecesize = 684$ octets, derived from the fact we wish to be able to reconstruct even should almost two-thirds of our 1023 participants be malicious or incapacitated, the 16-bit Galois field on which the erasure-code is based and the desire to efficiently support encoding data of close to, but no less than, 4\textsc{kb}.
 
 Work-packages are generally small to ensure guarantors need not invest a lot of bandwidth in order to discover whether they can get paid for their evaluation into a work-report. Rather than having much data inline, they instead \emph{reference} data through commitments. The simplest commitments are extrinsic data.
 
@@ -37,10 +37,11 @@ Extrinsic data are blobs which are being introduced into the system alongside th
 Work-packages have two other types of external data associated with them: A cryptographic commitment to each \emph{imported} segment and finally the number of segments which are \emph{exported}.
 
 \subsubsection{Segments, Imports and Exports}
+\label{sec:segments}
 
-The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\segment$, is an octet sequence of fixed length $\mathsf{W}_G = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term D$^3$L during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the D$^3$L system.
+The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\segment$, is an octet sequence of fixed length $\Csegmentsize = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term D$^3$L during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the D$^3$L system.
 \begin{equation}\label{eq:segment}
-  \segment \equiv \blob[\mathsf{W}_G]
+  \segment \equiv \blob[\Csegmentsize]
 \end{equation}
 
 Exported segments are data which are \emph{generated} through the execution of the Refine logic and thus are a side effect of transforming the work-package into a work-report. Since their data is deterministic based on the execution of the Refine logic, we do not require any particular commitment to them in the work-package beyond knowing how many are associated with each Refine invocation in order that we can supply an exact index.
@@ -60,14 +61,15 @@ The guarantor is able to use this proof to justify to themselves that they are n
 \subsection{Packages and Items}\label{sec:packagesanditems}
 
 We begin by defining a \emph{work-package}, of set $\workpackage$, and its constituent \emph{work-item}s, of set $\workitem$. A work-package includes a simple blob acting as an authorization token $\wp¬authtoken$, the index of the service which hosts the authorization code $\wp¬authcodehost$, an authorization code hash $\wp¬authcodehash$ and a configuration blob $\wp¬authconfig$, a context $\wp¬context$ and a sequence of work items $\wp¬workitems$:
-\begin{equation}\label{eq:workpackage}
+\begin{equation}
+  \label{eq:workpackage}
   \workpackage \equiv \tuple{
     \isa{\wp¬authtoken}{\blob},\ 
     \isa{\wp¬authcodehost}{\serviceid},\ 
     \isa{\wp¬authcodehash}{\hash},\ 
     \isa{\wp¬authconfig}{\blob},\ 
     \isa{\wp¬context}{\workcontext},\ 
-    \isa{\wp¬workitems}{\sequence[1:\mathsf{I}]{\workitem}}
+    \isa{\wp¬workitems}{\sequence[1:\Cmaxpackageitems]{\workitem}}
   }
 \end{equation}
 
@@ -87,13 +89,15 @@ A work item includes: $\wi¬serviceindex$ the identifier of the service to which
 
 Note that an imported data segment's work-package is identified through the union of sets $\hash$ and a tagged variant $\hash^\boxplus$. A value drawn from the regular $\hash$ implies the hash value is of the segment-root containing the export, whereas a value drawn from $\hash^\boxplus$ implies the hash value is the hash of the exporting work-package. In the latter case it must be converted into a segment-root by the guarantor and this conversion reported in the work-report for on-chain validation.
 
-We limit the total number of exported items to $\mathsf{W}_X = 3072$, the total number of imported items to $\mathsf{W}_M = 3072$, and the total number of extrinsics to $\mathsf{T} = 128$:
+We limit the total number of exported items to $\Cmaxpackageexports = 3072$, the total number of imported items to $\Cmaxpackageimports = 3072$, and the total number of extrinsics to $\Cmaxpackagexts = 128$:
 \begin{equation}
-  \!\!\!\!\begin{aligned}
+  \label{eq:limitworkpackagebandwidth}
+  \!\!\!\!
+  \begin{aligned}
     &\forall \wpX \in \workpackage: \\
-    &\ \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportcount \le \mathsf{W}_X \ \wedge\ 
-    \sum_{\wiX \in \wpX_\wp¬workitems} \len{\wiX_\wi¬importsegments} \le \mathsf{W}_M \ \wedge\ 
-    \sum_{\wiX \in \wpX_\wp¬workitems} \len{\wiX_\wi¬extrinsics} \le \mathsf{T}
+    &\ \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportcount \le \Cmaxpackageexports \ \wedge\ 
+    \sum_{\wiX \in \wpX_\wp¬workitems} \len{\wiX_\wi¬importsegments} \le \Cmaxpackageimports \ \wedge\ 
+    \sum_{\wiX \in \wpX_\wp¬workitems} \len{\wiX_\wi¬extrinsics} \le \Cmaxpackagexts
   \end{aligned}
 \end{equation}
 
@@ -104,19 +108,20 @@ We limit the total size of the auditable \emph{work-bundle}, containing the work
   \label{eq:checkextractsize}
   &\begin{aligned}
     &\forall \wpX \in \workpackage: \Big(\len{\wpX_\wp¬authtoken} + \len{\wpX_\wp¬authconfig} +
-    \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \mathsf{W}_B \\
-    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\mathsf{W}_G + \!\!\!\!\!\!\sum_{\tup{h, l} \in \wiX_\wi¬extrinsics} \!\!\!l
+    \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \Cmaxbundlesize \\
+    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\Csegmentsize + \!\!\!\!\!\!\sum_{\tup{h, l} \in \wiX_\wi¬extrinsics} \!\!\!l
   \end{aligned}\\
-  &\mathsf{W}_B \equiv 13,794,305\\
-  &\phantom{\mathsf{W}_B} = \mathsf{W}_M(\mathsf{W}_G + 1 + 32\ceil{\log_2(\mathsf{W}_T)}) + 4096 + 1
+  &\Cmaxbundlesize \equiv 13,794,305\\
+  &\phantom{\Cmaxbundlesize} = \Cmaxpackageimports(\Csegmentsize + 1 + 32\ceil{\log_2(\Cmemosize)}) + 4096 + 1
 \end{align}
 
 We limit the sums of each of the two gas limits to be at most the maximum gas allocated to a core for the corresponding operation:
 \begin{equation}
+  \label{eq:wplimits}
   \forall \wpX \in \workpackage:\ \;
-    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_\wi¬accgaslimit) < \mathsf{G}_A
+    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_\wi¬accgaslimit) < \Creportaccgas
   \quad\wedge\ \;
-    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_\wi¬refgaslimit) < \mathsf{G}_R
+    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_\wi¬refgaslimit) < \Cpackagerefgas
 \end{equation}
 
 %The implication of equation \ref{eq:checkextractsize} is that we have access to the preimage of all extrinsic data. For guaranteeing, this implies the work-package author probably submits the preimages alongside the work-package itself. For auditing, the extrinsic preimages may be reconstructed in the same manner as the work-package. Both are described later.
@@ -172,7 +177,7 @@ We define the paged-proofs function $\pagedproofs$ which accepts a series of exp
     }{
       i \orderedin \Nmax{\ceil{\nicefrac{\len{\mathbf{s}}}{64}}}
     }} \\
-    & \where l = \mathsf{W}_G
+    & \where l = \Csegmentsize
   }\!\!\!\!
 \end{equation}
 
@@ -183,7 +188,7 @@ We now come to the work-report computation function $\computereport$. This forms
   \computereport \colon \abracegroup{
     \tuple{\workpackage, \coreindex} &\to \workreport \\
     \tup{\wpX, \¬core} &\mapsto \begin{cases}
-      \error &\when \wr¬authtrace \not\in \blob[:\mathsf{W}_R] \\
+      \error &\when \wr¬authtrace \not\in \blob[:\Cmaxreportvarsize] \\
       \tup{\wr¬avspec, \is{\wr¬context}{\wpX_\wp¬context}, \¬core, \is{\wr¬authorizer}{\wpX_\wp¬authorizer}, \wr¬authtrace, \wr¬srlookup, \wr¬digests, \wr¬authgasused} &\otherwise
     \end{cases}
   }
@@ -201,7 +206,7 @@ Where:
     j \orderedin \Nmax{\len{\wpX_\wp¬workitems}}
   }} \\
   \countupexports(\wpX, j) \equiv \,&\begin{cases}
-    \tup{\oversize, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\when \len{r} + z > \mathsf{W}_R\\
+    \tup{\oversize, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\when \len{r} + z > \Cmaxreportvarsize\\
     \tup{\badexports, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\otherwhen \len{\mathbf{e}} \ne \local¬theitem_\wi¬exportcount \\
     \tup{r, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\otherwhen r \not\in \blob \\
     \tup{r, u, \mathbf{e}} &\otherwise \\
@@ -287,7 +292,7 @@ We define the availability specifier function $\newavailabilityspecifier$, which
   \where \as¬erasureroot &= \merklizewb{
     \sq{\build{\concatall{\mathbf{x}}}{\mathbf{x} \orderedin \transpose \sq{\mathbf{b}^\clubsuit, \mathbf{s}^\clubsuit}}}
   }\\
-  \also \mathbf{b}^\clubsuit &= \blakemany{\erasurecode[\ceil{\nicefrac{\len{\mathbf{b}}}{\mathsf{W}_E}}]{\zeropad{\mathsf{W}_E}{\mathbf{b}}}}\\
+  \also \mathbf{b}^\clubsuit &= \blakemany{\erasurecode[\ceil{\nicefrac{\len{\mathbf{b}}}{\Cecpiecesize}}]{\zeropad{\Cecpiecesize}{\mathbf{b}}}}\\
   \also \mathbf{s}^\clubsuit &= \merklizewbmany{\transpose\erasurecodemany[6]{\mathbf{s} \concat \pagedproofs(\mathbf{s})}}
 \end{align*}
 

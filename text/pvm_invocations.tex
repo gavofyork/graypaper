@@ -33,13 +33,14 @@ Note return codes for a host-call-request exit are any non-zero value less than 
 
 The Is-Authorized invocation is the first and simplest of the four, being totally stateless. It provides only host-call functions for inspecting its environment and parameters. It accepts as arguments only the core on which it should be executed, $c$. Formally, it is defined as $\Psi_I$:
 \begin{align}
+  \label{eq:isauthinvocation}
   \Psi_I &\colon \abracegroup{
     \tuple{\workpackage, \coreindex} &\to \tuple{\blob \cup \workerror, \gas} \\
     \tup{\wpX, c} &\mapsto \begin{cases}
       \tup{\token{BAD}, 0} &\when \wpX_\wp¬authcode = \none \\
-      \tup{\token{BIG}, 0} &\otherwhen \len{\wpX_\wp¬authcode} > \mathsf{W}_A \\
+      \tup{\token{BIG}, 0} &\otherwhen \len{\wpX_\wp¬authcode} > \Cmaxauthcodesize \\
       \tup{\mathbf{r}, u} &\otherwise \\
-      \multicolumn{2}{l}{\where \tup{u, \mathbf{r}, \none} = \Psi_M(\wpX_\wp¬authcode, 0, \mathsf{G}_I, \encode[2]{c}, F, \none)}\\
+      \multicolumn{2}{l}{\where \tup{u, \mathbf{r}, \none} = \Psi_M(\wpX_\wp¬authcode, 0, \Cpackageauthgas, \encode[2]{c}, F, \none)}\\
     \end{cases}\\
   } \\
   \label{eq:isauthorizedmutator}F \in \contextmutator{\emset} &\colon
@@ -56,9 +57,9 @@ Note for the Is-Authorized host-call dispatch function $F$ in equation \ref{eq:i
 
 We define the Refine service-account invocation function as $\Psi_R$. It has no general access to the state of the \Jam chain, with the slight exception being the ability to make a historical lookup. Beyond this it is able to create inner instances of the \textsc{pvm} and dictate pieces of data to export.
 
-The historical-lookup host-call function, $\Omega_H$, is designed to give the same result regardless of the state of the chain for any time when auditing may occur (which we bound to be less than two epochs from being accumulated). The lookup anchor may be up to $\mathsf{L}$ timeslots before the recent history and therefore adds to the potential age at the time of audit. We therefore set $\mathsf{D}$ to have a safety margin of eight hours:
+The historical-lookup host-call function, $\Omega_H$, is designed to give the same result regardless of the state of the chain for any time when auditing may occur (which we bound to be less than two epochs from being accumulated). The lookup anchor may be up to $\Cmaxlookupanchorage$ timeslots before the recent history and therefore adds to the potential age at the time of audit. We therefore set $\Cexpungeperiod$ to have a safety margin of eight hours:
 \begin{equation}
-  \mathsf{D} \equiv \mathsf{L} + 4,800 = 19,200
+  \Cexpungeperiod \equiv \Cmaxlookupanchorage + 4,800 = 19,200
 \end{equation}
 
 
@@ -67,15 +68,16 @@ The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated
   \pvmguest \equiv \tuple{\isa{\pg¬code}{\blob}, \isa{\pg¬ram}{\ram}, \isa{\pg¬pc}{\pvmreg}}
 \end{equation}
 
-The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\mathsf{W}_G$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
+The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\Csegmentsize$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
 
 Unlike the other invocation functions, the Refine invocation function implicitly draws upon some recent service account state item $\accounts$. The specific block from which this comes is not important, as long as it is no earlier than its work-package's lookup-anchor block. It explicitly accepts the work-package $p$ and the index of the work item to be refined, $i$. Additionally, the authorizer trace $\mathbf{r}$ is provided together with all work items' import segments $\overline{\mathbf{i}}$ and an export segment offset $\segoff$. It results in either some error $\workerror$ or a pair of the refinement output blob and the export sequence. Formally:
 \begin{align}
   &\Psi_R \colon \abracegroup{
+    \label{eq:refinvocation}
     \tuple{\N, \workpackage, \blob, \sequence{\sequence{\segment}}, \N} &\to \tuple{\blob \cup \workerror, \sequence{\segment}, \gas} \\
     \tup{i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff} &\mapsto \begin{cases}
       \tup{\token{BAD}, \sq{}, 0} &\when w_\wi¬serviceindex \not\in \keys{\accounts} \vee \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash) = \none \\
-      \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)} > \mathsf{W}_C \\
+      \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)} > \Cmaxservicecodesize \\
       &\otherwise: \\
       &\quad\using a = \encode{i, w_\wi¬serviceindex, \var{w_\wi¬payload}, \blake{p}}\;,\ \encode{\var{\mathbf{z}}, \mathbf{c}} = \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
       &\quad\also \tup{u, \mathbf{o}, \tup{\mathbf{m}, \mathbf{e}}} = \Psi_M(\mathbf{c}, 0, w_\wi¬refgaslimit, a, F, \tup{\emptyset, \sq{}})\ \colon\\
@@ -136,6 +138,7 @@ We track both regular and exceptional dimensions within our context mutator, but
 We define $\Psi_A$, the Accumulation invocation function as:
 \newcommand*{\local¬basestate}{\ao¬poststate}
 \begin{align}
+  \label{eq:accinvocation}
   \Psi_A& \colon\abracegroup{
     \tuple{
       \partialstate, \timeslot, \serviceid, \gas, \sequence{\operandtuple}
@@ -150,7 +153,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
         \is{\ao¬gasused}{0},
         \is{\ao¬provisions}{\sq{}}
       }
-        &\when \mathbf{c} = \none \vee \len{\mathbf{c}} > \mathsf{W}_C \\
+        &\when \mathbf{c} = \none \vee \len{\mathbf{c}} > \Cmaxservicecodesize \\
       C(\Psi_M(\mathbf{c}, 5, g, \encode{t, s, \len{\mathbf{o}}}, F, I(\local¬basestate, s)^2))
         &\otherwise \\
       \where \mathbf{c} = \local¬basestate_\ps¬accounts\subb{s}_\sa¬code&
@@ -242,13 +245,14 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 
 We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
 \begin{align}
+  \label{eq:onxferinvocation}
   \Psi_T &: \begin{cases}
     \tuple{\dictionary{\serviceid}{\serviceaccount}, \timeslot, \serviceid, \defxfers}
     &\to \tuple{\serviceaccount, \gas} \\
     \tup{\mathbf{d}, t, s, \mathbf{t}} &\mapsto \begin{cases}
       \tup{\mathbf{s}, 0}
         &\when \mathbf{s}_\sa¬code = \none \vee
-          \len{\mathbf{s}_\sa¬code} > \mathsf{W}_C \vee
+          \len{\mathbf{s}_\sa¬code} > \Cmaxservicecodesize \vee
           \mathbf{t} = \sq{} \\
       \tup{\mathbf{s}', u} &\otherwise \\
       \multicolumn{2}{l}{
@@ -325,39 +329,39 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \mathbf{c} &\when \registers_{10} = 0 \\
       \multicolumn{2}{l}{\where \mathbf{c} = \encode{
         \begin{aligned}
-          &\encode[8]{\mathsf{B}_I},
-          \encode[8]{\mathsf{B}_L},
-          \encode[8]{\mathsf{B}_S},
-          \encode[2]{\corecount},
-          \encode[4]{\mathsf{D}},
-          \encode[4]{\epochlen},
-          \encode[8]{\mathsf{G}_A},\\
-          &\encode[8]{\mathsf{G}_I},
-          \encode[8]{\mathsf{G}_R},
-          \encode[8]{\mathsf{G}_T},
-          \encode[2]{\mathsf{H}},
-          \encode[2]{\mathsf{I}},
-          \encode[2]{\mathsf{J}},
-          \encode[2]{\mathsf{K}},\\
-          &\encode[4]{\mathsf{L}},
-          \encode[2]{\mathsf{N}},
-          \encode[2]{\mathsf{O}},
-          \encode[2]{\mathsf{P}},
-          \encode[2]{\mathsf{Q}},
-          \encode[2]{\mathsf{R}},
-          \encode[2]{\mathsf{T}},
-          \encode[2]{\mathsf{U}},\\
-          &\encode[2]{\valcount},
-          \encode[4]{\mathsf{W}_A},
-          \encode[4]{\mathsf{W}_B},
-          \encode[4]{\mathsf{W}_C},
-          \encode[4]{\mathsf{W}_E},
-          \encode[4]{\mathsf{W}_M},\\
-          &\encode[4]{\mathsf{W}_P},
-          \encode[4]{\mathsf{W}_R},
-          \encode[4]{\mathsf{W}_T},
-          \encode[4]{\mathsf{W}_X},
-          \encode[4]{\mathsf{Y}}
+          &\encode[8]{\Citemdeposit},
+          \encode[8]{\Cbytedeposit},
+          \encode[8]{\Cbasedeposit},
+          \encode[2]{\Ccorecount},
+          \encode[4]{\Cexpungeperiod},
+          \encode[4]{\Cepochlen},
+          \encode[8]{\Creportaccgas},\\
+          &\encode[8]{\Cpackageauthgas},
+          \encode[8]{\Cpackagerefgas},
+          \encode[8]{\Cblockaccgas},
+          \encode[2]{\Crecenthistorylen},
+          \encode[2]{\Cmaxpackageitems},
+          \encode[2]{\Cmaxreportdeps},
+          \encode[2]{\Cmaxblocktickets},\\
+          &\encode[4]{\Cmaxlookupanchorage},
+          \encode[2]{\Cticketentries},
+          \encode[2]{\Cauthpoolsize},
+          \encode[2]{\Cslotseconds},
+          \encode[2]{\Cauthqueuesize},
+          \encode[2]{\Crotationperiod},
+          \encode[2]{\Cmaxpackagexts},
+          \encode[2]{\Cassurancetimeoutperiod},\\
+          &\encode[2]{\Cvalcount},
+          \encode[4]{\Cmaxauthcodesize},
+          \encode[4]{\Cmaxbundlesize},
+          \encode[4]{\Cmaxservicecodesize},
+          \encode[4]{\Cecpiecesize},
+          \encode[4]{\Cmaxpackageimports},\\
+          &\encode[4]{\Csegmentecpieces},
+          \encode[4]{\Cmaxreportvarsize},
+          \encode[4]{\Cmemosize},
+          \encode[4]{\Cmaxpackageexports},
+          \encode[4]{\Cepochtailstart}
         \end{aligned}
       }}\\
       n &\when n \ne \none \wedge \registers_{10} = 1 \\
@@ -551,14 +555,14 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   $g = 10$} &
   $\begin{aligned}
     \using p &= \registers_7 \\
-    \using z &= \min(\registers_8, \mathsf{W}_G) \\
+    \using z &= \min(\registers_8, \Csegmentsize) \\
     \using \mathbf{x} &= \begin{cases}
-      \zeropad{\mathsf{W}_G}{\mem\subrange{p}{z}} &\when \Nrange{p}{z} \subseteq \readable[\memory]\\
+      \zeropad{\Csegmentsize}{\mem\subrange{p}{z}} &\when \Nrange{p}{z} \subseteq \readable[\memory]\\
       \error &\otherwise
     \end{cases}\\
     \tup{\execst', \registers'_7, \mathbf{e}'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{e}} &\when \mathbf{x} = \error \\
-      \tup{\continue, \mathtt{FULL}, \mathbf{e}} &\otherwhen \segoff+\len{\mathbf{e}} \ge \mathsf{W}_X \\
+      \tup{\continue, \mathtt{FULL}, \mathbf{e}} &\otherwhen \segoff+\len{\mathbf{e}} \ge \Cmaxpackageexports \\
       \tup{\continue, \segoff + \len{\mathbf{e}}, \mathbf{e} \append \mathbf{x}} &\otherwise
     \end{cases}
   \end{aligned}$\\
@@ -623,9 +627,9 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \error &\otherwise\\
     \end{cases} \\
     \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
-      (\mathbf{u}'_\ram¬value)_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} = \begin{cases}
+      (\mathbf{u}'_\ram¬value)_{p\Cpvmpagesize\dots+c\Cpvmpagesize} = \begin{cases}
        \sq{0, 0, \dots} &\when r < 3 \\
-        (\mathbf{u}_\ram¬value)_{p\mathsf{Z}_P\dots+c\mathsf{Z}_P} &\otherwise
+        (\mathbf{u}_\ram¬value)_{p\Cpvmpagesize\dots+c\Cpvmpagesize} &\otherwise
       \end{cases} \\
       (\mathbf{u}'_\ram¬access)\subrange{p}{c} = \begin{cases}
        \sq{\none, \none, \dots} &\when r = 0 \\
@@ -635,7 +639,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \end{cases}\\
     \tup{\registers'_7, \mathbf{m}'} &\equiv \begin{cases}
       \tup{\mathtt{WHO}, \mathbf{m}} &\when \mathbf{u} = \error \\
-      \tup{\mathtt{HUH}, \mathbf{m}} &\otherwhen r > 4 \vee p < 16 \vee p+c \ge \nicefrac{2^{32}}{\mathsf{Z}_P} \\
+      \tup{\mathtt{HUH}, \mathbf{m}} &\otherwhen r > 4 \vee p < 16 \vee p+c \ge \nicefrac{2^{32}}{\Cpvmpagesize} \\
       \tup{\mathtt{HUH}, \mathbf{m}} &\otherwhen r > 2 \wedge (\mathbf{u}_\ram¬access)\subrange{p}{c} \ni \none \\
       \tup{\mathtt{OK}, \mathbf{m}'} &\otherwise\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'\subb{n}_\pg¬ram = \mathbf{u}' \\
     \end{cases} \\
@@ -712,7 +716,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using \sq{m, a, v, o, n} &= \registers\subrange{7}{5} \\
     \using \mathbf{a} &= \begin{cases}
-      \decode[4]{\memory\subrange{a}{4\corecount}} &\when \Nrange{a}{4\corecount} \subseteq \readable{\memory} \\
+      \decode[4]{\memory\subrange{a}{4\Ccorecount}} &\when \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{z} &= \begin{cases}
@@ -734,12 +738,12 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using \sq{c, o, a} &= \registers\subrange{7}{3} \\
     \using \mathbf{q} &= \begin{cases}
-      \sq{\build{\memory\subrange{o + 32i}{32}}{i \orderedin \N_\mathsf{Q}}} &\when \Nrange{o}{32\mathsf{Q}} \subseteq \readable{\memory} \\
+      \sq{\build{\memory\subrange{o + 32i}{32}}{i \orderedin \N_\Cauthqueuesize}} &\when \Nrange{o}{32\Cauthqueuesize} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬authqueue\subb{c}, (\imX'_\im¬state)_\ps¬assigners\subb{c}} &= \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\when \mathbf{q} = \error \\
-      \tup{\continue, \mathtt{CORE}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen c \ge \corecount \\
+      \tup{\continue, \mathtt{CORE}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen c \ge \Ccorecount \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬assigners\subb{c}\\
       \tup{\continue, \mathtt{OK}, \mathbf{q}, a} &\otherwise \\
     \end{cases} \\
@@ -752,7 +756,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $\begin{aligned}
     \using o &= \registers_7 \\
     \using \mathbf{v} &= \begin{cases}
-      \sq{\build{\memory\subrange{o + 336i}{336}}{i \orderedin \valindex}} &\when \Nrange{o}{336\valcount} \subseteq \readable{\memory} \\
+      \sq{\build{\memory\subrange{o + 336i}{336}}{i \orderedin \valindex}} &\when \Nrange{o}{336\Cvalcount} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬stagingset} &= \begin{cases}
@@ -837,9 +841,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
         \is{\dx¬source}{\imX_\im¬id},
         \dx¬dest,
         \dx¬amount,
-        \is{\dx¬memo}{\memory\subrange{o}{\mathsf{W}_T}},
+        \is{\dx¬memo}{\memory\subrange{o}{\Cmemosize}},
         \is{\dx¬gas}{l}
-      } &\when \Nrange{o}{\mathsf{W}_T} \subseteq \readable{\memory} \\
+      } &\when \Nrange{o}{\Cmemosize} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using b &= (\imX_\im¬self)_\sa¬balance - \dx¬amount \\
@@ -872,7 +876,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬accounts} &\when h = \error \\
       \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \mathbf{d} = \error \vee \mathbf{d}_\sa¬codehash \ne \encode[32]{\imX_\im¬id} \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \mathbf{d}_\sa¬items \ne 2 \vee \tup{h, l} \not\in \mathbf{d}_\sa¬requests \\
-      \tup{\continue, \mathtt{OK}, (\imX_\im¬state)_\ps¬accounts \setminus \set{d} \cup \set{ \kv{\imX_\im¬id}{\mathbf{s}'} }} &\otherwhen \mathbf{d}_\sa¬requests\subb{h, l} = \sq{x, y}, y < t - \mathsf{D} \\
+      \tup{\continue, \mathtt{OK}, (\imX_\im¬state)_\ps¬accounts \setminus \set{d} \cup \set{ \kv{\imX_\im¬id}{\mathbf{s}'} }} &\otherwhen \mathbf{d}_\sa¬requests\subb{h, l} = \sq{x, y}, y < t - \Cexpungeperiod \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts} &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
@@ -942,9 +946,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
           \keys{\mathbf{a}_\sa¬requests} &= \keys{(\imX_\im¬self)_\sa¬requests} \setminus \set{\tup{h, z}}\ ,\\[2pt]
           \keys{\mathbf{a}_\sa¬preimages} &= \keys{(\imX_\im¬self)_\sa¬preimages} \setminus \set{h}
         \end{aligned}
-      \ \right\} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} \in \set{\sq{}, \sq{x, y}},\ y < t - \mathsf{D} \\
+      \ \right\} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} \in \set{\sq{}, \sq{x, y}},\ y < t - \Cexpungeperiod \\
       \quad \mathbf{a}_\sa¬requests\subb{h, z} = \sq{x, t} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} = \sq{x} \\
-      \quad \mathbf{a}_\sa¬requests\subb{h, z} = \sq{w, t} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} = \sq{x, y, w},\ y < t - \mathsf{D} \\
+      \quad \mathbf{a}_\sa¬requests\subb{h, z} = \sq{w, t} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} = \sq{x, y, w},\ y < t - \Cexpungeperiod \\
       \error &\otherwise\\
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}

@@ -1,41 +1,46 @@
 \section{Recent History}\label{sec:recenthistory}
 
-We retain in state information on the most recent $\mathsf{H}$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
+We retain in state information on the most recent $\Crecenthistorylen$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
 \begin{align}
-  \recent &\equiv \tup{\recenthistory, \beefybelt} \label{eq:recenthistory} \\
-  \recenthistory &\in \sequence[:\mathsf{H}]{\tuple{
+  \label{eq:recentspec}
+  \recent &\equiv \tup{\recenthistory, \accoutbelt}\\
+  \label{eq:recenthistoryspec}
+  \recenthistory &\in \sequence[:\Crecenthistorylen]{\tuple{
     \isa{\rh¬headerhash}{\hash},
     \isa{\rh¬stateroot}{\hash},
     \isa{\rh¬accoutlogsuperpeak}{\hash},
     \isa{\rh¬reportedpackagehashes}{\dictionary{\hash}{\hash}}
   }}\\
-  \beefybelt &\in \sequence{\optional{\hash}} \\
+  \label{eq:accoutbeltspec}
+  \accoutbelt &\in \sequence{\optional{\hash}} \\
+  \label{eq:lastaccoutspec}
   \lastaccout &\in \sequence{\tup{\serviceid, \hash}}
 \end{align}
 
-For each recent block, we retain its header hash, its state root, its accumulation-result \textsc{mmb} and the corresponding work-package hashes of each item reported (which is no more than the total number of cores, $\corecount = 341$).
+For each recent block, we retain its header hash, its state root, its accumulation-result \textsc{mmb} and the corresponding work-package hashes of each item reported (which is no more than the total number of cores, $\Ccorecount = 341$).
 
 During the accumulation stage, a value with the partial transition of this state is provided which contains the correction for the newly-known state-root of the parent block:
 \begin{equation}\label{eq:correctlaststateroot}
   \recenthistorypostparentstaterootupdate \equiv \recenthistory\quad\exc\quad\recenthistorypostparentstaterootupdate\subb{\len{\recenthistory} - 1}_\rh¬stateroot = \H_\¬priorstateroot
 \end{equation}
 
-We define the new Accumulation Output Log $\beefybelt$. This is formed from the block's accumulation-output sequence $\lastaccout'$ (defined in section \ref{sec:accumulation}), taking its root using the basic binary Merklization function ($\fnmerklizewb$, defined in appendix \ref{sec:merklization}) and appending it to the previous log value with the \textsc{mmb} append function (defined in appendix \ref{sec:mmr}). Throughout, the Keccak hash function is used to maximize compatibility with legacy systems:
+We define the new Accumulation Output Log $\accoutbelt$. This is formed from the block's accumulation-output sequence $\lastaccout'$ (defined in section \ref{sec:accumulation}), taking its root using the basic binary Merklization function ($\fnmerklizewb$, defined in appendix \ref{sec:merklization}) and appending it to the previous log value with the \textsc{mmb} append function (defined in appendix \ref{sec:mmr}). Throughout, the Keccak hash function is used to maximize compatibility with legacy systems:
 \begin{align}
   \using \mathbf{s} &= \sq{\build{\encode[4]{s} \concat \encode{h}}{\tup{s, h} \orderedin \lastaccout'}}\\
-  \label{eq:buildbeefymap}
-  \beefybelt' &\equiv \mmrappend{\beefybelt, \merklizewb{\mathbf{s}, \fnkeccak}, \fnkeccak}
+  \label{eq:accoutbeltdef}
+  \accoutbelt' &\equiv \mmrappend{\accoutbelt, \merklizewb{\mathbf{s}, \fnkeccak}, \fnkeccak}
 \end{align}
 
 The final state transition for $\recenthistory$ appends a new item including the new block's header hash, a Merkle commitment to the block's Accumulation Output Log and the set of work-reports made into it (for which we use the guarantees extrinsic, $\xtguarantees$). Formally:
 \begin{equation}
+  \label{eq:recenthistorydef}
   \begin{aligned}
     \recenthistory' &\equiv {\overleftarrow{\recenthistorypostparentstaterootupdate \append \tup{
       \rh¬reportedpackagehashes,
       \is{\rh¬headerhash}{\blake{\theheader}},
       \is{\rh¬stateroot}{\zerohash},
-      \is{\rh¬accoutlogsuperpeak}{\mmrsuperpeak{\beefybelt'}}
-      }}}^\mathsf{H} \\
+      \is{\rh¬accoutlogsuperpeak}{\mmrsuperpeak{\accoutbelt'}}
+      }}}^\Crecenthistorylen \\
     \where \rh¬reportedpackagehashes &= \set{\build{
         \kv{
           ((g_\xg¬workreport)_\wr¬avspec)_\as¬packagehash

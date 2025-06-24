@@ -114,9 +114,9 @@ The fact that balances are constrained to being less than $2^{64}$ implies that 
 We further presume that a number of constant \emph{prices} stated in terms of tokens are known. However we leave the specific values to be determined in following work:
 
 \begin{description}\label{eq:prices}
-  \item[$\mathsf{B}_I$] the additional minimum balance implied for a single item within a mapping.
-  \item[$\mathsf{B}_L$] the additional minimum balance implied for a single octet of data within a mapping.
-  \item[$\mathsf{B}_S$] the minimum balance implied for a service.
+  \item[$\Citemdeposit$] the additional minimum balance implied for a single item within a mapping.
+  \item[$\Cbytedeposit$] the additional minimum balance implied for a single octet of data within a mapping.
+  \item[$\Cbasedeposit$] the minimum balance implied for a service.
 \end{description}
 
 
@@ -176,14 +176,14 @@ The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as s
   \ram &\equiv \tuple{
     \isa{\ram¬value}{\blob[2^{32}]},
     \isa{\ram¬access}{\sequence[p]{\set{\text{W}, \text{R}, \none}}}
-  }\,,\ p = \frac{2^{32}}{\mathsf{Z}_P}\\
-  \mathsf{Z}_P &= 2^{12}
+  }\,,\ p = \frac{2^{32}}{\Cpvmpagesize}\\
+  \Cpvmpagesize &= 2^{12}
 \end{align}
 
-The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\mathsf{Z}_P = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\ram$ includes two components: a value $\ram¬value$ and access $\ram¬access$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \ram$ is typically used to denote \textsc{ram}.
+The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\Cpvmpagesize = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\ram$ includes two components: a value $\ram¬value$ and access $\ram¬access$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \ram$ is typically used to denote \textsc{ram}.
 \begin{align}
-  \readable{\memory} &\equiv \set{\build{i}{\memory_\ram¬access\subb{\floor{\nicefrac{i}{\mathsf{Z}_P}}} \ne \none}} \\
-  \writable{\memory} &\equiv \set{\build{i}{\memory_\ram¬access\subb{\floor{\nicefrac{i}{\mathsf{Z}_P}}} = \text{W} }}
+  \readable{\memory} &\equiv \set{\build{i}{\memory_\ram¬access\subb{\floor{\nicefrac{i}{\Cpvmpagesize}}} \ne \none}} \\
+  \writable{\memory} &\equiv \set{\build{i}{\memory_\ram¬access\subb{\floor{\nicefrac{i}{\Cpvmpagesize}}} = \text{W} }}
 \end{align}
 
 We define two sets of indices for the \textsc{ram} $\memory$: $\readable{\memory}$ is the set of indices which may be read from; and $\writable{\memory}$ is the set of indices which may be written to.
@@ -215,11 +215,12 @@ The full definition follows in appendix \ref{sec:virtualmachine}.
 
 
 
-\subsection{Epochs and Slots}\label{sec:epochsandslots}
+\subsection{Epochs and Slots}
+\label{sec:epochsandslots}
 
 Unlike the \emph{YP} Ethereum with its proof-of-work consensus system, \Jam defines a proof-of-authority consensus mechanism, with the authorized validators presumed to be identified by a set of public keys and decided by a \emph{staking} mechanism residing within some system hosted by \Jam. The staking system is out of scope for the present work; instead there is an \textsc{api} which may be utilized to update these keys, and we presume that whatever logic is needed for the staking system will be introduced and utilize this \textsc{api} as needed.
 
-The Safrole mechanism subdivides time following genesis into fixed length \emph{epoch}s with each epoch divided into $\epochlen = 600$ time\emph{slot}s each of uniform length $\mathsf{P} = 6$ seconds, given an epoch period of $\epochlen\cdot\mathsf{P} = 3600$ seconds or one hour.
+The Safrole mechanism subdivides time following genesis into fixed length \emph{epoch}s with each epoch divided into $\Cepochlen = 600$ time\emph{slot}s each of uniform length $\Cslotseconds = 6$ seconds, given an epoch period of $\Cepochlen\cdot\Cslotseconds = 3600$ seconds or one hour.
 
 This six-second slot period represents the minimum time between \Jam blocks, and through Safrole we aim to strictly minimize forks arising both due to contention within a slot (where two valid blocks may be produced within the same six-second period) and due to contention over multiple slots (where two valid blocks are produced in different time slots but with the same parent).
 
