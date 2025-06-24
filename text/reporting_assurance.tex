@@ -1,4 +1,5 @@
-\section{Reporting and Assurance}\label{sec:reporting}
+\section{Reporting and Assurance}
+\label{sec:reporting}
 
 Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make their way into the state of service accounts, $\accounts$. A \emph{work-package}, which comprises several \emph{work-items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work-digests} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After enough assurances the work-report is considered \emph{available}, and the work-digests transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}. The report may also be \emph{timed-out}, implying it may be replaced by another report without accumulation.
 
@@ -12,7 +13,8 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 
 \subsection{State}
 The state of the reporting and availability portion of the protocol is largely contained within $\reports$, which tracks the work-reports which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
-\begin{equation}\label{eq:reportingstate}
+\begin{equation}
+  \label{eq:reportingstate}
   \reports \in \sequence[\Ccorecount]{
     \optional{\tuple{
       \isa{\rs¬workreport}{\workreport} ,\,
@@ -23,21 +25,23 @@ The state of the reporting and availability portion of the protocol is largely c
 
 As usual, intermediate and posterior values ($\reportspostjudgement$, $\reportspostguarantees$, $\reportspostassurances$) are held under the same constraints as the prior value.
 
-\subsubsection{Work Report}\label{sec:workreport}
+\subsubsection{Work Report}
+\label{sec:workreport}
 A work-report, of the set $\workreport$, is defined as a tuple of the work-package specification, $\wr¬avspec$; the refinement context, $\wr¬context$; the core-index (\ie on which the work is done), $\wr¬core$; as well as the authorizer hash $\wr¬authorizer$ and trace $\wr¬authtrace$; a segment-root lookup dictionary $\wr¬srlookup$; the gas consumed during the Is-Authorized invocation, $\wr¬authgasused$; and finally the work-digests $\wr¬digests$ which comprise the results of the evaluation of each of the items in the package together with some associated data. Formally:
-\begin{equation}\label{eq:workreport}
-\workreport \equiv \tuple{
-  \begin{aligned}
-    &\isa{\wr¬avspec}{\avspec},\ 
-    \isa{\wr¬context}{\workcontext},\ 
-    \isa{\wr¬core}{\coreindex},\ 
-    \isa{\wr¬authorizer}{\hash},\ 
-    \isa{\wr¬authtrace}{\blob},\\
-    &\isa{\wr¬srlookup}{\dictionary{\hash}{\hash}},\ 
-    \isa{\wr¬digests}{\sequence[1:\Cmaxpackageitems]{\workdigest}},\ 
-    \isa{\wr¬authgasused}{\gas}
-  \end{aligned}
-}
+\begin{equation}
+  \label{eq:workreport}
+  \workreport \equiv \tuple{
+    \begin{aligned}
+      &\isa{\wr¬avspec}{\avspec},\ 
+      \isa{\wr¬context}{\workcontext},\ 
+      \isa{\wr¬core}{\coreindex},\ 
+      \isa{\wr¬authorizer}{\hash},\ 
+      \isa{\wr¬authtrace}{\blob},\\
+      &\isa{\wr¬srlookup}{\dictionary{\hash}{\hash}},\ 
+      \isa{\wr¬digests}{\sequence[1:\Cmaxpackageitems]{\workdigest}},\ 
+      \isa{\wr¬authgasused}{\gas}
+    \end{aligned}
+  }
 \end{equation}
 
 We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\Cmaxreportdeps = 8$:
@@ -49,6 +53,7 @@ We limit the sum of the number of items in the segment-root lookup dictionary an
 
 A \emph{refinement context}, denoted by the set $\workcontext$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $\wc¬anchorhash$ along with its associated posterior state-root $\wc¬anchorpoststate$ and accumulation output log super-peak $\wc¬anchoraccoutlog$; and the \emph{lookup-anchor}, header hash $\wc¬lookupanchorhash$ and of timeslot $\wc¬lookupanchortime$. Finally, it identifies the hash of any prerequisite work-packages $\wc¬prerequisites$. Formally:
 \begin{equation}
+  \label{eq:workcontext}
   \workcontext \equiv \tuple{\,\begin{alignedat}{5}
     \isa{\wc¬anchorhash&}{\hash}\,,\;
     \isa{&\wc¬anchorpoststate&}{\hash}\,,\;
@@ -62,6 +67,7 @@ A \emph{refinement context}, denoted by the set $\workcontext$, describes the co
 \subsubsection{Availability}
 We define the set of \emph{availability specifications}, $\avspec$, as the tuple of the work-package's hash $\as¬packagehash$, an auditable work bundle length $\as¬bundlelen$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $\as¬erasureroot$, a segment-root $\as¬segroot$ and segment-count $\as¬segcount$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
 \begin{align}
+  \label{eq:avspec}
   \avspec &\equiv \tuple{
     \isa{\as¬packagehash}{\hash}\,,\;
     \isa{\as¬bundlelen}{\bloblength}\,,\;
@@ -77,7 +83,8 @@ The \emph{segment-root} ($\as¬segroot$) is the root of a constant-depth, left-b
 
 \subsubsection{Work Digest}
 We finally come to define a \emph{work-digest}, $\workdigest$, which is the data conduit by which services' states may be altered through the computation done within a work-package.
-\begin{equation}\label{eq:workdigest}
+\begin{equation}
+  \label{eq:workdigest}
   \workdigest \equiv \tuple{
     \begin{alignedat}{9}
       \isa{\wd¬serviceindex&}{\serviceid}\,,\;
@@ -100,6 +107,7 @@ Next, the hash of the payload ($\wd¬payloadhash$) within the work item which wa
 
 There is the work \emph{result}, the output blob or error of the execution of the code, $\wd¬result$, which may be either an octet sequence in case it was successful, or a member of the set $\workerror$, if not. This latter set is defined as the set of possible errors, formally:
 \begin{equation}
+  \label{eq:workerror}
   \workerror \in \set{ \oog, \panic, \badexports, \oversize, \token{BAD}, \token{BIG} }
 \end{equation}
 
@@ -129,6 +137,7 @@ We first define $\reportspostguarantees$, the intermediate state to be utilized 
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
 \begin{align}
+  \label{eq:xtassurances}
   \xtassurances \in \sequence[\mathsf{:\Cvalcount}]{\tuple{
     \isa{\xa¬anchor}{\hash},\,
     \isa{\xa¬availabilities}{\bitstring[\Ccorecount]},\,
@@ -157,7 +166,8 @@ A bit may only be set if the corresponding core has a report pending availabilit
 
 \subsubsection{Available Reports}
 A work-report is said to become \emph{available} if and only if there are a clear \twothirds super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\justbecameavailable$ as:
-\begin{align}\label{eq:availableworkreports}
+\begin{align}
+  \label{eq:availableworkreports}
   \justbecameavailable &\equiv \sq{\build{
       \reportspostjudgement\subb{\cX}_\rs¬workreport
     }{
@@ -167,7 +177,8 @@ A work-report is said to become \emph{available} if and only if there are a clea
 \end{align}
 
 This value is utilized in the definition of both $\accountspost$ and $\reportspostguarantees$ which we will define presently as equivalent to $\reportspostjudgement$ except for the removal of items which are either now available or have timed out:
-\begin{align}\label{eq:reportspostguaranteesdef}
+\begin{align}
+  \label{eq:reportspostguaranteesdef}
   \forall \cX \in \coreindex: \reportspostguarantees\subb{\cX} \equiv \begin{cases}
     \none &\when\reports\subb{\cX}_\rs¬workreport \in \justbecameavailable \vee \H_\¬timeslot \ge \reportspostjudgement\subb{\cX}_\rs¬timestamp + \Cassurancetimeoutperiod\\
     \reportspostjudgement\subb{\cX} &\otherwise

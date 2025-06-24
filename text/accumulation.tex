@@ -1,14 +1,13 @@
-\newcommand*{\srmap}{P}
-\newcommand*{\opers}{O}
-\newcommand*{\servouts}{B}
-\newcommand*{\gasused}{U}
-\newcommand*{\fnprovide}{P}
-\newcommand*{\accumulatedcup}{\overbrace{\accumulated}}
-\newcommand*{\deferredtransfers}{\mathbf{t}}
-\newcommand*{\numberofitemsaccumulated}{n}
-\newcommand*{\servicegasused}{\mathbf{u}}
+\newcommand*{\local¬fnsrmap}{P}
+\newcommand*{\local¬fnservouts}{B}
+\newcommand*{\local¬fngasused}{U}
+\newcommand*{\local¬fnprovide}{P}
+\newcommand*{\local¬deferredtransfers}{\mathbf{t}}
+\newcommand*{\local¬numberofitemsaccumulated}{n}
+\newcommand*{\local¬servicegasused}{\mathbf{u}}
 
-\section{Accumulation}\label{sec:accumulation}
+\section{Accumulation}
+\label{sec:accumulation}
 
 Accumulation may be defined as some function whose arguments are $\justbecameavailable$ and $\accounts$ together with selected portions of (at times partially transitioned) state and which yields the posterior service state $\accountspostpreimage$ together with additional state elements $\stagingset'$, $\authqueue'$ and $\privileges'$.
 
@@ -23,7 +22,8 @@ The proposition of accumulation is in fact quite simple: we merely wish to execu
 \subsection{History and Queuing}
 
 Accumulation of a work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what has been accumulated. This history, $\accumulated$, is sufficiently large for an epoch worth of work-reports. Formally:
-\begin{align}\label{eq:accumulatedspec}
+\begin{align}
+  \label{eq:accumulatedspec}
   \accumulated &\in \sequence[\Cepochlen]{\protoset{\hash}} \\
   \accumulatedcup &\equiv \bigcup_{x \in \accumulated}(x)
 \end{align}
@@ -66,15 +66,15 @@ We further define the accumulation priority queue function $Q$, which provides t
     &\sequence{\tuple{\workreport, \protoset{\hash}}} \to \sequence{\workreport} \\
     &\mathbf{r} \mapsto \begin{cases}
       \sq{} &\when \mathbf{g} = \sq{} \\
-      \mathbf{g} \concat Q(E(\mathbf{r}, \srmap(\mathbf{g})))\!\!\!\! &\otherwise \\
+      \mathbf{g} \concat Q(E(\mathbf{r}, \local¬fnsrmap(\mathbf{g})))\!\!\!\! &\otherwise \\
       \multicolumn{2}{l}{\,\where \mathbf{g} = \sq{\build{w}{\tup{w, \emset} \orderedin \mathbf{r}}}}
     \end{cases}
   }
 \end{equation}
 
-Finally, we define the mapping function $\srmap$ which extracts the corresponding work-package hashes from a set of work-reports:
+Finally, we define the mapping function $\local¬fnsrmap$ which extracts the corresponding work-package hashes from a set of work-reports:
 \begin{equation}
-  \srmap\colon\abracegroup{
+  \local¬fnsrmap\colon\abracegroup{
     \protoset{\workreport} &\to \protoset{\hash}\\
     \mathbf{w} &\mapsto \set{
       \build{(w_\wr¬avspec)_\as¬packagehash}{w \in \mathbf{w}}
@@ -86,10 +86,11 @@ We may now define the sequence of accumulatable work-reports in this block as $\
 \begin{align}
   \using m &= \H_\¬timeslot \bmod \Cepochlen\\
   \justbecameavailable^* &\equiv \justbecameavailable^! \concat Q(\mathbf{q}) \\
-  \quad\where \mathbf{q} &= E(\concatall{\ready\interval{m}{}} \concat \concatall{\ready\interval{}{m}} \concat \justbecameavailable^Q, \srmap(\justbecameavailable^!))
+  \quad\where \mathbf{q} &= E(\concatall{\ready\interval{m}{}} \concat \concatall{\ready\interval{}{m}} \concat \justbecameavailable^Q, \local¬fnsrmap(\justbecameavailable^!))
 \end{align}
 
 \subsection{Execution}
+\label{sec:accumulationexecution}
 
 We work with a limited amount of gas per block and therefore may not be able to process all items in $\justbecameavailable^*$ in a single block. There are two slightly antagonistic factors allowing us to optimize the amount of work-items, and thus work-reports, accumulated in a single block:
 
@@ -117,6 +118,7 @@ Our formalisms begin by defining $\partialstate$ as a characterization of (\ie v
 
 We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $\dx¬memo$ of $\Cmemosize = 128$ octets, together with the service index of the sender $\dx¬source$, the service index of the receiver $\dx¬dest$, the balance to be transferred $\dx¬amount$ and the gas limit $\dx¬gas$ for the transfer. Formally:
 \begin{align}
+  \label{eq:defxfer}
   \defxfer \equiv \tuple{
     \isa{\dx¬source}{\serviceid} ,
     \isa{\dx¬dest}{\serviceid} ,
@@ -126,16 +128,17 @@ We denote the set characterizing a \emph{deferred transfer} as $\defxfer$, notin
   }
 \end{align}
 
-Finally, we denote the set of service/hash pairs, utilized as a service-indexed commitment to the accumulation output, as $\servouts$:
+Finally, we denote the set of service/hash pairs, utilized as a service-indexed commitment to the accumulation output, as $\local¬fnservouts$:
 \begin{equation}
-  \servouts \equiv \protoset{\tuple{\serviceid, \hash}} \qquad
-  \gasused \equiv \sequence{\tuple{\serviceid, \gas}}
+  \local¬fnservouts \equiv \protoset{\tuple{\serviceid, \hash}} \qquad
+  \local¬fngasused \equiv \sequence{\tuple{\serviceid, \gas}}
 \end{equation}
 
 We define the outer accumulation function $\accseq$ which transforms a gas-limit, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the number of work-results accumulated, a posterior state-context, the resultant deferred-transfers and accumulation-output pairings:
 \begin{equation}
+  \label{eq:accseq}
   \accseq\colon\abracegroup{
-    &\tuple{\gas, \sequence{\workreport}, \partialstate, \dictionary{\serviceid}{\gas}} \to \tuple{\N, \partialstate, \defxfers, \servouts, \gasused} \\
+    &\tuple{\gas, \sequence{\workreport}, \partialstate, \dictionary{\serviceid}{\gas}} \to \tuple{\N, \partialstate, \defxfers, \local¬fnservouts, \local¬fngasused} \\
     &\tup{g, \mathbf{w}, \psX, \mathbf{f}} \!\mapsto\! \begin{cases}
       \tup{0, \psX, \sq{}, \emset, \sq{}} &
         \when i = 0 \\
@@ -158,8 +161,9 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
 
 We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the total gas utilized in \textsc{pvm} execution, a posterior state-context and the resultant accumulation-output pairings and deferred-transfers:
 \begin{equation}
+  \label{eq:accpar}
   \accpar\colon\abracegroup[\;]{\begin{aligned}
-    &\tuple{\partialstate, \sequence{\workreport}, \dictionary{\serviceid}{\gas}} \to \tuple{\partialstate, \defxfers, \servouts, \gasused} \\
+    &\tuple{\partialstate, \sequence{\workreport}, \dictionary{\serviceid}{\gas}} \to \tuple{\partialstate, \defxfers, \local¬fnservouts, \local¬fngasused} \\
     &\tup{\psX, \mathbf{w}, \mathbf{f}} \mapsto \tup{
       \tup{
         \local¬accounts', \local¬stagingset', \local¬authqueue', \local¬manager', \local¬assigners', \local¬delegator', \local¬alwaysaccers'
@@ -189,7 +193,7 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         }{
           s \orderedin \mathbf{s}
         }} \\
-      \local¬accounts' &= \fnprovide(
+      \local¬accounts' &= \local¬fnprovide(
         (\ps¬accounts \cup \mathbf{n}) \setminus \mathbf{m},
         \bigcup_{s \in \mathbf{s}} \accone(\psX, \mathbf{w}, \mathbf{f}, s)_\ao¬provisions
       ) \\
@@ -226,9 +230,9 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
   \end{aligned}}
 \end{equation}
 
-And $\fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/hash pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
+And $\local¬fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/hash pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
 \begin{equation}
-  \fnprovide\colon\abracegroup{
+  \local¬fnprovide\colon\abracegroup{
     &\tuple{\dictionary{\serviceid}{\serviceaccount}, \protoset{\tuple{\serviceid, \blob}}} \to \dictionary{\serviceid}{\serviceaccount} \\
     &\tup{\mathbf{d}, \mathbf{p}} \mapsto \mathbf{d}'\;\where \mathbf{d}' = \mathbf{d}\;\text{except:} \\
     &\quad\forall \tup{s, \mathbf{i}} \in \mathbf{p},\;
@@ -267,7 +271,8 @@ The single-service accumulation function, $\accone$, transforms an initial state
   }
 \end{align}
 \begin{align}
-    &\accone \colon \abracegroup[\;]{
+  \label{eq:accone}
+  &\accone \colon \abracegroup[\;]{
     &\begin{aligned}
       \tuple{\begin{aligned}
         &\partialstate, \sequence{\workreport},\\
@@ -323,7 +328,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
   \!\!\!\!\!\\
   \label{eq:finalstateaccumulation}
   &\tup{
-    \numberofitemsaccumulated, \psX', \deferredtransfers, \lastaccout', \servicegasused
+    \local¬numberofitemsaccumulated, \psX', \local¬deferredtransfers, \lastaccout', \local¬servicegasused
   } \equiv \accseq(g, \justbecameavailable^*, \psX, \alwaysaccers) \\
   \label{eq:accountspostaccdef}
   &\tup{
@@ -338,11 +343,13 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
   \!\!\!\!\!
 \end{align}
 
-From this formulation, we also receive $\deferredtransfers$, the grand sequence of deferred transfers, together with $\numberofitemsaccumulated$, the total number of work-items accumulated and $\mathbf{u}$, the gas used in the accumulation process for each service. Each of these terms are used shortly.
+From this formulation, we also receive $\local¬deferredtransfers$, the grand sequence of deferred transfers, together with $\local¬numberofitemsaccumulated$, the total number of work-items accumulated and $\mathbf{u}$, the gas used in the accumulation process for each service. Each of these terms are used shortly.
 
 We compose $\accumulationstatistics$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-items accumulated. Formally:
 \begin{align}
+  \label{eq:accumulationstatisticsspec}
   &\accumulationstatistics \in \dictionary{\serviceid}{\tuple{\gas, \N}} \\
+  \label{eq:accumulationstatisticsdef}
   &\textstyle \accumulationstatistics \equiv \set{\build{
     \kv{s}{
       \tup{\sum_{\tup{s, u} \in \mathbf{u}}(u), \len{N(s)}}
@@ -360,13 +367,13 @@ We compose $\accumulationstatistics$, our accumulation statistics, which is a ma
 
 \newcommand*{\selectxfers}{X}
 
-We have denoted the sequence of implied transfers as $\deferredtransfers$, ordered internally according to the source service's execution. We define a selection function $\selectxfers$, which maps a desired destination service index into the sequence of transfers from those implied which target said service. It is ordered primarily according to the source service index and secondarily their order within $\deferredtransfers$. Formally:
+We have denoted the sequence of implied transfers as $\local¬deferredtransfers$, ordered internally according to the source service's execution. We define a selection function $\selectxfers$, which maps a desired destination service index into the sequence of transfers from those implied which target said service. It is ordered primarily according to the source service index and secondarily their order within $\local¬deferredtransfers$. Formally:
 \begin{equation}
   \selectxfers\colon \abracegroup[\;]{
     \serviceid &\to \defxfers \\
     d &\mapsto \sq{\build{t}{
       s \orderedin \serviceid,\ 
-      t \orderedin \deferredtransfers,\ 
+      t \orderedin \local¬deferredtransfers,\ 
       t_\dx¬source = s,\ 
       t_\dx¬dest = d
     }}
@@ -406,7 +413,7 @@ Note that $\Psi_T$ is defined in appendix \ref{sec:ontransferinvocation} such th
 
 We define the final state of the ready queue and the accumulated map by integrating those work-reports which were accumulated in this block and shifting any from the prior state with the oldest such items being dropped entirely:
 \begin{align}
-  \accumulated'_{\Cepochlen - 1} &= \srmap(\justbecameavailable^*\sub{\dots n}) \\
+  \accumulated'_{\Cepochlen - 1} &= \local¬fnsrmap(\justbecameavailable^*\sub{\dots n}) \\
   \forall i \in \Nmax{\Cepochlen - 1}: \accumulated'\sub{i} &\equiv \accumulated\sub{i + 1} \\
   \forall i \in \N_\Cepochlen : \cyclic{\ready'}\sub{m - i} &\equiv \begin{cases}
     E(\justbecameavailable^Q, \accumulated'\sub{\Cepochlen - 1}) &\when i = 0 \\

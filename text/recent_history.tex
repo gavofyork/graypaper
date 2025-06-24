@@ -3,7 +3,7 @@
 We retain in state information on the most recent $\Crecenthistorylen$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
 \begin{align}
   \label{eq:recentspec}
-  \recent &\equiv \tup{\recenthistory, \beefybelt}\\
+  \recent &\equiv \tup{\recenthistory, \accoutbelt}\\
   \label{eq:recenthistoryspec}
   \recenthistory &\in \sequence[:\Crecenthistorylen]{\tuple{
     \isa{\rh¬headerhash}{\hash},
@@ -11,8 +11,8 @@ We retain in state information on the most recent $\Crecenthistorylen$ blocks. T
     \isa{\rh¬accoutlogsuperpeak}{\hash},
     \isa{\rh¬reportedpackagehashes}{\dictionary{\hash}{\hash}}
   }}\\
-  \label{eq:beefybeltspec}
-  \beefybelt &\in \sequence{\optional{\hash}} \\
+  \label{eq:accoutbeltspec}
+  \accoutbelt &\in \sequence{\optional{\hash}} \\
   \label{eq:lastaccoutspec}
   \lastaccout &\in \sequence{\tup{\serviceid, \hash}}
 \end{align}
@@ -24,11 +24,11 @@ During the accumulation stage, a value with the partial transition of this state
   \recenthistorypostparentstaterootupdate \equiv \recenthistory\quad\exc\quad\recenthistorypostparentstaterootupdate\subb{\len{\recenthistory} - 1}_\rh¬stateroot = \H_\¬priorstateroot
 \end{equation}
 
-We define the new Accumulation Output Log $\beefybelt$. This is formed from the block's accumulation-output sequence $\lastaccout'$ (defined in section \ref{sec:accumulation}), taking its root using the basic binary Merklization function ($\fnmerklizewb$, defined in appendix \ref{sec:merklization}) and appending it to the previous log value with the \textsc{mmb} append function (defined in appendix \ref{sec:mmr}). Throughout, the Keccak hash function is used to maximize compatibility with legacy systems:
+We define the new Accumulation Output Log $\accoutbelt$. This is formed from the block's accumulation-output sequence $\lastaccout'$ (defined in section \ref{sec:accumulation}), taking its root using the basic binary Merklization function ($\fnmerklizewb$, defined in appendix \ref{sec:merklization}) and appending it to the previous log value with the \textsc{mmb} append function (defined in appendix \ref{sec:mmr}). Throughout, the Keccak hash function is used to maximize compatibility with legacy systems:
 \begin{align}
   \using \mathbf{s} &= \sq{\build{\encode[4]{s} \concat \encode{h}}{\tup{s, h} \orderedin \lastaccout'}}\\
-  \label{eq:buildbeefymap}
-  \beefybelt' &\equiv \mmrappend{\beefybelt, \merklizewb{\mathbf{s}, \fnkeccak}, \fnkeccak}
+  \label{eq:accoutbeltdef}
+  \accoutbelt' &\equiv \mmrappend{\accoutbelt, \merklizewb{\mathbf{s}, \fnkeccak}, \fnkeccak}
 \end{align}
 
 The final state transition for $\recenthistory$ appends a new item including the new block's header hash, a Merkle commitment to the block's Accumulation Output Log and the set of work-reports made into it (for which we use the guarantees extrinsic, $\xtguarantees$). Formally:
@@ -38,7 +38,7 @@ The final state transition for $\recenthistory$ appends a new item including the
       \rh¬reportedpackagehashes,
       \is{\rh¬headerhash}{\blake{\theheader}},
       \is{\rh¬stateroot}{\zerohash},
-      \is{\rh¬accoutlogsuperpeak}{\mmrsuperpeak{\beefybelt'}}
+      \is{\rh¬accoutlogsuperpeak}{\mmrsuperpeak{\accoutbelt'}}
       }}}^\Crecenthistorylen \\
     \where \rh¬reportedpackagehashes &= \set{\build{
         \kv{
