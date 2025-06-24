@@ -53,11 +53,13 @@ We restate $\safrole$ into a number of components:
 
 $\epochroot$ is the epoch's root, a Bandersnatch ring root composed with the one Bandersnatch key of each of the next epoch's validators, defined in $\pendingset$ (itself defined in the next section).
 \begin{align}
+  \label{eq:epochrootspec}
   \epochroot &\in \ringroot
 \end{align}
 
 Finally, $\ticketaccumulator$ is the ticket accumulator, a series of highest-scoring ticket identifiers to be used for the next epoch. $\sealtickets$ is the current epoch's slot-sealer series, which is either a full complement of $\Cepochlen$ tickets or, in the case of a fallback mode, a series of $\Cepochlen$ Bandersnatch keys:
 \begin{align}
+  \label{eq:ticketaccumulatorsealticketsspec}
   \ticketaccumulator \in \sequence[:\Cepochlen]{\safroleticket} \,,\quad
   \sealtickets \in \sequence[\Cepochlen]{\safroleticket} \cup \sequence[\Cepochlen]{\bskey}
 \end{align}

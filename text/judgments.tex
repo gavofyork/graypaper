@@ -17,7 +17,7 @@ As mentioned, recording reports found to have a high confidence of invalidity is
 \subsection{The State}
 
 The \emph{disputes} state includes four items, three of which concern verdicts: a good-set ($\goodset$), a bad-set ($\badset$) and a wonky-set ($\wonkyset$) containing the hashes of all work-reports which were respectively judged to be correct, incorrect or that it appears impossible to judge. The fourth item, the punish-set ($\offenders$), is a set of Ed25519 keys representing validators which were found to have misjudged a work-report.
-\begin{equation}
+\begin{equation}\label{eq:disputesspec}
   \disputes \equiv \tup{\goodset, \badset, \wonkyset, \offenders}
 \end{equation}
 
@@ -122,21 +122,25 @@ We clear any work-reports which we judged as uncertain or invalid from their cor
 
 The state's good-set, bad-set and wonky-set assimilate the hashes of the reports from each verdict. Finally, the punish-set accumulates the keys of any validators who have been found guilty of offending. Formally:
 \begin{align}
+  \label{eq:goodsetdef}
   \goodset' &\equiv \goodset \cup \set{\build{
       \vs¬reporthash
     }{
       \tup{\vs¬reporthash, \floor{\twothirds\Cvalcount} + 1} \in \verdicts
     }} \\
+  \label{eq:badsetdef}
   \badset' &\equiv \badset \cup \set{\build{
       \vs¬reporthash
     }{
       \tup{\vs¬reporthash, 0} \in \verdicts
     }} \\
+  \label{eq:wonkysetdef}
   \!\!\wonkyset' &\equiv \wonkyset \cup \set{\build{
       \vs¬reporthash
     }{
       \tup{\vs¬reporthash, \floor{\onethird\Cvalcount}} \in \verdicts
     }} \\
+  \label{eq:offenderssetdef}
   \offenders' &\equiv \offenders \cup \set{\build{
       \¬offenderindex
     }{

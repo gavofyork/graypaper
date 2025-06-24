@@ -185,52 +185,52 @@ Without any superscript, the block is assumed to the block being imported or, if
 Here, the prime annotation indicates posterior state. Individual components may be identified with a letter subscript.
 \begin{description}
   \item[$\authpool$] The core $\authpool$uthorizations pool. See equation \ref{eq:authstatecomposition}. %	α
-  \item[$\recent$] Log of recent activity. See equation \ref{eq:recenthistory}. %	β
+  \item[$\recent$] Log of recent activity. See equation \ref{eq:recentspec}. %	β
   \begin{description}
-    \item[$\recenthistory$] Information on the most recent blocks.
-    \item[$\beefybelt$] The Merkle mountain belt for accumulating Accumulation outputs.
+    \item[$\recenthistory$] Information on the most recent blocks. See equation \ref{eq:recenthistoryspec}.
+    \item[$\beefybelt$] The Merkle mountain belt for accumulating Accumulation outputs. See equation \ref{eq:beefybeltspec}.
   \end{description}
   \item[$\safrole$] State concerning Safrole. See equation \ref{eq:consensusstatecomposition}. %	γ
   \begin{description}
-    \item[$\ticketaccumulator$] The sealing lottery ticket accumulator.
-    \item[$\pendingset$] The keys for the validators of the next epoch, equivalent to those keys which constitute $\epochroot$.
-    \item[$\sealtickets$] The sealing-key sequence of the current epoch.
-    \item[$\epochroot$] The Bandersnatch root for the current epoch's ticket submissions.
+    \item[$\ticketaccumulator$] The sealing lottery ticket accumulator. See equation \ref{eq:ticketaccumulatorsealticketsspec}.
+    \item[$\pendingset$] The keys for the validators of the next epoch, equivalent to those keys which constitute $\epochroot$. See equation \ref{eq:validatorkeys}.
+    \item[$\sealtickets$] The sealing-key sequence of the current epoch. See equation \ref{eq:ticketaccumulatorsealticketsspec}.
+    \item[$\epochroot$] The Bandersnatch root for the current epoch's ticket submissions. See equation \ref{eq:epochrootspec}.
   \end{description}
-  \item[$\accountspre$] The (prior) state of the service accounts. %	δ
+  \item[$\accountspre$] The (prior) state of the service accounts. See equation \ref{eq:serviceaccounts}. %	δ
   \begin{description}
-    \item[$\accountspostacc$] The post-accumulation, pre-transfer intermediate state. %	δ
-    \item[$\accountspostxfer$] The post-transfer, pre-preimage integration intermediate state. %	δ
+    \item[$\accountspostacc$] The post-accumulation, pre-transfer intermediate state. See equation \ref{eq:accountspostaccdef}. %	δ
+    \item[$\accountspostxfer$] The post-transfer, pre-preimage integration intermediate state. See equation \ref{eq:accountspostxferdef}. %	δ
   \end{description}
-  \item[$\entropy$] The entropy accumulator and epochal randomness. %	η
-  \item[$\stagingset$] The validator keys and metadata to be drawn from next. %	ι
-  \item[$\activeset$] The validator keys and metadata currently active. %	κ
-  \item[$\previousset$] The validator keys and metadata which were active in the prior epoch. %	λ
-  \item[$\reports$] The pending reports, per core, which are being made available prior to accumulation. %	ρ
+  \item[$\entropy$] The entropy accumulator and epochal randomness. See equation \ref{eq:entropycomposition}. %	η
+  \item[$\stagingset$] The validator keys and metadata to be drawn from next. See equation \ref{eq:validatorkeys}. %	ι
+  \item[$\activeset$] The validator keys and metadata currently active. See equation \ref{eq:validatorkeys}. %	κ
+  \item[$\previousset$] The validator keys and metadata which were active in the prior epoch. See equation \ref{eq:validatorkeys}. %	λ
+  \item[$\reports$] The pending reports, per core, which are being made available prior to accumulation. See equation \ref{eq:reportingstate}. %	ρ
   \begin{description}
-    \item[$\reportspostjudgement$] The post-judgment, pre-guarantees-extrinsic intermediate state. %	δ
-    \item[$\reportspostguarantees$] The post-guarantees-extrinsic, pre-assurances-extrinsic, intermediate state. %	δ
+    \item[$\reportspostjudgement$] The post-judgment, pre-guarantees-extrinsic intermediate state. See equation \ref{eq:removenonpositive}. %	δ
+    \item[$\reportspostguarantees$] The post-guarantees-extrinsic, pre-assurances-extrinsic, intermediate state. See equation \ref{eq:reportspostguaranteesdef}. %	δ
   \end{description}
   \item[$\thestate$] The overall state of the system. See equations \ref{eq:statetransition}, \ref{eq:statecomposition}. %	σ
-  \item[$\thetime$] The most recent block's timeslot. %	τ
-  \item[$\authqueue$] The authorization queue. %	ϕ
-  \item[$\disputes$] Past judgments on work-reports and validators. %	ψ
+  \item[$\thetime$] The most recent block's timeslot. See equation \ref{eq:timeslotindex}. %	τ
+  \item[$\authqueue$] The authorization queue. See equation \ref{eq:authstatecomposition}. %	ϕ
+  \item[$\disputes$] Past judgments on work-reports and validators. See equation \ref{eq:disputesspec}. %	ψ
   \begin{description}
-    \item[$\badset$] Work-reports judged to be incorrect.
-    \item[$\goodset$] Work-reports judged to be correct.
-    \item[$\wonkyset$] Work-reports whose validity is judged to be unknowable.
-    \item[$\offenders$] Validators who made a judgment found to be incorrect.
+    \item[$\badset$] Work-reports judged to be incorrect. See equation \ref{eq:badsetdef}.
+    \item[$\goodset$] Work-reports judged to be correct. See equation \ref{eq:goodsetdef}.
+    \item[$\wonkyset$] Work-reports whose validity is judged to be unknowable. See equation \ref{eq:wonkysetdef}.
+    \item[$\offenders$] Validators who made a judgment found to be incorrect. See equation \ref{eq:offendersdef}.
   \end{description}
-  \item[$\privileges$] The privileged service indices. %	χ
+  \item[$\privileges$] The privileged service indices. See equation \ref{eq:privilegesspec}. %	χ
   \begin{description}
-    \item[$\manager$] The index of the blessed service.
-    \item[$\delegator$] The index of the designate service.
-    \item[$\assigners$] The indices of the services able to assign each core's authorizer queue.
-    \item[$\alwaysaccers$] The always-accumulate service indices and their basic gas allowance.
+    \item[$\manager$] The index of the blessed service. See equation \ref{eq:accountspostaccdef}.
+    \item[$\delegator$] The index of the designate service. See equation \ref{eq:accountspostaccdef}.
+    \item[$\assigners$] The indices of the services able to assign each core's authorizer queue. See equation \ref{eq:accountspostaccdef}.
+    \item[$\alwaysaccers$] The always-accumulate service indices and their basic gas allowance. See equation \ref{eq:accountspostaccdef}.
   \end{description}
-  \item[$\activity$] The activity statistics for the validators. % π
-  \item[$\ready$] The accumulation queue. % ϑ
-  \item[$\accumulated$] The accumulation history. % ξ
+  \item[$\activity$] The activity statistics for the validators. See equation \ref{eq:activityspec}. % π
+  \item[$\ready$] The accumulation queue. See equation \ref{eq:readyspec}. % ω
+  \item[$\accumulated$] The accumulation history. See equation \ref{eq:accumulatedspec}. % ξ
   \item[$\lastaccout$] The most recent Accumulation outputs. See equations \ref{eq:lastaccoutspec} and \ref{eq:finalstateaccumulation}. % θ
 \end{description}
 
@@ -241,7 +241,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\nu$] The immediate values of an instruction. %	ν
   \item[$\memory$] The memory sequence; a member of the set $\ram$. %	μ
   \item[$\gascounter$] The gas counter. % ϱ
-  \item[$\registers$] The registers. % ω
+  \item[$\registers$] The registers. % ϑ
   \item[$\zeta$] The instruction sequence. %	ζ
   \item[$\varpi$] The sequence of basic blocks of the program. % ϖ
   \item[$\imath$] The instruction counter. % ı

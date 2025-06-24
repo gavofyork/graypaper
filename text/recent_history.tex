@@ -2,13 +2,16 @@
 
 We retain in state information on the most recent $\Crecenthistorylen$ blocks. This is used to preclude the possibility of duplicate or out of date work-reports from being submitted.
 \begin{align}
-  \recent &\equiv \tup{\recenthistory, \beefybelt} \label{eq:recenthistory} \\
+  \label{eq:recentspec}
+  \recent &\equiv \tup{\recenthistory, \beefybelt}\\
+  \label{eq:recenthistoryspec}
   \recenthistory &\in \sequence[:\Crecenthistorylen]{\tuple{
     \isa{\rh¬headerhash}{\hash},
     \isa{\rh¬stateroot}{\hash},
     \isa{\rh¬accoutlogsuperpeak}{\hash},
     \isa{\rh¬reportedpackagehashes}{\dictionary{\hash}{\hash}}
   }}\\
+  \label{eq:beefybeltspec}
   \beefybelt &\in \sequence{\optional{\hash}} \\
   \label{eq:lastaccoutspec}
   \lastaccout &\in \sequence{\tup{\serviceid, \hash}}

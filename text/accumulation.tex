@@ -23,13 +23,14 @@ The proposition of accumulation is in fact quite simple: we merely wish to execu
 \subsection{History and Queuing}
 
 Accumulation of a work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what has been accumulated. This history, $\accumulated$, is sufficiently large for an epoch worth of work-reports. Formally:
-\begin{align}
+\begin{align}\label{eq:accumulatedspec}
   \accumulated &\in \sequence[\Cepochlen]{\protoset{\hash}} \\
   \accumulatedcup &\equiv \bigcup_{x \in \accumulated}(x)
 \end{align}
 
 We also maintain knowledge of ready (\ie available and/or audited) but not-yet-accumulated work-reports in the state item $\ready$. Each of these were made available at most one epoch ago but have or had unfulfilled dependencies. Alongside the work-report itself, we retain its unaccumulated dependencies, a set of work-package hashes. Formally:
 \begin{align}
+  \label{eq:readyspec}
   \ready &\in \sequence[\Cepochlen]{\sequence{\tuple{\workreport, \protoset{\hash}}}}
 \end{align}
 
@@ -324,6 +325,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
   &\tup{
     \numberofitemsaccumulated, \psX', \deferredtransfers, \lastaccout', \servicegasused
   } \equiv \accseq(g, \justbecameavailable^*, \psX, \alwaysaccers) \\
+  \label{eq:accountspostaccdef}
   &\tup{
     \is\ps¬accounts{\accountspostacc},
     \is\ps¬stagingset{\stagingset'},
@@ -379,6 +381,7 @@ The second intermediate state $\accountspostxfer$ may then be defined with all t
   }{
     \kv{s}{a} \in \accountspostacc
   }} \\
+  \label{eq:accountspostxferdef}
   \accountspostxfer &\equiv \set{ \build{ \kv{s}{a'} }{ \kv{s}{\tup{a, u}} \in \deferredeffects }} \\
   &\where a' = \begin{cases}
     a \exc a'_\sa¬lastacc = \thetime' &\when s \in \keys{\accumulationstatistics} \\
