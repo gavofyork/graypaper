@@ -12,6 +12,8 @@ If all declared intentions for a work-report are matched by a positive judgment 
 
 In regular operation, no negative judgments will ultimately be found for a work-report, and there will be no direct consequences of the auditing stage. In the unlikely event that a negative judgment is found, then one of several things happens; if there are still more than $\twothirds\Cvalcount$ positive judgments, then validators issuing negative judgments may receive a punishment for time-wasting. If there are greater than $\onethird\Cvalcount$ negative judgments, then the block which includes the work-report is ban-listed. It and all its descendants are disregarded and may not be built on. In all cases, once there are enough votes, a judgment extrinsic can be constructed by a block author and placed on-chain to denote the outcome. See section \ref{sec:disputes} for details on this.
 
+This is a 
+
 All announcements and judgments are published to all validators along with metadata describing the signed material. On receipt of sure data, validators are expected to update their perspective accordingly (later defined as $J$ and $A$).
 
 \subsection{Data Fetching}
@@ -27,6 +29,7 @@ Exported segments need not be reconstructed in the same way, but rather should b
 All items in the work-package specification field of the work-report should be recalculated from this now known-good data and verified, essentially retracing the guarantors steps and ensuring correctness.
 
 \subsection{Selection of Reports}
+\label{sec:auditselection}
 
 Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\block$ with other terms corresponding to the state-transition implied by that block, so $\reports$ is said block's prior core-allocation, $\activeset$ is its prior validator set, $\header$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
 
@@ -49,7 +52,14 @@ We define the sequence of work-reports which we may be required to audit as $\lo
 
 We define our initial audit tranche in terms of a verifiable random quantity $\local¬seed\sub{0}$ created specifically for it:
 \begin{align}
-  \local¬seed\sub{0} &\in \bssignature{\activeset\subb{v}_\vk¬bs}{\Xaudit \concat \banderout{\H_\¬vrfsig}}{\sq{}} \\
+  \label{eq:initialaudit}
+  \local¬seed\sub{0} &\in \bssignature{
+    \activeset\subb{v}_\vk¬bs
+  }{
+    \Xaudit \concat \banderout{\H_\¬vrfsig}
+  }{
+    \sq{}
+  } \\
   \Xaudit &= \token{\$jam\_audit}
 \end{align}
 
@@ -70,6 +80,7 @@ In all cases, we publish a signed statement of which of the cores we believe we 
 
 Formally, for each tranche $n$ we ensure the announcement statement is published and distributed to all other validators along with our validator index $v$, evidence $\local¬seed\sub{n}$ and all signed data. Validator's announcement statements must be in the set $S$:
 \begin{align}
+  \label{eq:announcement}
   S &\equiv \edsignature{\activeset\subb{v}_\vk¬ed}{\Xannounce \append n \concat \mathbf{x}\sub{n} \concat \blake{\H}} \\
   \where \mathbf{x}\sub{n} &= \encode{\set{\build{\encode[2]{\cX} \concat \blake{\wrX}}{\wrcX \in \local¬tranche\sub{n}}}}\\
   \Xannounce &= \token{\$jam\_announce}
@@ -92,6 +103,7 @@ We are able to define $\local¬tranche\sub{n}$ for tranches beyond the first on 
 We can thus define $\local¬tranche\sub{n}$ beyond the initial tranche through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
 \begin{align}
   \nonumber\forall n > 0:&\\
+  \label{eq:latertranches}
   \ \local¬seed\sub{n}(\wrX) &\in \bssignature{\activeset\subb{v}_\vk¬bs}{\Xaudit \concat \banderout{\H_\¬vrfsig}\concat\blake{\wrX}\append n}{\sq{}} \\
   \ \local¬tranche\sub{n} &\equiv \set{ \build{ \wrX }{\textstyle\frac{\Cvalcount}{256\Cauditbiasfactor}\banderout{\local¬seed\sub{n}(\wrX)}\sub{0} < m\sub{n}, \wrX \in \local¬reports, \wrX \ne \none }}\!\!\!\!\\
   \nonumber \where m\sub{n} &= \len{A_{n - 1}(\wrX) \setminus J_\top(\wrX)}
@@ -126,6 +138,7 @@ Note that a failure to decode implies an invalid work-report.
 
 From this mapping the validator issues a set of judgments $\mathbf{j}\sub{n}$:
 \begin{align}
+  \label{eq:judgments}
   \mathbf{j}\sub{n} &= \set{\build{
     \edsigndata{
       \activeset\subb{v}_\vk¬ed

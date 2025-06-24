@@ -13,7 +13,8 @@ Authorizers are identified as the hash of their \textsc{pvm} code concatenated w
 \subsection{Pool and Queue}
 
 We define the set of authorizers allowable for a particular core $\¬core$ as the \emph{authorizer pool} $\authpool[\¬core]$. To maintain this value, a further portion of state is tracked for each core: the core's current \emph{authorizer queue} $\authqueue[\¬core]$, from which we draw values to fill the pool. Formally:
-\begin{equation}\label{eq:authstatecomposition}
+\begin{equation}
+  \label{eq:authstatecomposition}
   \authpool \in \sequence[\Ccorecount]{\sequence[:\Cauthpoolsize]{\hash}}\ , \qquad
   \authqueue \in \sequence[\Ccorecount]{\sequence[\Cauthqueuesize]{\hash}}
 \end{equation}

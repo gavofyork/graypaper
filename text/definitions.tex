@@ -250,43 +250,43 @@ Here, the prime annotation indicates posterior state. Individual components may 
 \subsubsection{Constants}
 
 \begin{description}
-  \item[$\Ctrancheseconds = 8$] The period, in seconds, between audit tranches.
-  \item[$\Citemdeposit = 10$] The additional minimum balance required per item of elective service state.
-  \item[$\Cbytedeposit = 1$] The additional minimum balance required per octet of elective service state.
-  \item[$\Cbasedeposit = 100$] The basic minimum balance which all services require.
+  \item[$\Ctrancheseconds = 8$] The period, in seconds, between audit tranches. See section \ref{sec:auditselection}.
+  \item[$\Citemdeposit = 10$] The additional minimum balance required per item of elective service state. See equation \ref{eq:deposits}.
+  \item[$\Cbytedeposit = 1$] The additional minimum balance required per octet of elective service state. See equation \ref{eq:deposits}.
+  \item[$\Cbasedeposit = 100$] The basic minimum balance which all services require. See equation \ref{eq:deposits}.
   \item[$\Ccorecount = 341$] The total number of cores.
-  \item[$\Cexpungeperiod = 19,200$] The period in timeslots after which an unreferenced preimage may be expunged.
-  \item[$\Cepochlen = 600$] The length of an epoch in timeslots.
-  \item[$\Cauditbiasfactor = 2$] The audit bias factor, the expected number of additional validators who will audit a work-report in the following tranche for each no-show in the previous.
+  \item[$\Cexpungeperiod = 19,200$] The period in timeslots after which an unreferenced preimage may be expunged. See \texttt{eject} definition in section \ref{sec:accumulatefunctions}.
+  \item[$\Cepochlen = 600$] The length of an epoch in timeslots. See section \ref{sec:epochsandslots}.
+  \item[$\Cauditbiasfactor = 2$] The audit bias factor, the expected number of additional validators who will audit a work-report in the following tranche for each no-show in the previous. See equation \ref{eq:latertranches}.
   \item[$\Creportaccgas = 10,000,000$] The gas allocated to invoke a work-report's Accumulation logic.
   \item[$\Cpackageauthgas = 50,000,000$] The gas allocated to invoke a work-package's Is-Authorized logic.
   \item[$\Cpackagerefgas = 5,000,000,000$] The gas allocated to invoke a work-package's Refine logic.
   \item[$\Cblockaccgas = 3,500,000,000$] The total gas allocated across for all Accumulation. Should be no smaller than $\Creportaccgas\cdot\Ccorecount + \sum_{g \in \values{\alwaysaccers}}(g)$.
-  \item[$\Crecenthistorylen = 8$] The size of recent history, in blocks.
-  \item[$\Cmaxpackageitems = 16$] The maximum amount of work items in a package.
-  \item[$\Cmaxreportdeps = 8$] The maximum sum of dependency items in a work-report.
-  \item[$\Cmaxblocktickets = 16$] The maximum number of tickets which may be submitted in a single extrinsic.
-  \item[$\Cmaxlookupanchorage = 14,400$] The maximum age in timeslots of the lookup anchor.
-  \item[$\Cticketentries = 2$] The number of ticket entries per validator.
-  \item[$\Cauthpoolsize = 8$] The maximum number of items in the authorizations pool.
-  \item[$\Cslotseconds = 6$] The slot period, in seconds.
-  \item[$\Cauthqueuesize = 80$] The number of items in the authorizations queue.
-  \item[$\Crotationperiod = 10$] The rotation period of validator-core assignments, in timeslots.
-  \item[$\Cmaxpackagexts = 128$] The maximum number of extrinsics in a work-package.
-  \item[$\Cassurancetimeoutperiod = 5$] The period in timeslots after which reported but unavailable work may be replaced.
+  \item[$\Crecenthistorylen = 8$] The size of recent history, in blocks. See equation \ref{eq:recenthistorydef}.
+  \item[$\Cmaxpackageitems = 16$] The maximum amount of work items in a package. See equations \ref{eq:workreport} and \ref{eq:workpackage}.
+  \item[$\Cmaxreportdeps = 8$] The maximum sum of dependency items in a work-report. See equation \ref{eq:limitreportdeps}.
+  \item[$\Cmaxblocktickets = 16$] The maximum number of tickets which may be submitted in a single extrinsic. See equation \ref{eq:enforceticketlimit}.
+  \item[$\Cmaxlookupanchorage = 14,400$] The maximum age in timeslots of the lookup anchor. See equation \ref{eq:limitlookupanchorage}.
+  \item[$\Cticketentries = 2$] The number of ticket entries per validator. See equation \ref{eq:ticketsextrinsic}.
+  \item[$\Cauthpoolsize = 8$] The maximum number of items in the authorizations pool. See equation \ref{eq:authstatecomposition}.
+  \item[$\Cslotseconds = 6$] The slot period, in seconds. See equation \ref{sec:epochsandslots}.
+  \item[$\Cauthqueuesize = 80$] The number of items in the authorizations queue. See equation \ref{eq:authstatecomposition}.
+  \item[$\Crotationperiod = 10$] The rotation period of validator-core assignments, in timeslots. See sections \ref{sec:coresandvalidators} and \ref{sec:workreportguarantees}.
+  \item[$\Cmaxpackagexts = 128$] The maximum number of extrinsics in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
+  \item[$\Cassurancetimeoutperiod = 5$] The period in timeslots after which reported but unavailable work may be replaced. See equation \ref{eq:reportspostguaranteesdef}.
   \item[$\Cvalcount = 1023$] The total number of validators.
-  \item[$\Cmaxauthcodesize = 64,000$] The maximum size of is-authorized code in octets.
-  \item[$\Cmaxbundlesize = 13,794,305$] The maximum size of an encoded work-package together with its extrinsic data and import implications, in octets.
-  \item[$\Cmaxservicecodesize = 4,000,000$] The maximum size of service code in octets.
+  \item[$\Cmaxauthcodesize = 64,000$] The maximum size of is-authorized code in octets. See equation \ref{eq:isauthinvocation}.
+  \item[$\Cmaxbundlesize = 13,794,305$] The maximum size of an encoded work-package together with its extrinsic data and import implications, in octets. See equation \ref{eq:checkextractsize}.
+  \item[$\Cmaxservicecodesize = 4,000,000$] The maximum size of service code in octets. See equations \ref{eq:refinvocation}, \ref{eq:accinvocation} \& \ref{eq:onxferinvocation}.
   \item[$\Cecpiecesize = 684$] The basic size of erasure-coded pieces in octets. See equation \ref{eq:erasurecoding}.
-  \item[$\Csegmentsize = \Csegmentecpieces\Cecpiecesize = 4104$] The size of a segment in octets.
-  \item[$\Cmaxpackageimports = 3,072$] The maximum number of imports in a work-package.
+  \item[$\Csegmentsize = \Csegmentecpieces\Cecpiecesize = 4104$] The size of a segment in octets. See equation \ref{sec:segments}.
+  \item[$\Cmaxpackageimports = 3,072$] The maximum number of imports in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
   \item[$\Csegmentecpieces = 6$] The number of erasure-coded pieces in a segment.
-  \item[$\Cmaxreportvarsize = 48\cdot2^{10}$] The maximum total size of all unbounded blobs in a work-report, in octets.
-  \item[$\Cmemosize = 128$] The size of a transfer memo in octets.
-  \item[$\Cmaxpackageexports = 3,072$] The maximum number of exports in a work-package.
+  \item[$\Cmaxreportvarsize = 48\cdot2^{10}$] The maximum total size of all unbounded blobs in a work-report, in octets. See equation \ref{eq:limitworkreportsize}.
+  \item[$\Cmemosize = 128$] The size of a transfer memo in octets. See equation \ref{eq:defxfer}.
+  \item[$\Cmaxpackageexports = 3,072$] The maximum number of exports in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
   \item[$\mathsf{X}$] Context strings, see below.
-  \item[$\Cepochtailstart = 500$] The number of slots into an epoch at which ticket-submission ends.
+  \item[$\Cepochtailstart = 500$] The number of slots into an epoch at which ticket-submission ends. See sections \ref{sec:slotkeysequence}, \ref{sec:epochmarker} and \ref{sec:safrolextandtickets}.
   \item[$\Cpvmdynaddralign = 2$] The \textsc{pvm} dynamic address alignment factor. See equation \ref{eq:jumptablealignment}.
   \item[$\Cpvminitinputsize = 2^{24}$] The standard \textsc{pvm} program initialization input data size. See equation \ref{sec:standardprograminit}.
   \item[$\Cpvmpagesize = 2^{12}$] The \textsc{pvm} memory page size. See equation \ref{eq:pvmmemory}.
@@ -296,14 +296,14 @@ Here, the prime annotation indicates posterior state. Individual components may 
 \subsubsection{Signing Contexts}
 
 \begin{description}
-  \item[$\Xavailable = \token{\$jam\_available}$] \emph{Ed25519} Availability assurances.
-  \item[$\Xbeefy = \token{\$jam\_beefy}$] \emph{\textsc{bls}} Accumulate-result-root-\textsc{mmr} commitment.
-  \item[$\Xentropy = \token{\$jam\_entropy}$] On-chain entropy generation.
-  \item[$\Xfallback = \token{\$jam\_fallback\_seal}$] \emph{Bandersnatch} Fallback block seal.
-  \item[$\Xguarantee = \token{\$jam\_guarantee}$] \emph{Ed25519} Guarantee statements.
-  \item[$\Xannounce = \token{\$jam\_announce}$] \emph{Ed25519} Audit announcement statements.
-  \item[$\Xticket = \token{\$jam\_ticket\_seal}$] \emph{Bandersnatch Ring\textsc{vrf}} Ticket generation and regular block seal.
-  \item[$\Xaudit = \token{\$jam\_audit}$] \emph{Bandersnatch} Audit selection entropy.
-  \item[$\Xvalid = \token{\$jam\_valid}$] \emph{Ed25519} Judgments for valid work-reports.
-  \item[$\Xinvalid = \token{\$jam\_invalid}$] \emph{Ed25519} Judgments for invalid work-reports.
+  \item[$\Xavailable = \token{\$jam\_available}$] \emph{Ed25519} Availability assurances. See equation \ref{eq:assurancesig}.
+  \item[$\Xbeefy = \token{\$jam\_beefy}$] \emph{\textsc{bls}} Accumulate-result-root-\textsc{mmr} commitment. See equation \ref{eq:accoutsignedcommitment}.
+  \item[$\Xentropy = \token{\$jam\_entropy}$] On-chain entropy generation. See equation \ref{eq:vrfsigcheck}.
+  \item[$\Xfallback = \token{\$jam\_fallback\_seal}$] \emph{Bandersnatch} Fallback block seal. See equation \ref{eq:ticketconditionfalse}.
+  \item[$\Xguarantee = \token{\$jam\_guarantee}$] \emph{Ed25519} Guarantee statements. See equation \ref{eq:guarantorsig}.
+  \item[$\Xannounce = \token{\$jam\_announce}$] \emph{Ed25519} Audit announcement statements. See equation \ref{eq:announcement}.
+  \item[$\Xticket = \token{\$jam\_ticket\_seal}$] \emph{Bandersnatch Ring\textsc{vrf}} Ticket generation and regular block seal. See equation \ref{eq:ticketconditiontrue}.
+  \item[$\Xaudit = \token{\$jam\_audit}$] \emph{Bandersnatch} Audit selection entropy. See equations \ref{eq:initialaudit} and \ref{eq:latertranches}.
+  \item[$\Xvalid = \token{\$jam\_valid}$] \emph{Ed25519} Judgments for valid work-reports. See equation \ref{eq:judgments}.
+  \item[$\Xinvalid = \token{\$jam\_invalid}$] \emph{Ed25519} Judgments for invalid work-reports. See equation \ref{eq:judgments}.
 \end{description}

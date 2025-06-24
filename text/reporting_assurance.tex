@@ -46,6 +46,7 @@ A work-report, of the set $\workreport$, is defined as a tuple of the work-packa
 
 We limit the sum of the number of items in the segment-root lookup dictionary and the number of prerequisites to $\Cmaxreportdeps = 8$:
 \begin{equation}
+  \label{eq:limitreportdeps}
   \forall \wrX \in \workreport : \len{\wrX_\wr¬srlookup} + \len{(\wrX_\wr¬context)_\wc¬prerequisites} \le \Cmaxreportdeps
 \end{equation}
 
@@ -117,6 +118,7 @@ Finally, we have five fields describing the level of activity which this workloa
 
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful refinement output blobs together with the authorizer trace, effectively limiting their overall size:
 \begin{align}
+  \label{eq:limitworkreportsize}
   &\forall \wrX \in \workreport:
     \len{\wrX_\wr¬authtrace} + \sum_{\wdX \in \wrX_\wr¬digests \cap \blob} \len{\wdX_\wd¬result} \le \Cmaxreportvarsize \\
   &\Cmaxreportvarsize \equiv 48\cdot2^{10}
@@ -154,6 +156,7 @@ The assurances must all be anchored on the parent and ordered by validator index
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\H_\¬parent$ and the aforementioned bitstring:
 \begin{align}
+  \label{eq:assurancesig}
   &\forall a \in \xtassurances : a_\xa¬signature \in \edsignature{\activeset\subb{a_\xa¬assurer}_\vk¬ed}{\Xavailable \concat \blake{\encode{\H_\¬parent, a_\xa¬availabilities}}} \\
   &\Xavailable \equiv \token{\$jam\_available}
 \end{align}
@@ -260,7 +263,8 @@ The credential is a sequence of two or three tuples of a unique validator index 
 \end{align}
 
 The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the hash of the work-report. The signing validators must be assigned to the core in question in either this block $\guarantorassignments$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\guarantorassignmentsunderlastrotation$:
-\begin{align}\label{eq:guarantorsig}
+\begin{align}
+  \label{eq:guarantorsig}
   &\begin{aligned}
     &\begin{aligned}
       \forall \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} &\in \xtguarantees,\\
@@ -281,8 +285,8 @@ The signature must be one whose public key is that of the validator identified i
 
 We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\reporters$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
 
-\newcommand*{\incomingcontexts}{\mathbf{x}}
-\newcommand*{\incomingpackagehashes}{\mathbf{p}}
+\newcommand*{\local¬incomingcontexts}{\mathbf{x}}
+\newcommand*{\local¬incomingpackagehashes}{\mathbf{p}}
 
 We denote $\incomingreports$ to be the set of work-reports in the present extrinsic $\theextrinsic$:
 \begin{align}\label{eq:incomingworkreports}
@@ -315,30 +319,31 @@ We require that the gas allotted for accumulation of each work-digest in each wo
 
 \subsubsection{Contextual Validity of Reports}\label{sec:contextualvalidity}
 
-For convenience, we define two equivalences $\incomingcontexts$ and $\incomingpackagehashes$ to be, respectively, the set of all contexts and work-package hashes within the extrinsic:
+For convenience, we define two equivalences $\local¬incomingcontexts$ and $\local¬incomingpackagehashes$ to be, respectively, the set of all contexts and work-package hashes within the extrinsic:
 \begin{equation}
-    \using \incomingcontexts \equiv \set{ \build { \wrX_\wr¬context }{ \wrX \in \incomingreports } }\ ,\quad
-    \incomingpackagehashes \equiv \set{ \build { (\wrX_\wr¬avspec)_\as¬packagehash }{ \wrX \in \incomingreports } }
+    \using \local¬incomingcontexts \equiv \set{ \build { \wrX_\wr¬context }{ \wrX \in \incomingreports } }\ ,\quad
+    \local¬incomingpackagehashes \equiv \set{ \build { (\wrX_\wr¬avspec)_\as¬packagehash }{ \wrX \in \incomingreports } }
 \end{equation}
 
-There must be no duplicate work-package hashes (\ie two work-reports of the same package). Therefore, we require the cardinality of $\incomingpackagehashes$ to be the length of the work-report sequence $\incomingreports$:
+There must be no duplicate work-package hashes (\ie two work-reports of the same package). Therefore, we require the cardinality of $\local¬incomingpackagehashes$ to be the length of the work-report sequence $\incomingreports$:
 \begin{equation}
-  \len{\incomingpackagehashes} = \len{\incomingreports}
+  \len{\local¬incomingpackagehashes} = \len{\incomingreports}
 \end{equation}
 
 We require that the anchor block be within the last $\Crecenthistorylen$ blocks and that its details be correct by ensuring that it appears within our most recent blocks $\recenthistorypostparentstaterootupdate$:
 \begin{align}
-  \forall x \in \incomingcontexts : \exists y \in \recenthistorypostparentstaterootupdate : x_\wc¬anchorhash = y_\rh¬headerhash \wedge x_\wc¬anchorpoststate = y_\rh¬stateroot \wedge x_\wc¬anchoraccoutlog = y_\rh¬accoutlogsuperpeak \!\!\!\!\!\!
+  \forall x \in \local¬incomingcontexts : \exists y \in \recenthistorypostparentstaterootupdate : x_\wc¬anchorhash = y_\rh¬headerhash \wedge x_\wc¬anchorpoststate = y_\rh¬stateroot \wedge x_\wc¬anchoraccoutlog = y_\rh¬accoutlogsuperpeak \!\!\!\!\!\!
 \end{align}
 
 We require that each lookup-anchor block be within the last $\Cmaxlookupanchorage$ timeslots:
 \begin{align}
-  \forall x \in \incomingcontexts :\ x_\wc¬lookupanchortime \ge \H_\¬timeslot - \Cmaxlookupanchorage
+  \label{eq:limitlookupanchorage}
+  \forall x \in \local¬incomingcontexts :\ x_\wc¬lookupanchortime \ge \H_\¬timeslot - \Cmaxlookupanchorage
 \end{align}
 
 We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\Cmaxlookupanchorage$ headers as the ancestor set $\ancestors$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
 \begin{align}
-  \forall x \in \incomingcontexts :\ \exists h \in \ancestors: h_\¬timeslot = x_\wc¬lookupanchortime \wedge \blake{h} = x_\wc¬lookupanchorhash
+  \forall x \in \local¬incomingcontexts :\ \exists h \in \ancestors: h_\¬timeslot = x_\wc¬lookupanchortime \wedge \blake{h} = x_\wc¬lookupanchorhash
 \end{align}
 
 We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:
@@ -353,7 +358,7 @@ We require that the work-package of the report not be the work-package of some o
     }{
       \wrX \in \reports, \wrX \ne \none
     }} \\
-  &\forall p \in \incomingpackagehashes,
+  &\forall p \in \local¬incomingpackagehashes,
     p \not\in \bigcup_{x \in \recenthistory}\keys{x_\rh¬reportedpackagehashes}
       \cup
       \bigcup_{x \in \accumulated}x
@@ -367,14 +372,14 @@ We require that the prerequisite work-packages, if present, and any work-package
     &\forall \wrX \in \incomingreports,
     \forall p \in (\wrX_\wr¬context)_\wc¬prerequisites \cup
       \keys{\wrX_\wr¬srlookup} :\\
-    &\quad p \in \incomingpackagehashes \cup \set{
+    &\quad p \in \local¬incomingpackagehashes \cup \set{
       \build{x}{x \in \keys{b_\rh¬reportedpackagehashes},\, b \in \recenthistory}}
   \end{aligned}
 \end{align}
 
 We require that any segment roots mentioned in the segment-root lookup be verified as correct based on our recent work-package history and the present block:
 \begin{align}
-  &\using \incomingpackagehashes = \set{ \build {
+  &\using \local¬incomingpackagehashes = \set{ \build {
     \kv{
       ((g_\xg¬workreport)_\wr¬avspec)_\as¬packagehash
     }{
@@ -383,7 +388,7 @@ We require that any segment roots mentioned in the segment-root lookup be verifi
   }{
     g \in \xtguarantees
   } } \\
-  &\forall \wrX \in \incomingreports: \wrX_\wr¬srlookup \subseteq \incomingpackagehashes \cup \bigcup_{b \in \recenthistory} b_\rh¬reportedpackagehashes
+  &\forall \wrX \in \incomingreports: \wrX_\wr¬srlookup \subseteq \local¬incomingpackagehashes \cup \bigcup_{b \in \recenthistory} b_\rh¬reportedpackagehashes
 \end{align}
 
 (Note that these checks leave open the possibility of accepting work-reports in apparent dependency loops. We do not consider this a problem: the pre-accumulation stage effectively guarantees that accumulation never happens in these cases and the reports are simply ignored.)

@@ -37,6 +37,7 @@ Extrinsic data are blobs which are being introduced into the system alongside th
 Work-packages have two other types of external data associated with them: A cryptographic commitment to each \emph{imported} segment and finally the number of segments which are \emph{exported}.
 
 \subsubsection{Segments, Imports and Exports}
+\label{sec:segments}
 
 The ability to communicate large amounts of data from one work-package to some subsequent work-package is a key feature of the \Jam availability system. An export segment, defined as the set $\segment$, is an octet sequence of fixed length $\Csegmentsize = 4104$. It is the smallest datum which may individually be imported from---or exported to---the long-term D$^3$L during the Refine function of a work-package. Being an exact multiple of the erasure-coding piece size ensures that the data segments of work-package can be efficiently placed in the D$^3$L system.
 \begin{equation}\label{eq:segment}
@@ -60,7 +61,8 @@ The guarantor is able to use this proof to justify to themselves that they are n
 \subsection{Packages and Items}\label{sec:packagesanditems}
 
 We begin by defining a \emph{work-package}, of set $\workpackage$, and its constituent \emph{work-item}s, of set $\workitem$. A work-package includes a simple blob acting as an authorization token $\wp¬authtoken$, the index of the service which hosts the authorization code $\wp¬authcodehost$, an authorization code hash $\wp¬authcodehash$ and a configuration blob $\wp¬authconfig$, a context $\wp¬context$ and a sequence of work items $\wp¬workitems$:
-\begin{equation}\label{eq:workpackage}
+\begin{equation}
+  \label{eq:workpackage}
   \workpackage \equiv \tuple{
     \isa{\wp¬authtoken}{\blob},\ 
     \isa{\wp¬authcodehost}{\serviceid},\ 
@@ -89,7 +91,9 @@ Note that an imported data segment's work-package is identified through the unio
 
 We limit the total number of exported items to $\Cmaxpackageexports = 3072$, the total number of imported items to $\Cmaxpackageimports = 3072$, and the total number of extrinsics to $\Cmaxpackagexts = 128$:
 \begin{equation}
-  \!\!\!\!\begin{aligned}
+  \label{eq:limitworkpackagebandwidth}
+  \!\!\!\!
+  \begin{aligned}
     &\forall \wpX \in \workpackage: \\
     &\ \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportcount \le \Cmaxpackageexports \ \wedge\ 
     \sum_{\wiX \in \wpX_\wp¬workitems} \len{\wiX_\wi¬importsegments} \le \Cmaxpackageimports \ \wedge\ 
@@ -113,6 +117,7 @@ We limit the total size of the auditable \emph{work-bundle}, containing the work
 
 We limit the sums of each of the two gas limits to be at most the maximum gas allocated to a core for the corresponding operation:
 \begin{equation}
+  \label{eq:wplimits}
   \forall \wpX \in \workpackage:\ \;
     \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_\wi¬accgaslimit) < \Creportaccgas
   \quad\wedge\ \;
