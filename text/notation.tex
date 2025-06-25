@@ -162,7 +162,7 @@ The inputs of a hash function should be expected to be passed through our serial
 
 \subsubsection{Signing Schemes}\label{sec:signing}
 
-$\edsignaturebase{k}{m} \subset \blob[64]$ is the set of valid Ed25519 signatures, defined by \cite{rfc8032}, made through knowledge of a secret key whose public key counterpart is $k \in \hash$ and whose message is $m$. To aid readability, we denote the set of valid public keys $\edkey$.
+$\edsignature{k}{m} \subset \blob[64]$ is the set of valid Ed25519 signatures, defined by \cite{rfc8032}, made through knowledge of a secret key whose public key counterpart is $k \in \hash$ and whose message is $m$. To aid readability, we denote the set of valid public keys $\edkey$.
 
 We denote the set of valid Bandersnatch public keys as $\bskey$, defined in appendix \ref{sec:bandersnatch}. $\bssignature{k \in \bskey}{x \in \blob}{m \in \blob} \subset \blob[96]$ is the set of valid singly-contextualized signatures of utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
 
@@ -170,6 +170,6 @@ $\bsringproof{r \in \ringroot}{x \in \blob}{m \in \blob} \subset \blob[784]$, me
 
 Both the Bandersnatch signature and Ring\textsc{vrf} proof strictly imply that a member utilized their secret key in combination with both the context $x$ and the message $m$; the difference is that the member is identified in the former and is anonymous in the latter. Furthermore, both define a \textsc{vrf} \emph{output}, a high entropy hash influenced by $x$ but not by $m$, formally denoted $\banderout{\bsringproof{r}{x}{m}} \subset \hash$ and $\banderout{\bssignature{k}{x}{m}} \subset \hash$.
 
-We use $\blskey \subset \blob[144]$ to denote the set of public keys for the \textsc{bls} signature scheme, described by \cite{jofc-2004-14130}, on curve \textsc{bls}\oldstylenums{12}-\oldstylenums{381} defined by \cite{bls12-381}. We correspondingly use the notation $\blssignaturebase{k}{m}$ to denote the set of valid \textsc{bls} signatures for public key $k \in \blskey$ and message $m \in \blob$.
+We use $\blskey \subset \blob[144]$ to denote the set of public keys for the \textsc{bls} signature scheme, described by \cite{jofc-2004-14130}, on curve \textsc{bls}\oldstylenums{12}-\oldstylenums{381} defined by \cite{bls12-381}. We correspondingly use the notation $\blssignature{k}{m}$ to denote the set of valid \textsc{bls} signatures for public key $k \in \blskey$ and message $m \in \blob$.
 
 We define the signature functions for creating valid signatures; $\edsigndata{k}{m} \in \edsignature{k}{m}$, $\blssigndata{k}{m} \in \blssignature{k}{m}$. We assert that the ability to compute a result for this function relies on knowledge of a secret key.
