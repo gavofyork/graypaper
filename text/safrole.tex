@@ -141,15 +141,15 @@ Note that on epoch changes the posterior queued validator key set $\pendingset'$
 
 The header must contain a valid seal and valid \textsc{vrf} output. These are two signatures both using the current slot's seal key; the message data of the former is the header's serialization omitting the seal component $\H_\¬sealsig$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
 \begin{align}
-  \nonumber \using i = \cyclic{\safroleticket[\H_\¬timeslot]}\colon \\
+  \nonumber \using i = \cyclic{\sealtickets'[\H_\¬timeslot]}\colon \\
   \label{eq:ticketconditiontrue}
-  \safroleticket \in \sequence{\safroleticket} &\implies \abracegroup[\,]{
+  \sealtickets' \in \sequence{\safroleticket} &\implies \abracegroup[\,]{
       &i_\st¬id = \banderout{\H_\¬sealsig}\,,\\
       &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\Xticket \concat \entropy'_3 \append i_\st¬entryindex}{\encodeunsignedheader{\H}}\,,\\
       &\isticketed = 1
   }\\
   \label{eq:ticketconditionfalse}
-  \safroleticket \in \sequence{\bskey} &\implies \abracegroup[\,]{
+  \sealtickets' \in \sequence{\bskey} &\implies \abracegroup[\,]{
       &i = \H_\¬authorbskey\,,\\
       &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\Xfallback \concat \entropy'_3}{\encodeunsignedheader{\H}}\,,\\
       &\isticketed = 0
@@ -199,7 +199,7 @@ On an epoch transition (identified as the condition $e' > e$), we therefore rota
 The posterior slot key sequence $\safroleticket$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\sealtickets$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it takes the value of the prior ticket accumulator $\ticketaccumulator$. Otherwise, it takes the value of the fallback key sequence. Formally:
 \begin{align}
   \label{eq:slotkeysequence}
-  \safroleticket &\equiv \begin{cases}
+  \sealtickets' &\equiv \begin{cases}
     Z(\ticketaccumulator) &\when e' = e + 1 \wedge m \geq \Cepochtailstart \wedge \len{\ticketaccumulator} = \Cepochlen\!\!\\
     \sealtickets &\when e' = e \\
     F(\entropy'_2, \activeset') \!\!\!&\otherwise
