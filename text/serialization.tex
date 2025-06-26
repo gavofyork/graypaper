@@ -187,8 +187,8 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \encodeunsignedheader{\header} &= \encode{
     \H_\¬parent,
     \H_\¬priorstateroot,
-    \H_\¬extrinsichash
-    \encode[4]{\H_\¬timeslot}
+    \H_\¬extrinsichash,
+    \encode[4]{\H_\¬timeslot},
     \maybe{\H_\¬epochmark},
     \maybe{\H_\¬winnersmark},
     \encode[2]{\H_\¬authorindex},
@@ -218,14 +218,14 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \wdX_\wd¬codehash,
     \wdX_\wd¬payloadhash,
     \encode[8]{\wdX_\wd¬gaslimit},
-    \encoderesult{\wdX_\wd¬result}
+    \encoderesult{\wdX_\wd¬result},
     % These are variable length, since we never access them individually, digests
     % are never accessed directly by the PVM and space is at a premium here.
     \wdX_\wd¬gasused,
     \wdX_\wd¬importcount,
     \wdX_\wd¬xtcount,
     \wdX_\wd¬xtsize,
-    \wdX_\wd¬exportcount,
+    \wdX_\wd¬exportcount
   }
   \\
   \encode{\wrX \in \workreport} &\equiv \encode{
