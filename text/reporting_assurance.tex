@@ -200,9 +200,9 @@ This value is utilized in the definition of both $\accountspost$ and $\reportspo
 
 \subsection{Guarantor Assignments}\label{sec:coresandvalidators}
 
-Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\Cvalcount = 1,023$ validators and $\Ccorecount = 341$ cores, since $\nicefrac{\Cvalcount}{\Ccorecount} = 3$. The core index assigned to each of the validators, as well as the validators' Ed25519 keys are denoted by $\guarantorassignments$:
+Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\Cvalcount = 1,023$ validators and $\Ccorecount = 341$ cores, since $\nicefrac{\Cvalcount}{\Ccorecount} = 3$. The core index assigned to each of the validators, as well as the validators' keys are denoted by $\guarantorassignments$:
 \begin{equation}
-  \guarantorassignments \in \tuple{\sequence[\Cvalcount]{\coreindex}, \sequence[\Cvalcount]{\edkey}}
+  \guarantorassignments \in \tuple{\sequence[\Cvalcount]{\coreindex}, \allvalkeys}
 \end{equation}
 
 We determine the core to which any given validator is assigned through a shuffle using epochal entropy and a periodic rotation to help guard the security and liveness of the network. We use $\entropy_2$ for the epochal entropy rather than $\entropy_1$ to avoid the possibility of fork-magnification where uncertainty about chain state at the end of an epoch could give rise to two established forks before it naturally resolves.
