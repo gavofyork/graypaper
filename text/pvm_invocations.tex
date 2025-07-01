@@ -1,6 +1,6 @@
 \section{Virtual Machine Invocations}\label{sec:virtualmachineinvocations}
 
-We now define the four practical instances where we wish to invoke a PVM instance as part of the protocol. In general we avoid introducing unbounded data as part of the basic invocation arguments in order to minimise the chance of an unexpectedly large RAM allocation, which could lead to gas inflation and unavoidable underflow. This makes for a more cumbersome interface, but one which is more predictable and easier to reason about.
+We now define the three practical instances where we wish to invoke a \textsc{pvm} instance as part of the protocol. In general, we avoid introducing unbounded data as part of the basic invocation arguments in order to minimize the chance of an unexpectedly large \textsc{ram} allocation, which could lead to gas inflation and unavoidable underflow. This makes for a more cumbersome interface, but one which is more predictable and easier to reason about.
 
 
 \subsection{Host-Call Result Constants}
@@ -241,45 +241,6 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 \nb In the highly unlikely event that a block executes to find that a single service index has inadvertently been attached to two different services, then the block is considered invalid. Since no service can predict the identifier sequence ahead of time, they cannot intentionally disadvantage the block author.
 
 \undef{\local¬basestate}
-\subsection{On-Transfer Invocation}\label{sec:ontransferinvocation}
-
-We define the On-Transfer service-account invocation function as $\Psi_T$; it is somewhat similar to the Accumulation Invocation except that the only state alteration it facilitates are basic alteration to the storage of the subject account. No further transfers may be made, no privileged operations are possible, no new accounts may be created nor other operations done on the subject account itself. The function is defined as:
-\begin{align}
-  \label{eq:onxferinvocation}
-  \Psi_T &: \begin{cases}
-    \tuple{\dictionary{\serviceid}{\serviceaccount}, \timeslot, \serviceid, \defxfers}
-    &\to \tuple{\serviceaccount, \gas} \\
-    \tup{\mathbf{d}, t, s, \mathbf{t}} &\mapsto \begin{cases}
-      \tup{\mathbf{s}, 0}
-        &\when \mathbf{s}_\sa¬code = \none \vee
-          \len{\mathbf{s}_\sa¬code} > \Cmaxservicecodesize \vee
-          \mathbf{t} = \sq{} \\
-      \tup{\mathbf{s}', u} &\otherwise \\
-      \multicolumn{2}{l}{
-        \begin{aligned}
-          \quad\where \tup{u, \mathbf{r}, \mathbf{s}'} &= \Psi_M(
-            \mathbf{s}_\sa¬code,
-            10,
-            \sum_{r \in \mathbf{t}}{(r_\dx¬gas)},
-            \encode{t, s, \len{\mathbf{t}}},
-            F,
-            \mathbf{s}
-          ) \\
-          \quad\also \mathbf{s} &= \mathbf{d}\subb{s} \exc \mathbf{s}_\sa¬balance = \mathbf{d}\subb{s}_\sa¬balance + \sum_{r \in \mathbf{t}}{r_\dx¬amount} \\
-        \end{aligned}
-      }
-    \end{cases} \\
-  \end{cases} \\
-  \also F &\in \contextmutator{\serviceaccount}\colon \tup{n, \gascounter, \registers, \memory, \mathbf{s}} \equiv \begin{cases}
-    \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
-    \Omega_Y(\gascounter, \registers, \memory, \none, \entropyaccumulator', \none, \none, \none, \none, \none, \mathbf{t}) &\when n = \mathtt{fetch}\\
-    \Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{lookup} \\
-    \Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d}) &\when n = \mathtt{read} \\
-    \Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s) &\when n = \mathtt{write} \\
-    \Omega_I(\gascounter, \registers, \memory, s, \mathbf{d}) &\when n = \mathtt{info} \\
-    \tup{\continue, \gascounter - 10, \sq{\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots}, \memory, \mathbf{s}} &\otherwise
-  \end{cases}
-\end{align}
 
 
 
