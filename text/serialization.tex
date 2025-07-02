@@ -121,9 +121,9 @@ And so on.
 
 A block $\block$ is serialized as a tuple of its elements in regular order, as implied in equations \ref{eq:block}, \ref{eq:extrinsic} and \ref{eq:header}. For the header, we define both the regular serialization and the unsigned serialization $\fnencodeunsignedheader$. Formally:
 
-\newcommand*{\encoderesult}[1]{O(#1)}
-\newcommand*{\encodeimportref}[1]{I(#1)}
-\newcommand*{\encodeimportrefs}[1]{I^\#(#1)}
+\newcommand*{\encoderesult}[1]{O\left(#1\right)}
+\newcommand*{\encodeimportref}[1]{I\left(#1\right)}
+\newcommand*{\encodeimportrefs}[1]{I^\#\left(#1\right)}
 \begin{align}
   \encode{\block} &= \encode{
     \header,
@@ -285,6 +285,11 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \encoderesult{\otX_\ot¬result},
     \var{\otX_\ot¬authtrace}
   }
+  \\
+  \encode{\aiX \in \accinput} &\equiv \begin{cases}
+      \encode{0, o} &\when \aiX \in \operandtuple \\
+      \encode{1, o} &\when \aiX \in \accinput \\
+  \end{cases}
   \\
   \encoderesult{o \in \workerror \cup \blob} &\equiv \begin{cases}
     \tup{0, \var{o}} &\when o \in \blob \\
