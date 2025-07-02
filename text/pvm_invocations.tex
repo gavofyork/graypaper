@@ -190,7 +190,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_S(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{solicit} \\
     \Omega_F(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{forget} \\
     \Omega_\Taurus(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{yield} \\
-    \Omega_\Aries(\gascounter, \registers, \memory, \imXY, \imX_\im¬id) &\when n = \mathtt{provide} \\
+    \Omega_\Aries(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{provide} \\
     \tup{\continue, \gascounter - 10, \sq{\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots}, \memory, \imXY} &\otherwise
   \end{cases} \\
   G&\colon\abracegroup{
@@ -936,14 +936,14 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_\Aries(\gascounter, \registers, \memory, \imXY, s)$ \\
+  $\Omega_\Aries(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{provide} = 26 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{8, 9} \\
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts\\
-    \using s^* &= \begin{cases}
-      s &\when \registers_7 = 2^{64} - 1 \\
+    \using s &= \begin{cases}
+      \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
       \registers_7 &\otherwise
     \end{cases} \\
     \using \mathbf{i} &= \begin{cases}
@@ -951,15 +951,15 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{d}[s^*] &\when s^* \in \keys{\mathbf{d}} \\
+      \mathbf{d}[s] &\when s \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬provisions} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \imX_\im¬provisions} &\when \mathbf{i} = \error \\
       \tup{\continue, \mathtt{WHO}, \imX_\im¬provisions} &\otherwhen \mathbf{a} = \none \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \mathbf{a}_\sa¬requests[\tup{\blake{\mathbf{i}}, z}] \ne \sq{} \\
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \tup{s^*, \mathbf{i}} \in \imX_\im¬provisions \\
-      \tup{\continue, \mathtt{OK}, \imX_\im¬provisions \cup \set{\tup{s^*, \mathbf{i}}}} &\otherwise \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \tup{s, \mathbf{i}} \in \imX_\im¬provisions \\
+      \tup{\continue, \mathtt{OK}, \imX_\im¬provisions \cup \set{\tup{s, \mathbf{i}}}} &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \bottomrule
