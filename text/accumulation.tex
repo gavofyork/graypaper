@@ -35,13 +35,13 @@ We also maintain knowledge of ready (\ie available and/or audited) but not-yet-a
 
 The newly available work-reports, $\justbecameavailable$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\justbecameavailable^!$, are accumulated immediately. Those not, $\justbecameavailable^Q$, are for queued execution. Formally:
 \begin{align}
-  \justbecameavailable^! &\equiv \sq{\build{w}{w \orderedin \justbecameavailable, \len{(w_\wr¬context)_\wc¬prerequisites} = 0 \wedge w_\wr¬srlookup = \emset}} \\
+  \justbecameavailable^! &\equiv \sq{\build{r}{r \orderedin \justbecameavailable, \len{(r_\wr¬context)_\wc¬prerequisites} = 0 \wedge w_\wr¬srlookup = \emset}} \\
   \justbecameavailable^Q &\equiv E(\sq{
-    D(w) \mid
-    w \orderedin \justbecameavailable,
-    \len{(w_\wr¬context)_\wc¬prerequisites} > 0 \vee w_\wr¬srlookup \ne \emset
+    D(r) \mid
+    r \orderedin \justbecameavailable,
+    \len{(r_\wr¬context)_\wc¬prerequisites} > 0 \vee r_\wr¬srlookup \ne \emset
   }, \accumulatedcup)\!\!\!\!\\
-  D(w) &\equiv (w, \set{(w_\wr¬context)_\wc¬prerequisites} \cup \keys{w_\wr¬srlookup})
+  D(r) &\equiv (r, \set{(r_\wr¬context)_\wc¬prerequisites} \cup \keys{r_\wr¬srlookup})
 \end{align}
 
 We define the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by sets of now-accumulated work-package hashes (those in $\accumulated$). It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the set provided as a parameter, and removes any dependencies which appear in said set. Formally:
@@ -75,8 +75,8 @@ Finally, we define the mapping function $\local¬fnsrmap$ which extracts the cor
 \begin{equation}
   \local¬fnsrmap\colon\abracegroup{
     \protoset{\workreport} &\to \protoset{\hash}\\
-    \mathbf{w} &\mapsto \set{
-      \build{(w_\wr¬avspec)_\as¬packagehash}{w \in \mathbf{w}}
+    \mathbf{r} &\mapsto \set{
+      \build{(r_\wr¬avspec)_\as¬packagehash}{r \in \mathbf{r}}
     }
   }
 \end{equation}
