@@ -296,7 +296,7 @@ We denote $\incomingreports$ to be the set of work-reports in the present extrin
 No reports may be placed on cores with a report pending availability on it. A report is valid only if the authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
 \begin{equation}\label{eq:reportcoresareunusedortimedout}
   \forall \wrX \in \incomingreports :
-    \reportspostguarantees\subb{\wrX_\wr¬core} = \none \wedge \wrX_\wr¬authorizer \in \authpool[\wrX_\wr¬core]
+    \reportspostguarantees\subb{\wrX_\wr¬core} = \none \wedge \wrX_\wr¬authorizer \in \authpool\subb{\wrX_\wr¬core}
 \end{equation}
 
 We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\Creportaccgas$:
