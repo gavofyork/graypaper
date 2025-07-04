@@ -96,8 +96,7 @@ The other two components of statistics are the core and service activity statist
       \isa{\ss¬xtcount}{\N}\,,\;
       \isa{&\ss¬xtsize&}{\N}\,,\;
       \isa{\ss¬exportcount}{\N}\,,\;\\
-      \isa{\ss¬accumulation&}{\tup{\N, \gas}}\,,\;
-      \isa{&\ss¬xferral&}{\tup{\N, \gas}}
+      \isa{\ss¬accumulation&}{\tup{\N, \gas}}
     \end{alignedat}
   }}
 \end{align}
@@ -161,18 +160,13 @@ Finally, the service statistics are updated using the same intermediate values a
       \is{\ss¬accumulation&}{
         \span\span
         \subifnone{\accumulationstatistics\subb{s}, \tup{0, 0}}
-      }\,,\; \ \ \\
-      \is{\ss¬xferral&}{
-        \span\span
-        \subifnone{\deferredtransfersstatistics\subb{s}, \tup{0, 0}}
-      } \quad\\
+      }
     \end{alignedat}
   }\!\!\!\!\\
   \where \local¬servicesactive &=
     \local¬servicesreported \cup
     \local¬servicesprovided \cup
-    \keys{\accumulationstatistics} \cup
-    \keys{\deferredtransfersstatistics}\\
+    \keys{\accumulationstatistics}\\
   \also \local¬servicesreported &= \set{
     \build{\wdX_\wd¬serviceindex}{\wdX \in \wrX_\wr¬digests, \wrX \in \incomingreports}
   }\\

@@ -126,7 +126,7 @@
 \vskip.15ex
 \hbox{\scalebox{0.5}[0.5]{${\scriptscriptstyle \blacktriangleright}$}}
 }}}
-\newcommand*{\tup}[1]{\!\left(#1\right)\!}
+\newcommand*{\tup}[1]{\left(#1\right)}
 \newcommand*{\tuple}[1]{\!\left\lgroup#1\right\rgroup\!}
 \newcommand*{\is}[2]{#1\tricolon#2}
 \newcommand*{\isa}[2]{#1\in #2}
@@ -301,7 +301,6 @@
 
 %%%%%%%%%%%%
 % Simple Universal types (blackboard letters)
-% Unused: U
 
 % Terms defined as being in these sets never get bolded
 \newcommand*{\workerror}{\mathbb{E}}
@@ -318,6 +317,7 @@
 \newcommand*{\bitstring}[1][]{\mathbb{b}_{#1}}
 \newcommand*{\blob}[1][]{\mathbb{B}_{#1}}
 \newcommand*{\metadatakey}{\blob[128]}
+\newcommand*{\memo}{\blob[\Cmemosize]}
 
 %%%%%%%%%%%%
 % RAM access variants
@@ -454,6 +454,7 @@
 \newcommand*{\wi¬extrinsics}{\mathbf{x}}
 
 \newcommand*{\workreport}{\mathbb{R}}
+\newcommand*{\workreports}{\sequence{\workreport}}
 \newcommand*{\wrX}{\mathbf{r}}
 \newcommand*{\wr¬avspec}{\mathbf{s}}
 \newcommand*{\wr¬context}{\¬context}
@@ -477,7 +478,7 @@
 \newcommand*{\wd¬exportcount}{\¬exportcount}
 \newcommand*{\wd¬result}{\¬result}
 
-\newcommand*{\operandtuple}{\mathbb{I}}
+\newcommand*{\operandtuple}{\mathbb{U}}
 \newcommand{\otX}{\mathbf{x}}
 \newcommand*{\ot¬packagehash}{\¬packagehash}
 \newcommand*{\ot¬segroot}{\¬segroot}
@@ -486,6 +487,9 @@
 \newcommand*{\ot¬payloadhash}{\¬payloadhash}
 \newcommand*{\ot¬gaslimit}{\¬gaslimit}
 \newcommand*{\ot¬result}{\¬result}
+
+\newcommand*{\accinput}{\mathbb{I}}
+\newcommand{\aiX}{\mathbf{x}}
 
 \newcommand*{\avspec}{\mathbb{Y}}
 \newcommand*{\asX}{\mathbf{x}}
@@ -789,7 +793,7 @@
 \newcommand*{\execst}{\varepsilon}
 
 
-\newcommand*{\contextmutator}[1][]{\Omega\ang{#1}}
+\newcommand*{\contextmutator}[1]{\Omega\ang{#1}}
 
 %%%%%%%%%%%%
 % Other stuff
