@@ -11,16 +11,16 @@ Service accounts are held in state under $\accounts$, a partial mapping from a s
 The service account is defined as the tuple of storage dictionary $\sa¬storage$, preimage lookup dictionaries $\sa¬preimages$ and $\sa¬requests$, code hash $\sa¬codehash$, balance $\sa¬balance$ and gratis storage offset $\sa¬gratis$, as well as the two code gas limits $\sa¬minaccgas$ \& $\sa¬minmemogas$. We also record certain usage characteristics concerning the account: the time slot at creation $\sa¬created$, the time slot at the most recent accumulation $\sa¬lastacc$ and the parent service $\sa¬parent$. Formally:
 \begin{align}\label{eq:serviceaccount}
   \serviceaccount \equiv \tuple{\ \begin{aligned}
-    \sa¬storage &\in \dictionary{\blob}{\blob}\,,\ 
+    \sa¬storage &\in \dictionary{\blob}{\blob}\,,\
     \sa¬preimages \in \dictionary{\hash}{\blob}\,,\\
     \sa¬requests &\in \dictionary{\tuple{\hash,\bloblength}}{\sequence[:3]{\timeslot}}\,,\\
-    \sa¬gratis &\in \balance\,,\ 
-    \sa¬codehash \in \hash\,,\ 
-    \sa¬balance \in \balance\,,\ 
+    \sa¬gratis &\in \balance\,,\
+    \sa¬codehash \in \hash\,,\
+    \sa¬balance \in \balance\,,\
     \sa¬minaccgas \in \gas\,,\\
-    \sa¬minmemogas &\in \gas\,,\ 
-    \sa¬created \in \timeslot\,,\ 
-    \sa¬lastacc \in \timeslot\,,\ 
+    \sa¬minmemogas &\in \gas\,,\
+    \sa¬created \in \timeslot\,,\
+    \sa¬lastacc \in \timeslot\,,\
     \sa¬parent \in \serviceid\\
     %i, o, f
   \end{aligned}\,}
@@ -45,16 +45,15 @@ The code and associated metadata of a service account is identified by a hash wh
   \end{cases}
 \end{align}
 
-There are three entry-points in the code:
+There are two entry-points in the code:
 \begin{description}
   \item[0 \texttt{refine}]Refinement, executed in-core and stateless.\footnote{Technically there is some small assumption of state, namely that some modestly recent instance of each service's preimages. The specifics of this are discussed in section \ref{sec:packagesanditems}.}
   \item[1 \texttt{accumulate}] Accumulation, executed on-chain and stateful.
-  \item[2 \texttt{on\_transfer}] Transfer handler, executed on-chain and stateful.
 \end{description}
 
-Whereas the first, executing in-core, is described in more detail in section \ref{sec:packagesanditems}, the latter two are defined in the present section.
+Refinement and accumulation are described in more detail in sections \ref{sec:computeworkreport} and \ref{sec:accumulationexecution} respectively.
 
-As stated in appendix \ref{sec:virtualmachine}, execution time in the \Jam virtual machine is measured deterministically in units of \emph{gas}, represented as a natural number less than $2^{64}$ and formally denoted $\gas$. We may also use $\signedgas$ to denote the set $\Z_{-2^{63}\dots2^{63}}$ if the quantity may be negative. There are two limits specified in the account, $\sa¬minaccgas$, the minimum gas required in order to execute the \emph{Accumulate} entry-point of the service's code, and $\sa¬minmemogas$, the minimum required for the \emph{On Transfer} entry-point.
+As stated in appendix \ref{sec:virtualmachine}, execution time in the \Jam virtual machine is measured deterministically in units of \emph{gas}, represented as a natural number less than $2^{64}$ and formally denoted $\gas$. We may also use $\signedgas$ to denote the set $\Z_{-2^{63}\dots2^{63}}$ if the quantity may be negative. There are two limits specified in the account, which determine the minimum gas required in order to execute the \emph{Accumulate} entry-point of the service's code. $\sa¬minaccgas$ is the minimum gas required per work-item, while $\sa¬minmemogas$ is the minimum gas required per deferred-transfer.
 
 
 
