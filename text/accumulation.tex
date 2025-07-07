@@ -1,7 +1,8 @@
 \newcommand*{\local¬fnsrmap}{P}
 \newcommand*{\local¬fnservouts}{B}
 \newcommand*{\local¬fngasused}{U}
-\newcommand*{\local¬fnprovide}{P}
+\newcommand*{\local¬fnprovidable}{Y}
+\newcommand*{\local¬fnprovide}{I}
 \newcommand*{\local¬numberofreportsaccumulated}{n}
 \newcommand*{\local¬servicegasused}{\mathbf{u}}
 
@@ -265,17 +266,23 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
 \undef{\local¬fnreplaceifchanged}
 
 And $\local¬fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/blob pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
-\begin{equation}
-  \local¬fnprovide\colon\abracegroup{
+\begin{align}
+  \local¬fnprovide &\colon\abracegroup{
     &\tuple{\dictionary{\serviceid}{\serviceaccount}, \protoset{\tuple{\serviceid, \blob}}} \to \dictionary{\serviceid}{\serviceaccount} \\
     &\tup{\mathbf{d}, \mathbf{p}} \mapsto \mathbf{d}'\;\where \mathbf{d}' = \mathbf{d}\;\text{except:} \\
     &\quad\forall \tup{s, \mathbf{i}} \in \mathbf{p},\;
-      s \in \keys{\mathbf{d}},\;
-      \mathbf{d}\subb{s}_\sa¬requests\subb{\blake{\mathbf{i}}, \len{\mathbf{i}}} = \sq{}:\\
-    &\qquad \mathbf{d}'\subb{s}_\sa¬requests\subb{\blake{\mathbf{i}}, \len{\mathbf{i}}} =\sq{\thetime'}\\
+      \local¬fnprovidable(\mathbf{d}, s, \mathbf{i}):\\
+    &\qquad \mathbf{d}'\subb{s}_\sa¬requests\subb{\tup{\blake{\mathbf{i}}, \len{\mathbf{i}}}} =\sq{\thetime'}\\
     &\qquad \mathbf{d}'\subb{s}_\sa¬preimages\subb{\blake{\mathbf{i}}} = \mathbf{i}
+  } \\
+  \local¬fnprovidable &\colon\abracegroup{
+    &\tuple{\dictionary{\serviceid}{\serviceaccount}, \serviceid, \blob} \to \bool \\
+    &\tup{\mathbf{d}, s, \mathbf{i}} \mapsto \begin{cases}
+      \mathbf{d}\subb{s}_\sa¬requests\subb{\tup{\blake{\mathbf{i}}, \len{\mathbf{i}}}} = \sq{} &\when s \in \keys{\mathbf{d}} \\
+      \bot &\otherwise
+    \end{cases}
   }
-\end{equation}
+\end{align}
 
 We note that while forming the union of all altered, newly added service and newly removed indices, defined in the above context as $\keys{\mathbf{n}} \cup \mathbf{m}$, different services may not each contribute the same index for a new, altered or removed service. This cannot happen for the set of removed and altered services since the code hash of removable services has no known preimage and thus cannot execute itself to make an alteration. For new services this should also never happen since new indices are explicitly selected to avoid such conflicts. In the unlikely event it does happen, the block must be considered invalid.
 
@@ -429,23 +436,10 @@ After accumulation, we must integrate all preimages provided in the lookup extri
 \begin{align}
   \xtpreimages &\in \sequence{\tuple{ \serviceid,\, \blob }} \\
   \label{eq:preimagesareordered}\xtpreimages &= \sqorderuniqby{i}{i \in \xtpreimages} \\
-  \forall \tup{\xp¬serviceindex, \xp¬data} &\in \xtpreimages : Y(\accountspre, \xp¬serviceindex, \blake{\xp¬data}, \len{\xp¬data}) \\
-  \nonumber
-  \where Y(\mathbf{d}, s, h, l) &\Leftrightarrow
-  h \not\in \mathbf{d}\subb{s}_\sa¬preimages \wedge
-    \mathbf{d}\subb{s}_\sa¬requests\subb{\tup{h, l}} = \sq{}
+  \forall \tup{\xp¬serviceindex, \xp¬data} &\in \xtpreimages : \local¬fnprovidable(\accountspre, \xp¬serviceindex, \xp¬data)
 \end{align}
 
 We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
-\begin{align}
-  \nonumber
-  \using \mathbf{p} = \set{\build{
-    \tup{\xp¬serviceindex, \xp¬data}
-  }{
-    \tup{\xp¬serviceindex, \xp¬data} \in \xtpreimages, Y(\accountspostxfer, \xp¬serviceindex, \blake{\xp¬data}, \len{\xp¬data})
-  }}\\
-  \accountspostpreimage = \accountspostxfer \text{ ex. } \forall \tup{\xp¬serviceindex,\,\xp¬data} \in \mathbf{p} : \abracegroup[\,]{
-      \quad\accountspostpreimage\subb{\xp¬serviceindex}_\sa¬preimages\subb{\blake{\xp¬data}} &= \xp¬data \\
-      \accountspostpreimage\subb{\xp¬serviceindex}_\sa¬requests\subb{\blake{\xp¬data}, \len{\xp¬data}} &= \sq{\thetime'}
-    }\!\!\!\!
-\end{align}
+\begin{equation}
+  \accountspostpreimage = \local¬fnprovide(\accountspostxfer, \xtpreimages)
+\end{equation}
