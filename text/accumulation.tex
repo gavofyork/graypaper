@@ -380,19 +380,19 @@ From this formulation, we also receive $\local¬numberofreportsaccumulated$, the
   &\accumulationstatistics \in \dictionary{\serviceid}{\tuple{\gas, \N}} \\
   \label{eq:accumulationstatisticsdef}
   &\textstyle \accumulationstatistics \equiv \set{\build{
-    \kv{s}{
-      \tup{\sum_{\tup{s, u} \in \mathbf{u}}(u), \len{N(s)}}
-    }
+    \kv{s}{\tup{G(s), N(s)}}
   }{
-    N(s) \ne \sq{}
+    G(s) + N(s) \ne 0
   }}
   \!\!\!\!\\
   \nonumber
-  \where &N(s) \equiv \sq{\build{d}{
+  \where &G(s) \equiv \sum_{\tup{s, u} \in \mathbf{u}}(u) \\
+  \nonumber
+  \also &N(s) \equiv \len{\sq{\build{d}{
     r \orderedin \justbecameavailable^*\sub{\dots n} ,
     d \orderedin r_\wr¬digests ,
     d_\wd¬serviceindex = s
-  }}
+  }}}
 \end{align}
 
 The second intermediate state $\accountspostxfer$ may then be defined with the last-accumulation record being updated for all accumulated services:
