@@ -49,11 +49,11 @@ We define the queue-editing function $E$, which is essentially a mutator functio
   E\colon\abracegroup{
       &\tuple{\sequence{\tuple{\workreport, \protoset{\hash}}}, \protoset{\hash}} \to \sequence{\tuple{\workreport, \protoset{\hash}}} \\
     &\tup{\mathbf{r}, \mathbf{x}} \mapsto \sq{\build{
-      \tup{w, \mathbf{d} \setminus \mathbf{x}}
+      \tup{r, \mathbf{d} \setminus \mathbf{x}}
     }{
       \begin{aligned}
-        &\tup{w, \mathbf{d}} \orderedin \mathbf{r} ,\\
-        &(w_\wr¬avspec)_\as¬packagehash \not\in \mathbf{x}
+        &\tup{r, \mathbf{d}} \orderedin \mathbf{r} ,\\
+        &(r_\wr¬avspec)_\as¬packagehash \not\in \mathbf{x}
       \end{aligned}
     }}
   }
@@ -66,7 +66,7 @@ We further define the accumulation priority queue function $Q$, which provides t
     &\mathbf{r} \mapsto \begin{cases}
       \sq{} &\when \mathbf{g} = \sq{} \\
       \mathbf{g} \concat Q(E(\mathbf{r}, \local¬fnsrmap(\mathbf{g})))\!\!\!\! &\otherwise \\
-      \multicolumn{2}{l}{\,\where \mathbf{g} = \sq{\build{w}{\tup{w, \emset} \orderedin \mathbf{r}}}}
+      \multicolumn{2}{l}{\,\where \mathbf{g} = \sq{\build{r}{\tup{r, \emset} \orderedin \mathbf{r}}}}
     \end{cases}
   }
 \end{equation}
