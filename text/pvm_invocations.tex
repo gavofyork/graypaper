@@ -146,7 +146,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     }
     &\to \acconeout
     \\
-    \tup{\local¬basestate, t, s, g, \mathbf{o}} &\mapsto \begin{cases}
+    \tup{\local¬basestate, t, s, g, \mathbf{i}} &\mapsto \begin{cases}
       \tup{
         \is{\ao¬poststate}{\local¬basestatebalanceadded},
         \is{\ao¬defxfers}{\sq{}},
@@ -155,14 +155,14 @@ We define $\Psi_A$, the Accumulation invocation function as:
         \is{\ao¬provisions}{\sq{}}
       }
         &\when \mathbf{c} = \none \vee \len{\mathbf{c}} > \Cmaxservicecodesize \\
-      C(\Psi_M(\mathbf{c}, 5, g, \encode{t, s, \len{\mathbf{o}}}, F, I(\local¬basestatebalanceadded, s)^2))
+      C(\Psi_M(\mathbf{c}, 5, g, \encode{t, s, \len{\mathbf{i}}}, F, I(\local¬basestatebalanceadded, s)^2))
         &\otherwise \\
       \begin{aligned}
         &\quad\where \mathbf{c} = \local¬basestate_\ps¬accounts\subb{s}_\sa¬code\\
         &\quad\also \local¬basestatebalanceadded = \local¬basestate \exc \local¬basestatebalanceadded_\ps¬accounts\subb{s}_\sa¬balance = \local¬basestate_\ps¬accounts\subb{s}_\sa¬balance + \sum_{r \in \mathbf{x}}r_\dx¬amount\\
-        &\quad\also \mathbf{x} = \sq{\build{o}{
-          o \orderedin \mathbf{o} ,
-          o \in \defxfer
+        &\quad\also \mathbf{x} = \sq{\build{i}{
+          i \orderedin \mathbf{i} ,
+          i \in \defxfer
         }}
       \end{aligned}\\
     \end{cases} \\
