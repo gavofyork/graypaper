@@ -137,6 +137,7 @@ We track both regular and exceptional dimensions within our context mutator, but
 
 We define $\Psi_A$, the Accumulation invocation function as:
 \newcommand*{\local¬basestate}{\ao¬poststate}
+\newcommand*{\local¬basestatebalanceadded}{\mathbf{s}}
 \begin{align}
   \label{eq:accinvocation}
   \Psi_A& \colon\abracegroup{
@@ -147,16 +148,23 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \\
     \tup{\local¬basestate, t, s, g, \mathbf{o}} &\mapsto \begin{cases}
       \tup{
-        \ao¬poststate,
+        \is{\ao¬poststate}{\local¬basestatebalanceadded},
         \is{\ao¬defxfers}{\sq{}},
         \is{\ao¬yield}{\none},
         \is{\ao¬gasused}{0},
         \is{\ao¬provisions}{\sq{}}
       }
         &\when \mathbf{c} = \none \vee \len{\mathbf{c}} > \Cmaxservicecodesize \\
-      C(\Psi_M(\mathbf{c}, 5, g, \encode{t, s, \len{\mathbf{o}}}, F, I(\local¬basestate, s)^2))
+      C(\Psi_M(\mathbf{c}, 5, g, \encode{t, s, \len{\mathbf{o}}}, F, I(\local¬basestatebalanceadded, s)^2))
         &\otherwise \\
-      \where \mathbf{c} = \local¬basestate_\ps¬accounts\subb{s}_\sa¬code&
+      \begin{aligned}
+        &\quad\where \mathbf{c} = \local¬basestate_\ps¬accounts\subb{s}_\sa¬code\\
+        &\quad\also \local¬basestatebalanceadded = \local¬basestate \exc \local¬basestatebalanceadded_\ps¬accounts\subb{s}_\sa¬balance = \local¬basestate_\ps¬accounts\subb{s}_\sa¬balance + \sum_{r \in \mathbf{x}}r_\dx¬amount\\
+        &\quad\also \mathbf{x} = \sq{\build{o}{
+          o \orderedin \mathbf{o} ,
+          o \in \defxfer
+        }}
+      \end{aligned}\\
     \end{cases} \\
   }\\
   I&\colon\abracegroup{
