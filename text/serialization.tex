@@ -268,7 +268,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \stX_\st¬entryindex
   }
   \\
-  \encode{\dxX \in \defxfer} &\equiv \encode{
+  \encode[X]{\dxX \in \defxfer} &\equiv \encode{
     \encode[4]{\dxX_\dx¬source},
     \encode[4]{\dxX_\dx¬dest},
     \encode[8]{\dxX_\dx¬amount},
@@ -276,7 +276,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \encode[8]{\dxX_\dx¬gas}
   }
   \\
-  \encode{\otX \in \operandtuple} &\equiv \encode{
+  \encode[U]{\otX \in \operandtuple} &\equiv \encode{
     \otX_\ot¬packagehash,
     \otX_\ot¬segroot,
     \otX_\ot¬authorizer,
@@ -287,8 +287,8 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   }
   \\
   \encode{\aiX \in \accinput} &\equiv \begin{cases}
-      \encode{0, \aiX} &\when \aiX \in \operandtuple \\
-      \encode{1, \aiX} &\when \aiX \in \defxfer \\
+      \encode{0, \encode[U]{o}} &\when \aiX \in \operandtuple \\
+      \encode{1, \encode[X]{o}} &\when \aiX \in \defxfer \\
   \end{cases}
   \\
   \encoderesult{o \in \workerror \cup \blob} &\equiv \begin{cases}
