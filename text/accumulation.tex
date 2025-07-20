@@ -214,15 +214,19 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         (\ps¬accounts \cup \mathbf{n}) \setminus \mathbf{m},
         \bigcup_{s \in \mathbf{s}} \local¬acc(s)_\ao¬provisions
       ) \\
-      &\tup{\ps¬accounts, \ps¬stagingset, \ps¬authqueue, \ps¬manager, \ps¬alwaysaccers} = \psX \\
+      &\tup{\ps¬accounts, \ps¬stagingset, \ps¬authqueue, \ps¬manager, \ps¬assigners, \ps¬alwaysaccers} = \psX \\
       \tup{\local¬manager'\!,\local¬assigners^*\!\!,\local¬delegator^*\!\!,\local¬alwaysaccers'} &=
         (\local¬acc(m)_\ao¬poststate)_{
           \tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬alwaysaccers}
         } \\
       \forall c \in \coreindex :
-        \local¬assigners'\sub{c} &= ((
-          \local¬acc(\local¬assigners^*\sub{c})_\ao¬poststate
-        )_\ps¬assigners)\sub{c} \\
+        \local¬assigners'\sub{c} &=
+        \begin{cases}
+        ((
+          \local¬acc(\ps¬assigners\sub{c})_\ao¬poststate
+        )_\ps¬assigners)\sub{c} &\when \local¬assigners^*\sub{c} = \ps¬assigners\sub{c} \\
+          \local¬assigners^*\sub{c} &\otherwise
+        \end{cases}\\
       \local¬delegator' &= (
           \local¬acc(\local¬delegator^*)_\ao¬poststate
         )_\ps¬delegator \\
