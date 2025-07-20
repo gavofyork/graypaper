@@ -2,7 +2,7 @@
 \newcommand*{\local¬fnservouts}{B}
 \newcommand*{\local¬fngasused}{U}
 \newcommand*{\local¬fnprovide}{P}
-\newcommand*{\local¬numberofitemsaccumulated}{n}
+\newcommand*{\local¬numberofreportsaccumulated}{n}
 \newcommand*{\local¬servicegasused}{\mathbf{u}}
 
 \section{Accumulation}
@@ -35,7 +35,7 @@ We also maintain knowledge of ready (\ie available and/or audited) but not-yet-a
 
 The newly available work-reports, $\justbecameavailable$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\justbecameavailable^!$, are accumulated immediately. Those not, $\justbecameavailable^Q$, are for queued execution. Formally:
 \begin{align}
-  \justbecameavailable^! &\equiv \sq{\build{r}{r \orderedin \justbecameavailable, \len{(r_\wr¬context)_\wc¬prerequisites} = 0 \wedge w_\wr¬srlookup = \emset}} \\
+  \justbecameavailable^! &\equiv \sq{\build{r}{r \orderedin \justbecameavailable, \len{(r_\wr¬context)_\wc¬prerequisites} = 0 \wedge r_\wr¬srlookup = \emset}} \\
   \justbecameavailable^Q &\equiv E(\sq{
     D(r) \mid
     r \orderedin \justbecameavailable,
@@ -49,11 +49,11 @@ We define the queue-editing function $E$, which is essentially a mutator functio
   E\colon\abracegroup{
       &\tuple{\sequence{\tuple{\workreport, \protoset{\hash}}}, \protoset{\hash}} \to \sequence{\tuple{\workreport, \protoset{\hash}}} \\
     &\tup{\mathbf{r}, \mathbf{x}} \mapsto \sq{\build{
-      \tup{w, \mathbf{d} \setminus \mathbf{x}}
+      \tup{r, \mathbf{d} \setminus \mathbf{x}}
     }{
       \begin{aligned}
-        &\tup{w, \mathbf{d}} \orderedin \mathbf{r} ,\\
-        &(w_\wr¬avspec)_\as¬packagehash \not\in \mathbf{x}
+        &\tup{r, \mathbf{d}} \orderedin \mathbf{r} ,\\
+        &(r_\wr¬avspec)_\as¬packagehash \not\in \mathbf{x}
       \end{aligned}
     }}
   }
@@ -66,7 +66,7 @@ We further define the accumulation priority queue function $Q$, which provides t
     &\mathbf{r} \mapsto \begin{cases}
       \sq{} &\when \mathbf{g} = \sq{} \\
       \mathbf{g} \concat Q(E(\mathbf{r}, \local¬fnsrmap(\mathbf{g})))\!\!\!\! &\otherwise \\
-      \multicolumn{2}{l}{\,\where \mathbf{g} = \sq{\build{w}{\tup{w, \emset} \orderedin \mathbf{r}}}}
+      \multicolumn{2}{l}{\,\where \mathbf{g} = \sq{\build{r}{\tup{r, \emset} \orderedin \mathbf{r}}}}
     \end{cases}
   }
 \end{equation}
@@ -267,7 +267,7 @@ And $\local¬fnprovide$ is the preimage integration function, which transforms a
 
 We note that while forming the union of all altered, newly added service and newly removed indices, defined in the above context as $\keys{\mathbf{n}} \cup \mathbf{m}$, different services may not each contribute the same index for a new, altered or removed service. This cannot happen for the set of removed and altered services since the code hash of removable services has no known preimage and thus cannot execute itself to make an alteration. For new services this should also never happen since new indices are explicitly selected to avoid such conflicts. In the unlikely event it does happen, the block must be considered invalid.
 
-The single-service accumulation function, $\accone$, transforms an initial state-context, a sequence of deferred-transfers, a sequence of work-reports, a dictionary of services enjoying free accumulation (with the values indicating the amount of free gas) and a service index into an alterations state-context, a sequence of \emph{transfers}, a possible accumulation-output, the actual \textsc{pvm} gas used and a set of preimage provisions. This function wrangles the work-items of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
+The single-service accumulation function, $\accone$, transforms an initial state-context, a sequence of deferred-transfers, a sequence of work-reports, a dictionary of services enjoying free accumulation (with the values indicating the amount of free gas) and a service index into an alterations state-context, a sequence of \emph{transfers}, a possible accumulation-output, the actual \textsc{pvm} gas used and a set of preimage provisions. This function wrangles the work-digests of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
 \begin{equation}
   \label{eq:acconeout}
   \acconeout \equiv \tuple{
@@ -345,7 +345,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
   \!\!\!\!\!\\
   \label{eq:finalstateaccumulation}
   &\tup{
-    \local¬numberofitemsaccumulated, \psX', \lastaccout', \local¬servicegasused
+    \local¬numberofreportsaccumulated, \psX', \lastaccout', \local¬servicegasused
   } \equiv \accseq(g, \sq{}, \justbecameavailable^*, \psX, \alwaysaccers) \\
   \label{eq:accountspostaccdef}
   &\tup{
@@ -360,7 +360,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
   \!\!\!\!\!
 \end{align}
 
-From this formulation, we also receive $\local¬numberofitemsaccumulated$, the total number of work-items accumulated and $\local¬servicegasused$, the gas used in the accumulation process for each service. We compose $\accumulationstatistics$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-items accumulated. Formally:
+From this formulation, we also receive $\local¬numberofreportsaccumulated$, the total number of work-reports accumulated and $\local¬servicegasused$, the gas used in the accumulation process for each service. We compose $\accumulationstatistics$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-items accumulated. Formally:
 \begin{align}
   \label{eq:accumulationstatisticsspec}
   &\accumulationstatistics \in \dictionary{\serviceid}{\tuple{\gas, \N}} \\
