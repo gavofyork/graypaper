@@ -240,6 +240,7 @@ The initializer function $I$ maps some partial state along with a service accoun
 
 Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\entropyaccumulator'$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
 \begin{equation}
+  \label{eq:newserviceindex}
   \text{check}(i \in \serviceid) \equiv \begin{cases}
     i &\when i \not\in \keys{\local¬basestate_\ps¬accounts} \\
     \text{check}((i - \Cminpublicindex + 1) \bmod (2^{32}-2^8-\Cminpublicindex) + \Cminpublicindex)&\otherwise
@@ -750,7 +751,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{new} = 18 \\
   $g = 10$} &
   $\begin{aligned}
-    \using \sq{o, l, \sa¬minaccgas, \sa¬minmemogas, \sa¬gratis, \local¬desiredid} &= \registers\subrange{7}{5} \\
+    \using \sq{o, l, \sa¬minaccgas, \sa¬minmemogas, \sa¬gratis, \local¬desiredid} &= \registers\subrange{7}{6} \\
     \using \sa¬codehash &= \begin{cases}
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \wedge l \in \Nbits{32} \\
       \error &\otherwise

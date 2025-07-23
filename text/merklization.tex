@@ -10,8 +10,8 @@ We define the state-key constructor functions $C$ as:
 \begin{equation}
   C\colon\abracegroup{
     \Nbits{8} \cup \tup{\Nbits{8}, \serviceid} \cup \tup{\serviceid, \blob} &\to \blob[31] \\
-    i \in \Nbits{8} &\mapsto \sq{i, 0, 0, \dots} \\
-    \tup{i, s \in \serviceid} &\mapsto \sq{i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots}\ \where n = \encode[4]{s} \\
+    i \in \Nbits{8} &\mapsto \sq{i, 0, 255, 0, 255, 0, 255, 0, 0, \dots} \\
+    \tup{i, s \in \serviceid} &\mapsto \sq{i, n_0, 255, n_1, 255, n_2, 255, n_3, 0, 0, \dots}\ \where n = \encode[4]{s} \\
     \tup{s, h} &\mapsto \sq{n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}}\ \where n = \encode[4]{s}, a = \blake{h}
   }
 \end{equation}
@@ -19,9 +19,9 @@ We define the state-key constructor functions $C$ as:
 The state serialization is then defined as the dictionary built from the amalgamation of each of the components. Cryptographic hashing ensures that there will be no duplicate state-keys given that there are no duplicate inputs to $C$. Formally, we define $T$ which transforms some state $\thestate$ into its serialized form:
 \begin{equation}
   T(\thestate) \equiv \abracegroup{
-    &&C(2^{32} - 1) &\mapsto \encode{\sq{\build{\var{x}}{x \orderedin \authpool}}} \;, \\
-    &&C(2^{32} - 2) &\mapsto \encode{\authqueue} \;, \\
-    &&C(2^{32} - 3) &\mapsto \encode{
+    &&C(1) &\mapsto \encode{\sq{\build{\var{x}}{x \orderedin \authpool}}} \;, \\
+    &&C(2) &\mapsto \encode{\authqueue} \;, \\
+    &&C(3) &\mapsto \encode{
       \var{\sq{\build{
         \tup{\rh¬headerhash, \rh¬accoutlogsuperpeak, \rh¬stateroot, \var{\rh¬reportedpackagehashes}}
       }{
@@ -29,7 +29,7 @@ The state serialization is then defined as the dictionary built from the amalgam
       }}},
       \mmrencode{\accoutbelt}
     } \;, \\
-    &&C(2^{32} - 4) &\mapsto \encode{
+    &&C(4) &\mapsto \encode{
       \pendingset,
       \epochroot,
       \abracegroupboth{
@@ -39,34 +39,34 @@ The state serialization is then defined as the dictionary built from the amalgam
       \sealtickets,
       \var{\ticketaccumulator}
     } \;, \\
-    &&C(2^{32} - 5) &\mapsto \encode{
+    &&C(5) &\mapsto \encode{
       \var{\sqorderby{x}{x \in \goodset}},
       \var{\sqorderby{x}{x \in \badset}},
       \var{\sqorderby{x}{x \in \wonkyset}},
       \var{\sqorderby{x}{x \in \offenders}}
     } \;, \\
-    &&C(2^{32} - 6) &\mapsto \encode{\entropy} \;, \\
-    &&C(2^{32} - 7) &\mapsto \encode{\stagingset} \;, \\
-    &&C(2^{32} - 8) &\mapsto \encode{\activeset} \;, \\
-    &&C(2^{32} - 9) &\mapsto \encode{\previousset} \;, \\
-    &&C(2^{32} - 10) &\mapsto \encode{
+    &&C(6) &\mapsto \encode{\entropy} \;, \\
+    &&C(7) &\mapsto \encode{\stagingset} \;, \\
+    &&C(8) &\mapsto \encode{\activeset} \;, \\
+    &&C(9) &\mapsto \encode{\previousset} \;, \\
+    &&C(10) &\mapsto \encode{
       \sq{\build{
         \maybe{\tup{\rs¬workreport, \encode[4]{\rs¬timestamp}}}
       }{
         \tup{\rs¬workreport, \rs¬timestamp} \orderedin \reports
       }}
     } \;, \\
-    &&C(2^{32} - 11) &\mapsto \encode[4]{\thetime} \;, \\
-    &&C(2^{32} - 12) &\mapsto \encode{
+    &&C(11) &\mapsto \encode[4]{\thetime} \;, \\
+    &&C(12) &\mapsto \encode{
       \encode[4]{\manager, \assigners, \delegator, \registrar},
       \alwaysaccers
     } \;, \\
-    &&C(2^{32} - 13) &\mapsto \encode{
+    &&C(13) &\mapsto \encode{
       \encode[4]{\valstatsaccumulator, \valstatsprevious},
       \corestats,
       \servicestats
     } \;, \\
-    &&C(2^{32} - 14) &\mapsto \encode{
+    &&C(14) &\mapsto \encode{
       \sq{\build{
         \var{\sq{\build{
           \tup{\mathbf{r}, \var{\mathbf{d}}}
@@ -77,13 +77,13 @@ The state serialization is then defined as the dictionary built from the amalgam
         \mathbf{i} \orderedin \ready
       }}
     } \;, \\
-    &&C(2^{32} - 15) &\mapsto \encode{
+    &&C(15) &\mapsto \encode{
       \sq{\build{\var{\mathbf{i}}}{\mathbf{i} \orderedin \accumulated}}
     } \;, \\
-    &&C(2^{32} - 16) &\mapsto \encode{
+    &&C(16) &\mapsto \encode{
       \var{\sq{\build{\tup{\encode[4]{s}, \encode{h}}}{\tup{s, h} \orderedin \lastaccout}}}
     } \;, \\
-    \forall \kv{s}{\saX} \in \accounts: &&C(2^{32} - 255, s) &\mapsto \encode{
+    \forall \kv{s}{\saX} \in \accounts: &&C(255, s) &\mapsto \encode{
       0,
       \saX_\sa¬codehash,
       \encode[8]{
