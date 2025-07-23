@@ -10,8 +10,8 @@ We define the state-key constructor functions $C$ as:
 \begin{equation}
   C\colon\abracegroup{
     \Nbits{8} \cup \tup{\Nbits{8}, \serviceid} \cup \tup{\serviceid, \blob} &\to \blob[31] \\
-    i \in \Nbits{8} &\mapsto \sq{i, 0, 255, 0, 255, 0, 255, 0, 0, \dots} \\
-    \tup{i, s \in \serviceid} &\mapsto \sq{i, n_0, 255, n_1, 255, n_2, 255, n_3, 0, 0, \dots}\ \where n = \encode[4]{s} \\
+    i \in \Nbits{8} &\mapsto \sq{i, 0, 0, \dots} \\
+    \tup{i, s \in \serviceid} &\mapsto \sq{i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots}\ \where n = \encode[4]{s} \\
     \tup{s, h} &\mapsto \sq{n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}}\ \where n = \encode[4]{s}, a = \blake{h}
   }
 \end{equation}
