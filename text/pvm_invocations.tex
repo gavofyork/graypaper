@@ -10,11 +10,11 @@ We now define the three practical instances where we wish to invoke a \textsc{pv
   \item[$\mathtt{WHAT} = 2^{64} - 2$] Name unknown.
   \item[$\mathtt{OOB} = 2^{64} - 3$] The inner \textsc{pvm} memory index provided for reading/writing is not accessible.
   \item[$\mathtt{WHO} = 2^{64} - 4$] Index unknown.
-  \item[$\mathtt{FULL} = 2^{64} - 5$] Storage full.
+  \item[$\mathtt{FULL} = 2^{64} - 5$] Storage full or resource already allocated.
   \item[$\mathtt{CORE} = 2^{64} - 6$] Core index unknown.
   \item[$\mathtt{CASH} = 2^{64} - 7$] Insufficient funds.
   \item[$\mathtt{LOW} = 2^{64} - 8$] Gas limit too low.
-  \item[$\mathtt{HUH} = 2^{64} - 9$] The item is already solicited or cannot be forgotten.
+  \item[$\mathtt{HUH} = 2^{64} - 9$] The item is already solicited, cannot be forgotten or the operation is invalid due to privilege level.
   \item[$\mathtt{OK} = 0$] The return value indicating general success.
 \end{description}
 
@@ -177,7 +177,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
       \is{\im¬yield}{\none},
       \is{\im¬provisions}{\sq{}}
     }\\
-    &\qquad\where \im¬nextfreeid = \text{check}((\decode[4]{\blake{\encode{\im¬id, \entropyaccumulator', \H_\¬timeslot}}} \bmod (2^{32}-2^9)) + 2^8) \\
+    &\qquad\where \im¬nextfreeid = \text{check}((\decode[4]{\blake{\encode{\im¬id, \entropyaccumulator', \H_\¬timeslot}}} \bmod (2^{32}-\Cminpublicindex-2^8)) + \Cminpublicindex) \\
   }\\
   F \in \contextmutator{\implicationspair} &\colon \tup{n, \gascounter, \registers, \memory, \imXY} \mapsto \begin{cases}
   \Omega_G(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{gas} \\
@@ -242,7 +242,7 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 \begin{equation}
   \text{check}(i \in \serviceid) \equiv \begin{cases}
     i &\when i \not\in \keys{\local¬basestate_\ps¬accounts} \\
-    \text{check}((i - 2^8 + 1) \bmod (2^{32}-2^9) + 2^8)&\otherwise
+    \text{check}((i - \Cminpublicindex + 1) \bmod (2^{32}-2^8-\Cminpublicindex) + \Cminpublicindex)&\otherwise
   \end{cases}
 \end{equation}
 
@@ -670,6 +670,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{cases}
 \end{align}
 
+\newcommand*{\local¬desiredid}{i}
+
 \begin{longtable}{p{3.5cm} p{12.5cm}}
   \toprule
   \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
@@ -681,7 +683,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{bless} = 14 \\
   $g = 10$}&
   $\begin{aligned}
-    \using \sq{m, a, v, o, n} &= \registers\subrange{7}{5} \\
+    \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
     \using \mathbf{a} &= \begin{cases}
       \decode[4]{\memory\subrange{a}{4\Ccorecount}} &\when \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
       \error &\otherwise
@@ -690,11 +692,11 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \set{\build{\kv{s}{g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\when \Nrange{o}{12n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst', \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬alwaysaccers}}} &= \begin{cases}
-      \tup{\panic, \registers_7, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬alwaysaccers}}} &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
-      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬alwaysaccers}}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager\\
-      \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬alwaysaccers}}} &\otherwhen \tup{m, v} \not\in \tuple{\serviceid, \serviceid} \\
-      \tup{\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, \mathbf{z}}} &\otherwise \\
+    \tup{\execst', \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &= \begin{cases}
+      \tup{\panic, \registers_7, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
+      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager\\
+      \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \tup{m, v, r} \not\in \serviceid^3 \\
+      \tup{\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwise \\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -748,7 +750,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{new} = 18 \\
   $g = 10$} &
   $\begin{aligned}
-    \using \sq{o, l, \sa¬minaccgas, \sa¬minmemogas, \sa¬gratis} &= \registers\subrange{7}{5} \\
+    \using \sq{o, l, \sa¬minaccgas, \sa¬minmemogas, \sa¬gratis, \local¬desiredid} &= \registers\subrange{7}{5} \\
     \using \sa¬codehash &= \begin{cases}
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \wedge l \in \Nbits{32} \\
       \error &\otherwise
@@ -774,8 +776,11 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \tup{\panic, \registers_7, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\when c = \error \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\otherwhen f \ne 0 \wedge \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager \\
       \tup{\continue, \mathtt{CASH}, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \mathbf{s}_\sa¬balance < (\imX_\im¬self)_\sa¬minbalance \\
+      \tup{\continue, \mathtt{FULL}, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \wedge \local¬desiredid \in \keys{(\imX_\im¬state)_\ps¬accounts} \\
+      \tup{\continue, \local¬desiredid, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts \cup \mathbf{d}} &\otherwhen \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \\
+      \multicolumn{2}{l}{\quad \where \mathbf{d} = \set{ \kv{\local¬desiredid}{\mathbf{a}}, \kv{\imX_\im¬id}{\mathbf{s}} }}\\
       \tup{\continue, \imX_\im¬nextfreeid, i^*, (\imX_\im¬state)_\ps¬accounts \cup \mathbf{d}} &\otherwise \\
-      \multicolumn{2}{l}{\quad \where i^* = \text{check}(2^8 + (\imX_\im¬nextfreeid - 2^8 + 42) \bmod (2^{32} - 2^9))}\\
+      \multicolumn{2}{l}{\quad \where i^* = \text{check}(\Cminpublicindex + (\imX_\im¬nextfreeid - \Cminpublicindex + 42) \bmod (2^{32} - \Cminpublicindex - 2^8))}\\
       \multicolumn{2}{l}{\quad \also \mathbf{d} = \set{ \kv{\imX_\im¬nextfreeid}{\mathbf{a}}, \kv{\imX_\im¬id}{\mathbf{s}} }}\\
     \end{cases} \\
   \end{aligned}$\\
@@ -971,3 +976,5 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \bottomrule
 \end{longtable}
+
+\undef{\local¬desiredid}
