@@ -133,10 +133,11 @@ Our formalisms continue by defining $\partialstate$ as a characterization of (\i
   \partialstate \equiv \tuple{\begin{aligned}
     &\isa{\ps¬accounts}{\dictionary{\serviceid}{\serviceaccount}} \,,\;
     \isa{\ps¬stagingset}{\sequence[\Cvalcount]{\valkey}} \,,\;
-    \isa{\ps¬authqueue}{\sequence[\Ccorecount]{\sequence[\Cauthqueuesize]{\hash}}} \,,\\
-    &\isa{\ps¬manager}{\serviceid} \,,\;
-    \isa{\ps¬assigners}{\sequence[\Ccorecount]{\serviceid}} \,,\;
+    \isa{\ps¬authqueue}{\sequence[\Ccorecount]{\sequence[\Cauthqueuesize]{\hash}}} \,,\;
+    \isa{\ps¬manager}{\serviceid} \,,\\
+    &\isa{\ps¬assigners}{\sequence[\Ccorecount]{\serviceid}} \,,\;
     \isa{\ps¬delegator}{\serviceid} \,,\;
+    \isa{\ps¬registrar}{\serviceid} \,,\;
     \isa{\ps¬alwaysaccers}{\dictionary{\serviceid}{\gas}}
   \end{aligned}}
 \end{equation}
@@ -169,11 +170,8 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
 \newcommand*{\local¬accounts}{\mathbf{d}}
 \newcommand*{\local¬stagingset}{\mathbf{i}}
 \newcommand*{\local¬authqueue}{\mathbf{q}}
-\newcommand*{\local¬manager}{m}
-\newcommand*{\local¬assigners}{\mathbf{a}}
-\newcommand*{\local¬delegator}{v}
-\newcommand*{\local¬alwaysaccers}{\mathbf{z}}
 \newcommand*{\local¬acc}{\accumulate}
+\newcommand*{\local¬manpost}{\mathbf{e}^*}
 
 We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of deferred transfers, a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the posterior state-context, the resultant deferred-transfers and accumulation-output pairings, and the service-indexed gas usage:
 \begin{equation}
@@ -182,7 +180,7 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
     &\tuple{\partialstate, \defxfers, \workreports, \dictionary{\serviceid}{\gas}} \to \tuple{\partialstate, \defxfers, \local¬fnservouts, \local¬fngasused} \\
     &\tup{\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}} \mapsto \tup{
       \tup{
-        \local¬accounts', \local¬stagingset', \local¬authqueue', \local¬manager', \local¬assigners', \local¬delegator', \local¬alwaysaccers'
+        \ps¬accounts', \ps¬stagingset', \ps¬authqueue', \ps¬manager', \ps¬assigners', \ps¬delegator', \ps¬registrar', \ps¬alwaysaccers'
       }, \concatall{\mathbf{t}'}, \mathbf{b}, \mathbf{u}
     }\!\!\!\!\!\!\\
     &\text{where:}\\
@@ -210,31 +208,30 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         }{
           s \orderedin \mathbf{s}
         }} \\
-      \local¬accounts' &= \local¬fnprovide(
+      \ps¬accounts' &= \local¬fnprovide(
         (\ps¬accounts \cup \mathbf{n}) \setminus \mathbf{m},
         \bigcup_{s \in \mathbf{s}} \local¬acc(s)_\ao¬provisions
       ) \\
       &\tup{\ps¬accounts, \ps¬stagingset, \ps¬authqueue, \ps¬manager, \ps¬assigners, \ps¬alwaysaccers} = \psX \\
-      \tup{\local¬manager'\!,\local¬assigners^*\!\!,\local¬delegator^*\!\!,\local¬alwaysaccers'} &=
-        (\local¬acc(m)_\ao¬poststate)_{
-          \tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬alwaysaccers}
-        } \\
+      \local¬manpost &= \local¬acc(m)_\ao¬poststate \\
+      \tup{\ps¬manager'\!,\ps¬registrar'\!,\ps¬alwaysaccers'} &=
+        \local¬manpost_{\tup{\ps¬manager, \ps¬registrar, \ps¬alwaysaccers}} \\
       \forall c \in \coreindex :
-        \local¬assigners'\sub{c} &=
+        \ps¬assigners'\sub{c} &=
         \begin{cases}
         ((
           \local¬acc(\ps¬assigners\sub{c})_\ao¬poststate
-        )_\ps¬assigners)\sub{c} &\when \local¬assigners^*\sub{c} = \ps¬assigners\sub{c} \\
-          \local¬assigners^*\sub{c} &\otherwise
+        )_\ps¬assigners)\sub{c} &\when (\local¬manpost_\ps¬assigners)\sub{c} = \ps¬assigners\sub{c} \\
+          (\local¬manpost_\ps¬assigners)\sub{c} &\otherwise
         \end{cases}\\
-      \local¬delegator' &= (
-          \local¬acc(\local¬delegator^*)_\ao¬poststate
+      \ps¬delegator' &= (
+          \local¬acc(\local¬manpost_\ps¬delegator)_\ao¬poststate
         )_\ps¬delegator \\
-      \local¬stagingset' &= (
+      \ps¬stagingset' &= (
           \local¬acc(\ps¬delegator)_\ao¬poststate
       )_\ps¬stagingset \\
       \forall c \in \coreindex :
-        \local¬authqueue'\sub{c} &= ((
+        \ps¬authqueue'\sub{c} &= ((
           \local¬acc(\ps¬assigners\sub{c})_\ao¬poststate
         )_\ps¬authqueue)\sub{c} \\
       \mathbf{n} &= \bigcup_{s \in \mathbf{s}}(
@@ -340,6 +337,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
     \is{\ps¬manager}{\manager},
     \is{\ps¬assigners}{\assigners},
     \is{\ps¬delegator}{\delegator},
+    \is{\ps¬registrar}{\registrar},
     \is{\ps¬alwaysaccers}{\alwaysaccers}
   }
   \!\!\!\!\!\\
@@ -355,6 +353,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
     \is\ps¬manager{\manager'},
     \is\ps¬assigners{\assigners'},
     \is\ps¬delegator{\delegator'},
+    \is\ps¬registrar{\registrar'},
     \is\ps¬alwaysaccers{\alwaysaccers'}
   } \equiv \psX'
   \!\!\!\!\!
