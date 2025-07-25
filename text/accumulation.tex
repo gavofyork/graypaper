@@ -172,8 +172,9 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
 \newcommand*{\local¬authqueue}{\mathbf{q}}
 \newcommand*{\local¬acc}{\accumulate}
 \newcommand*{\local¬manpost}{\mathbf{e}^*}
+\newcommand*{\local¬fnreplaceifchanged}{R}
 
-We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of deferred transfers, a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the posterior state-context, the resultant deferred-transfers and accumulation-output pairings, and the service-indexed gas usage:
+We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of deferred transfers, a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the posterior state-context, the resultant deferred-transfers and accumulation-output pairings, and the service-indexed gas usage. Note that for the privileges we employ a function $R$ which selects the service to which the manager service changed, or if no change was made, then that which the service itself changed to. This allows privileges to be `owned` and facilitates the removal of the manager service which we see as a helpful possibility. Formally:
 \begin{equation}
   \label{eq:accpar}
   \accpar\colon\abracegroup[\;]{\begin{aligned}
@@ -212,21 +213,28 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         (\ps¬accounts \cup \mathbf{n}) \setminus \mathbf{m},
         \bigcup_{s \in \mathbf{s}} \local¬acc(s)_\ao¬provisions
       ) \\
-      &\tup{\ps¬accounts, \ps¬stagingset, \ps¬authqueue, \ps¬manager, \ps¬assigners, \ps¬alwaysaccers} = \psX \\
+      &\tup{
+        \ps¬accounts, \ps¬stagingset, \ps¬authqueue, \ps¬manager, \ps¬assigners, \ps¬alwaysaccers
+      } = \psX \\
       \local¬manpost &= \local¬acc(m)_\ao¬poststate \\
-      \tup{\ps¬manager'\!,\ps¬registrar'\!,\ps¬alwaysaccers'} &=
+      \tup{\ps¬manager'\!,\ps¬alwaysaccers'} &=
         \local¬manpost_{\tup{\ps¬manager, \ps¬registrar, \ps¬alwaysaccers}} \\
       \forall c \in \coreindex :
-        \ps¬assigners'\sub{c} &=
-        \begin{cases}
-        ((
-          \local¬acc(\ps¬assigners\sub{c})_\ao¬poststate
-        )_\ps¬assigners)\sub{c} &\when (\local¬manpost_\ps¬assigners)\sub{c} = \ps¬assigners\sub{c} \\
-          (\local¬manpost_\ps¬assigners)\sub{c} &\otherwise
-        \end{cases}\\
-      \ps¬delegator' &= (
-          \local¬acc(\local¬manpost_\ps¬delegator)_\ao¬poststate
-        )_\ps¬delegator \\
+        \ps¬assigners'\sub{c} &= R(
+          \ps¬assigners\sub{c},
+          (\local¬manpost_\ps¬assigners)\sub{c},
+          ((\local¬acc(\ps¬assigners\sub{c})_\ao¬poststate)_\ps¬assigners)\sub{c}
+        ) \\
+      \ps¬delegator' &= R(
+        \ps¬delegator,
+        \local¬manpost_\ps¬delegator,
+        (\local¬acc(\ps¬delegator)_\ao¬poststate)_\ps¬delegator
+      ) \\
+      \ps¬registrar' &= R(
+        \ps¬registrar,
+        \local¬manpost_\ps¬registrar,
+        (\local¬acc(\ps¬registrar)_\ao¬poststate)_\ps¬registrar
+      ) \\
       \ps¬stagingset' &= (
           \local¬acc(\ps¬delegator)_\ao¬poststate
       )_\ps¬stagingset \\
@@ -247,7 +255,14 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
     \end{aligned}
   \end{aligned}}
 \end{equation}
+\begin{equation}
+  R(o, a, b) \equiv \begin{cases}
+    b &\when a = o \\
+    a &\otherwise
+  \end{cases}
+\end{equation}
 \undef{\local¬acc}
+\undef{\local¬fnreplaceifchanged}
 
 And $\local¬fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/blob pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
 \begin{equation}
