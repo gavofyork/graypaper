@@ -181,7 +181,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
   }\\
   F \in \contextmutator{\implicationspair} &\colon \tup{n, \gascounter, \registers, \memory, \imXY} \mapsto \begin{cases}
   \Omega_G(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{gas} \\
-    \Omega_Y(\gascounter, \registers, \memory, \none, \entropyaccumulator', \none, \none, \none, \none, \mathbf{o}, \imXY) &\when n = \mathtt{fetch}\\
+    \Omega_Y(\gascounter, \registers, \memory, \none, \entropyaccumulator', \none, \none, \none, \none, \mathbf{i}, \imXY) &\when n = \mathtt{fetch}\\
     G(\Omega_R(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id, (\imX_\im¬state)_\ps¬accounts), \imXY) &\when n = \mathtt{read} \\
     G(\Omega_W(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id), \imXY) &\when n = \mathtt{write} \\
     G(\Omega_L(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id, (\imX_\im¬state)_\ps¬accounts), \imXY) &\when n = \mathtt{lookup} \\
@@ -291,7 +291,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_Y(\gascounter, \registers, \memory, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{o}, \dots)$ \\
+  $\Omega_Y(\gascounter, \registers, \memory, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{i}, \dots)$ \\
   \texttt{fetch} = 1 \\
   $g = 10$} &
   $\begin{aligned}
@@ -348,8 +348,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       S(p_\wp¬workitems[\registers_{11}]) &\when p \ne \none \wedge \registers_{10} = 12 \wedge \registers_{11} < \len{p_\wp¬workitems} \\
       \multicolumn{2}{l}{\where S(w) \equiv \encode{\encode[4]{w_\wi¬serviceindex}, w_\wi¬codehash, \encode[8]{w_\wi¬refgaslimit, w_\wi¬accgaslimit}, \encode[2]{w_\wi¬exportcount, \len{w_\wi¬importsegments}, \len{w_\wi¬extrinsics}}, \encode[4]{\len{w_\wi¬payload}}}} \\
       p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when p \ne \none \wedge \registers_{10} = 13 \wedge \registers_{11} < \len{p_\wp¬workitems} \\
-      \encode{\var{\mathbf{o}}} &\when \mathbf{o} \ne \none \wedge \registers_{10} = 14 \\
-      \encode{\mathbf{o}[\registers_{11}]} &\when \mathbf{o} \ne \none \wedge \registers_{10} = 15 \wedge \registers_{11} < \len{\mathbf{o}} \\
+      \encode{\var{\mathbf{i}}} &\when \mathbf{i} \ne \none \wedge \registers_{10} = 14 \\
+      \encode{\mathbf{i}[\registers_{11}]} &\when \mathbf{i} \ne \none \wedge \registers_{10} = 15 \wedge \registers_{11} < \len{\mathbf{i}} \\
       \none &\otherwise
     \end{cases} \\
     \using o &= \registers_7 \\
