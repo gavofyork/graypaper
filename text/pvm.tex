@@ -726,10 +726,6 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     \tup{\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}} &\mapsto \begin{cases}
       \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem):} \\[8pt]
       \tup{\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
-      \tup{\fault \times a, \imath', \gascounter', \registers', \mem', \mathbf{x}} &\when \bigwedge\abracegroup[\;]{
-        &\varepsilon' = \host \times h\\[2pt]
-        &\fault \times a = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
-      }\\[10 pt]
       \Psi_H(\mathbf{c}, \imath', \gascounter'', \registers'', \mem'', f, \mathbf{x}'')
        &\when \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
@@ -749,7 +745,7 @@ On exit, the instruction counter $\imath'$ references the instruction \emph{whic
 
 However, when the exit reason to $\Psi$ is a host-call $\host$, then the resultant instruction-counter has a value of the host-call instruction and resuming with this state would immediately exit with the same result. Re-invoking would therefore require both the post-host-call machine state \emph{and} the instruction counter value for the instruction following the one which resulted in the host-call exit reason. This is always one greater plus the relevant argument skip distance. Resuming the machine with this instruction counter will continue beyond the host-call instruction.
 
-We use both values of instruction-counter for the definition of $\Psi_H$ since if the host-call results in a page fault we need to allow the outer environment to resolve the fault and re-try the host-call. Conversely, if we successfully transition state according to the host-call, then on resumption we wish to begin with the instruction directly following the host-call.
+If we successfully transition state according to the host-call, then on resumption we wish to begin with the instruction directly following the host-call.
 
 \subsection{Standard Program Initialization}\label{sec:standardprograminit}
 The software programs which will run in each of the four instances where the \textsc{pvm} is utilized in the main document have a very typical setup pattern characteristic of an output of a compiler and linker. This means that \textsc{ram} has sections for program-specific read-only data, read-write (heap) data and the stack. An adjunct to this, very typical of our usage patterns is an extra read-only section via which invocation-specific data may be passed (\ie arguments). It thus makes sense to define this properly in a single initializer function. These sections are quantized into \emph{major zones}, and one major zone is always left unallocated between sections in order to reduce accidental overrun. Sections are padded with zeroes to the nearest \textsc{pvm} memory page boundary.
