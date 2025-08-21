@@ -738,14 +738,15 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
       }\\[8pt]
     \end{cases} \\
     }\!\!\!\!\!\!\!\!\\
-    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X} \cup \set{\fault} \times \pvmreg
+    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X}
 \end{align}
 
-On exit, the instruction counter $\imath'$ references the instruction \emph{which caused the exit}. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed. This is sensible when the instruction is one which necessarily needs re-executing such as in the case of an out-of-gas or page fault reason.
+On exit, the instruction counter $\imath'$ behavior depends on the exit reason. For \emph{halt} and \emph{panic} conditions, $\Psi$ returns $\imath' = 0$. For \emph{out-of-gas}, \emph{page fault}, and \emph{host-call} conditions, $\Psi$ returns $\imath'$ pointing to the instruction following the one that caused the exit.
 
-However, when the exit reason to $\Psi$ is a host-call $\host$, then the resultant instruction-counter has a value of the host-call instruction and resuming with this state would immediately exit with the same result. Re-invoking would therefore require both the post-host-call machine state \emph{and} the instruction counter value for the instruction following the one which resulted in the host-call exit reason. This is always one greater plus the relevant argument skip distance. Resuming the machine with this instruction counter will continue beyond the host-call instruction.
+When the machine exits due to out-of-gas or page fault, re-invoking with the returned instruction counter will re-execute the faulted instruction, which is appropriate since these conditions may be resolved (by providing more gas or making memory accessible) and the instruction retried.
 
-If we successfully transition state according to the host-call, then on resumption we begin with the instruction directly following the host-call.
+For host-calls, $\Psi$ returns the exit reason as $\host \times h$ where $h$ is the host-call instruction value, while $\imath'$ points to the instruction following the \token{ecalli} instruction. This means that after successfully processing the host-call, the machine can resume execution directly using the returned instruction counter value without any adjustment.
+
 
 \subsection{Standard Program Initialization}\label{sec:standardprograminit}
 The software programs which will run in each of the four instances where the \textsc{pvm} is utilized in the main document have a very typical setup pattern characteristic of an output of a compiler and linker. This means that \textsc{ram} has sections for program-specific read-only data, read-write (heap) data and the stack. An adjunct to this, very typical of our usage patterns is an extra read-only section via which invocation-specific data may be passed (\ie arguments). It thus makes sense to define this properly in a single initializer function. These sections are quantized into \emph{major zones}, and one major zone is always left unallocated between sections in order to reduce accidental overrun. Sections are padded with zeroes to the nearest \textsc{pvm} memory page boundary.
