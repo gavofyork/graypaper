@@ -67,7 +67,7 @@ A sequence of bits $b \in \bitstring$ is a special case since encoding each indi
   \encode{b \in \bitstring} &\equiv \begin{cases}
     \sq{} &\when b = \sq{} \\
     \sq{
-      \sum\limits_{i=0}^{\min(8, \len{b})}
+      \sum\limits_{i=0}^{i < \min(8, \len{b})}
       b\sub{i} \cdot 2^i
     } \concat \encode{b\interval{8}{}} &\otherwise\\
   \end{cases}
