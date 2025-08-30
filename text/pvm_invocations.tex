@@ -47,7 +47,10 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
     \tup{n, \gascounter, \registers, \memory} \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
       \Omega_Y(\gascounter, \registers, \memory, \wpX, \none, \none, \none, \none, \none, \none, \none) &\when n = \mathtt{fetch} \\
-      \tup{\continue, \gascounter - 10, \sq{\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots}, \memory} &\otherwise
+      \tup{\oog, \gascounter', \registers', \memory} &\otherwhen \gascounter' < 0 \\
+      \tup{\continue, \gascounter', \registers', \memory} &\otherwise \\
+      \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
+      \multicolumn{2}{l}{\also \gascounter' = \gascounter - 10}
     \end{cases}
 \end{align}
 
@@ -99,8 +102,10 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{pages}\\
       \Omega_K(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{invoke}\\
       \Omega_X(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{expunge}\\
-      \tup{\continue, \gascounter - 10, \registers', \memory} &\otherwise\\
+      \tup{\oog, \gascounter', \registers', \memory} &\otherwhen \gascounter' < 0\\
+      \tup{\continue, \gascounter', \registers', \memory} &\otherwise\\
       \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
+      \multicolumn{2}{l}{\also \gascounter' = \gascounter - 10} \\
       \multicolumn{2}{l}{\also \overline{\mathbf{x}} = \sq{\build{
         \sq{\build{
           \mathbf{x}
@@ -199,7 +204,10 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_F(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{forget} \\
     \Omega_\Taurus(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{yield} \\
     \Omega_\Aries(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{provide} \\
-    \tup{\continue, \gascounter - 10, \sq{\registers_0, \dots, \registers_6, \mathtt{WHAT}, \registers_8, \dots}, \memory, \imXY} &\otherwise
+    \tup{\oog, \gascounter', \registers', \memory, \imXY} &\otherwhen \gascounter' < 0\\
+    \tup{\continue, \gascounter', \registers', \memory, \imXY} &\otherwise\\
+    \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
+    \multicolumn{2}{l}{\also \gascounter' = \gascounter - 10}
   \end{cases} \\
   G&\colon\abracegroup{
     \tuple{\tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, \serviceaccount}, \implicationspair} &\to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, \implicationspair} \\
