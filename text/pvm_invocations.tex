@@ -813,7 +813,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \makecell*[l]{
   $\Omega_T(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{transfer} = 20 \\
-  $g = 10 + \registers_9 $} &
+  $g = 10 + t$} &
   $\begin{aligned}
     \using \sq{\dx¬dest, \dx¬amount, l, o} &= \registers\subrange{7}{4},  \\
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts\\
@@ -827,12 +827,17 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       } &\when \Nrange{o}{\Cmemosize} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
+    \using \tup{c, t} &= \begin{cases}
+      \tup{\panic, 0} &\when \mathbf{t} = \error \\
+      \tup{\mathtt{WHO}, 0} &\otherwhen \dx¬dest \not \in \keys{\mathbf{d}} \\
+      \tup{\mathtt{LOW}, 0} &\otherwhen l < \mathbf{d}[\dx¬dest]_\sa¬minmemogas \\
+      \tup{\mathtt{CASH}, 0} &\otherwhen \dx¬amount < (\imX_\im¬self)_\sa¬minbalance \\
+      \tup{\mathtt{OK}, l} &\otherwise
+    \end{cases} \\
     \using b &= (\imX_\im¬self)_\sa¬balance - \dx¬amount \\
     \tup{\execst', \registers'_7, \imX'_\im¬xfers, (\imX'_\im¬self)_\sa¬balance} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\when \mathbf{t} = \error \\
-      \tup{\continue, \mathtt{WHO}, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\otherwhen \dx¬dest \not \in \keys{\mathbf{d}} \\
-      \tup{\continue, \mathtt{LOW}, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\otherwhen l < \mathbf{d}[\dx¬dest]_\sa¬minmemogas \\
-      \tup{\continue, \mathtt{CASH}, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\otherwhen \dx¬amount < (\imX_\im¬self)_\sa¬minbalance \\
+      \tup{\panic, \registers_7, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\when c = \panic \\
+      \tup{\continue, c, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\otherwhen c \ne \mathtt{OK} \\
       \tup{\continue, \mathtt{OK}, \imX_\im¬xfers \append \mathbf{t}, b} &\otherwise
     \end{cases} \\
   \end{aligned}$\\
