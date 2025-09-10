@@ -46,7 +46,7 @@ Finally, details of the most recent blocks and timeslot index are tracked in $\r
 
 Much as in the \emph{YP}, we specify $\transitionstate$ as the implication of formulating all items of posterior state in terms of the prior state and block. To aid the architecting of implementations which parallelize this computation, we minimize the depth of the dependency graph where possible. The overall dependency graph is specified here:
 \begin{align}\label{eq:transitionfunctioncomposition}
-  \thetime' &\prec \theheader \\
+  \thetime' &\prec \tup{\theheader, \thetime} \\
   \recenthistorypostparentstaterootupdate &\prec \tup{\theheader, \recenthistory} \label{eq:betadagger} \\
   \safrole' &\prec \tup{\theheader, \thetime, \xttickets, \safrole, \stagingset, \entropy', \activeset', \disputes'} \\
   \entropy' &\prec \tup{\theheader, \thetime, \entropy} \\
