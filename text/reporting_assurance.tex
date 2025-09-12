@@ -3,7 +3,7 @@
 
 Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make their way into the state of service accounts, $\accounts$. A \emph{work-package}, which comprises several \emph{work-items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work-digests} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After enough assurances the work-report is considered \emph{available}, and the work-digests transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}. The report may also be \emph{timed-out}, implying it may be replaced by another report without accumulation.
 
-From the perspective of the work-report, therefore, the guarantee happens first and the assurance afterwards. However, from the perspective of a block's state-transition, the assurances are best processed first since each core may only have a single work-report pending its package becoming available at a time. Thus, we will first cover the transition arising from processing the availability assurances followed by the work-report guarantees. This synchroneity can be seen formally through the requirement of an intermediate state $\reportspostassurances$, utilized later in equation \ref{eq:reportcoresareunused}.
+From the perspective of the work-report, therefore, the guarantee happens first and the assurance afterwards. However, from the perspective of a block's state-transition, the assurances are best processed first since each core may only have a single work-report guarantee pending its package becoming available at a time. Thus, we will first cover the transition arising from processing the availability assurances followed by the work-report guarantees. This synchroneity can be seen formally through the requirement of an intermediate state $\availassignmentspostassurances$, utilized later in equation \ref{eq:reportcoresareunused}.
 
 
 
@@ -12,18 +12,20 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 
 
 \subsection{State}
-The state of the reporting and availability portion of the protocol is largely contained within $\reports$, which tracks the work-reports which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one report may be assigned to a core at any given time. Formally:
+The state of the reporting and availability portion of the protocol is largely contained within $\availassignments$, which tracks the work-report guarantees which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one guarantee may be assigned to a core at any given time. Formally:
 \begin{equation}
   \label{eq:reportingstate}
-  \reports \in \sequence[\Ccorecount]{
+  \availassignments \in \sequence[\Ccorecount]{
     \optional{\tuple{
-      \isa{\rs¬workreport}{\workreport} ,\,
-      \isa{\rs¬timestamp}{\timeslot}
+      \isa{\aa¬guarantee}{\guarantee} ,\,
+      \isa{\aa¬timestamp}{\timeslot}
     }}
   }
 \end{equation}
 
-As usual, intermediate and posterior values ($\reportspostjudgement$, $\reportspostassurances$, $\reportspostguarantees$) are held under the same constraints as the prior value.
+As usual, intermediate and posterior values ($\availassignmentspostjudgment$, $\availassignmentspostassurances$, $\availassignmentspostguarantees$) are held under the same constraints as the prior value.
+
+A work-report guarantee, of the set $\guarantee$, consists of a work-report together with signatures from guarantors attesting to its correctness. $\guarantee$ is formally defined and guarantees discussed further in section \ref{sec:workreportguarantees}. For now, we concern ourselves with the work-reports that guarantees attest to.
 
 \subsubsection{Work Report}
 \label{sec:workreport}
@@ -134,7 +136,7 @@ In order to ensure fair use of a block's extrinsic space, work-reports are limit
 
 \subsection{Package Availability Assurances}
 
-We first define $\reportspostassurances$, the intermediate state to be utilized next in section \ref{sec:workreportguarantees} as well as $\justbecameavailable$, the set of available work-reports, which will we utilize later in section \ref{sec:accumulation}. Both require the integration of information from the assurances extrinsic $\xtassurances$.
+We first define $\availassignmentspostassurances$, the intermediate state to be utilized next in section \ref{sec:workreportguarantees} as well as $\justbecameavailable$, the set of available work-reports, which we will utilize later in section \ref{sec:accumulation}. Both require the integration of information from the assurances extrinsic $\xtassurances$.
 
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
@@ -164,7 +166,7 @@ The signature must be one whose public key is that of the validator assuring and
 A bit may only be set if the corresponding core has a report pending availability on it:
 \begin{equation}
   \forall a \in \xtassurances, \cX \in \coreindex :
-  \quad a_\xa¬availabilities\subb{\cX} \Rightarrow \reportspostjudgement\subb{\cX} \ne \none
+  \quad a_\xa¬availabilities\subb{\cX} \Rightarrow \availassignmentspostjudgment\subb{\cX} \ne \none
 \end{equation}
 
 \subsubsection{Available Reports}
@@ -172,19 +174,19 @@ A work-report is said to become \emph{available} if and only if there are a clea
 \begin{align}
   \label{eq:availableworkreports}
   \justbecameavailable &\equiv \sq{\build{
-      \reportspostjudgement\subb{\cX}_\rs¬workreport
+      (\availassignmentspostjudgment\subb{\cX}_\aa¬guarantee)_\g¬workreport
     }{
       \cX \orderedin \coreindex,\;
       \sum_{a \in \xtassurances}\!a_\xa¬availabilities\subb{\cX}\,>\,\twothirds\,\Cvalcount
     }}
 \end{align}
 
-This value is utilized in the definition of both $\accountspost$ and $\reportspostassurances$ which we will define presently as equivalent to $\reportspostjudgement$ except for the removal of items which are either now available or have timed out:
+This value is utilized in the definition of both $\accountspost$ and $\availassignmentspostassurances$ which we will define presently as equivalent to $\availassignmentspostjudgment$ except for the removal of items which are either now available or have timed out:
 \begin{align}
-  \label{eq:reportspostassurancesdef}
-  \forall \cX \in \coreindex: \reportspostassurances\subb{\cX} \equiv \begin{cases}
-    \none &\when\reports\subb{\cX}_\rs¬workreport \in \justbecameavailable \vee \H_\¬timeslot \ge \reportspostjudgement\subb{\cX}_\rs¬timestamp + \Cassurancetimeoutperiod\\
-    \reportspostjudgement\subb{\cX} &\otherwise
+  \label{eq:availassignmentspostassurancesdef}
+  \forall \cX \in \coreindex: \availassignmentspostassurances\subb{\cX} \equiv \begin{cases}
+    \none &\when(\availassignmentspostjudgment\subb{\cX}_\aa¬guarantee)_\g¬workreport \in \justbecameavailable \vee \H_\¬timeslot \ge \availassignmentspostjudgment\subb{\cX}_\aa¬timestamp + \Cassurancetimeoutperiod\\
+    \availassignmentspostjudgment\subb{\cX} &\otherwise
   \end{cases}
 \end{align}
 
@@ -247,19 +249,25 @@ We also define $\guarantorassignmentsunderlastrotation$, which is equivalent to 
 
 \subsection{Work Report Guarantees}\label{sec:workreportguarantees}
 
-We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emph{guarantees}, at most one for each core, each of which is a tuple of a \emph{work-report}, a credential $\xg¬credential$ and its corresponding timeslot $\xg¬timeslot$. The core index of each guarantee must be unique and guarantees must be in ascending order of this. Formally:
-\begin{align}\label{eq:guaranteesextrinsic}
-  \xtguarantees &\in \sequence[:\Ccorecount]{\tuple{
-    \isa{\xg¬workreport}{\workreport},\,
-    \isa{\xg¬timeslot}{\timeslot},\,
-    \isa{\xg¬credential}{\sequence[2:3]{\tuple{\valindex, \edsignaturebase}}}
-  }} \\
-  \xtguarantees &= \sqorderuniqby{(g_\xg¬workreport)_\wr¬core}{g \in \xtguarantees}
+We begin by defining $\guarantee$, the set of \emph{guarantees}. A guarantee is a tuple of a \emph{work-report} $\g¬workreport$, a credential $\g¬credential$ and its corresponding timeslot $\g¬timeslot$. The credential is a sequence of two or three tuples of a unique validator index and a signature. Formally:
+\begin{equation}
+  \label{eq:guarantee}
+  \guarantee \equiv \tuple{
+    \isa{\g¬workreport}{\workreport},\,
+    \isa{\g¬timeslot}{\timeslot},\,
+    \isa{\g¬credential}{\sequence[2:3]{\tuple{\valindex, \edsignaturebase}}}
+  }
+\end{equation}
+
+We continue by defining the guarantees extrinsic, $\xtguarantees$, a series of guarantees. The core index of each guarantee in $\xtguarantees$ must be unique and guarantees must be in ascending order of this. Formally:
+\begin{align}
+  \xtguarantees &\in \sequence[:\Ccorecount]{\guarantee} \label{eq:guaranteesextrinsic} \\
+  \xtguarantees &= \sqorderuniqby{(\gX_\g¬workreport)_\wr¬core}{\gX \in \xtguarantees}
 \end{align}
 
-The credential is a sequence of two or three tuples of a unique validator index and a signature. Credentials must be ordered by their validator index:
+Credentials must be ordered by their validator index:
 \begin{align}
-  \forall g &\in \xtguarantees : g_\xg¬credential = \sqorderuniqby{v}{\tup{v, s} \in g_\xg¬credential}
+  \forall g &\in \xtguarantees : g_\g¬credential = \sqorderuniqby{v}{\tup{v, s} \in g_\g¬credential}
 \end{align}
 
 The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the hash of the work-report. The signing validators must be assigned to the core in question in either this block $\guarantorassignments$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\guarantorassignmentsunderlastrotation$:
@@ -267,14 +275,14 @@ The signature must be one whose public key is that of the validator identified i
   \label{eq:guarantorsig}
   &\begin{aligned}
     &\begin{aligned}
-      \forall \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} &\in \xtguarantees,\\
-      \forall \tup{v, s} &\in \xg¬credential
+      \forall \tup{\g¬workreport, \g¬timeslot, \g¬credential} &\in \xtguarantees,\\
+      \forall \tup{v, s} &\in \g¬credential
     \end{aligned} :
       \abracegroup[\,]{
-        &s \in \edsignature{(\mathbf{k}\sub{v})_\vk¬ed}{\Xguarantee\concat\blake{\xg¬workreport}}\\
-        &\mathbf{c}\sub{v} = \wrX_\wr¬core \wedge \Crotationperiod(\floor{\nicefrac{\thetime'}{\Crotationperiod}} - 1) \le \xg¬timeslot \le \thetime'\\
+        &s \in \edsignature{(\mathbf{k}\sub{v})_\vk¬ed}{\Xguarantee\concat\blake{\g¬workreport}}\\
+        &\mathbf{c}\sub{v} = \g¬workreport_\wr¬core \wedge \Crotationperiod(\floor{\nicefrac{\thetime'}{\Crotationperiod}} - 1) \le \g¬timeslot \le \thetime'\\
       }\\
-      &k \in \reporters \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists \tup{v, s} \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
+      &k \in \reporters \Leftrightarrow \exists \tup{\g¬workreport, \g¬timeslot, \g¬credential} \in \xtguarantees, \exists \tup{v, s} \in \g¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
       &\quad\where \tup{\mathbf{c}, \mathbf{k}} = \begin{cases}
         \guarantorassignments &\when \displaystyle \ffrac{\thetime'}{\Crotationperiod} = \ffrac{t}{\Crotationperiod} \\
         \guarantorassignmentsunderlastrotation &\otherwise
@@ -290,13 +298,13 @@ We note that the Ed25519 key of each validator whose signature is in a credentia
 
 We denote $\incomingreports$ to be the set of work-reports in the present extrinsic $\theextrinsic$:
 \begin{align}\label{eq:incomingworkreports}
-  \using\incomingreports = \set{ \build { \xgX_\xg¬workreport }{ \xgX \in \xtguarantees } }
+  \using\incomingreports = \set{ \build { \gX_\g¬workreport }{ \gX \in \xtguarantees } }
 \end{align}
 
-No reports may be placed on cores with a report pending availability on it. A report is valid only if the authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
+No guarantees may be placed on cores with a guarantee pending availability on it. A guarantee is valid only if the report's authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
 \begin{equation}\label{eq:reportcoresareunused}
   \forall \wrX \in \incomingreports :
-    \reportspostassurances\subb{\wrX_\wr¬core} = \none \wedge \wrX_\wr¬authorizer \in \authpool\subb{\wrX_\wr¬core}
+    \availassignmentspostassurances\subb{\wrX_\wr¬core} = \none \wedge \wrX_\wr¬authorizer \in \authpool\subb{\wrX_\wr¬core}
 \end{equation}
 
 We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\Creportaccgas$:
@@ -354,9 +362,9 @@ We require that the work-package of the report not be the work-package of some o
       \tup{\wrX, \mathbf{d}} \in \concatall{\ready}
     }} \\
   &\using \mathbf{a} = \set{\build{
-      ((\wrX_\rs¬workreport)_\wr¬avspec)_\as¬packagehash
+      (((\aaX_\aa¬guarantee)_\g¬workreport)_\wr¬avspec)_\as¬packagehash
     }{
-      \wrX \in \reports, \wrX \ne \none
+      \aaX \in \availassignments, \aaX \ne \none
     }} \\
   &\forall p \in \local¬incomingpackagehashes,
     p \not\in \bigcup_{x \in \recenthistory}\keys{x_\rh¬reportedpackagehashes}
@@ -381,9 +389,9 @@ We require that any segment roots mentioned in the segment-root lookup be verifi
 \begin{align}
   &\using \local¬incomingpackagehashes = \set{ \build {
     \kv{
-      ((g_\xg¬workreport)_\wr¬avspec)_\as¬packagehash
+      ((g_\g¬workreport)_\wr¬avspec)_\as¬packagehash
     }{
-      ((g_\xg¬workreport)_\wr¬avspec)_\as¬segroot
+      ((g_\g¬workreport)_\wr¬avspec)_\as¬segroot
     }
   }{
     g \in \xtguarantees
@@ -408,15 +416,15 @@ Finally, we require that all work-digests within the extrinsic predicted the cor
 
 \subsection{Transitioning for Reports}
 
-We define $\reportspostguarantees$ as being equivalent to $\reportspostassurances$, except where the extrinsic replaced an entry. In the case an entry is replaced, the new value includes the present time $\thetime'$ so that it can be cleared if it is not made available quickly enough (see equation \ref{eq:reportspostassurancesdef}).
+We define $\availassignmentspostguarantees$ as being equivalent to $\availassignmentspostassurances$, except where the extrinsic replaced an entry. In the case an entry is replaced, the new value includes the present time $\thetime'$ so that it can be cleared if it is not made available quickly enough (see equation \ref{eq:availassignmentspostassurancesdef}).
 \begin{equation}
-    \forall \cX \in \coreindex : \reportspostguarantees\subb{\cX} \equiv \begin{cases}
-      \tup{\¬workreport,\,\is{\rs¬timestamp}{\thetime'}} &\when \exists \tup{\¬workreport,\,\xg¬timeslot,\,\xg¬credential} \in \xtguarantees, \¬workreport_\wr¬core = \cX \\
-      \reportspostassurances\subb{\cX} &\otherwise
+    \forall \cX \in \coreindex : \availassignmentspostguarantees\subb{\cX} \equiv \begin{cases}
+      \tup{\aa¬guarantee,\,\is{\aa¬timestamp}{\thetime'}} &\when \exists \aa¬guarantee \in \xtguarantees, (\aa¬guarantee_\g¬workreport)_\wr¬core = \cX \\
+      \availassignmentspostassurances\subb{\cX} &\otherwise
     \end{cases}
 \end{equation}
 
-This concludes the section on reporting and assurance. We now have a complete definition of $\reportspostguarantees$ together with $\justbecameavailable$ to be utilized in section \ref{sec:accumulation}, describing the portion of the state transition happening once a work-report is guaranteed and made available.
+This concludes the section on reporting and assurance. We now have a complete definition of $\availassignmentspostguarantees$ together with $\justbecameavailable$ to be utilized in section \ref{sec:accumulation}, describing the portion of the state transition happening once a work-report is guaranteed and made available.
 
 
 
