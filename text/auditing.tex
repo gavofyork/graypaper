@@ -29,7 +29,7 @@ All items in the work-package specification field of the work-report should be r
 \subsection{Selection of Reports}
 \label{sec:auditselection}
 
-Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\block$ with other terms corresponding to the state-transition implied by that block, so $\reports$ is said block's prior core-allocation, $\activeset$ is its prior validator set, $\header$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
+Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\block$ with other terms corresponding to the state-transition implied by that block, so $\availassignments$ is said block's prior availability assignments, $\activeset$ is its prior validator set, $\header$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
 
 \newcommand*{\local¬reports}{\mathbf{q}}
 \newcommand*{\local¬seed}{s}
@@ -40,7 +40,7 @@ We define the sequence of work-reports which we may be required to audit as $\lo
   \local¬reports &\in \sequence[\Ccorecount]{\optional{\workreport}} \\
   \local¬reports &\equiv \sq{\build{
     \begin{rcases}
-      \reports\subb{\cX}_\rs¬workreport &\when \reports\subb{\cX}_\rs¬workreport \in \justbecameavailable \\
+      (\availassignments\subb{\cX}_\aa¬guarantee)_\g¬workreport &\when (\availassignments\subb{\cX}_\aa¬guarantee)_\g¬workreport \in \justbecameavailable \\
       \none &\otherwise
     \end{rcases}
   }{
@@ -176,7 +176,7 @@ For any block we must judge it to be audited (\ie $\isaudited = \top$) before we
 
 Furthermore, we pointedly disregard chains which include the accumulation of a report which we know at least $\onethird$ of validators judge as being invalid. Any chains including such a block are not eligible for authoring on. The \emph{best block}, \ie that on which we build new blocks, is defined as the chain with the most regular Safrole blocks which does \emph{not} contain any such disregarded block. Implementation-wise, this may require reversion to an earlier head or alternative fork.
 
-As a block author, we include a judgment extrinsic which collects judgment signatures together and reports them on-chain. In the case of a non-valid judgment (\ie one which is not two-thirds-plus-one of judgments confirming validity) then this extrinsic will be introduced in a block in which accumulation of the non-valid work-report is about to take place. The non-valid judgment extrinsic removes it from the pending work-reports, $\reports$. Refer to section \ref{sec:disputes} for more details on this.
+As a block author, we include a disputes extrinsic which collects judgment signatures together into verdicts and reports them on-chain. In the case of a non-valid verdict (\ie one which is not two-thirds-plus-one of judgments confirming validity) then this verdict will be introduced in a block in which accumulation of the non-valid work-report is about to take place. The non-valid verdict in the disputes extrinsic clears its availability assignment from $\availassignments$. Refer to section \ref{sec:disputes} for more details on this.
 
 %Unselected work-reports may also be evaluated at a later stage if the node finds that auditing process does not complete adequately. Prior to evaluation of a report, the node announces its intention to audit along with a proof that the intention was derived honestly. Once fetched and evaluated, a judgment is published to all other validators.
 

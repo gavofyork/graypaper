@@ -71,7 +71,7 @@ Offender signatures must be similarly valid and reference work-reports with judg
 Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
 \begin{align}
   &\xtverdicts = \sqorderuniqby{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}\\
-  &\xtculprits = \sqorderuniqby{\xc¬offenderindex}{\tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} \in \xtculprits} \,,\ 
+  &\xtculprits = \sqorderuniqby{\xc¬offenderindex}{\tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} \in \xtculprits} \,,\
   \xtfaults = \sqorderuniqby{\xf¬offenderindex}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!\\
   &\set{\build{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}} \disjoint \goodset \cup \badset \cup \wonkyset
 \end{align}
@@ -110,13 +110,13 @@ There are some constraints placed on the composition of this extrinsic: any verd
     \len{\set{\tup{\¬reporthash, \dots} \in \xtculprits}} \ge 2
 \end{align}
 
-We clear any work-reports which we judged as uncertain or invalid from their core:
+We clear any availability assignments for work-reports which we judged as uncertain or invalid:
 \begin{equation}\label{eq:removenonpositive}
-  \forall c \in \coreindex : \reportspostjudgement\subb{c} = \begin{cases}
+  \forall c \in \coreindex : \availassignmentspostjudgment\subb{c} = \begin{cases}
     \none &\!\!\!\!\when
-      \tup{\blake{\reports\subb{c}_\rs¬workreport}, \vs¬approval} \in \verdicts,
+      \tup{\blake{(\availassignments\subb{c}_\aa¬guarantee)_\g¬workreport}, \vs¬approval} \in \verdicts,
       \vs¬approval < \floor{\twothirds\Cvalcount} \\
-    \reports\subb{c} &\!\!\!\!\otherwise
+    \availassignments\subb{c} &\!\!\!\!\otherwise
   \end{cases}\!\!\!\!\!\!\!
 \end{equation}
 
