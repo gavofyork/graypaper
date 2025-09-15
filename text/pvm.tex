@@ -40,9 +40,9 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
     \tuple{\blob, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
     \tup{\mathbf{p}, \imath, \gascounter, \registers, \mem} &\mapsto \begin{cases}
       \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
-      \tup{\oog, \imath', \gascounter', \registers', \mem'} &\when \gascounter' < 0\\
+      \tup{\oog, \imath, \gascounter', \registers, \mem} &\when \gascounter' < 0\\
       \tup{\varepsilon, 0, \gascounter', \registers', \mem'} &\when \varepsilon \in \set{ \panic, \halt }\\
-      \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &\otherwise
+      \tup{\varepsilon, \imath, \gascounter', \registers, \mem} &\otherwise
     \end{cases} \\
     \where \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &= \begin{cases}
       \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\when \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} = \deblob(\mathbf{p}) \\
@@ -59,6 +59,10 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
 \end{align}
 
 The \textsc{pvm} exit reason $\varepsilon \in \set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg$ may be one of regular halt $\halt$, panic $\panic$ or out-of-gas $\oog$, or alternatively a host-call $\host$, in which the host-call identifier is associated, or page-fault $\fault$ in which case the address into \textsc{ram} is associated.
+
+Assuming the program blob is valid (which can be validated statically), some gas is always charged whenever execution is attempted. This is the case even if no instruction is effectively executed and machine state is unchanged (\ie the result state is equal to the parameter).
+
+In the case of a final halt, either through panic or success, the instruction counter returned is zero. In all other cases, the return value of the instruction counter indexes the one \emph{which caused the exit to happen} and the machine state represents the prior state of said instruction, thus ensuring \emph{de facto} consistency. In order to continue beyond these exit cases, some environmental factor must be adjusted; for a page-fault, \textsc{ram} must be changed, for a gas-underflow, more gas must be supplied and for a host-call, the instruction-counter must be incremented and the relevant host-call state-transition performed.
 
 \subsection{Instructions, Opcodes and Skip-distance}
 
@@ -126,34 +130,28 @@ We must now define the single-step \textsc{pvm} state-transition function $\Psi_
 \begin{equation}
   \Psi_1\colon \abracegroup{
     \tuple{\blob, \bitstring, \sequence{\pvmreg}, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
-    \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem} &\mapsto \tup{\varepsilon, \imath', \gascounter', \registers', \mem'}
+    \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem} &\mapsto \tup{\varepsilon^*, \imath^*, \gascounter^*, \registers^*, \mem^*}
   }
 \end{equation}
 
-We define $\varepsilon$ together with the posterior values (denoted as prime) of each of the items of the machine state as being in accordance with the table below.
-
-%We alias the registers $\registers$ to their \textsc{risc-v} specification name:
-%\begin{equation}
-%  \tup{\RA, \SP, \T_0, \T_1, \T_2, \S_0, \S_1, \A_0, \A_1, \A_2, \A_3, \A_4, \A_5} \equiv \registers,\qquad
-%  \tup{\RA', \SP', \T_0', \T_1', \T_2', \S_0', \S_1', \A_0', \A_1', \A_2', \A_3', \A_4', \A_5'} \equiv \registers'
-%\end{equation}
-
-In general, when transitioning machine state for an instruction a number of conditions hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one, the gas remaining is reduced by the amount corresponding to the instruction type and \textsc{ram} \& registers are unchanged. Formally:
-\begin{equation}
-  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \gascounter' = \gascounter - \gascost,\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
-\end{equation}
-
-During the course of executing instructions, \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
+During the course of executing instructions \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
 
 Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\mu$ which shall, if not $\continue$, singly effect the returned return of $\Psi_1$ as following:
 \begin{align}
   \using \mathbf{x} &= \set{\build{x}{x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \readable\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \writable\mem}} \\
-  \varepsilon^\mu &= \begin{cases}
-    \continue &\when \mathbf{x} = \emset \\
-    \panic &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
-    \fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize} &\otherwise
+  \tup{\varepsilon^*, \imath^*, \gascounter^*, \registers^*, \mem^*} &= \begin{cases}
+    \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &\when \mathbf{x} = \emset \\
+    \tup{\panic, \imath, \gascounter, \registers, \mem} &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
+    \tup{\fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize}, \imath, \gascounter, \registers, \mem} &\otherwise
   \end{cases}
 \end{align}
+
+We define $\varepsilon$ together with the posterior values of regular execution (denoted as prime) of each of the items of the machine state as being in accordance with the table below. When transitioning machine state for an instruction, a number of conditions typically hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one, the gas remaining is reduced by the amount corresponding to the instruction type and \textsc{ram} \& registers are unchanged. Formally:
+\begin{equation}
+  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \gascounter' = \gascounter - \gascost,\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
+\end{equation}
+
+In the case that $\Psi_1$ takes the $\varepsilon^\mu$
 
 We define signed/unsigned transitions for various octet widths:
 \begin{align}
@@ -696,7 +694,7 @@ Note that the two signed modulo operations have an idiosyncratic definition, ope
     \tuple{\Z, \Z} &\to \Z\\
     \tup{a, b} &\mapsto \begin{cases}
       a &\when b = 0\\
-      \text{sgn}(a)(\len{a} \bmod \len{b}) &\otherwise \\
+      \text{sgn}(a) \cdot (\len{a} \bmod \len{b}) &\otherwise \\
     \end{cases}
   }
 \end{equation}
@@ -726,11 +724,10 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     \tup{\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}} &\mapsto \begin{cases}
       \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem):} \\[8pt]
       \tup{\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
-      \tup{\fault \times a, \imath', \gascounter', \registers', \mem', \mathbf{x}} &\when \bigwedge\abracegroup[\;]{
-        &\varepsilon' = \host \times h\\[2pt]
-        &\fault \times a = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
-      }\\[10 pt]
-      \Psi_H(\mathbf{c}, \imath', \gascounter'', \registers'', \mem'', f, \mathbf{x}'')
+      \begin{aligned}
+        &\Psi_H(\mathbf{c}, \imath'', \gascounter'', \registers'', \mem'', f, \mathbf{x}'')\\[2pt]
+        &\quad \where \imath'' = \imath' + 1 + \Fskip(\imath')
+      \end{aligned}
        &\when \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
         &\tup{\continue, \gascounter'', \registers'', \mem'', \mathbf{x}''} = f(h, \gascounter', \registers', \mem', \mathbf{x})
@@ -742,14 +739,12 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
       }\\[8pt]
     \end{cases} \\
     }\!\!\!\!\!\!\!\!\\
-    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X} \cup \set{\fault} \times \pvmreg
+    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X}
 \end{align}
 
-On exit, the instruction counter $\imath'$ references the instruction \emph{which caused the exit}. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed. This is sensible when the instruction is one which necessarily needs re-executing such as in the case of an out-of-gas or page fault reason.
+As with $\Phi$, on exit the instruction counter references the instruction \emph{which caused the exit} and the machine state is that prior to this instruction. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed on the proper (prior) machine state.
 
-However, when the exit reason to $\Psi$ is a host-call $\host$, then the resultant instruction-counter has a value of the host-call instruction and resuming with this state would immediately exit with the same result. Re-invoking would therefore require both the post-host-call machine state \emph{and} the instruction counter value for the instruction following the one which resulted in the host-call exit reason. This is always one greater plus the relevant argument skip distance. Resuming the machine with this instruction counter will continue beyond the host-call instruction.
-
-We use both values of instruction-counter for the definition of $\Psi_H$ since if the host-call results in a page fault we need to allow the outer environment to resolve the fault and re-try the host-call. Conversely, if we successfully transition state according to the host-call, then on resumption we wish to begin with the instruction directly following the host-call.
+With $\Phi_H$, host-calls (\ie \token{ecalli} instructions) are in effect handled internally with the state-mutator function provided as an argument, preventing the possibility of the result being a host-call fault. Note that in the case of a successful host-call transition, we must provide the new instruction counter value $\imath''$ explicitly alongside the fresh posterior state for said instruction.
 
 \subsection{Standard Program Initialization}\label{sec:standardprograminit}
 The software programs which will run in each of the four instances where the \textsc{pvm} is utilized in the main document have a very typical setup pattern characteristic of an output of a compiler and linker. This means that \textsc{ram} has sections for program-specific read-only data, read-write (heap) data and the stack. An adjunct to this, very typical of our usage patterns is an extra read-only section via which invocation-specific data may be passed (\ie arguments). It thus makes sense to define this properly in a single initializer function. These sections are quantized into \emph{major zones}, and one major zone is always left unallocated between sections in order to reduce accidental overrun. Sections are padded with zeroes to the nearest \textsc{pvm} memory page boundary.
