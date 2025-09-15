@@ -198,7 +198,7 @@ Immediate arguments are encoded in little-endian format with the most-significan
 Any alterations of the program counter stemming from a static jump, call or branch must be to the start of a basic block or else a panic occurs. Hypotheticals are not considered. Formally:
 \begin{equation}
   \token{branch}(b, C) \implies \tup{\varepsilon, \imath'} = \begin{cases}
-    \tup{\continue, \imath} &\when \lnot C \\
+    \tup{\continue, \imath + 1 + \Fskip(\imath)} &\when \lnot C \\
     \tup{\panic, \imath} &\otherwhen b \not\in \basicblocks \\
     \tup{\continue, b} &\otherwise
   \end{cases}
