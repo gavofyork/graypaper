@@ -103,16 +103,17 @@ We limit the total number of exported items to $\Cmaxpackageexports = 3072$, the
 
 We make an assumption that the preimage to each extrinsic hash in each work-item is known by the guarantor. In general this data will be passed to the guarantor alongside the work-package.
 
-We limit the total size of the auditable \emph{work-bundle}, containing the work-package, import and extrinsic items, together with all payloads, the authorizer configuration and the authorization token to around 13.6\textsc{mb}. This limit allows 2\textsc{mb}/s/core D$^{3}$L imports, and thus a full complement of 3,072 imports, assuming no extrinsics and a minimal work-package of 4\textsc{kb}:
+We limit the total size of the auditable \emph{work-bundle}, containing the work-package, import and extrinsic items, together with all payloads, the authorizer configuration and the authorization token to around 13.6\textsc{mb}. This limit allows 2\textsc{mb}/s/core D$^{3}$L imports, and thus a full complement of 3,072 imports, assuming no extrinsics, 64 bytes for each of the authorization token and trace, and a work-item payload of 4\textsc{kb}:
 \begin{align}
   \label{eq:checkextractsize}
   &\begin{aligned}
     &\forall \wpX \in \workpackage: \Big(\len{\wpX_\wp¬authtoken} + \len{\wpX_\wp¬authconfig} +
     \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \Cmaxbundlesize \\
-    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\Csegmentsize + \!\!\!\!\!\!\sum_{\tup{h, l} \in \wiX_\wi¬extrinsics} \!\!\!l
+    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\Csegmentfootprint + \!\!\!\!\!\!\sum_{\tup{h, l} \in \wiX_\wi¬extrinsics} \!\!\!l
   \end{aligned}\\
-  &\Cmaxbundlesize \equiv 13,794,305\\
-  &\phantom{\Cmaxbundlesize} = \Cmaxpackageimports(\Csegmentsize + 1 + 32\ceil{\log_2(\Cmemosize)}) + 4096 + 1
+  \label{eq:segmentfootprint}
+  &\Csegmentfootprint \equiv \Csegmentsize + 32\ceil{\log_2(\Cmaxpackageimports)}\\
+  &\Cmaxbundlesize \equiv \Cmaxpackageimports\cdot\Csegmentfootprint + 4096 + 64 + 64 = 13,791,360
 \end{align}
 
 We limit the sums of each of the two gas limits to be at most the maximum gas allocated to a core for the corresponding operation:
