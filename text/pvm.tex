@@ -130,34 +130,28 @@ We must now define the single-step \textsc{pvm} state-transition function $\Psi_
 \begin{equation}
   \Psi_1\colon \abracegroup{
     \tuple{\blob, \bitstring, \sequence{\pvmreg}, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
-    \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem} &\mapsto \tup{\varepsilon, \imath', \gascounter', \registers', \mem'}
+    \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem} &\mapsto \tup{\varepsilon^*, \imath^*, \gascounter^*, \registers^*, \mem^*}
   }
 \end{equation}
 
-We define $\varepsilon$ together with the posterior values (denoted as prime) of each of the items of the machine state as being in accordance with the table below.
-
-%We alias the registers $\registers$ to their \textsc{risc-v} specification name:
-%\begin{equation}
-%  \tup{\RA, \SP, \T_0, \T_1, \T_2, \S_0, \S_1, \A_0, \A_1, \A_2, \A_3, \A_4, \A_5} \equiv \registers,\qquad
-%  \tup{\RA', \SP', \T_0', \T_1', \T_2', \S_0', \S_1', \A_0', \A_1', \A_2', \A_3', \A_4', \A_5'} \equiv \registers'
-%\end{equation}
-
-In general, when transitioning machine state for an instruction a number of conditions hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one, the gas remaining is reduced by the amount corresponding to the instruction type and \textsc{ram} \& registers are unchanged. Formally:
-\begin{equation}
-  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \gascounter' = \gascounter - \gascost,\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
-\end{equation}
-
-During the course of executing instructions, \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
+During the course of executing instructions \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
 
 Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\mu$ which shall, if not $\continue$, singly effect the returned return of $\Psi_1$ as following:
 \begin{align}
   \using \mathbf{x} &= \set{\build{x}{x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \readable\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \writable\mem}} \\
-  \varepsilon^\mu &= \begin{cases}
-    \continue &\when \mathbf{x} = \emset \\
-    \panic &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
-    \fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize} &\otherwise
+  \tup{\varepsilon^*, \imath^*, \gascounter^*, \registers^*, \mem^*} &= \begin{cases}
+    \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &\when \mathbf{x} = \emset \\
+    \tup{\panic, \imath, \gascounter, \registers, \mem} &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
+    \tup{\fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize}, \imath, \gascounter, \registers, \mem} &\otherwise
   \end{cases}
 \end{align}
+
+We define $\varepsilon$ together with the posterior values of regular execution (denoted as prime) of each of the items of the machine state as being in accordance with the table below. When transitioning machine state for an instruction, a number of conditions typically hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one, the gas remaining is reduced by the amount corresponding to the instruction type and \textsc{ram} \& registers are unchanged. Formally:
+\begin{equation}
+  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \gascounter' = \gascounter - \gascost,\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
+\end{equation}
+
+In the case that $\Psi_1$ takes the $\varepsilon^\mu$
 
 We define signed/unsigned transitions for various octet widths:
 \begin{align}
@@ -745,7 +739,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
       }\\[8pt]
     \end{cases} \\
     }\!\!\!\!\!\!\!\!\\
-    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X} \cup \set{\fault} \times \pvmreg
+    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X}
 \end{align}
 
 As with $\Phi$, on exit the instruction counter references the instruction \emph{which caused the exit} and the machine state is that prior to this instruction. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed on the proper (prior) machine state.
