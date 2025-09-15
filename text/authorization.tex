@@ -24,7 +24,7 @@ Note: The portion of state $\authqueue$ may be altered only through an exogenous
 The state transition of a block involves placing a new authorization into the pool from the queue:
 \begin{align}
   &\forall \¬core \in \coreindex : \authpool'\subb{\¬core} \equiv {\overleftarrow{F(\¬core) \append \cyclic{\authqueue'\subb{\¬core}\subb{\H_\¬timeslot}}}}^{\Cauthpoolsize} \\
-  &F(\¬core) \equiv \begin{cases} \authpool[\¬core] \seqminusl \set{(g_\xg¬workreport)_\wr¬authorizer} &\when \exists g \in \xtguarantees : (g_\xg¬workreport)_\¬core = \¬core \\ \authpool[\¬core] & \otherwise \end{cases}
+  &F(\¬core) \equiv \begin{cases} \authpool[\¬core] \seqminusl \set{(g_\g¬workreport)_\wr¬authorizer} &\when \exists g \in \xtguarantees : (g_\g¬workreport)_\¬core = \¬core \\ \authpool[\¬core] & \otherwise \end{cases}
 \end{align}
 
 Since $\authpool'$ is dependent on $\authqueue'$, practically speaking, this step must be computed after accumulation, the stage in which $\authqueue'$ is defined. Note that we utilize the guarantees extrinsic $\xtguarantees$ to remove the oldest authorizer which has been used to justify a guaranteed work-package in the current block. This is further defined in equation \ref{eq:guaranteesextrinsic}.

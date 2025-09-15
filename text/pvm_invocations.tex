@@ -66,9 +66,9 @@ The historical-lookup host-call function, $\Omega_H$, is designed to give the sa
 \end{equation}
 
 
-The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvmguest$. It holds some program code, instruction counter and \textsc{ram}:
-\begin{equation}\label{eq:pvmguest}
-  \pvmguest \equiv \tuple{\isa{\pg¬code}{\blob}, \isa{\pg¬ram}{\ram}, \isa{\pg¬pc}{\pvmreg}}
+The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\innerpvm$. It holds some program code, instruction counter and \textsc{ram}:
+\begin{equation}\label{eq:innerpvm}
+  \innerpvm \equiv \tuple{\isa{\pg¬code}{\blob}, \isa{\pg¬ram}{\ram}, \isa{\pg¬pc}{\pvmreg}}
 \end{equation}
 
 The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\Csegmentsize$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
@@ -90,7 +90,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
     \end{cases} \\
   } \\
   \label{eq:refinemutator}
-  &F \in \contextmutator{\tuple{\dictionary{\N}{\pvmguest}, \sequence{\segment}}} \colon
+  &F \in \contextmutator{\tuple{\dictionary{\N}{\innerpvm}, \sequence{\segment}}} \colon
     (n, \gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{gas} \\
       \Omega_Y(\gascounter, \registers, \memory, p, \zerohash, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{fetch}\\
@@ -485,7 +485,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
 
 \subsection{Refine Functions}\label{sec:refinefunctions}
 
-These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\dictionary{\N}{\pvmguest}, \sequence{\segment}}$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
+These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\dictionary{\N}{\innerpvm}, \sequence{\segment}}$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
   \gascounter' &\equiv \gascounter - g\\
   \tup{\execst', \registers', \memory'} &\equiv \begin{cases}
