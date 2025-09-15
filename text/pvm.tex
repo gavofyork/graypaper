@@ -255,7 +255,7 @@ Similarly, conditional jumps are valid if and only if both branches point to the
 \begin{equation}
   \token{branch}(b, C) \implies \tup{\varepsilon, \imath'} = \begin{cases}
     \tup{\panic, \imath} &\when b \not\in \basicblocks \lor \imath + 1 + \text{skip}(\imath) \not\in \basicblocks \\
-    \tup{\continue, \imath} &\otherwhen \lnot C \\
+    \tup{\continue, \imath + 1 + \Fskip(\imath)} &\otherwhen \lnot C \\
     \tup{\continue, b} &\otherwise
   \end{cases}
 \end{equation}
