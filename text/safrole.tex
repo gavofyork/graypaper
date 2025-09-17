@@ -5,13 +5,13 @@ As mentioned earlier, \Jam is architected around a hybrid consensus mechanism, s
 
 The chief purpose of a block production consensus mechanism is to limit the rate at which new blocks may be authored and, ideally, preclude the possibility of ``forks'': multiple blocks with equal numbers of ancestors.
 
-To achieve this, Safrole limits the possible author of any block within any given six-second timeslot to a single key-holder from within a prespecified set of \emph{validators}. Furthermore, under normal operation, the identity of the key-holder of any future timeslot will have a very high degree of anonymity. As a side effect of its operation, we can generate a high-quality pool of entropy which may be used by other parts of the protocol and is accessible to services running on it.
+To achieve this, Safrole limits the possible author of any block within any given six-second timeslot to a single key-holder from within a prespecified sequence of \emph{validators}. Furthermore, under normal operation, the identity of the key-holder of any future timeslot will have a very high degree of anonymity. As a side effect of its operation, we can generate a high-quality pool of entropy which may be used by other parts of the protocol and is accessible to services running on it.
 
-Because of its tightly scoped role, the core of Safrole's state, $\safrole$, is independent of the rest of the protocol. It interacts with other portions of the protocol through $\stagingset$ and $\activeset$, the prospective and active sets of validator keys respectively; $\thetime$, the most recent block's timeslot; and $\entropy$, the entropy accumulator.
+Because of its tightly scoped role, the core of Safrole's state, $\safrole$, is independent of the rest of the protocol. It interacts with other portions of the protocol through $\stagingset$ and $\activeset$, the prospective and active sequences of validator keys respectively; $\thetime$, the most recent block's timeslot; and $\entropy$, the entropy accumulator.
 
-The Safrole protocol generates, once per epoch, a sequence of $\Cepochlen$ \emph{sealing keys}, one for each potential block within a whole epoch. Each block header includes its timeslot index $\H_\¬timeslot$ (the number of six-second periods since the \Jam Common Era began) and a valid seal signature $\H_\¬sealsig$, signed by the sealing key corresponding to the timeslot within the aforementioned sequence. Each sealing key is in fact a pseudonym for some validator which was agreed the privilege of authoring a block in the corresponding timeslot.
+The Safrole protocol generates, once per epoch, a sequence of $\Cepochlen$ \emph{tickets}, one for each potential block within a whole epoch. Each block header includes its timeslot index $\H_\¬timeslot$ (the number of six-second periods since the \Jam Common Era began) and a valid seal signature $\H_\¬sealsig$, signed by the validator's sealing key corresponding to the ticket within the aforementioned sequence. Each ticket is in fact a pseudonym for some validator which was agreed the privilege of authoring a block in the corresponding timeslot.
 
-In order to generate this sequence of sealing keys in regular operation, and in particular to do so without making public the correspondence relation between them and the validator set, we use a novel cryptographic structure known as a Ring\textsc{vrf}, utilizing the Bandersnatch curve. Bandersnatch Ring\textsc{vrf} allows for a proof to be provided which simultaneously guarantees the author controlled a key within a set (in our case validators), and secondly provides an output, an unbiasable deterministic hash giving us a secure verifiable random function (\textsc{vrf}). This anonymous and secure random output is a \emph{ticket} and validators' tickets with the best score define the new sealing keys allowing the chosen validators to exercise their privilege and create a new block at the appropriate time.
+In order to generate this sequence of tickets in regular operation, and in particular to do so without making public the correspondence relation between them and the validator key sequence, we use a novel Ring\textsc{vrf} cryptographic scheme, built on the Bandersnatch curve. This scheme allows for a proof to be provided which simultaneously guarantees the author controlled a key within a sequence (in our case validators), and secondly provides an output, an unbiasable deterministic hash giving us a secure verifiable random function (\textsc{vrf}). This anonymous and secure random output is a \emph{ticket} and validators' tickets with the best score define the sealing tickets allowing the associated validators to exercise their privilege and create a new block at the appropriate timeslot.
 
 
 
@@ -78,7 +78,7 @@ Here, $\safroleticket$ is used to denote the set of \emph{tickets}, a combinatio
   }
 \end{align}
 
-As we state in section \ref{sec:sealandentropy}, Safrole requires that every block header $\H$ contain a valid seal $\H_\¬sealsig$, which is a Bandersnatch signature for a public key at the appropriate index $m$ of the current epoch's seal-key series, present in state as $\sealtickets$.
+As we state in section \ref{sec:sealandentropy}, Safrole requires that every block header $\H$ contain a valid seal $\H_\¬sealsig$, which is a Bandersnatch signature produced with the private key corresponding to the entry at index $m$ of the current epoch's seal-key series, present in state as $\sealtickets$.
 
 
 
@@ -90,7 +90,7 @@ As we state in section \ref{sec:sealandentropy}, Safrole requires that every blo
 \subsection{Key Rotation}
 \label{sec:keyrotation}
 
-In addition to the active set of validator keys $\activeset$ and staging set $\stagingset$, internal to the Safrole state we retain a pending set $\pendingset$. The active set is the set of keys identifying the nodes which are currently privileged to author blocks and carry out the validation processes, whereas the pending set $\pendingset$, which is reset to $\stagingset$ at the beginning of each epoch, is the set of keys which will be active in the next epoch and which determine the Bandersnatch ring root which authorizes tickets into the sealing-key contest for the next epoch.
+In addition to the active sequence of validator keys $\activeset$ and staging sequence $\stagingset$, internal to the Safrole state we retain a pending sequence $\pendingset$. The active validator key sequence identifies the nodes which are currently privileged to author blocks and carry out the validation processes, whereas the pending sequence $\pendingset$, which is reset to $\stagingset$ at the beginning of each epoch, is the sequence of keys which will be active in the next epoch and which determine the Bandersnatch ring root which authorizes tickets into the sealing-key contest for the next epoch.
 \begin{align}
   \label{eq:validatorkeys}
   \stagingset \in \allvalkeys \;,\quad
@@ -128,7 +128,7 @@ With a new epoch under regular conditions, validator keys get rotated and the ep
   }
 \end{align}
 
-Note that on epoch changes the posterior queued validator key set $\pendingset'$ is defined such that incoming keys belonging to the offenders $\offenders'$ are replaced with a null key containing only zeroes. The origin of the offenders is explained in section \ref{sec:disputes}.
+Note that on epoch changes the posterior queued validator key sequence $\pendingset'$ is defined such that incoming keys belonging to the offenders $\offenders'$ are replaced with a null key containing only zeroes. The origin of the offenders is explained in section \ref{sec:disputes}.
 
 
 
@@ -139,7 +139,7 @@ Note that on epoch changes the posterior queued validator key set $\pendingset'$
 \subsection{Sealing and Entropy Accumulation}
 \label{sec:sealandentropy}
 
-The header must contain a valid seal and valid \textsc{vrf} output. These are two signatures both using the current slot's seal key; the message data of the former is the header's serialization omitting the seal component $\H_\¬sealsig$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
+The header must contain a valid seal and valid entropy source. These are two \textsc{vrf} signatures both using the current slot's seal key; the message data of the former is the header's serialization omitting the seal component $\H_\¬sealsig$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
 \begin{align}
   \nonumber \using i = \cyclic{\sealtickets'[\H_\¬timeslot]}\colon \\
   \label{eq:ticketconditiontrue}
@@ -241,7 +241,7 @@ Finally, $F$ is the fallback key sequence function which selects an epoch's wort
 \subsection{The Markers}
 \label{sec:epochmarker}
 
-The epoch and winning-tickets markers are information placed in the header in order to minimize data transfer necessary to determine the validator keys associated with any given epoch. They are particularly useful to nodes which do not synchronize the entire state for any given block since they facilitate the secure tracking of changes to the validator key sets using only the chain of headers.
+The epoch and winning-tickets markers are information placed in the header in order to minimize data transfer necessary to determine the validator keys associated with any given epoch. They are particularly useful to nodes which do not synchronize the entire state for any given block since they facilitate the secure tracking of changes to the validator key sequences using only the chain of headers.
 
 As mentioned earlier, the header's epoch marker $\H_\¬epochmark$ is either empty or, if the block is the first in a new epoch, then a tuple of the next and current epoch randomness, along with a sequence of tuples containing both Bandersnatch keys and Ed25519 keys for each validator defining the validator keys beginning in the next epoch. Formally:
 \begin{align}
@@ -280,11 +280,11 @@ The winning-tickets marker $\H_\¬winnersmark$ is either empty or, if the block 
 \subsection{The Extrinsic and Tickets}
 \label{sec:safrolextandtickets}
 
-The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index together with a proof of ticket's validity. The proof implies a ticket identifier, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input to the on-chain \textsc{vrf}.
+The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index (a natural number less than $\Cticketentries$) together with a proof of ticket's validity. The proof implies a ticket identifier, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input for the block's entropy source $\textsc{vrf}$ signature.
 
 Towards the end of the epoch (\ie $\Cepochtailstart$ slots from the start) this contest is closed implying successive blocks within the same epoch must have an empty tickets extrinsic. At this point, the following epoch's seal key sequence becomes fixed.
 
-We define the extrinsic as a sequence of proofs of valid tickets, each of which is a tuple of an entry index (a natural number less than $\Cticketentries$) and a proof of ticket validity. Formally:
+Formally:
 \begin{align}
   \label{eq:ticketsextrinsic}
   \xttickets &\in \sequence{\tuple{
@@ -298,7 +298,7 @@ We define the extrinsic as a sequence of proofs of valid tickets, each of which 
   \end{cases}
 \end{align}
 
-We define $\mathbf{n}$ as the set of new tickets, with the ticket identifier, a hash, defined as the output component of the Bandersnatch Ring\textsc{vrf} proof:
+We define $\mathbf{n}$ as the sequence of new tickets, with the ticket identifier, a hash, defined as the output component of the Bandersnatch Ring\textsc{vrf} proof:
 \begin{align}
   \mathbf{n} &\equiv \sq{\build{
     \tup{
