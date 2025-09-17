@@ -141,8 +141,8 @@ Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem
   \using \mathbf{x} &= \set{\build{x}{x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \readable\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \writable\mem}} \\
   \tup{\varepsilon^*, \imath^*, \gascounter^*, \registers^*, \mem^*} &= \begin{cases}
     \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &\when \mathbf{x} = \emset \\
-    \tup{\panic, \imath, \gascounter, \registers, \mem} &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
-    \tup{\fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize}, \imath, \gascounter, \registers, \mem} &\otherwise
+    \tup{\panic, \imath, \gascounter', \registers, \mem} &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
+    \tup{\fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize}, \imath, \gascounter', \registers, \mem} &\otherwise
   \end{cases}
 \end{align}
 
