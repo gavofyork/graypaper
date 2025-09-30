@@ -35,7 +35,7 @@ Each validator shall perform auditing duties on each valid block received. Since
 \newcommand*{\local¬seed}{s}
 \newcommand*{\local¬tranche}{\mathbf{a}}
 
-We define the sequence of work-reports which we may be required to audit as $\local¬reports$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report pending which has just become available, or $\none$ if no report became available on the core. Formally:
+We define the sequence of work-reports which we may be required to audit as $\local¬reports$, a sequence of length equal to the number of cores, which functions as a mapping of core index to a work-report which has just become available, or $\none$ if no report became available on the core. Formally:
 \begin{align}\label{eq:auditselection}
   \local¬reports &\in \sequence[\Ccorecount]{\optional{\workreport}} \\
   \local¬reports &\equiv \sq{\build{
@@ -176,7 +176,7 @@ For any block we must judge it to be audited (\ie $\isaudited = \top$) before we
 
 Furthermore, we pointedly disregard chains which include the accumulation of a report which we know at least $\onethird$ of validators judge as being invalid. Any chains including such a block are not eligible for authoring on. The \emph{best block}, \ie that on which we build new blocks, is defined as the chain with the most regular Safrole blocks which does \emph{not} contain any such disregarded block. Implementation-wise, this may require reversion to an earlier head or alternative fork.
 
-As a block author, we include a disputes extrinsic which collects judgment signatures together into verdicts and reports them on-chain. In the case of a non-valid verdict (\ie one which is not two-thirds-plus-one of judgments confirming validity) then this verdict will be introduced in a block in which accumulation of the non-valid work-report is about to take place. The non-valid verdict in the disputes extrinsic clears its availability assignment from $\availassignments$. Refer to section \ref{sec:disputes} for more details on this.
+As a block author, if we have observed a sufficient number of judgments for a work-report, and at least one negative judgment, we may construct a \emph{verdict} for the work-report and include it in the disputes extrinsic. If the verdict establishes that the work-report is not valid (\ie fewer than two-thirds-plus-one of judgments confirm validity) then, as per the preceding paragraph, it should be introduced on a chain where the report has not yet been accumulated. The verdict will cause the corresponding availability assignment to be cleared from $\availassignments$, preventing accumulation of the invalid work-report. Refer to section \ref{sec:disputes} for more details on this.
 
 %Unselected work-reports may also be evaluated at a later stage if the node finds that auditing process does not complete adequately. Prior to evaluation of a report, the node announces its intention to audit along with a proof that the intention was derived honestly. Once fetched and evaluated, a judgment is published to all other validators.
 
