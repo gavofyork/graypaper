@@ -3,7 +3,7 @@
 
 Reporting and assurance are the two on-chain processes we do to allow the results of in-core computation to make their way into the state of service accounts, $\accounts$. A \emph{work-package}, which comprises several \emph{work-items}, is transformed by validators acting as \emph{guarantors} into its corresponding \emph{work-report}, which similarly comprises several \emph{work-digests} and then presented on-chain within the \emph{guarantees} extrinsic. At this point, the work-package is erasure coded into a multitude of segments and each segment distributed to the associated validator who then attests to its availability through an \emph{assurance} placed on-chain. After enough assurances the work-report is considered \emph{available}, and the work-digests transform the state of their associated service by virtue of accumulation, covered in section \ref{sec:accumulation}. The report may also be \emph{timed-out}, implying it may be replaced by another report without accumulation.
 
-From the perspective of the work-report, therefore, the guarantee happens first and the assurance afterwards. However, from the perspective of a block's state-transition, the assurances are best processed first since each core may only have a single work-report guarantee pending its package becoming available at a time. Thus, we will first cover the transition arising from processing the availability assurances followed by the work-report guarantees. This synchroneity can be seen formally through the requirement of an intermediate state $\availassignmentspostassurances$, utilized later in equation \ref{eq:reportcoresareunused}.
+From the perspective of the work-report, therefore, the guarantee happens first and the assurance afterwards. However, from the perspective of a block's state-transition, the assurances are best processed first since each core may only have one \emph{availability assignment} (a guaranteed work-report pending availability). Thus, we will first cover the transition arising from processing the availability assurances followed by the work-report guarantees. This synchroneity can be seen formally through the requirement of an intermediate state $\availassignmentspostassurances$, utilized later in equation \ref{eq:reportcoresareunused}.
 
 
 
@@ -12,7 +12,7 @@ From the perspective of the work-report, therefore, the guarantee happens first 
 
 
 \subsection{State}
-The state of the reporting and availability portion of the protocol is largely contained within $\availassignments$, which tracks the work-report guarantees which have been reported but are not yet known to be available to a super-majority of validators, together with the time at which each was reported. As mentioned earlier, only one guarantee may be assigned to a core at any given time. Formally:
+The state of the reporting and availability portion of the protocol is largely contained within $\availassignments$, which tracks each core's \emph{availability assignment}, if any. An availability assignment is a work-report guarantee which has been reported but is not yet known to be available to a super-majority of validators, together with the time at which it was reported. Formally:
 \begin{equation}
   \label{eq:reportingstate}
   \availassignments \in \sequence[\Ccorecount]{
@@ -163,7 +163,7 @@ The signature must be one whose public key is that of the validator assuring and
   &\Xavailable \equiv \token{\$jam\_available}
 \end{align}
 
-A bit may only be set if the corresponding core has a report pending availability on it:
+A bit may only be set if the corresponding core has an availability assignment:
 \begin{equation}
   \forall a \in \xtassurances, \cX \in \coreindex :
   \quad a_\xa¬availabilities\subb{\cX} \Rightarrow \availassignmentspostjudgment\subb{\cX} \ne \none
@@ -301,7 +301,7 @@ We denote $\incomingreports$ to be the set of work-reports in the present extrin
   \using\incomingreports = \set{ \build { \gX_\g¬workreport }{ \gX \in \xtguarantees } }
 \end{align}
 
-No guarantees may be placed on cores with a guarantee pending availability on it. A guarantee is valid only if the report's authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
+No guarantees may be placed on cores which already have availability assignments. A guarantee is valid only if the report's authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
 \begin{equation}\label{eq:reportcoresareunused}
   \forall \wrX \in \incomingreports :
     \availassignmentspostassurances\subb{\wrX_\wr¬core} = \none \wedge \wrX_\wr¬authorizer \in \authpool\subb{\wrX_\wr¬core}
