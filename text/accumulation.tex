@@ -386,7 +386,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
 From this formulation, we also receive $\local¬numberofreportsaccumulated$, the total number of work-reports accumulated and $\local¬servicegasused$, the gas used in the accumulation process for each service. We compose $\accumulationstatistics$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-items and transfers accumulated. Formally:
 \begin{align}
   \label{eq:accumulationstatisticsspec}
-  &\accumulationstatistics \in \dictionary{\serviceid}{\tuple{\gas, \N, \N}} \\
+  &\accumulationstatistics \in \dictionary{\serviceid}{\tuple{\N, \N, \gas}} \\
   \label{eq:accumulationstatisticsdef}
   &\textstyle \accumulationstatistics \equiv \set{\build{
     \kv{s}{S(s)}
@@ -395,9 +395,7 @@ From this formulation, we also receive $\local¬numberofreportsaccumulated$, the
   }}
   \!\!\!\!\\
   \nonumber
-  \where &S(s) \equiv \tup{G(s), N(s), T(s)} \\
-  \nonumber
-  \also &G(s) \equiv \sum_{\tup{s, u} \in \mathbf{u}}(u) \\
+  \where &S(s) \equiv \tup{N(s), T(s), G(s)} \\
   \nonumber
   \also &N(s) \equiv \len{\sq{\build{d}{
     r \orderedin \justbecameavailable^*\sub{\dots n} ,
@@ -408,7 +406,9 @@ From this formulation, we also receive $\local¬numberofreportsaccumulated$, the
   \also &T(s) \equiv \len{\sq{\build{t}{
     t \orderedin \local¬processedtransfers ,
     t_\dx¬dest = s
-  }}}
+  }}} \\
+  \nonumber
+  \also &G(s) \equiv \sum_{\tup{s, u} \in \mathbf{u}}(u)
 \end{align}
 
 The second intermediate state $\accountspostxfer$ may then be defined with the last-accumulation record being updated for all accumulated services:
