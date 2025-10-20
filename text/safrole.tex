@@ -9,9 +9,9 @@ To achieve this, Safrole limits the possible author of any block within any give
 
 Because of its tightly scoped role, the core of Safrole's state, $\safrole$, is independent of the rest of the protocol. It interacts with other portions of the protocol through $\stagingset$ and $\activeset$, the prospective and active sequences of validator keys respectively; $\thetime$, the most recent block's timeslot; and $\entropy$, the entropy accumulator.
 
-The Safrole protocol generates, once per epoch, a sequence of $\Cepochlen$ \emph{tickets}, one for each potential block within a whole epoch. Each block header includes its timeslot index $\H_\¬timeslot$ (the number of six-second periods since the \Jam Common Era began) and a valid seal signature $\H_\¬sealsig$, signed by the validator's sealing key corresponding to the ticket within the aforementioned sequence. Each ticket is in fact a pseudonym for some validator which was agreed the privilege of authoring a block in the corresponding timeslot.
+The Safrole protocol generates, once per epoch, a sequence of $\Cepochlen$ \emph{tickets}, one for each potential block within a whole epoch. Each block header includes its timeslot index $\H_\¬timeslot$ (the number of six-second periods since the \Jam Common Era began) and a valid seal signature $\H_\¬sealsig$, signed by the validator's sealing key corresponding to the ticket within this sequence. Each ticket is in fact a pseudonym for some validator which was agreed the privilege of authoring a block in the corresponding timeslot.
 
-In order to generate this sequence of tickets in regular operation, and in particular to do so without making public the correspondence relation between them and the validator key sequence, we use a novel Ring\textsc{vrf} cryptographic scheme, built on the Bandersnatch curve. This scheme allows for a proof to be provided which simultaneously guarantees the author controlled a key within a sequence (in our case validators), and secondly provides an output, an unbiasable deterministic hash giving us a secure verifiable random function (\textsc{vrf}). This anonymous and secure random output is a \emph{ticket} and validators' tickets with the best score define the sealing tickets allowing the associated validators to exercise their privilege and create a new block at the appropriate timeslot.
+In order to generate this sequence of tickets in regular operation, and in particular to do so without making public the correspondence relation between tickets and the validator key sequence, we use a novel Ring\textsc{vrf} cryptographic scheme, built on the Bandersnatch curve. This scheme allows for a proof to be provided which simultaneously guarantees the author controlled a key within a sequence (in our case validators), and secondly provides an output, an unbiasable deterministic hash giving us a secure verifiable random function (\textsc{vrf}). This anonymous and secure random output is a \emph{ticket}, and the validators' tickets with the best score are selected to populate the sealing-ticket sequence, allowing the associated validators to exercise their privilege and create a new block at the appropriate timeslot.
 
 
 
@@ -78,7 +78,7 @@ Here, $\safroleticket$ is used to denote the set of \emph{tickets}, a combinatio
   }
 \end{align}
 
-As we state in section \ref{sec:sealandentropy}, Safrole requires that every block header $\H$ contain a valid seal $\H_\¬sealsig$, which is a Bandersnatch signature produced with the private key corresponding to the entry at index $m$ of the current epoch's slot-sealer series $\sealtickets$.
+As we state in section \ref{sec:sealandentropy}, Safrole requires that every block header $\H$ contain a valid seal $\H_\¬sealsig$, which is a Bandersnatch signature produced with the private key corresponding to the entry at index $m$ of the current epoch's slot-sealer sequence $\sealtickets$.
 
 
 
