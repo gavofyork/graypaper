@@ -11,7 +11,7 @@ Because of its tightly scoped role, the core of Safrole's state, $\safrole$, is 
 
 The Safrole protocol generates, once per epoch, a sequence of $\Cepochlen$ \emph{tickets}, one for each potential block within a whole epoch. Each block header includes its timeslot index $\H_\¬timeslot$ (the number of six-second periods since the \Jam Common Era began) and a valid seal signature $\H_\¬sealsig$, signed by the validator's sealing key corresponding to the ticket within this sequence. Each ticket is in fact a pseudonym for some validator which was agreed the privilege of authoring a block in the corresponding timeslot.
 
-In order to generate this sequence of tickets in regular operation, and in particular to do so without making public the correspondence relation between tickets and the validator key sequence, we use a novel Ring\textsc{vrf} cryptographic scheme, built on the Bandersnatch curve. This scheme allows for a proof to be provided which simultaneously guarantees the author controlled a key within a sequence (in our case validators), and secondly provides an output, an unbiasable deterministic hash giving us a secure verifiable random function (\textsc{vrf}). This anonymous and secure random output is a \emph{ticket}, and the validators' tickets with the best score are selected to populate the sealing-ticket sequence, allowing the associated validators to exercise their privilege and create a new block at the appropriate timeslot.
+In order to generate this sequence of tickets while keeping the correspondence between tickets and validators anonymous, we use a novel Ring\textsc{vrf} cryptographic scheme built on the Bandersnatch curve. This scheme allows validators to provide a proof which simultaneously: (1) guarantees the author controlled a key within the validator key sequence, and (2) produces an unbiasable deterministic hash output, giving us a secure verifiable random function (\textsc{vrf}). This anonymous \textsc{vrf} output is the \emph{ticket identifier}. Validators submit their tickets throughout the epoch, accumulating them in $\ticketaccumulator$. The tickets with the best scores are then selected to populate the next epoch's slot-sealer ticket sequence $\sealtickets$, determining which validator may author a block in each corresponding timeslot.
 
 
 
@@ -163,7 +163,7 @@ The header must contain a valid seal and valid entropy source. These are two \te
 
 Sealing using the ticket is of greater security, and we utilize this knowledge when determining a candidate block on which to extend the chain, detailed in section \ref{sec:bestchain}. We thus note that the block was sealed under the regular security with the boolean marker $\isticketed$. We define this only for the purpose of ease of later specification.
 
-In addition to the entropy accumulator $\entropyaccumulator$, we retain three additional historical values of the accumulator at the point of each of the three most recently ended epochs, $\entropy_1$, $\entropy_2$ and $\entropy_3$. The second-oldest of these $\entropy_2$ is utilized to help ensure future entropy is unbiased (see equation \ref{eq:ticketsextrinsic}) and seed the fallback seal-key generation function with randomness (see equation \ref{eq:slotkeysequence}). The oldest is used to regenerate this randomness when verifying the seal above (see equations \ref{eq:ticketconditionfalse} and \ref{eq:ticketconditiontrue}).
+In addition to the entropy accumulator $\entropyaccumulator$, we retain three additional historical values of the accumulator at the point of each of the three most recently ended epochs, $\entropy_1$, $\entropy_2$ and $\entropy_3$. The second-oldest of these $\entropy_2$ is utilized to help ensure future entropy is unbiased (see equation \ref{eq:ticketsextrinsic}) and seed the fallback slot-sealer generation function with randomness (see equation \ref{eq:slotkeysequence}). The oldest is used to regenerate this randomness when verifying the seal above (see equations \ref{eq:ticketconditionfalse} and \ref{eq:ticketconditiontrue}).
 \begin{align}
   \label{eq:entropycomposition}
   \entropy &\in \sequence[4]{\hash}
@@ -193,10 +193,10 @@ On an epoch transition (identified as the condition $e' > e$), we therefore rota
 
 
 
-\subsection{The Slot Key Sequence}
+\subsection{The Slot-Sealer Sequence}
 \label{sec:slotkeysequence}
 
-The posterior slot key sequence $\safroleticket$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\sealtickets$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it takes the value of the prior ticket accumulator $\ticketaccumulator$. Otherwise, it takes the value of the fallback key sequence. Formally:
+The posterior slot-sealer sequence $\sealtickets'$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\sealtickets$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it takes the value of the prior ticket accumulator $\ticketaccumulator$. Otherwise, it takes the value of the fallback key sequence. Formally:
 \begin{align}
   \label{eq:slotkeysequence}
   \sealtickets' &\equiv \begin{cases}
