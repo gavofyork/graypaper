@@ -139,7 +139,7 @@ Note that on epoch changes the posterior queued validator key sequence $\pending
 \subsection{Sealing and Entropy Accumulation}
 \label{sec:sealandentropy}
 
-The header must contain a valid seal and valid entropy source. These are two \textsc{vrf} signatures both using the current slot's seal key; the message data of the former is the header's serialization omitting the seal component $\H_\¬sealsig$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
+The header must contain a valid seal and valid entropy source. These are two \textsc{vrf} signatures both using the private key corresponding to the current slot's slot-sealer entry; the message data of the former is the header's serialization omitting the seal component $\H_\¬sealsig$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
 \begin{align}
   \nonumber \using i = \cyclic{\sealtickets'[\H_\¬timeslot]}\colon \\
   \label{eq:ticketconditiontrue}
