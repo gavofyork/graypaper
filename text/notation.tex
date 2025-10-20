@@ -164,7 +164,7 @@ The inputs of a hash function should be expected to be passed through our serial
 
 $\edsignature{k}{m \in \blob} \subset \blob[64]$ is the set of valid Ed25519 signatures, defined by \cite{rfc8032}, made through knowledge of a secret key whose public key counterpart is $k \in \hash$ and whose message is $m$. To aid readability, we denote the set of valid public keys $\edkey$.
 
-We denote the set of valid Bandersnatch public keys as $\bskey$, defined in appendix \ref{sec:bandersnatch}. $\bssignature{k \in \bskey}{x \in \blob}{m \in \blob} \subset \blob[96]$ is the set of valid singly-contextualized \textsc{vrf} signatures of utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
+We denote the set of valid Bandersnatch public keys as $\bskey$, defined in appendix \ref{sec:bandersnatch}. $\bssignature{k \in \bskey}{x \in \blob}{m \in \blob} \subset \blob[96]$ is the set of valid singly-contextualized \textsc{vrf} signatures utilizing the secret counterpart to the public key $k$, some context $x$ and message $m$.
 
 $\bsringproof{r \in \ringroot}{x \in \blob}{m \in \blob} \subset \blob[784]$, meanwhile, is the set of valid Bandersnatch Ring\textsc{vrf} deterministic singly-contextualized proofs of knowledge of a secret within some set of secrets identified by some root in the set of valid \emph{roots} $\ringroot \subset \blob[144]$. We denote $\getringroot{\mathbf{s} \in \sequence{\bskey}} \in \ringroot$ to be the root specific to the set of public key counterparts $\mathbf{s}$. A root implies a specific sequence of Bandersnatch key pairs, knowledge of one of the secrets would imply being capable of making a unique, valid---and anonymous---proof of knowledge of a unique secret within the set.
 
