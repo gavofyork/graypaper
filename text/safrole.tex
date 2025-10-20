@@ -11,7 +11,7 @@ Because of its tightly scoped role, the core of Safrole's state, $\safrole$, is 
 
 The Safrole protocol generates, once per epoch, a sequence of $\Cepochlen$ \emph{tickets}, one for each potential block within a whole epoch. Each block header includes its timeslot index $\H_\¬timeslot$ (the number of six-second periods since the \Jam Common Era began) and a valid seal signature $\H_\¬sealsig$, signed by the validator's sealing key corresponding to the ticket within this sequence. Each ticket is in fact a pseudonym for some validator which was agreed the privilege of authoring a block in the corresponding timeslot.
 
-In order to generate this sequence of tickets while keeping the correspondence between tickets and validators anonymous, we use a novel Ring\textsc{vrf} cryptographic scheme built on the Bandersnatch curve. This scheme allows validators to provide a proof which simultaneously: (1) guarantees the author controlled a key within the validator key sequence, and (2) produces an unbiasable deterministic hash output, giving us a secure verifiable random function (\textsc{vrf}). This anonymous \textsc{vrf} output is the \emph{ticket identifier}. Validators submit their tickets throughout the epoch, accumulating them in $\ticketaccumulator$. The tickets with the best scores are then selected to populate the next epoch's slot-sealer ticket sequence $\sealtickets$, determining which validator may author a block in each corresponding timeslot.
+In order to generate this sequence of tickets while keeping the correspondence between tickets and validators anonymous, we use a novel Ring\textsc{vrf} cryptographic scheme built on the Bandersnatch curve. This scheme allows validators to provide a proof which simultaneously: (1) guarantees the author controlled a key within the validator key sequence, and (2) produces an unbiasable deterministic hash output, giving us a secure verifiable random function (\textsc{vrf}). This anonymous \textsc{vrf} output is the \emph{ticket identifier}. Validators submit their tickets throughout the epoch, accumulating them in $\ticketaccumulator$. The tickets with the best scores are then selected to populate the next epoch's slot-sealer sequence $\sealtickets$, determining which validator may author a block in each corresponding timeslot.
 
 
 
@@ -62,7 +62,7 @@ $\epochroot$ is the epoch's root, a Bandersnatch ring root composed with the one
   \epochroot &\in \ringroot
 \end{align}
 
-Finally, $\ticketaccumulator$ is the ticket accumulator, a series of highest-scoring ticket identifiers to be used for the next epoch. $\sealtickets$ is the current epoch's slot-sealer series, which is either a full complement of $\Cepochlen$ tickets or, in the case of a fallback mode, a series of $\Cepochlen$ Bandersnatch keys:
+Finally, $\ticketaccumulator$ is the ticket accumulator, a sequence of highest-scoring ticket identifiers to be used for the next epoch. $\sealtickets$ is the current epoch's slot-sealer sequence, which is either a full complement of $\Cepochlen$ tickets or, in the case of a fallback mode, a sequence of $\Cepochlen$ Bandersnatch keys:
 \begin{align}
   \label{eq:ticketaccumulatorsealticketsspec}
   \ticketaccumulator \in \sequence[:\Cepochlen]{\safroleticket} \,,\quad
@@ -139,7 +139,7 @@ Note that on epoch changes the posterior queued validator key sequence $\pending
 \subsection{Sealing and Entropy Accumulation}
 \label{sec:sealandentropy}
 
-The header must contain a valid seal and valid entropy source. These are two \textsc{vrf} signatures both using the private key corresponding to the current slot's slot-sealer entry; the message data of the former is the header's serialization omitting the seal component $\H_\¬sealsig$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
+The header must contain a valid seal and valid entropy source. These are two \textsc{vrf} signatures both using the private key corresponding to the ticket for the current timeslot; the message data of the former is the header's serialization omitting the seal component $\H_\¬sealsig$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
 \begin{align}
   \nonumber \using i = \cyclic{\sealtickets'[\H_\¬timeslot]}\colon \\
   \label{eq:ticketconditiontrue}
