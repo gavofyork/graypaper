@@ -52,7 +52,7 @@ We limit the sum of the number of items in the segment-root lookup dictionary an
 
 \subsubsection{Refinement Context}
 
-A \emph{refinement context}, denoted by the set $\workcontext$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $\wc¬anchorhash$ along with its associated posterior state-root $\wc¬anchorpoststate$ and accumulation output log super-peak $\wc¬anchoraccoutlog$; and the \emph{lookup-anchor}, header hash $\wc¬lookupanchorhash$ and of timeslot $\wc¬lookupanchortime$. Finally, it identifies the hash of any prerequisite work-packages $\wc¬prerequisites$. Formally:
+A \emph{refinement context}, denoted by the set $\workcontext$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $\wc¬anchorhash$ along with its associated posterior state-root $\wc¬anchorpoststate$ and accumulation output log super-peak $\wc¬anchoraccoutlog$; and the \emph{lookup-anchor}, header hash $\wc¬lookupanchorhash$ and timeslot $\wc¬lookupanchortime$. Finally, it identifies the hash of any prerequisite work-packages $\wc¬prerequisites$. Formally:
 \begin{equation}
   \label{eq:workcontext}
   \workcontext \equiv \tuple{\,\begin{alignedat}{5}
@@ -134,7 +134,7 @@ In order to ensure fair use of a block's extrinsic space, work-reports are limit
 
 \subsection{Package Availability Assurances}
 
-We first define $\reportspostguarantees$, the intermediate state to be utilized next in section \ref{sec:workreportguarantees} as well as $\justbecameavailable$, the set of available work-reports, which will we utilize later in section \ref{sec:accumulation}. Both require the integration of information from the assurances extrinsic $\xtassurances$.
+We first define $\reportspostguarantees$, the intermediate state to be utilized next in section \ref{sec:workreportguarantees}, as well as $\justbecameavailable$, the set of available work-reports, which we will utilize later in section \ref{sec:accumulation}. Both require the integration of information from the assurances extrinsic $\xtassurances$.
 
 \subsubsection{The Assurances Extrinsic}
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
