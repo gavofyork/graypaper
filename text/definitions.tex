@@ -35,21 +35,23 @@
   \item[$\workcontext$] The set of work-$\mathbb{C}$ontexts. See equation \ref{eq:workcontext}. \emph{Not used as the set of complex numbers.}
   \item[$\workdigest$] The set of work-$\mathbb{D}$igests. See equation \ref{eq:workdigest}.
   \item[$\workerror$] The set of work execution $\mathbb{E}$rrors. See equation \ref{eq:workerror}.
-  \item[$\pvmguest$] The set representing the state of a $\mathbb{G}$uest \textsc{pvm} instance. See equation \ref{eq:pvmguest}.
+  \item[$\guarantee$] The set of work-report $\mathbb{G}$uarantees. See equation \ref{eq:guarantee}.
   \item[$\hash$] The set of 32-octet cryptographic values, equivalent to $\blob[32]$. Often a $\mathbb{H}$ash function's result. See section \ref{sec:cryptography}.
   \begin{description}
     \item[$\edkey$] The set of Ed25519 public keys. A subset of $\blob[32]$. See section \ref{sec:signing}.
     \item[$\bskey$] The set of Bandersnatch public keys. A subset of $\blob[32]$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
   \end{description}
-  \item[$\operandtuple$] The $\mathbb{I}$nformation concerning a single work-item once prepared as an operand for the accumulation function. See equation \ref{eq:operandtuple}.
+  \item[$\innerpvm$] The set representing the state of an $\mathbb{I}$nner \textsc{pvm} instance. See equation \ref{eq:innerpvm}.
   \item[$\segment$] The set of data segments, equivalent to $\blob[\Csegmentsize]$. See equation \ref{eq:segment}.
   \item[$\valkey$] The set of validator $\mathbb{K}$ey-sets. See equation \ref{eq:validatorkeys}.
   \item[$\implications$] The set representing implications of accumulation. See equation \ref{eq:implications}.
   \item[$\ram$] The set of \textsc{pvm} $\mathbb{M}$emory (\textsc{ram}) states. See equation \ref{eq:pvmmemory}.
+  \item[$\acconeout$] The set of single-service accumulation $\mathbb{O}$utputs. See equation \ref{eq:acconeout}.
   \item[$\workpackage$] The set of work-$\mathbb{P}$ackages. See equation \ref{eq:workpackage}.
   \item[$\workreport$] The set of work-$\mathbb{R}$eports. See equation \ref{eq:workreport}. \emph{Note used for the set of real numbers.}
   \item[$\partialstate$] The set representating a portion of overall $\mathbb{S}$tate, used during accumulation. See equation \ref{eq:partialstate}.
   \item[$\safroleticket$] The set of seal-key $\mathbb{T}$ickets. See equation \ref{eq:ticket}.
+  \item[$\operandtuple$] The information concerning a single work-item once prepared as an operand for the accumulation function. See equation \ref{eq:operandtuple}.
   \item[$\readable{\memory}$] The set of $\mathbb{V}$alidly readable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
   \item[$\writable{\memory}$] The set of $\mathbb{V}$alidly writable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
   \item[$\edsignature{k}{m}$] The set of $\mathbb{V}$alid Ed25519 signatures of the key $k$ and message $m$. A subset of $\blob[64]$. See section \ref{sec:cryptography}.
@@ -203,10 +205,10 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\stagingset$] The validator keys and metadata to be drawn from next. See equation \ref{eq:validatorkeys}.
   \item[$\activeset$] The validator keys and metadata currently active. See equation \ref{eq:validatorkeys}.
   \item[$\previousset$] The validator keys and metadata which were active in the prior epoch. See equation \ref{eq:validatorkeys}.
-  \item[$\reports$] The pending reports, per core, which are being made available prior to accumulation. See equation \ref{eq:reportingstate}.
+  \item[$\availassignments$] The availability assignments. A core's availability assignment is the work-report guarantee which is being made available prior to accumulation. See equation \ref{eq:reportingstate}.
   \begin{description}
-    \item[$\reportspostjudgement$] The post-judgment, pre-guarantees-extrinsic intermediate state. See equation \ref{eq:removenonpositive}.
-    \item[$\reportspostguarantees$] The post-guarantees-extrinsic, pre-assurances-extrinsic, intermediate state. See equation \ref{eq:reportspostguaranteesdef}.
+    \item[$\availassignmentspostjudgment$] The post-judgment, pre-assurances-extrinsic intermediate state. See equation \ref{eq:removenonpositive}.
+    \item[$\availassignmentspostassurances$] The post-assurances-extrinsic, pre-guarantees-extrinsic intermediate state. See equation \ref{eq:availassignmentspostassurancesdef}.
   \end{description}
   \item[$\thestate$] The overall state of the system. See equations \ref{eq:statetransition}, \ref{eq:statecomposition}.
   \item[$\thetime$] The most recent block's timeslot. See equation \ref{eq:timeslotindex}.
@@ -272,7 +274,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Crotationperiod = 10$] The rotation period of validator-core assignments, in timeslots. See sections \ref{sec:coresandvalidators} and \ref{sec:workreportguarantees}.
   \item[$\Cminpublicindex = 2^{16}$] The minimum public service index. Services of indices below these may only be created by the Registrar. See equation \ref{eq:newserviceindex}.
   \item[$\Cmaxpackagexts = 128$] The maximum number of extrinsics in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
-  \item[$\Cassurancetimeoutperiod = 5$] The period in timeslots after which reported but unavailable work may be replaced. See equation \ref{eq:reportspostguaranteesdef}.
+  \item[$\Cassurancetimeoutperiod = 5$] The period in timeslots after which reported but unavailable work is cleared. See equation \ref{eq:reportspostassurancesdef}.
   \item[$\Cvalcount = 1023$] The total number of validators.
   \item[$\Cmaxauthcodesize = 64,000$] The maximum size of is-authorized code in octets. See equation \ref{eq:isauthinvocation}.
   \item[$\Cmaxbundlesize = 13,791,360$] The maximum size of the concatenated variable-size blobs, extrinsics and imported segments of a work-package, in octets. See equation \ref{eq:checkextractsize}.

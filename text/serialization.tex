@@ -134,7 +134,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \encodedisputes{\xtdisputes}
   }
   \\
-  \encodetickets{\xttickets} &= \encode{\var{\xttickets}} 
+  \encodetickets{\xttickets} &= \encode{\var{\xttickets}}
   \\
   \encodepreimages{\xtpreimages} &= \encode{
     \var{\sq{\build{
@@ -143,18 +143,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
       \tup{\xp¬serviceindex, \xp¬data} \orderedin \xtpreimages}
     }}}
   \\
-  \encodeguarantees{\xtguarantees} &= \encode{
-    \var{\sq{\build{
-      \tup{\xg¬workreport, \encode[4]{\xg¬timeslot}, \var{
-        \sq{\build{
-          \tup{\encode[2]{v}, s}
-        }{
-          \tup{v, s} \orderedin \xg¬credential
-        }}
-      }}
-    }{
-      \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \orderedin \xtguarantees}
-    }}}
+  \encodeguarantees{\xtguarantees} &= \encode{\var{\xtguarantees}}
   \\
   \encodeassurances{\xtassurances} &= \encode{
     \var{\sq{\build{
@@ -237,6 +226,12 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \var{\wrX_\wr¬authtrace},
     \var{\wrX_\wr¬srlookup},
     \var{\wrX_\wr¬digests}
+  }
+  \\
+  \encode{\gX \in \guarantee} &\equiv \encode{
+    \gX_\g¬workreport,
+    \encode[4]{\gX_\g¬timeslot},
+    \var{\sq{\build{\tup{\encode[2]{v}, s}}{\tup{v, s} \orderedin \gX_\g¬credential}}}
   }
   \\
   \encode{\wpX \in \workpackage} &\equiv \encode{

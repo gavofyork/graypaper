@@ -31,14 +31,14 @@ The header is a collection of metadata primarily concerned with cryptographic re
 
 Our state may be logically partitioned into several largely independent segments which can both help avoid visual clutter within our protocol description and provide formality over elements of computation which may be simultaneously calculated (i.e. parallelized). We therefore pronounce an equivalence between $\thestate$ (some complete state) and a tuple of partitioned segments of that state:
 \begin{align}\label{eq:statecomposition}
-  \thestate &\equiv \tup{\authpool, \recent, \lastaccout, \safrole, \accounts, \entropy, \stagingset, \activeset, \previousset, \reports, \thetime, \authqueue, \privileges, \disputes, \activity, \ready, \accumulated}
+  \thestate &\equiv \tup{\authpool, \recent, \lastaccout, \safrole, \accounts, \entropy, \stagingset, \activeset, \previousset, \availassignments, \thetime, \authqueue, \privileges, \disputes, \activity, \ready, \accumulated}
 \end{align}
 
 In summary, $\accounts$ is the portion of state dealing with \emph{services}, analogous in \Jam to the Yellow Paper's (smart contract) \emph{accounts}, the only state of the \emph{YP}'s Ethereum. The identities of services which hold some privileged status are tracked in $\privileges$.
 
 Validators, who are the set of economic actors uniquely privileged to help build and maintain the \Jam chain, are identified within $\activeset$, archived in $\previousset$ and enqueued from $\stagingset$. All other state concerning the determination of these keys is held within $\safrole$. Note this is a departure from the \emph{YP} proof-of-work definitions which were mostly stateless, and this set was not enumerated but rather limited to those with sufficient compute power to find a partial hash-collision in the \textsc{sha}\oldstylenums{2}-\oldstylenums{256} cryptographic hash function. An on-chain entropy pool is retained in $\entropy$.
 
-Our state also tracks two aspects of each core: $\authpool$, the authorization requirement which work done on that core must satisfy at the time of being reported on-chain, together with the queue which fills this, $\authqueue$; and $\reports$, each of the cores' currently assigned \emph{report}, the availability of whose \emph{work-package} must yet be assured by a super-majority of validators.
+Our state also tracks two aspects of each core: $\authpool$, the authorization requirement which work done on that core must satisfy at the time of being reported on-chain, together with the queue which fills this, $\authqueue$; and $\availassignments$, each of the cores' currently assigned \emph{work-report guarantees}, the availability of whose \emph{work-package} must yet be assured by a super-majority of validators.
 
 Finally, details of the most recent blocks and timeslot index are tracked in $\recenthistory$ and $\thetime$ respectively, work-reports which are ready to be accumulated and work-packages which were recently accumulated are tracked in $\ready$ and $\accumulated$ respectively and, judgments are tracked in $\disputes$ and validator statistics are tracked in $\activity$.
 
@@ -53,10 +53,10 @@ Much as in the \emph{YP}, we specify $\transitionstate$ as the implication of fo
   \activeset' &\prec \tup{\theheader, \thetime, \activeset, \safrole} \\
   \previousset' &\prec \tup{\theheader, \thetime, \previousset, \activeset} \\
   \disputes' &\prec \tup{\xtdisputes, \disputes} \\
-  \reportspostjudgement &\prec \tup{\xtdisputes, \reports} \label{eq:rhodagger} \\
-  \reportspostguarantees &\prec \tup{\xtassurances, \reportspostjudgement} \label{eq:rhoddagger} \\
-  \reports' &\prec \tup{\xtguarantees, \reportspostguarantees, \activeset, \thetime'} \label{eq:rhoprime} \\
-  \justbecameavailable^* &\prec \tup{\xtassurances, \reportspostjudgement} \\
+  \availassignmentspostjudgment &\prec \tup{\xtdisputes, \availassignments} \label{eq:rhodagger} \\
+  \availassignmentspostassurances &\prec \tup{\xtassurances, \availassignmentspostjudgment} \label{eq:rhoddagger} \\
+  \availassignments' &\prec \tup{\xtguarantees, \availassignmentspostassurances, \activeset, \thetime'} \label{eq:rhoprime} \\
+  \justbecameavailable^* &\prec \tup{\xtassurances, \availassignmentspostjudgment} \\
   \tup{\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \authqueue', \lastaccout', \accumulationstatistics} &\prec \tup{\justbecameavailable^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \authqueue, \thetime, \thetime'} \label{eq:accountspostxfer} \\
   \recenthistory' &\prec \tup{\theheader, \xtguarantees, \recenthistorypostparentstaterootupdate, \lastaccout'} \label{eq:betaprime} \\
   \accountspostpreimage &\prec \tup{\xtpreimages, \accountspostxfer, \thetime'} \label{eq:accountspostpreimage} \\
