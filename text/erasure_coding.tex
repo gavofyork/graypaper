@@ -4,17 +4,17 @@
 \newcommand{\join}{\text{join}}
 \newcommand{\spl}[1]{\text{split}_{#1}}
 
-The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\blob[2]$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\fnencode[2]$. From this we may assume the encoding function $\fnerasurecode: \sequence[342]{\blob[2]} \to \sequence[1023]{\blob[2]}$ and the recovery function $\fnecrecover: \protoset{\tuple{\blob[2], \Nmax{1023}}}_{342} \to \sequence[342]{\blob[2]}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\fnerasurecode$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
+The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate $\nicefrac{\Cecpiecesize}{2}$:$\Cvalcount$, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\blob[2]$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\fnencode[2]$. From this we may assume the encoding function $\fnerasurecode: \sequence[\nicefrac{\Cecpiecesize}{2}]{\blob[2]} \to \sequence[\Cvalcount]{\blob[2]}$ and the recovery function $\fnecrecover: \protoset{\tuple{\blob[2], \Nmax{\Cvalcount}}}_{\nicefrac{\Cecpiecesize}{2}} \to \sequence[\nicefrac{\Cecpiecesize}{2}]{\blob[2]}$. Encoding is done by extrapolating a data blob of size $\Cecpiecesize$ octets (provided in $\fnerasurecode$ here as $\nicefrac{\Cecpiecesize}{2}$ octet pairs) into $\Cvalcount$ octet pairs. Recovery is done by collecting together any distinct $\nicefrac{\Cecpiecesize}{2}$ octet pairs, together with their indices, and transforming this into the original sequence of $\nicefrac{\Cecpiecesize}{2}$ octet pairs.
 
-Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of 684 octets. Data whose length is not divisible by 684 must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit \textsc{da} and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import \textsc{da} system.
+Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of $\Cecpiecesize$ octets. Data whose length is not divisible by $\Cecpiecesize$ must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit \textsc{da} and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import \textsc{da} system.
 
 For the Import \textsc{da} system, we deal with an input size of 4,104 octets resulting in data-parallelism of order six. We may attain a greater degree of data parallelism if encoding or recovering more than one segment at a time though for recovery, we may be restricted to requiring each segment to be formed from the same set of indices (depending on the specific algorithm).
 
 \subsection{Blob Encoding and Recovery}
 
-We assume some data blob $\mathbf{d} \in \blob[684k], k \in \N$. This blob is split into a whole number of $k$ pieces, each a sequence of 342 octet pairs. Each piece is erasure-coded using $\fnerasurecode$ as above to give 1,023 octet pairs per piece.
+We assume some data blob $\mathbf{d} \in \blob[\Cecpiecesize{}k], k \in \N$. This blob is split into a whole number of $k$ pieces, each a sequence of $\nicefrac{\Cecpiecesize}{2}$ octet pairs. Each piece is erasure-coded using $\fnerasurecode$ as above to give $\Cvalcount$ octet pairs per piece.
 
-The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
+The resulting matrix is grouped by its pair-index and concatenated to form $\Cvalcount$ \emph{chunks}, each of $k$ octet-pairs. Any $\nicefrac{\Cecpiecesize}{2}$ of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
 Formally we begin by defining two utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
 \begin{align}
@@ -27,21 +27,21 @@ We define the transposition operator hence:
   {}^\text{T}\sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{0, 1}, \mathbf{x}_{0, 2}, \dots}, \sq{\mathbf{x}_{1, 0}, \mathbf{x}_{1, 1}, \dots}, \dots} \equiv \sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{1, 0}, \mathbf{x}_{2, 0}, \dots}, \sq{\mathbf{x}_{0, 1}, \mathbf{x}_{1, 1}, \dots}, \dots}
 \end{equation}
 
-We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 684 octets and results in a sequence of 1,023 smaller blobs:
+We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into $\Cecpiecesize$ octets and results in a sequence of $\Cvalcount$ smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
   \fnerasurecode_{k \in \N}\colon\abracegroup{
-    \blob[684k] &\to \sequence[1023]{\blob[2k]} \\
+    \blob[\Cecpiecesize{}k] &\to \sequence[\Cvalcount]{\blob[2k]} \\
     \mathbf{d} &\mapsto \join^\#({}^{\text{T}}\sq{\build{\erasurecode{\mathbf{p}}}{\mathbf{p} \orderedin {}^\text{T}\spl{2}^\#(\spl{2k}(\mathbf{d}))}})
   }
 \end{equation}
 
-The original data may be reconstructed with any 342 of the 1,023 resultant items (along with their indices). If the original 342 items are known then reconstruction is just their concatenation.
+The original data may be reconstructed with any $\nicefrac{\Cecpiecesize}{2}$ of the $\Cvalcount$ resultant items (along with their indices). If the original $\nicefrac{\Cecpiecesize}{2}$ items are known then reconstruction is just their concatenation.
 \begin{equation}
   \label{eq:erasurecodinginv}
   \fnecrecover_{k \in \N}\colon\abracegroup{
-    \protoset{\tuple{\blob[2k], \Nmax{1023}}}_{342} &\to \blob[684k] \\
+    \protoset{\tuple{\blob[2k], \Nmax{\Cvalcount}}}_{\nicefrac{\Cecpiecesize}{2}} &\to \blob[\Cecpiecesize{}k] \\
     \mathbf{c} &\mapsto \begin{cases}
-      \encode{\sq{\build{\mathbf{x}}{\tup{\mathbf{x}, i} \orderedin \sqorderby{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}}}} &\when \set{\build{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}} = \Nmax{342}\\
+      \encode{\sq{\build{\mathbf{x}}{\tup{\mathbf{x}, i} \orderedin \sqorderby{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}}}} &\when \set{\build{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}} = \Nmax{\nicefrac{\Cecpiecesize}{2}}\\
       \join(\join^\#({}^\text{T}\sq{
         \build{
           \ecrecover{{\set{\build{
