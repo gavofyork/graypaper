@@ -8,7 +8,7 @@ The foundation of the data-availability and distribution system of \Jam is a sys
 
 Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of $\Cecpiecesize$ octets. Data whose length is not divisible by $\Cecpiecesize$ must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit \textsc{da} and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import \textsc{da} system.
 
-For the Import \textsc{da} system, we deal with an input size of 4,104 octets resulting in data-parallelism of order six. We may attain a greater degree of data parallelism if encoding or recovering more than one segment at a time though for recovery, we may be restricted to requiring each segment to be formed from the same set of indices (depending on the specific algorithm).
+For the Import \textsc{da} system, we deal with an input size of 4,104 octets resulting in data-parallelism of order $\Csegmentecpieces$. We may attain a greater degree of data parallelism if encoding or recovering more than one segment at a time though for recovery, we may be restricted to requiring each segment to be formed from the same set of indices (depending on the specific algorithm).
 
 \subsection{Blob Encoding and Recovery}
 
@@ -59,7 +59,7 @@ The original data may be reconstructed with any $\nicefrac{\Cecpiecesize}{2}$ of
 
 
 
-Segment encoding/decoding may be done using the same functions albeit with a constant $k = 6$.
+Segment encoding/decoding may be done using the same functions albeit with a constant $k = \Csegmentecpieces$.
 
 \subsection{Code Word representation}
 
