@@ -270,7 +270,7 @@ We assume the skip length $\ell$ is well-defined:
   \mrule
   1&\token{fallthrough}&\\
   \mrule
-  3&\token{unlikely}&\\
+  2&\token{unlikely}&\\
   \bottomrule
 \end{longtable}
 
@@ -461,16 +461,16 @@ We assume the skip length $\ell$ is well-defined:
   \midrule
   \endhead
   100&\token{move\_reg}&$\reg'_D = \reg_A$\\ \mrule
-  102&\token{count\_set\_bits\_64}&$\displaystyle\reg'_D = \sum_{i = 0}^{63}\bitsfunc{8}(\reg_A)\sub{i}$\\ \mrule
-  103&\token{count\_set\_bits\_32}&$\displaystyle\reg'_D = \sum_{i = 0}^{31}\bitsfunc{4}(\reg_A \bmod 2^{32})\sub{i}$\\ \mrule
-  104&\token{leading\_zero\_bits\_64}&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{8}(\reg_A)\sub{i} = 0$\\ \mrule
-  105&\token{leading\_zero\_bits\_32}&$\displaystyle\reg'_D = \max(n \in \Nmax{33})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{4}(\reg_A \bmod 2^{32})\sub{i} = 0$\\ \mrule
-  106&\token{trailing\_zero\_bits\_64}&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \bitsfunc{8}(\reg_A)\sub{i} = 0$\\ \mrule
-  107&\token{trailing\_zero\_bits\_32}&$\displaystyle\reg'_D = \max(n \in \Nmax{33})\ \where \sum_{i = 0}^{i < n} \bitsfunc{4}(\reg_A \bmod 2^{32})\sub{i} = 0$\\ \mrule
-  108&\token{sign\_extend\_8}&$\reg'_D = \unsigned{\signedn{1}{\reg_A \bmod 2^8}}$\\ \mrule
-  109&\token{sign\_extend\_16}&$\reg'_D = \unsigned{\signedn{2}{\reg_A \bmod 2^{16}}}$\\ \mrule
-  110&\token{zero\_extend\_16}&$\reg'_D = \reg_A \bmod 2^{16}$\\ \mrule
-  111&\token{reverse\_bytes}&$\forall i \in \N_8 : \encode[8]{\reg'_D}\sub{i} = \encode[8]{\reg_A}_{7-i}$\\
+  101&\token{count\_set\_bits\_64}&$\displaystyle\reg'_D = \sum_{i = 0}^{63}\bitsfunc{8}(\reg_A)\sub{i}$\\ \mrule
+  102&\token{count\_set\_bits\_32}&$\displaystyle\reg'_D = \sum_{i = 0}^{31}\bitsfunc{4}(\reg_A \bmod 2^{32})\sub{i}$\\ \mrule
+  103&\token{leading\_zero\_bits\_64}&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{8}(\reg_A)\sub{i} = 0$\\ \mrule
+  104&\token{leading\_zero\_bits\_32}&$\displaystyle\reg'_D = \max(n \in \Nmax{33})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{4}(\reg_A \bmod 2^{32})\sub{i} = 0$\\ \mrule
+  105&\token{trailing\_zero\_bits\_64}&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \bitsfunc{8}(\reg_A)\sub{i} = 0$\\ \mrule
+  106&\token{trailing\_zero\_bits\_32}&$\displaystyle\reg'_D = \max(n \in \Nmax{33})\ \where \sum_{i = 0}^{i < n} \bitsfunc{4}(\reg_A \bmod 2^{32})\sub{i} = 0$\\ \mrule
+  107&\token{sign\_extend\_8}&$\reg'_D = \unsigned{\signedn{1}{\reg_A \bmod 2^8}}$\\ \mrule
+  108&\token{sign\_extend\_16}&$\reg'_D = \unsigned{\signedn{2}{\reg_A \bmod 2^{16}}}$\\ \mrule
+  109&\token{zero\_extend\_16}&$\reg'_D = \reg_A \bmod 2^{16}$\\ \mrule
+  110&\token{reverse\_bytes}&$\forall i \in \N_8 : \encode[8]{\reg'_D}\sub{i} = \encode[8]{\reg_A}_{7-i}$\\
 %  10X&\token{}&$\reg'_D = ...$\\ \mrule
 \bottomrule
 \end{longtable}
