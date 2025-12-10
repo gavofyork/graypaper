@@ -10,7 +10,6 @@
 \newcommand*{\memr}{\cyclic{\mem}}
 \newcommand*{\memwr}{\cyclic{\mem'}}
 \newcommand*{\continue}{\blacktriangleright}
-\newcommand*{\gascost}{\gascounter_\Delta}
 \newcommand*{\instrlen}{\ell}
 \newcommand*{\revbitsfunc}[1]{\overleftarrow{\fnoctetstobits}_{#1}}
 \newcommand*{\revunbitsfunc}[1]{\revbitsfunc{#1}^{-1}}
@@ -32,22 +31,25 @@
 \newcommand*{\smod}{\text{smod}}
 \newcommand*{\rtz}{\text{rtz}}
 \newcommand*{\gascostforblock}[1]{\gascounter_{#1}^{\Delta}}
+\newcommand*{\startofbasicblock}{\mathfrak{L}}
+\newcommand*{\gaschargedflag}{\tilde{\gascounter}}
 
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
-  \Psi&\colon \abracegroup{
-    \tuple{\blob, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
-    \tup{\mathbf{p}, \imath, \gascounter, \registers, \mem} &\mapsto \begin{cases}
-      \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
-      \tup{\oog, \imath, \gascounter', \registers, \mem} &\when \gascounter' < 0\\
-      \tup{\varepsilon, 0, \gascounter', \registers', \mem'} &\when \varepsilon \in \set{ \panic, \halt }\\
-      \tup{\varepsilon, \imath, \gascounter', \registers, \mem} &\otherwise
+  \Psi^*&\colon \abracegroup{
+    \tuple{\blob, \pvmreg, \gas, \bool, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \bool, \regs, \ram}\\
+    \tup{\mathbf{p}, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\mapsto \begin{cases}
+      \Psi(\mathbf{p}, \imath', \gascounter', \gaschargedflag', \registers', \mem') &\when \varepsilon = \continue\\
+      \tup{\oog, \imath, \gascounter', \gaschargedflag', \registers, \mem} &\when \gascounter' < 0\\
+      \tup{\varepsilon, 0, \gascounter', \gaschargedflag', \registers', \mem'} &\when \varepsilon \in \set{ \panic, \halt }\\
+      \tup{\varepsilon, \imath, \gascounter', \gaschargedflag', \registers, \mem} &\otherwise
     \end{cases} \\
-    \where \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &= \begin{cases}
-      \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\when \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} = \deblob(\mathbf{p}) \\
-      \tup{\panic, \imath, \gascounter, \registers, \mem} &\otherwise
+    \where \tup{\varepsilon, \imath', \gascounter', \gaschargedflag', \registers', \mem'} &= \begin{cases}
+      \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \gaschargedflag, \registers, \mem) &\when \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} = \deblob(\mathbf{p}) \\
+      \tup{\panic, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\otherwise
     \end{cases}
   }\\
+  &\Psi(\mathbf{p}, \imath, \gascounter, \registers, \mem) \equiv \Psi^*(\mathbf{p}, \imath, \gascounter, \bot, \registers, \mem)\\
   \deblob&\colon\abracegroup{
     \blob &\to \tuple{\blob, \bitstring, \sequence{\pvmreg}} \cup \error \\
     \mathbf{p} &\mapsto \begin{cases}
@@ -123,14 +125,39 @@ We denote this set, as opcode indices rather than names, as $T$, which is a subs
   \basicblocks \equiv \left(\set{0} \cup \set{\build{n + 1 + \Fskip(n)}{n \in \Nmax{\len{\mathbf{c}}} \wedge \mathbf{k}\sub{n} = 1 \wedge \mathbf{c}\sub{n} \in T}}\right) \cap \set{\build{n}{\mathbf{k}\sub{n} = 1 \wedge \mathbf{c}\sub{n} \in U}}
 \end{equation}
 
+For convenience we will define $\startofbasicblock(\imath)$ which represents the start of a basic block for any $\imath$ within that basic block. Formally:
+
+\begin{equation}
+  \startofbasicblock(\imath) = \max(j \in \basicblocks \mid j \le \imath)
+\end{equation}
+
 \subsection{Single-Step State Transition}
 
 We must now define the single-step \textsc{pvm} state-transition function $\Psi_1$:
 \begin{equation}
   \Psi_1\colon \abracegroup{
-    \tuple{\blob, \bitstring, \sequence{\pvmreg}, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
-    \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem} &\mapsto \tup{\varepsilon^*, \imath^*, \gascounter^*, \registers^*, \mem^*}
+    \tuple{\blob, \bitstring, \sequence{\pvmreg}, \pvmreg, \gas, \bool, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \bool, \regs, \ram}\\
+    \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\mapsto \tup{\varepsilon^*, \imath^*, \gascounter^*, \gaschargedflag^*, \registers^*, \mem^*}
   }
+\end{equation}
+
+On the very first step of execution, and every time the execution enters a new basic block or jumps back to the beginning of the current basic block, the gas counter of the machine is updated according to the gas cost $\gascostforblock{\startofbasicblock(\imath)}$~(\ref{eq:gascostforblock}) of the target basic block. No instruction is allowed to execute within a basic block without first paying the gas cost of the whole block. In case there's not enough gas remaining to cover the full gas cost, the execution is interrupted and the gas counter remains unchanged. Formally:
+
+\begin{equation}
+  \tup{\tilde{\varepsilon}, \gascounter', \gaschargedflag'} = \begin{cases}
+    \tup{\continue, \gascounter, \top} &\when \gaschargedflag = \top \\
+    \tup{\continue, \gascounter - \gascostforblock{\startofbasicblock(\imath)}, \top} &\otherwhen \gascounter \ge \gascostforblock{\startofbasicblock(\imath)} \\
+    \tup{\oog, \gascounter, \bot} &\otherwise
+  \end{cases}
+\end{equation}
+
+We also have to adjust the state based on the posterior value of the instruction counter, to force a gas charge on the next step when necessary:
+
+\begin{equation}
+  \gaschargedflag^* = \begin{cases}
+    \bot &\when \gaschargedflag' = \bot \lor \imath' < \imath \lor \startofbasicblock(\imath') \ne \startofbasicblock(\imath) \\
+    \top &\otherwise
+  \end{cases}
 \end{equation}
 
 During the course of executing instructions \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
@@ -139,18 +166,17 @@ Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem
 \begin{align}
   \using \mathbf{x} &= \set{\build{x}{x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \readable\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \writable\mem}} \\
   \tup{\varepsilon^*, \imath^*, \gascounter^*, \registers^*, \mem^*} &= \begin{cases}
+    \tup{\oog, \imath, \gascounter', \registers, \mem} &\when \tilde{\varepsilon} = \oog \\
     \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &\when \mathbf{x} = \emset \\
     \tup{\panic, \imath, \gascounter', \registers, \mem} &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
     \tup{\fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize}, \imath, \gascounter', \registers, \mem} &\otherwise
   \end{cases}
 \end{align}
 
-We define $\varepsilon$ together with the posterior values of regular execution (denoted as prime) of each of the items of the machine state as being in accordance with the table below. When transitioning machine state for an instruction, a number of conditions typically hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one, the gas remaining is reduced by the amount corresponding to the instruction type and \textsc{ram} \& registers are unchanged. Formally:
+We define $\varepsilon$ together with the posterior values of regular execution (denoted as prime) of each of the items of the machine state as being in accordance with the table below. When transitioning machine state for an instruction, a number of conditions typically hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one and \textsc{ram} \& registers are unchanged. Formally:
 \begin{equation}
-  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \gascounter' = \gascounter - \gascost,\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
+  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
 \end{equation}
-
-In the case that $\Psi_1$ takes the $\varepsilon^\mu$
 
 We define signed/unsigned transitions for various octet widths:
 \begin{align}
@@ -707,32 +733,33 @@ Division operations always round their result towards zero. Formally:
 
 An extended version of the \textsc{pvm} invocation which is able to progress an inner \emph{host-call} state-machine in the case of a host-call halt condition is defined as $\Psi_H$:
 \begin{align}
-  &\Psi_H\colon \abracegroup{
+  &\Psi_H^*\colon \abracegroup{
     \tuple{\begin{aligned}
-      &\blob, \pvmreg, \gas, \regs,\\&\ram, \contextmutator{X}, X
+      &\blob, \pvmreg, \gas, \regs,\\&\ram, \bool, \contextmutator{X}, X
     \end{aligned}
     }
     &\to
-    \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram, X}\\
-    \tup{\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}} &\mapsto \begin{cases}
-      \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem):} \\[8pt]
-      \tup{\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
+    \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \pvmreg, \signedgas, \bool, \regs, \ram, X}\\
+    \tup{\mathbf{c}, \imath, \gascounter, \gaschargedflag, \registers, \mem, f, \mathbf{x}} &\mapsto \begin{cases}
+      \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \gaschargedflag, \registers, \mem):} \\[8pt]
+      \tup{\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem', \mathbf{x}} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
       \begin{aligned}
-        &\Psi_H(\mathbf{c}, \imath'', \gascounter'', \registers'', \mem'', f, \mathbf{x}'')\\[2pt]
+        &\Psi_H^*(\mathbf{c}, \imath'', \gascounter'', \gaschargedflag', \registers'', \mem'', f, \mathbf{x}'')\\[2pt]
         &\quad \where \imath'' = \imath' + 1 + \Fskip(\imath')
       \end{aligned}
        &\when \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
         &\tup{\continue, \gascounter'', \registers'', \mem'', \mathbf{x}''} = f(h, \gascounter', \registers', \mem', \mathbf{x})
       }\\[8pt]
-      \tup{\varepsilon'', \imath', \gascounter'', \registers'', \mem'', \mathbf{x}''} &\when  \bigwedge\abracegroup[\;]{
+      \tup{\varepsilon'', \imath', \gascounter'', \gaschargedflag', \registers'', \mem'', \mathbf{x}''} &\when  \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
         &\tup{\varepsilon'', \gascounter'', \registers'', \mem'', \mathbf{x}''} = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
         &\varepsilon'' \in \set{\panic, \halt, \oog}
       }\\[8pt]
     \end{cases} \\
     }\!\!\!\!\!\!\!\!\\
-    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X}
+    &\Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}) \equiv \Psi_H^*(\mathbf{c}, \imath, \gascounter, \bot, \registers, \mem, f, \mathbf{x})\\
+    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X}\\
 \end{align}
 
 As with $\Phi$, on exit the instruction counter references the instruction \emph{which caused the exit} and the machine state is that prior to this instruction. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed on the proper (prior) machine state.
@@ -813,7 +840,7 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
     } &\to \tuple{\gas, \blob \cup \set{\panic, \oog}, X}\\
     \tup{\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}} &\mapsto \begin{cases}
       \tup{0, \panic, \mathbf{x}} &\when Y(\mathbf{p}, \mathbf{a}) = \none\\
-      R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}, \mathbf{a}) = \tup{\mathbf{c}, \registers, \mem}\\
+      R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \bot, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}, \mathbf{a}) = \tup{\mathbf{c}, \registers, \mem}\\
       \multicolumn{2}{l}{
         \quad \where R \colon \tup{\gascounter, \tup{\begin{alignedat}{5}
           &\varepsilon,\, &&\imath',\, &&\gascounter',\\
