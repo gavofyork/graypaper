@@ -9,8 +9,6 @@
 \newcommand*{\mem}{{\memory}}
 \newcommand*{\memr}{\cyclic{\mem}}
 \newcommand*{\memwr}{\cyclic{\mem'}}
-\newcommand*{\rnp}[1]{P(#1)}
-\newcommand*{\rnq}[1]{Z(#1)}
 \newcommand*{\continue}{\blacktriangleright}
 \newcommand*{\gascost}{\gascounter_\Delta}
 \newcommand*{\instrlen}{\ell}
@@ -437,12 +435,6 @@ We assume the skip length $\ell$ is well-defined:
   \midrule
   \endhead
   100&\token{move\_reg}&$\reg'_D = \reg_A$\\ \mrule
-  101&\token{sbrk}&$\begin{aligned}
-    \reg'_D \equiv &\min(x \in \pvmreg): \\
-    &x \ge h\\
-    &\Nrange{x}{\reg_A} \not\subseteq \readable{\memory}\\
-    &\Nrange{x}{\reg_A} \subseteq \writable{\memory'}
-  \end{aligned}$\\ \mrule
   102&\token{count\_set\_bits\_64}&$\displaystyle\reg'_D = \sum_{i = 0}^{63}\bitsfunc{8}(\reg_A)\sub{i}$\\ \mrule
   103&\token{count\_set\_bits\_32}&$\displaystyle\reg'_D = \sum_{i = 0}^{31}\bitsfunc{4}(\reg_A \bmod 2^{32})\sub{i}$\\ \mrule
   104&\token{leading\_zero\_bits\_64}&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{8}(\reg_A)\sub{i} = 0$\\ \mrule
@@ -456,8 +448,6 @@ We assume the skip length $\ell$ is well-defined:
 %  10X&\token{}&$\reg'_D = ...$\\ \mrule
 \bottomrule
 \end{longtable}
-
-Note, the term $h$ above refers to the beginning of the heap, the second major section of memory as defined in equation \ref{eq:memlayout} as $2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}}$. If $\token{sbrk}$ instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Immediate}
 \begin{equation}
@@ -1249,7 +1239,6 @@ The cost of a branch depends on whether any of its targets (either the jump targ
   \token{jump\_ind}&22&1&0&0&0&0&0\\ \mrule
   \token{load\_imm\_jump\_ind}&22&1&0&0&0&0&0\\ \mrule
 
-  \token{ecalli}&100&4&1&0&0&0&0\\ \mrule
-  \token{sbrk}&100&4&1&0&0&0&0\\
+  \token{ecalli}&100&4&1&0&0&0&0\\
 \bottomrule
 \end{longtable}

@@ -46,6 +46,7 @@ The Is-Authorized invocation is the first and simplest of the four, being totall
   \label{eq:isauthorizedmutator}F \in \contextmutator{\emset} &\colon
     \tup{n, \gascounter, \registers, \memory} \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
+      \Omega_\Gemini(\gascounter, \registers, \memory, \mathbf{p}) &\when n = \mathtt{grow\_heap} \\
       \Omega_Y(\gascounter, \registers, \memory, \wpX, \none, \none, \none, \none, \none, \none, \none) &\when n = \mathtt{fetch} \\
       \tup{\oog, \gascounter', \registers', \memory} &\otherwhen \gascounter' < 0 \\
       \tup{\continue, \gascounter', \registers', \memory} &\otherwise \\
@@ -93,6 +94,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &F \in \contextmutator{\tuple{\dictionary{\N}{\pvmguest}, \sequence{\segment}}} \colon
     (n, \gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{gas} \\
+      \Omega_\Gemini(\gascounter, \registers, \memory, \mathbf{p}) &\when n = \mathtt{grow\_heap} \\
       \Omega_Y(\gascounter, \registers, \memory, p, \zerohash, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{fetch}\\
       \Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, w_\wi¬serviceindex, \accounts, (p_\wp¬context)_\wc¬lookupanchortime) &\when n = \mathtt{historical\_lookup}\\
       \Omega_E(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, \segoff) &\when n = \mathtt{export}\\
@@ -186,6 +188,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
   }\\
   F \in \contextmutator{\implicationspair} &\colon \tup{n, \gascounter, \registers, \memory, \imXY} \mapsto \begin{cases}
   \Omega_G(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{gas} \\
+    \Omega_\Gemini(\gascounter, \registers, \memory, \mathbf{p}) &\when n = \mathtt{grow\_heap} \\
     \Omega_Y(\gascounter, \registers, \memory, \none, \entropyaccumulator', \none, \none, \none, \none, \mathbf{i}, \imXY) &\when n = \mathtt{fetch}\\
     G(\Omega_R(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id, (\imX_\im¬state)_\ps¬accounts), \imXY) &\when n = \mathtt{read} \\
     G(\Omega_W(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id), \imXY) &\when n = \mathtt{write} \\
@@ -296,6 +299,39 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = 10$} &
   $\begin{aligned}
     \registers'_7 &\equiv \gascounter'
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_\Gemini(\gascounter, \registers, \memory, \mathbf{p})$ \\
+  \texttt{grow\_heap} = $\none$} & % TODO: Assign a hostcall number.
+  $\begin{aligned}
+    % This hostcall can be used to expand the RW data region of memory, or to query its size.
+    %
+    % It takes a single argument: the index of last writable page (plus one) the user would like
+    % to be able to access within the RW data region of the address space.
+    %
+    % It returns the number of accessible pages in the RW data region, regardless of whether
+    % anything has changed.
+    %
+    % Page index of the start of the RW data region.
+    \using a &= \frac{2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}}}{\Cpvmpagesize} \\
+    % Page index plus one of the last possible RW data region page.
+    \using b &= \frac{2^{32} - 3\Cpvminitzonesize - \Cpvminitinputsize - \rnp{s}}{\Cpvmpagesize} \\
+    % Current writable page count of the RW data region.
+    \using c &= |\Nclamp{a}{b} \subseteq \writable{\memory}| \\
+    % The total gas cost, based on the number of pages that will become writable after this call.
+    \using g &= 100 + \max(0, \registers_7 - a - c) \cdot 1000 \\
+    \tup{\execst', \gascounter', \registers'_7, (\mathbf{u}'_\ram¬access)\interval{a}{\registers_7}} &\equiv \begin{cases}
+      % Not enough gas to even cover the constant cost of the call, regardless of whether it's a no-op or not.
+      \tup{\panic, \gascounter, \registers_7, (\mathbf{u}_\ram¬access)\interval{a}{\registers_7}} &\when \gascounter < 100 \\
+      % Expand the accessible RW data region, and return the new page count.
+      \tup{\continue, \gascounter - g, \max(a + c, \registers_7), \mathrm{W}} &\otherwhen \registers_7 \leq b \land \gascounter \ge g \\
+      % Otherwise just return the current writable page count.
+      %
+      % This will also trigger when the user doesn't have enough gas to request as many pages
+      % as they want, in which case they will be able to gracefully handle this situation.
+      \tup{\continue, \gascounter - 100, a + c, (\mathbf{u}_\ram¬access)\interval{a}{\registers_7}} &\otherwise \\
+    \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
