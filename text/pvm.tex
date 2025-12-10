@@ -33,6 +33,7 @@
 \newcommand*{\deblob}{\text{deblob}}
 \newcommand*{\smod}{\text{smod}}
 \newcommand*{\rtz}{\text{rtz}}
+\newcommand*{\gascostforblock}[1]{\gascounter_{#1}^{\Delta}}
 
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
 \begin{align}
@@ -244,6 +245,8 @@ We assume the skip length $\ell$ is well-defined:
   0&\token{trap}&1&$\varepsilon = \panic$\\
   \mrule
   1&\token{fallthrough}&1&\\
+  \mrule
+  3&\token{unlikely}&1&\\
   \bottomrule
 \end{longtable}
 
@@ -839,3 +842,414 @@ The four instances where the \textsc{pvm} is utilized each expect to be able to 
 \end{equation}
 
 Note that the first tuple item is the amount of gas consumed by the operation, but never greater than the amount of gas provided for the operation.
+
+\subsection{Gas Cost Model}\label{sec:gascostmodel}
+
+\newcommand*{\rob¬state}{\vec{s}}
+\newcommand*{\rob¬cyclesleft}{\vec{c}}
+\newcommand*{\rob¬deps}{\vec{p}}
+\newcommand*{\rob¬regs}{\vec{r}}
+\newcommand*{\rob¬execunits}{\vec{x}}
+\newcommand*{\ctr¬cycles}{\dot{c}}
+\newcommand*{\ctr¬instructions}{\dot{n}}
+\newcommand*{\remaining¬decodeslots}{\dot{d}}
+\newcommand*{\remaining¬startpercycle}{\dot{e}}
+\newcommand*{\remaining¬execunits}{\dot{x}}
+\newcommand*{\cost¬decodeslots}{\check{d}}
+\newcommand*{\cost¬cycles}{\check{c}}
+\newcommand*{\cost¬execunits}{\check{x}}
+\newcommand*{\inst¬dstregs}{\check{r}}
+\newcommand*{\inst¬srcregs}{\check{s}}
+\newcommand*{\state¬decoding}{1}
+\newcommand*{\state¬waiting}{2}
+\newcommand*{\state¬executing}{3}
+\newcommand*{\state¬executed}{4}
+\newcommand*{\ALU}{\text{A}}
+\newcommand*{\LOAD}{\text{L}}
+\newcommand*{\STORE}{\text{S}}
+\newcommand*{\MUL}{\text{M}}
+\newcommand*{\DIV}{\text{D}}
+\newcommand*{\find¬readytostart}{\mathfrak{S}}
+\newcommand*{\emptyorderedmap}{\langle\,\rangle}
+
+\newcommand*{\const¬maxdecodepercycle}{4}
+\newcommand*{\const¬maxstartpercycle}{5}
+
+The gas cost model for the \textsc{pvm} is a simplified model of a modern CPU microarchitecture, heavily inspired by what's used by production-grade compilers to predict how much time a given piece of code will take. For each basic block in the program the model simulates its execution flow and computes the required number of virtual CPU cycles that would be needed to execute it.
+
+The gas cost $\gascostforblock{\imath}$ for a given basic block starting at instruction opcode index $\imath \in \basicblocks$ is defined by the number of virtual CPU cycles as determined by the the gas cost model transition function, up until every instruction of the basic block it has ingested has been retired and the simulation has converged.
+
+The initial state $\Xi_0$ of the simulation is defined as follows:
+
+\begin{equation}
+  \Xi_0(\imath) = \abracegroup{
+    \imath^{(0)} &= \imath \\
+    \ctr¬cycles^{(0)} &= 0,
+    \ctr¬instructions^{(0)} = 0,
+    \remaining¬decodeslots^{(0)} = \const¬maxdecodepercycle,
+    \remaining¬startpercycle^{(0)} = \const¬maxstartpercycle \\
+    \rob¬state^{(0)} &= \emptyorderedmap,
+    \rob¬cyclesleft^{(0)} = \emptyorderedmap,
+    \rob¬deps^{(0)} = \emptyorderedmap,
+    \rob¬regs^{(0)} = \emptyorderedmap,
+    \rob¬execunits^{(0)} = \emptyorderedmap \\
+    \remaining¬execunits^{(0)} &= \{
+      \ALU = 4,
+      \LOAD = 4,
+      \STORE = 4,
+      \MUL = 1,
+      \DIV = 1
+    \}
+  }
+\end{equation}
+
+The state transition function of the simulation from step $n$ to step $n + 1$ is defined as follows:
+
+\begin{equation}
+  \Xi_{n + 1}(\Xi_n, \mathbf{c}, \mathbf{k}) = \begin{cases}
+    \Xi_{n + 1}'(\Xi_n, \mathbf{c}, \mathbf{k}) &\when n = 0 \lor (\imath^{(n)} \neq \none \land \cost¬decodeslots(\mathbf{c}, \mathbf{k}, \imath^{(n)}) \leq \remaining¬decodeslots^{(n)} \land |\rob¬state^{(n)}| < 32) \\
+    \Xi_{n + 1}''(\Xi_n) &\when \find¬readytostart(\Xi_n) \neq \none \land \remaining¬startpercycle^{(n)} > 0 \\
+    \none &\when \imath^{(n)} = \none \land |\rob¬state^{(n)}| = 0 \\
+    \Xi_{n + 1}'''(\Xi_n) &\otherwise \\
+  \end{cases}
+\end{equation}
+
+Assuming $m \text{ such that } \Xi_{m + 1} = \none$ the final gas cost of a basic block starting at $\imath$ is defined as:
+
+\begin{equation}\label{eq:gascostforblock}
+  \gascostforblock{\imath} = \max(\ctr¬cycles^{(m)} - 3, 1)
+\end{equation}
+
+The state transition function $\Xi_{n + 1}'$ which decodes the instructions into a reorder buffer without triggering the virtual CPU pipeline simulation is defined as follows (those pieces of state which are not explicitly mentioned by the equations are assumed to be unchanged and omitted for clarity):
+
+\begin{equation}
+  \Xi_{n + 1}'(\Xi_n, \mathbf{c}, \mathbf{k}) = \begin{cases}
+    \Xi_{n + 1}^{\text{mov}}(\Xi_n, \mathbf{c}, \mathbf{k}) &\when \text{opcode}(\mathbf{c}, \mathbf{k}, \imath^{(n)}) = \token{move\_reg} \\
+    \Xi_{n + 1}^{\text{decode}}(\Xi_n, \mathbf{c}, \mathbf{k}) &\otherwise
+  \end{cases}
+\end{equation}
+
+The \token{move\_reg} instruction is special-cased to be handled by the frontend of our virtual CPU, without being added to the reorder buffer:
+
+\begin{equation}
+  \Xi_{n + 1}^{\text{mov}}(\Xi_n, \mathbf{c}, \mathbf{k}) = \abracegroup{
+    \imath^{(n + 1)} &= \imath^{(n)} + 1 + \Fskip(\imath^{(n)}) \\
+    \remaining¬decodeslots^{(n + 1)} &= \remaining¬decodeslots^{(n)} - 1 \\
+    j \in \mathbb{N} \Rightarrow \rob¬regs^{(n + 1)}_j &= \begin{cases}
+      \rob¬regs^{(n)}_j \cup \inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath^{(n)}) &\when \rob¬regs^{(n)}_j \cap \inst¬srcregs(\mathbf{c}, \mathbf{k}, \imath^{(n)}) \neq \emptyset \\
+      \rob¬regs^{(n)}_j \setminus \inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath^{(n)}) &\otherwise
+    \end{cases}
+  }
+\end{equation}
+
+Every other instruction is fully decoded and added to the reorder buffer as follows:
+
+\begin{equation}
+  \Xi_{n + 1}^{\text{decode}}(\Xi_n, \mathbf{c}, \mathbf{k}) = \abracegroup{
+    \imath^{(n + 1)} &= \begin{cases}
+      \none &\when \text{opcode}(\mathbf{c}, \mathbf{k}, \imath^{(n)}) \in T \\
+      \imath^{(n)} + 1 + \Fskip(\imath^{(n)}) &\otherwise
+    \end{cases} \\
+    \remaining¬decodeslots^{(n + 1)} &= \remaining¬decodeslots^{(n)} - \cost¬decodeslots(\mathbf{c}, \mathbf{k}, \imath^{(n)}) \\
+    \ctr¬instructions^{(n + 1)} &= \ctr¬instructions^{(n)} + 1 \\
+    \rob¬state^{(n + 1)}_{\ctr¬instructions^{(n)}} &= \state¬decoding \\
+    \rob¬cyclesleft^{(n + 1)}_{\ctr¬instructions^{(n)}} &= \cost¬cycles(\mathbf{c}, \mathbf{k}, \imath^{(n)}) \\
+    \rob¬execunits^{(n + 1)}_{\ctr¬instructions^{(n)}} &= \cost¬execunits(\mathbf{c}, \mathbf{k}, \imath^{(n)}) \\
+    \rob¬deps^{(n + 1)}_{\ctr¬instructions^{(n)}} &= \set{\build{j}{ \inst¬srcregs(\mathbf{c}, \mathbf{k}, \imath^{(n)}) \cap \rob¬regs^{(n)}_{j} \neq \emptyset }} \\
+    j \in \mathbb{N} \Rightarrow \rob¬regs^{(n + 1)}_j &= \begin{cases}
+      \inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath^{(n)}) &\when j = \ctr¬instructions^{(n)} \\
+      \rob¬regs^{(n)}_j \setminus \inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath^{(n)}) &\otherwise
+    \end{cases} \\
+  }
+\end{equation}
+
+The state transition function $\Xi_{n + 1}''$ which starts the execution of the next pending instruction is defined as follows:
+
+\begin{equation}
+  \Xi_{n + 1}''(\Xi_n) = \abracegroup{
+    \rob¬state^{(n + 1)}_{\find¬readytostart(\Xi_n)} &= \state¬executing \\
+    \remaining¬execunits^{(n + 1)} &= \remaining¬execunits^{(n)} - \rob¬execunits^{(n)}_{\find¬readytostart(\Xi_n)} \\
+    \remaining¬startpercycle^{(n + 1)} &= \remaining¬startpercycle^{(n)} - 1
+  }
+\end{equation}
+
+The function $\find¬readytostart(\Xi_n)$ which checks which instruction inside of the reorder buffer is ready to start executing (and whether such an instruction even exists) is defined as follows:
+
+\begin{equation}
+  \find¬readytostart(\Xi_n) = \min(j \in \mathbb{N} \mid \rob¬state^{(n)}_j = \state¬waiting \land \rob¬execunits^{(n)}_j \leq \remaining¬execunits^{(n)} \land (\forall k \in \rob¬deps^{(n)}_j \Rightarrow \rob¬cyclesleft^{(n)}_k \leq 0))
+\end{equation}
+
+The state transition function $\Xi_{n + 1}'''$ which simulates the rest of the virtual CPU pipeline is defined as follows:
+
+\begin{equation}
+  \Xi_{n + 1}'''(\Xi_n) = \abracegroup{
+    j \in \mathbb{N} \Rightarrow \rob¬state^{(n + 1)}_j &= \begin{cases}
+      \none &\when \forall k \in \mathbb{N},\quad 0 \leq k \leq j \Rightarrow \rob¬state^{(n)}_k = \state¬executed \\
+      \state¬waiting &\when \rob¬state^{(n)}_j = \state¬decoding \\
+      \state¬executed &\when \rob¬state^{(n)}_j = \state¬executing \land \rob¬cyclesleft^{(n)}_j = 0 \\
+      \rob¬state^{(n)}_j &\otherwise \\
+    \end{cases} \\
+    j \in \mathbb{N} \Rightarrow \rob¬cyclesleft^{(n + 1)}_j &= \begin{cases}
+      \rob¬cyclesleft^{(n)}_j - 1 &\when \rob¬state^{(n)}_j = \state¬executing \\
+      \rob¬cyclesleft^{(n)}_j &\otherwise \\
+    \end{cases} \\
+    j \in \mathbb{N} \Rightarrow \rob¬regs^{(n + 1)}_j &= \begin{cases}
+      \none &\when \rob¬state^{(n)}_j = \state¬executing \land \rob¬cyclesleft^{(n)}_j = 1 \\
+      \rob¬regs^{(n)}_j &\otherwise \\
+    \end{cases} \\
+    \remaining¬execunits^{(n + 1)} &= \remaining¬execunits^{(n)} + \sum_{j \in \mathbb{N} \Rightarrow \rob¬state^{(n)}_j = \state¬executing \land \rob¬cyclesleft^{(n)}_j = 1} \rob¬execunits^{(n)}_j \\
+    \ctr¬cycles^{(n + 1)} &= \ctr¬cycles^{(n)} + 1 \\
+    \remaining¬decodeslots^{(n + 1)} &= \const¬maxdecodepercycle \\
+    \remaining¬startpercycle^{(n + 1)} &= \const¬maxstartpercycle
+  }
+\end{equation}
+
+The function $\inst¬srcregs(\mathbf{c}, \mathbf{k}, \imath)$ returns a set of source registers read by a given instruction, and the function $\inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath)$ returns a set of destination registers which are written by a given instruction, regardless of whether those registers would actually have been modified by that instruction when executed at runtime. \token{ecalli} is assumed to not read nor write to any registers in this model.
+
+$\cost¬cycles$ is the number of cycles a given instruction needs to finish execution, $\cost¬decodeslots$ is the number of decoding slots necessary to decode it, and $\cost¬execunits$ is the number of virtual CPU execution units required to start its execution.
+
+\subsection{Gas Cost Tables}\label{sec:gascosttables}
+
+For some of the instructions their cost depends on whether the destination register overlaps with any of the source registers:
+
+\begin{equation}
+  \mathfrak{P}(a, b, \mathbf{c}, \mathbf{k}, \imath) = \begin{cases}
+    a &\when \inst¬srcregs(\mathbf{c}, \mathbf{k}, \imath) \cap \inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath) \neq \emptyset \\
+    b &\otherwise
+  \end{cases}
+\end{equation}
+
+For non-immediate shift and rotate instructions only the first source register matters:
+
+\begin{equation}
+  \mathfrak{P}_{S}(a, b, \mathbf{c}, \mathbf{k}, \imath) = \begin{cases}
+    a &\when \reg_A = \reg_D \\
+    b &\otherwise
+  \end{cases}
+\end{equation}
+
+% NOTE: This is a *temporary* placeholder. We'll later replace this with a proper equation
+%       once we introduce gas metering of the paging mechanism and memory limits,
+%       so that's why I'm not inlining this into the table.
+The cost of memory accesses is defined as follows:
+
+\begin{equation}
+  \mathfrak{m} = 25
+\end{equation}
+
+The cost of a branch depends on whether any of its targets (either the jump target or the implicit fallthrough) points to an instruction byte which is equal to the opcode for the \token{unlikely} or the \token{trap} instruction; formally:
+
+\begin{equation}
+  \mathfrak{b}(\mathbf{c}, \mathbf{k}, \imath) = \begin{cases}
+    1 &\when \{ \instructions_{\imath + 1 + \Fskip(\imath)}, \instructions_{\imath_{\text{target}}} \} \cap \{ \token{unlikely}, \token{trap} \} \neq \emptyset \\
+    20 &\otherwise
+  \end{cases}
+\end{equation}
+
+\newcommand*{\ifdstandsrcoverlap}[2]{$\mathfrak{P}(#1, #2)$}
+\newcommand*{\ifdstandsrcoverlapshift}[2]{$\mathfrak{P}_{S}(#1, #2)$}
+\newcommand*{\loadcost}{$\mathfrak{m}$}
+\newcommand*{\storecost}{25}
+\newcommand*{\branchcost}{$\mathfrak{b}$}
+
+\newcommand*{\simplealuthreeop}{1&\ifdstandsrcoverlap{1}{2}&1&0&0&0&0}
+\newcommand*{\simplealuthreeopthirtytwo}{2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0}
+\newcommand*{\simplealutwoop}{1&\ifdstandsrcoverlap{1}{2}&1&0&0&0&0}
+\newcommand*{\simplealutwoopthirtytwo}{2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0}
+\newcommand*{\trivialtwooponecycle}{1&1&1&0&0&0&0}
+\newcommand*{\trivialtwooptwocycles}{2&1&2&0&0&0&0}
+\newcommand*{\shiftsandrotates}{1&\ifdstandsrcoverlapshift{2}{3}&1&0&0&0&0}
+\newcommand*{\shiftsandrotatesthirtytwo}{2&\ifdstandsrcoverlapshift{3}{4}&1&0&0&0&0}
+\newcommand*{\shiftsandrotatesalt}{1&3&1&0&0&0&0}
+\newcommand*{\shiftsandrotatesaltthirtytwo}{2&4&1&0&0&0&0}
+\newcommand*{\regcomp}{3&3&1&0&0&0&0}
+\newcommand*{\regcompimm}{3&3&1&0&0&0&0}
+\newcommand*{\cmov}{2&2&1&0&0&0&0}
+\newcommand*{\cmovimm}{2&3&1&0&0&0&0}
+\newcommand*{\minmax}{3&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0}
+\newcommand*{\indirectload}{\loadcost&1&1&1&0&0&0}
+\newcommand*{\directload}{\loadcost&1&1&1&0&0&0}
+\newcommand*{\indirectstoreimm}{\storecost&1&1&0&1&0&0}
+\newcommand*{\indirectstore}{\storecost&1&1&0&1&0&0}
+\newcommand*{\storeimm}{\storecost&1&1&0&1&0&0}
+\newcommand*{\directstore}{\storecost&1&1&0&1&0&0}
+\newcommand*{\branch}{\branchcost&1&1&0&0&0&0}
+\newcommand*{\branchimm}{\branchcost&1&1&0&0&0&0}
+\newcommand*{\divrem}{60&4&1&0&0&0&1}
+\newcommand*{\finish}[1]{#1&1&0&0&0&0&0}
+
+\renewcommand*{\mrule}{\cmidrule(lr){1-8}}
+\begin{longtable}[t]{p{30mm} p{12mm} p{12mm} p{4mm} p{4mm} p{4mm} p{4mm} p{4mm}}
+  \toprule
+  \thead{\textbf{Instruction}} & \thead{$\cost¬cycles$} & \thead{$\cost¬decodeslots$} & \thead{$\cost¬execunits_{\ALU}$} & \thead{$\cost¬execunits_{\LOAD}$} & \thead{$\cost¬execunits_{\STORE}$} & \thead{$\cost¬execunits_{\MUL}$} & \thead{$\cost¬execunits_{\DIV}$} \\
+  \midrule
+  \endhead
+  \token{move\_reg}&0&1&0&0&0&0&0 \\ \mrule
+
+  \token{and}&\simplealuthreeop \\ \mrule
+  \token{xor}&\simplealuthreeop \\ \mrule
+  \token{or}&\simplealuthreeop \\ \mrule
+  \token{add\_64}&\simplealuthreeop \\ \mrule
+  \token{sub\_64}&\simplealuthreeop \\ \mrule
+
+  \token{add\_32}&\simplealuthreeopthirtytwo \\ \mrule
+  \token{sub\_32}&\simplealuthreeopthirtytwo \\ \mrule
+
+  \token{and\_imm}&\simplealutwoop \\ \mrule
+  \token{xor\_imm}&\simplealutwoop \\ \mrule
+  \token{or\_imm}&\simplealutwoop \\ \mrule
+  \token{add\_imm\_64}&\simplealutwoop \\ \mrule
+  \token{shlo\_r\_imm\_64}&\simplealutwoop \\ \mrule
+  \token{shar\_r\_imm\_64}&\simplealutwoop \\ \mrule
+  \token{shlo\_l\_imm\_64}&\simplealutwoop \\ \mrule
+  \token{rot\_r\_64\_imm}&\simplealutwoop \\ \mrule
+  \token{reverse\_bytes}&\simplealutwoop \\ \mrule
+
+  \token{add\_imm\_32}&\simplealutwoopthirtytwo \\ \mrule
+  \token{shlo\_r\_imm\_32}&\simplealutwoopthirtytwo \\ \mrule
+  \token{shar\_r\_imm\_32}&\simplealutwoopthirtytwo \\ \mrule
+  \token{shlo\_l\_imm\_32}&\simplealutwoopthirtytwo \\ \mrule
+  \token{rot\_r\_32\_imm}&\simplealutwoopthirtytwo \\ \mrule
+
+  \token{count\_set\_bits\_64}&\trivialtwooponecycle \\ \mrule
+  \token{count\_set\_bits\_32}&\trivialtwooponecycle \\ \mrule
+  \token{leading\_zero\_bits\_64}&\trivialtwooponecycle \\ \mrule
+  \token{leading\_zero\_bits\_32}&\trivialtwooponecycle \\ \mrule
+  \token{sign\_extend\_8}&\trivialtwooponecycle \\ \mrule
+  \token{sign\_extend\_16}&\trivialtwooponecycle \\ \mrule
+  \token{zero\_extend\_16}&\trivialtwooponecycle \\ \mrule
+
+  \token{trailing\_zero\_bits\_64}&\trivialtwooptwocycles \\ \mrule
+  \token{trailing\_zero\_bits\_32}&\trivialtwooptwocycles \\ \mrule
+
+  \token{shlo\_l\_64}&\shiftsandrotates \\ \mrule
+  \token{shlo\_r\_64}&\shiftsandrotates \\ \mrule
+  \token{shar\_r\_64}&\shiftsandrotates \\ \mrule
+  \token{rot\_l\_64}&\shiftsandrotates \\ \mrule
+  \token{rot\_r\_64}&\shiftsandrotates \\ \mrule
+
+  \token{shlo\_l\_32}&\shiftsandrotatesthirtytwo \\ \mrule
+  \token{shlo\_r\_32}&\shiftsandrotatesthirtytwo \\ \mrule
+  \token{shar\_r\_32}&\shiftsandrotatesthirtytwo \\ \mrule
+  \token{rot\_l\_32}&\shiftsandrotatesthirtytwo \\ \mrule
+  \token{rot\_r\_32}&\shiftsandrotatesthirtytwo \\ \mrule
+
+  \token{shlo\_l\_imm\_alt\_64}&\shiftsandrotatesalt \\ \mrule
+  \token{shlo\_r\_imm\_alt\_64}&\shiftsandrotatesalt \\ \mrule
+  \token{shar\_r\_imm\_alt\_64}&\shiftsandrotatesalt \\ \mrule
+  \token{rot\_r\_64\_imm\_alt}&\shiftsandrotatesalt \\ \mrule
+
+  \token{shlo\_l\_imm\_alt\_32}&\shiftsandrotatesaltthirtytwo \\ \mrule
+  \token{shlo\_r\_imm\_alt\_32}&\shiftsandrotatesaltthirtytwo \\ \mrule
+  \token{shar\_r\_imm\_alt\_32}&\shiftsandrotatesaltthirtytwo \\ \mrule
+  \token{rot\_r\_32\_imm\_alt}&\shiftsandrotatesaltthirtytwo \\ \mrule
+
+  \token{set\_lt\_u}&\regcomp \\ \mrule
+  \token{set\_lt\_s}&\regcomp \\ \mrule
+
+  \token{set\_lt\_u\_imm}&\regcompimm \\ \mrule
+  \token{set\_lt\_s\_imm}&\regcompimm \\ \mrule
+  \token{set\_gt\_u\_imm}&\regcompimm \\ \mrule
+  \token{set\_gt\_s\_imm}&\regcompimm \\ \mrule
+
+  \token{cmov\_iz}&\cmov \\ \mrule
+  \token{cmov\_nz}&\cmov \\ \mrule
+  \token{cmov\_iz\_imm}&\cmovimm \\ \mrule
+  \token{cmov\_nz\_imm}&\cmovimm \\ \mrule
+
+  \token{max}&\minmax \\ \mrule
+  \token{max\_u}&\minmax \\ \mrule
+  \token{min}&\minmax \\ \mrule
+  \token{min\_u}&\minmax \\ \mrule
+
+  \token{load\_ind\_u8}&\indirectload \\ \mrule
+  \token{load\_ind\_i8}&\indirectload \\ \mrule
+  \token{load\_ind\_u16}&\indirectload \\ \mrule
+  \token{load\_ind\_i16}&\indirectload \\ \mrule
+  \token{load\_ind\_u32}&\indirectload \\ \mrule
+  \token{load\_ind\_i32}&\indirectload \\ \mrule
+  \token{load\_ind\_u64}&\indirectload \\ \mrule
+
+  \token{load\_u8}&\directload \\ \mrule
+  \token{load\_i8}&\directload \\ \mrule
+  \token{load\_u16}&\directload \\ \mrule
+  \token{load\_i16}&\directload \\ \mrule
+  \token{load\_u32}&\directload \\ \mrule
+  \token{load\_i32}&\directload \\ \mrule
+  \token{load\_u64}&\directload \\ \mrule
+
+  \token{store\_imm\_ind\_u8}&\indirectstoreimm \\ \mrule
+  \token{store\_imm\_ind\_u16}&\indirectstoreimm \\ \mrule
+  \token{store\_imm\_ind\_u32}&\indirectstoreimm \\ \mrule
+  \token{store\_imm\_ind\_u64}&\indirectstoreimm \\ \mrule
+
+  \token{store\_ind\_u8}&\indirectstore \\ \mrule
+  \token{store\_ind\_u16}&\indirectstore \\ \mrule
+  \token{store\_ind\_u32}&\indirectstore \\ \mrule
+  \token{store\_ind\_u64}&\indirectstore \\ \mrule
+
+  \token{store\_imm\_u8}&\storeimm \\ \mrule
+  \token{store\_imm\_u16}&\storeimm \\ \mrule
+  \token{store\_imm\_u32}&\storeimm \\ \mrule
+  \token{store\_imm\_u64}&\storeimm \\ \mrule
+
+  \token{store\_u8}&\directstore \\ \mrule
+  \token{store\_u16}&\directstore \\ \mrule
+  \token{store\_u32}&\directstore \\ \mrule
+  \token{store\_u64}&\directstore \\ \mrule
+
+  \token{branch\_eq}&\branch \\ \mrule
+  \token{branch\_ne}&\branch \\ \mrule
+  \token{branch\_lt\_u}&\branch \\ \mrule
+  \token{branch\_lt\_s}&\branch \\ \mrule
+  \token{branch\_ge\_u}&\branch \\ \mrule
+  \token{branch\_ge\_s}&\branch \\ \mrule
+
+  \token{branch\_eq\_imm}&\branchimm \\ \mrule
+  \token{branch\_ne\_imm}&\branchimm \\ \mrule
+  \token{branch\_lt\_u\_imm}&\branchimm \\ \mrule
+  \token{branch\_le\_u\_imm}&\branchimm \\ \mrule
+  \token{branch\_ge\_u\_imm}&\branchimm \\ \mrule
+  \token{branch\_gt\_u\_imm}&\branchimm \\ \mrule
+  \token{branch\_lt\_s\_imm}&\branchimm \\ \mrule
+  \token{branch\_le\_s\_imm}&\branchimm \\ \mrule
+  \token{branch\_ge\_s\_imm}&\branchimm \\ \mrule
+  \token{branch\_gt\_s\_imm}&\branchimm \\ \mrule
+
+  \token{div\_u\_32}&\divrem \\ \mrule
+  \token{div\_s\_32}&\divrem \\ \mrule
+  \token{rem\_u\_32}&\divrem \\ \mrule
+  \token{rem\_s\_32}&\divrem \\ \mrule
+  \token{div\_u\_64}&\divrem \\ \mrule
+  \token{div\_s\_64}&\divrem \\ \mrule
+  \token{rem\_u\_64}&\divrem \\ \mrule
+  \token{rem\_s\_64}&\divrem \\ \mrule
+
+  \token{and\_inv}&2&3&1&0&0&0&0\\ \mrule
+  \token{or\_inv}&2&3&1&0&0&0&0\\ \mrule
+  \token{xnor}&2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0\\ \mrule
+  \token{neg\_add\_imm\_64}&2&3&1&0&0&0&0\\ \mrule
+  \token{neg\_add\_imm\_32}&3&4&1&0&0&0&0\\ \mrule
+  \token{load\_imm}&1&1&0&0&0&0&0\\ \mrule
+  \token{load\_imm\_64}&1&2&0&0&0&0&0\\ \mrule
+
+  \token{mul\_64}&3&\ifdstandsrcoverlap{1}{2}&1&0&0&1&0\\ \mrule
+  \token{mul\_32}&4&\ifdstandsrcoverlap{2}{3}&1&0&0&1&0\\ \mrule
+  \token{mul\_imm\_64}&3&\ifdstandsrcoverlap{1}{2}&1&0&0&1&0\\ \mrule
+  \token{mul\_imm\_32}&4&\ifdstandsrcoverlap{2}{3}&1&0&0&1&0\\ \mrule
+  \token{mul\_upper\_s\_s}&4&4&1&0&0&1&0\\ \mrule
+  \token{mul\_upper\_u\_u}&4&4&1&0&0&1&0\\ \mrule
+  \token{mul\_upper\_s\_u}&6&4&1&0&0&1&0\\ \mrule
+
+  \token{trap}&\finish{2} \\ \mrule
+  \token{fallthrough}&\finish{2}\\ \mrule
+  \token{unlikely}&40&1&0&0&0&0&0\\ \mrule
+  \token{jump}&\finish{15}\\ \mrule
+  \token{load\_imm\_jump}&\finish{15}\\ \mrule
+  \token{jump\_ind}&22&1&0&0&0&0&0\\ \mrule
+  \token{load\_imm\_jump\_ind}&22&1&0&0&0&0&0\\ \mrule
+
+  \token{ecalli}&100&4&1&0&0&0&0\\ \mrule
+  \token{sbrk}&100&4&1&0&0&0&0\\
+\bottomrule
+\end{longtable}
