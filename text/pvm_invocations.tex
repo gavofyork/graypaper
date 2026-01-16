@@ -332,7 +332,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using g &= 100 + \max(0, \registers_7 - a - c) \cdot 10 \\
     \tup{\execst', \gascounter', \registers'_7, (\mathbf{u}'_\ram¬access)\interval{a}{\registers_7}} &\equiv \begin{cases}
       % Not enough gas to even cover the constant cost of the call, regardless of whether it's a no-op or not.
-      \tup{\panic, \gascounter, \registers_7, (\mathbf{u}_\ram¬access)\interval{a}{\registers_7}} &\when \gascounter < 100 \\
+      \tup{\oog, \gascounter, \registers_7, (\mathbf{u}_\ram¬access)\interval{a}{\registers_7}} &\when \gascounter < 100 \\
       % Expand the accessible RW data region, and return the new page count.
       \tup{\continue, \gascounter - g, \max(a + c, \registers_7), \mathrm{W}} &\otherwhen \registers_7 \leq b \land \gascounter \ge g \\
       % Otherwise just return the current writable page count.
