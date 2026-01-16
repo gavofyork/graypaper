@@ -141,7 +141,7 @@ We must now define the single-step \textsc{pvm} state-transition function $\Psi_
   }
 \end{equation}
 
-On the very first step of execution, and every time the execution enters a new basic block or jumps back to the beginning of the current basic block, the gas counter of the machine is updated according to the gas cost $\gascostforblock{\startofbasicblock(\imath)}$~(\ref{eq:gascostforblock}) of the target basic block. No instruction is allowed to execute within a basic block without first paying the gas cost of the whole block. In case there's not enough gas remaining to cover the full gas cost, the execution is interrupted and the gas counter remains unchanged. Formally:
+On the very first step of execution, and every time the execution enters a new basic block or jumps back to the beginning of the current basic block, the gas counter of the machine is updated according to the gas cost $\gascostforblock{\startofbasicblock(\imath)}$~(\ref{eq:gascostforblock}) of the target basic block. No instruction is allowed to execute within a basic block unless the gas cost for the entire basic block has been charged in advance. In case there's not enough gas remaining to cover the full gas cost, the execution is interrupted and the gas counter remains unchanged. Formally:
 
 \begin{equation}
   \tup{\tilde{\varepsilon}, \gascounter', \gaschargedflag'} = \begin{cases}
