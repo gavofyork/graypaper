@@ -888,6 +888,7 @@ Note that the first tuple item is the amount of gas consumed by the operation, b
 \newcommand*{\DIV}{\text{D}}
 \newcommand*{\find¬readytostart}{\mathfrak{S}}
 \newcommand*{\emptyorderedmap}{\langle\,\rangle}
+\newcommand*{\gas¬sim}{\mathfrak{X}}
 
 \newcommand*{\const¬maxdecodepercycle}{4}
 \newcommand*{\const¬maxstartpercycle}{5}
@@ -896,10 +897,10 @@ The gas cost model for the \textsc{pvm} is a simplified model of a modern CPU mi
 
 The gas cost $\gascostforblock{\imath}$ for a given basic block starting at instruction opcode index $\imath \in \basicblocks$ is defined by the number of virtual CPU cycles as determined by the the gas cost model transition function, up until every instruction of the basic block it has ingested has been retired and the simulation has converged.
 
-The initial state $\Xi_0$ of the simulation is defined as follows:
+The initial state $\gas¬sim_0$ of the simulation is defined as follows:
 
 \begin{equation}
-  \Xi_0(\imath) = \abracegroup{
+  \gas¬sim_0(\imath) = \abracegroup{
     \imath^{(0)} &= \imath \\
     \ctr¬cycles^{(0)} &= 0,
     \ctr¬instructions^{(0)} = 0,
@@ -923,33 +924,33 @@ The initial state $\Xi_0$ of the simulation is defined as follows:
 The state transition function of the simulation from step $n$ to step $n + 1$ is defined as follows:
 
 \begin{equation}
-  \Xi_{n + 1}(\Xi_n, \mathbf{c}, \mathbf{k}) = \begin{cases}
-    \Xi_{n + 1}'(\Xi_n, \mathbf{c}, \mathbf{k}) &\when n = 0 \lor (\imath^{(n)} \neq \none \land \cost¬decodeslots(\mathbf{c}, \mathbf{k}, \imath^{(n)}) \leq \remaining¬decodeslots^{(n)} \land |\rob¬state^{(n)}| < 32) \\
-    \Xi_{n + 1}''(\Xi_n) &\when \find¬readytostart(\Xi_n) \neq \none \land \remaining¬startpercycle^{(n)} > 0 \\
+  \gas¬sim_{n + 1}(\gas¬sim_n, \mathbf{c}, \mathbf{k}) = \begin{cases}
+    \gas¬sim_{n + 1}'(\gas¬sim_n, \mathbf{c}, \mathbf{k}) &\when n = 0 \lor (\imath^{(n)} \neq \none \land \cost¬decodeslots(\mathbf{c}, \mathbf{k}, \imath^{(n)}) \leq \remaining¬decodeslots^{(n)} \land |\rob¬state^{(n)}| < 32) \\
+    \gas¬sim_{n + 1}''(\gas¬sim_n) &\when \find¬readytostart(\gas¬sim_n) \neq \none \land \remaining¬startpercycle^{(n)} > 0 \\
     \none &\when \imath^{(n)} = \none \land |\rob¬state^{(n)}| = 0 \\
-    \Xi_{n + 1}'''(\Xi_n) &\otherwise \\
+    \gas¬sim_{n + 1}'''(\gas¬sim_n) &\otherwise \\
   \end{cases}
 \end{equation}
 
-Assuming $m \text{ such that } \Xi_{m + 1} = \none$ the final gas cost of a basic block starting at $\imath$ is defined as:
+Assuming $m \text{ such that } \gas¬sim_{m + 1} = \none$ the final gas cost of a basic block starting at $\imath$ is defined as:
 
 \begin{equation}\label{eq:gascostforblock}
   \gascostforblock{\imath} = \max(\ctr¬cycles^{(m)} - 3, 1)
 \end{equation}
 
-The state transition function $\Xi_{n + 1}'$ which decodes the instructions into a reorder buffer without triggering the virtual CPU pipeline simulation is defined as follows (those pieces of state which are not explicitly mentioned by the equations are assumed to be unchanged and omitted for clarity):
+The state transition function $\gas¬sim_{n + 1}'$ which decodes the instructions into a reorder buffer without triggering the virtual CPU pipeline simulation is defined as follows (those pieces of state which are not explicitly mentioned by the equations are assumed to be unchanged and omitted for clarity):
 
 \begin{equation}
-  \Xi_{n + 1}'(\Xi_n, \mathbf{c}, \mathbf{k}) = \begin{cases}
-    \Xi_{n + 1}^{\text{mov}}(\Xi_n, \mathbf{c}, \mathbf{k}) &\when \text{opcode}(\mathbf{c}, \mathbf{k}, \imath^{(n)}) = \token{move\_reg} \\
-    \Xi_{n + 1}^{\text{decode}}(\Xi_n, \mathbf{c}, \mathbf{k}) &\otherwise
+  \gas¬sim_{n + 1}'(\gas¬sim_n, \mathbf{c}, \mathbf{k}) = \begin{cases}
+    \gas¬sim_{n + 1}^{\text{mov}}(\gas¬sim_n, \mathbf{c}, \mathbf{k}) &\when \text{opcode}(\mathbf{c}, \mathbf{k}, \imath^{(n)}) = \token{move\_reg} \\
+    \gas¬sim_{n + 1}^{\text{decode}}(\gas¬sim_n, \mathbf{c}, \mathbf{k}) &\otherwise
   \end{cases}
 \end{equation}
 
 The \token{move\_reg} instruction is special-cased to be handled by the frontend of our virtual CPU, without being added to the reorder buffer:
 
 \begin{equation}
-  \Xi_{n + 1}^{\text{mov}}(\Xi_n, \mathbf{c}, \mathbf{k}) = \abracegroup{
+  \gas¬sim_{n + 1}^{\text{mov}}(\gas¬sim_n, \mathbf{c}, \mathbf{k}) = \abracegroup{
     \imath^{(n + 1)} &= \imath^{(n)} + 1 + \Fskip(\imath^{(n)}) \\
     \remaining¬decodeslots^{(n + 1)} &= \remaining¬decodeslots^{(n)} - 1 \\
     j \in \mathbb{N} \Rightarrow \rob¬regs^{(n + 1)}_j &= \begin{cases}
@@ -962,7 +963,7 @@ The \token{move\_reg} instruction is special-cased to be handled by the frontend
 Every other instruction is fully decoded and added to the reorder buffer as follows:
 
 \begin{equation}
-  \Xi_{n + 1}^{\text{decode}}(\Xi_n, \mathbf{c}, \mathbf{k}) = \abracegroup{
+  \gas¬sim_{n + 1}^{\text{decode}}(\gas¬sim_n, \mathbf{c}, \mathbf{k}) = \abracegroup{
     \imath^{(n + 1)} &= \begin{cases}
       \none &\when \text{opcode}(\mathbf{c}, \mathbf{k}, \imath^{(n)}) \in T \\
       \imath^{(n)} + 1 + \Fskip(\imath^{(n)}) &\otherwise
@@ -980,26 +981,26 @@ Every other instruction is fully decoded and added to the reorder buffer as foll
   }
 \end{equation}
 
-The state transition function $\Xi_{n + 1}''$ which starts the execution of the next pending instruction is defined as follows:
+The state transition function $\gas¬sim_{n + 1}''$ which starts the execution of the next pending instruction is defined as follows:
 
 \begin{equation}
-  \Xi_{n + 1}''(\Xi_n) = \abracegroup{
-    \rob¬state^{(n + 1)}_{\find¬readytostart(\Xi_n)} &= \state¬executing \\
-    \remaining¬execunits^{(n + 1)} &= \remaining¬execunits^{(n)} - \rob¬execunits^{(n)}_{\find¬readytostart(\Xi_n)} \\
+  \gas¬sim_{n + 1}''(\gas¬sim_n) = \abracegroup{
+    \rob¬state^{(n + 1)}_{\find¬readytostart(\gas¬sim_n)} &= \state¬executing \\
+    \remaining¬execunits^{(n + 1)} &= \remaining¬execunits^{(n)} - \rob¬execunits^{(n)}_{\find¬readytostart(\gas¬sim_n)} \\
     \remaining¬startpercycle^{(n + 1)} &= \remaining¬startpercycle^{(n)} - 1
   }
 \end{equation}
 
-The function $\find¬readytostart(\Xi_n)$ which checks which instruction inside of the reorder buffer is ready to start executing (and whether such an instruction even exists) is defined as follows:
+The function $\find¬readytostart(\gas¬sim_n)$ which checks which instruction inside of the reorder buffer is ready to start executing (and whether such an instruction even exists) is defined as follows:
 
 \begin{equation}
-  \find¬readytostart(\Xi_n) = \min(j \in \mathbb{N} \mid \rob¬state^{(n)}_j = \state¬waiting \land \rob¬execunits^{(n)}_j \leq \remaining¬execunits^{(n)} \land (\forall k \in \rob¬deps^{(n)}_j \Rightarrow \rob¬cyclesleft^{(n)}_k \leq 0))
+  \find¬readytostart(\gas¬sim_n) = \min(j \in \mathbb{N} \mid \rob¬state^{(n)}_j = \state¬waiting \land \rob¬execunits^{(n)}_j \leq \remaining¬execunits^{(n)} \land (\forall k \in \rob¬deps^{(n)}_j \Rightarrow \rob¬cyclesleft^{(n)}_k \leq 0))
 \end{equation}
 
-The state transition function $\Xi_{n + 1}'''$ which simulates the rest of the virtual CPU pipeline is defined as follows:
+The state transition function $\gas¬sim_{n + 1}'''$ which simulates the rest of the virtual CPU pipeline is defined as follows:
 
 \begin{equation}
-  \Xi_{n + 1}'''(\Xi_n) = \abracegroup{
+  \gas¬sim_{n + 1}'''(\gas¬sim_n) = \abracegroup{
     j \in \mathbb{N} \Rightarrow \rob¬state^{(n + 1)}_j &= \begin{cases}
       \none &\when \forall k \in \mathbb{N},\quad 0 \leq k \leq j \Rightarrow \rob¬state^{(n)}_k = \state¬executed \\
       \state¬waiting &\when \rob¬state^{(n)}_j = \state¬decoding \\
