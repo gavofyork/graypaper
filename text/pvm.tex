@@ -747,7 +747,7 @@ As with $\Phi$, on exit the instruction counter references the instruction \emph
 With $\Phi_H$, host-calls (\ie \token{ecalli} instructions) are in effect handled internally with the state-mutator function provided as an argument, preventing the possibility of the result being a host-call fault. Note that in the case of a successful host-call transition, we must provide the new instruction counter value $\imath''$ explicitly alongside the fresh posterior state for said instruction.
 
 \subsection{Standard Program Initialization}\label{sec:standardprograminit}
-The software programs which will run in each of the four instances where the \textsc{pvm} is utilized in the main document have a very typical setup pattern characteristic of an output of a compiler and linker. This means that \textsc{ram} has sections for program-specific read-only data, read-write (heap) data and the stack. An adjunct to this, very typical of our usage patterns is an extra read-only section via which invocation-specific data may be passed (\ie arguments). It thus makes sense to define this properly in a single initializer function. These sections are quantized into \emph{major zones}, and one major zone is always left unallocated between sections in order to reduce accidental overrun. Sections are padded with zeroes to the nearest \textsc{pvm} memory page boundary.
+The software programs which will run in each of the three instances where the \textsc{pvm} is utilized in the main document have a very typical setup pattern characteristic of an output of a compiler and linker. This means that \textsc{ram} has sections for program-specific read-only data, read-write (heap) data and the stack. An adjunct to this, very typical of our usage patterns is an extra read-only section via which invocation-specific data may be passed (\ie arguments). It thus makes sense to define this properly in a single initializer function. These sections are quantized into \emph{major zones}, and one major zone is always left unallocated between sections in order to reduce accidental overrun. Sections are padded with zeroes to the nearest \textsc{pvm} memory page boundary.
 
 We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} at program start. Given program blob $\mathbf{p}$ and argument data $\mathbf{a}$, we can decode the program code $\mathbf{c}$, registers $\registers$, and \textsc{ram} $\mem$ by invoking the standard initialization function $Y(\mathbf{p}, \mathbf{a})$:
 \begin{equation}
@@ -812,7 +812,7 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
 
 \subsection{Argument Invocation Definition}
 
-The four instances where the \textsc{pvm} is utilized each expect to be able to pass argument data in and receive some return data back. We thus define the common \textsc{pvm} program-argument invocation function $\Psi_M$:
+The three instances where the \textsc{pvm} is utilized each expect to be able to pass argument data in and receive some return data back. We thus define the common \textsc{pvm} program-argument invocation function $\Psi_M$:
 \begin{equation}
   \Psi_M\colon \abracegroup{
     \tuple{
