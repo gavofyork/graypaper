@@ -895,7 +895,7 @@ Note that the first tuple item is the amount of gas consumed by the operation, b
 
 The gas cost model for the \textsc{pvm} is a simplified model of a modern CPU microarchitecture, heavily inspired by what's used by production-grade compilers to predict how much time a given piece of code will take. For each basic block in the program the model simulates its execution flow and computes the required number of virtual CPU cycles that would be needed to execute it.
 
-The gas cost $\gascostforblock{\imath}$ for a given basic block starting at instruction opcode index $\imath \in \basicblocks$ is defined by the number of virtual CPU cycles as determined by the the gas cost model transition function, up until every instruction of the basic block it has ingested has been retired and the simulation has converged.
+The gas cost $\gascostforblock{\imath}$ for a given basic block starting at instruction opcode index $\imath \in \basicblocks$ is defined by the number of virtual CPU cycles as determined by the gas cost model transition function, up until every instruction of the basic block it has ingested has been retired and the simulation has converged.
 
 The initial state $\gas¬sim_0$ of the simulation is defined as follows:
 
