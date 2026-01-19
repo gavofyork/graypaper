@@ -160,11 +160,12 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
       \tup{i + j, \psX', \mathbf{b}^* \!\cup \mathbf{b}, \mathbf{u}^* \!\!\concat \mathbf{u}}\!\!\!\! &
         \text{o/w}\!\!\!\!\!\!\!\! \\
     \end{cases} \\
-    &\quad\where i = \max(\Nmax{\len{\mathbf{r}} + 1}): \sum_{r \in \mathbf{r}\sub{\dots i}, d \in r_\wr¬digests}(d_\wd¬gaslimit) \le g \\
-    &\quad\also n = \len{\mathbf{t}} + i + \len{\mathbf{f}} \\
+    &\quad\where i = \max(\Nmax{\len{\mathbf{r}} + 1}): \\
+    &\qquad \sum_{r \in \mathbf{r}\sub{\dots i}, d \in r_\wr¬digests}\!\!\!\!\!\!\!\!(d_\wd¬gaslimit) + \sum_{t \in \mathbf{t}}(t_\dx¬gas) + \!\!\!\!\sum_{x \in \values{\mathbf{f}}}\!\!\!\!(x) \le g \\
+    &\quad\also n = i + \len{\mathbf{t}} + \len{\mathbf{f}} \\
     &\quad\also \tup{\psX^*\!\!, \mathbf{t}^*\!\!, \mathbf{b}^*\!\!, \mathbf{u}^*} = \accpar(\psX, \mathbf{t},\mathbf{r}\sub{\dots i}, \mathbf{f}) \\
-    &\quad\also \tup{j, \psX'\!, \mathbf{b}, \mathbf{u}} = \accseq(g^* - \!\!\!\!\!\!\sum_{\tup{s, u} \in \mathbf{u}^*}\!\!\!\!\!\!(u), \mathbf{t}^*\!\!, \mathbf{r}\sub{i\dots}, \psX^*\!\!, \emset)\\
-    &\quad\also g^* = g + \sum_{t \in \mathbf{t}}(t_\dx¬gas)
+    &\quad\also \tup{j, \psX'\!, \mathbf{b}, \mathbf{u}} = \accseq(g^*, \mathbf{t}^*\!\!, \mathbf{r}\sub{i\dots}, \psX^*\!\!, \emset)\\
+    &\quad\also g^* = g + \sum_{t \in \mathbf{t^*}}(t_\dx¬gas) - \!\!\!\!\!\!\sum_{\tup{s, u} \in \mathbf{u}^*}\!\!\!\!\!\!(u)
   }
 \end{equation}
 
