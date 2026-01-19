@@ -67,9 +67,9 @@ The historical-lookup host-call function, $\Omega_H$, is designed to give the sa
 \end{equation}
 
 
-The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvmguest$. It holds a \textsc{pvm} program blob, instruction counter and \textsc{ram}:
+The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvmguest$. It holds a \textsc{pvm} program blob, instruction counter, \textsc{ram} and a flag denoting whether gas was already charged for the currently executing basic block:
 \begin{equation}\label{eq:pvmguest}
-  \pvmguest \equiv \tuple{\isa{\pg¬code}{\blob}, \isa{\pg¬ram}{\ram}, \isa{\pg¬pc}{\pvmreg}}
+  \pvmguest \equiv \tuple{\isa{\pg¬code}{\blob}, \isa{\pg¬ram}{\ram}, \isa{\pg¬pc}{\pvmreg}, \isa{\pg¬gaschargedflag}{\bool}}
 \end{equation}
 
 The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\Csegmentsize$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
@@ -603,7 +603,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \tup{\execst', \registers'_7, \mathbf{m}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{m}} &\when \mathbf{p} = \error \\
       \tup{\continue, \mathtt{HUH}, \mathbf{m}} &\otherwhen \deblob(\mathbf{p}) = \error \\
-      \tup{\continue, n, \mathbf{m} \cup \set{\kv{n}{\tup{\mathbf{p}, \mathbf{u}, i}}} } &\otherwise \\
+      \tup{\continue, n, \mathbf{m} \cup \set{\kv{n}{\tup{\mathbf{p}, \mathbf{u}, i, \bot}}} } &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -677,14 +677,15 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       %\tup{\decode[8]{\memr\subrange{o}{8}}, \sq{\build{\decode[4]{\memr\subrange{o+8+8x}{8}}}{x \orderedin \Nmax{13}}}} &\when \Nrange{o}{60} \subset \writable_\mem} \\
       \tup{\error, \error} &\otherwise
     \end{cases} \\
-    \using \tup{c, i', g', \mathbf{w}', \mathbf{u}'} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram)\\
+    \using \tup{c, i', g', \pg¬gaschargedflag', \mathbf{w}', \mathbf{u}'} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g, \mathbf{m}\subb{n}_{\pg¬gaschargedflag}, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram)\\
     \using \mem^* &= \mem \exc \mem^*\subrange{o}{112} = \encode[8]{g'} \concat \encode[8]{\mathbf{w}'}\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*\subb{n}_\pg¬ram = \mathbf{u}'\\
       \mathbf{m}^*\subb{n}_\pg¬pc = \begin{cases}
         i' + \Fskip(\imath') + 1 &\when c \in \set{ \host } \times \pvmreg\\
         i' &\otherwise
-      \end{cases}
+      \end{cases}\\
+      \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
     \end{cases}\\
     \tup{\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}} &\when g = \error \\

@@ -32,11 +32,10 @@
 \newcommand*{\rtz}{\text{rtz}}
 \newcommand*{\gascostforblock}[1]{\gascounter_{#1}^{\Delta}}
 \newcommand*{\startofbasicblock}{\mathfrak{L}}
-\newcommand*{\gaschargedflag}{\tilde{\gascounter}}
 
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a \textsc{pvm} program blob:
 \begin{align}
-  \Psi^*&\colon \abracegroup{
+  \Psi&\colon \abracegroup{
     \tuple{\blob, \pvmreg, \gas, \bool, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \bool, \regs, \ram}\\
     \tup{\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\mapsto \begin{cases}
       \Psi(\pvm¬blob, \imath', \gascounter', \gaschargedflag', \registers', \mem') &\when \varepsilon = \continue\\
@@ -49,7 +48,6 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
       \tup{\panic, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\otherwise
     \end{cases}
   }\\
-  &\Psi(\pvm¬blob, \imath, \gascounter, \registers, \mem) \equiv \Psi^*(\pvm¬blob, \imath, \gascounter, \bot, \registers, \mem)\\
   \deblob&\colon\abracegroup{
     \blob &\to \tuple{\blob, \bitstring, \sequence{\pvmreg}} \cup \error \\
     \pvm¬blob &\mapsto \begin{cases}
