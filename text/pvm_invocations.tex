@@ -533,7 +533,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \using p &= \registers_7 \\
     \using z &= \min(\registers_8, \Csegmentsize) \\
     \using \mathbf{x} &= \begin{cases}
-      \zeropad{\Csegmentsize}{\mem\subrange{p}{z}} &\when \Nrange{p}{z} \subseteq \readable[\memory]\\
+      \zeropad{\Csegmentsize}{\mem\subrange{p}{z}} &\when \Nrange{p}{z} \subseteq \readable{\memory}\\
       \error &\otherwise
     \end{cases}\\
     \tup{\execst', \registers'_7, \mathbf{e}'} &\equiv \begin{cases}
@@ -569,7 +569,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   $\begin{aligned}
     \using \sq{n, o, s, z} &= \registers\subrange{7}{4} \\
     \tup{\execst', \registers'_7, \mem'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mem} &\when \Nrange{o}{z} \not\subseteq \writable[\memory] \\
+      \tup{\panic, \registers_7, \mem} &\when \Nrange{o}{z} \not\subseteq \writable{\memory} \\
       \tup{\continue, \mathtt{WHO}, \mem} &\otherwhen n \not\in \keys{\mathbf{m}} \\
       \tup{\continue, \mathtt{OOB}, \mem} &\otherwhen \Nrange{s}{z} \not\subseteq \readable{\mathbf{m}\subb{n}_\pg¬ram} \\
       \tup{\continue, \mathtt{OK}, \mem'} &\otherwise \\
@@ -584,7 +584,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   $\begin{aligned}
     \using \sq{n, s, o, z} &= \registers\subrange{7}{4} \\
     \tup{\execst', \registers'_7, \mathbf{m}'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mathbf{m}} &\when \Nrange{s}{z} \not\subseteq \readable[\memory] \\
+      \tup{\panic, \registers_7, \mathbf{m}} &\when \Nrange{s}{z} \not\subseteq \readable{\memory} \\
       \tup{\continue, \mathtt{WHO}, \mathbf{m}} &\otherwhen n \not\in \keys{\mathbf{m}} \\
       \tup{\continue, \mathtt{OOB}, \mathbf{m}} &\otherwhen \Nrange{o}{z} \not\subseteq \writable{\mathbf{m}\subb{n}_\pg¬ram} \\
       \tup{\continue, \mathtt{OK}, \mathbf{m}'}  &\otherwise \\
@@ -637,7 +637,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*\subb{n}_\pg¬ram = \mathbf{u}'\\
       \mathbf{m}^*\subb{n}_\pg¬pc = \begin{cases}
-        i' + \Fskip(\imath') + 1 &\when c \in \set{ \host } \times \pvmreg\\
+        i' + \Fskip(i') + 1 &\when c \in \set{ \host } \times \pvmreg\\
         i' &\otherwise
       \end{cases}
     \end{cases}\\
