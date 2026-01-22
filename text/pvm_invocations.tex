@@ -270,13 +270,6 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 
 \subsection{General Functions}\label{sec:generalfunctions}
 
-\newcounter{hostcall¬counter}
-\setcounter{hostcall¬counter}{0}
-\newcommand{\next¬hostcall}{
-  \thehostcall¬counter
-  \stepcounter{hostcall¬counter}
-}
-
 We come now to defining the host functions which are utilized by the \textsc{pvm} invocations. Generally, these map some \textsc{pvm} state, including invocation context, possibly together with some additional parameters, to a new \textsc{pvm} state.
 
 The general functions are all broadly of the form $\tup{\gascounter' \in \signedgas, \registers' \in \regs, \memory' \in \ram} = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
@@ -302,7 +295,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
   \endhead
   \makecell*[l]{
   $\Omega_G(\gascounter, \registers, \dots)$ \\
-  \texttt{gas} = \next¬hostcall \\
+  \texttt{gas} = 0 \\
   $g = 10$} &
   $\begin{aligned}
     \registers'_7 &\equiv \gascounter'
@@ -310,7 +303,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_\Gemini(\gascounter, \registers, \memory, \jam¬blob)$ \\
-  \texttt{grow\_heap} = \next¬hostcall} &
+  \texttt{grow\_heap} = 1} &
   $\begin{aligned}
     % This hostcall can be used to expand the RW data region of memory, or to query its size.
     %
@@ -345,7 +338,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Y(\gascounter, \registers, \memory, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{i}, \dots)$ \\
-  \texttt{fetch} = \next¬hostcall \\
+  \texttt{fetch} = 2 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{v} &= \begin{cases}
@@ -417,7 +410,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
-  \texttt{lookup} = \next¬hostcall \\
+  \texttt{lookup} = 3 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -442,7 +435,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
-  \texttt{read} = \next¬hostcall \\
+  \texttt{read} = 4 \\
   $g = 10$} &
   % gas cost for cold reads dependent on trie depth.
   $\begin{aligned}
@@ -472,7 +465,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s)$ \\
-  \texttt{write} = \next¬hostcall \\
+  \texttt{write} = 5 \\
   $g = 10$
   } &
   $\begin{aligned}
@@ -499,7 +492,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_I(\gascounter, \registers, \memory, s, \mathbf{d})$ \\
-  \texttt{info} = \next¬hostcall \\
+  \texttt{info} = 6 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -547,7 +540,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \endhead
   \makecell*[l]{
   $\Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, s, \mathbf{d}, t)$ \\
-  \texttt{historical\_lookup} = \next¬hostcall \\
+  \texttt{historical\_lookup} = 7 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -572,7 +565,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_E(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, \segoff)$ \\
-  \texttt{export} = \next¬hostcall \\
+  \texttt{export} = 8 \\
   $g = 10$} &
   $\begin{aligned}
     \using p &= \registers_7 \\
@@ -590,7 +583,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{machine} = \next¬hostcall \\
+  \texttt{machine} = 9 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{p_O, p_Z, i} &= \registers\subrange{7}{3} \\
@@ -609,7 +602,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_P(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{peek} = \next¬hostcall \\
+  \texttt{peek} = 10 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, o, s, z} &= \registers\subrange{7}{4} \\
@@ -624,7 +617,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_O(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{poke} = \next¬hostcall \\
+  \texttt{poke} = 11 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, s, o, z} &= \registers\subrange{7}{4} \\
@@ -639,7 +632,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{pages} = \next¬hostcall \\
+  \texttt{pages} = 12 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, p, c, r} &= \registers\subrange{7}{4} \\
@@ -668,7 +661,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_K(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{invoke} = \next¬hostcall \\
+  \texttt{invoke} = 13 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, o} &= \registers_{7, 8} \\
@@ -700,7 +693,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_X(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{expunge} = \next¬hostcall \\
+  \texttt{expunge} = 14 \\
   $g = 10$} &
   $\begin{aligned}
     \using n &= \registers_7 \\
@@ -735,7 +728,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \endhead
   \makecell*[l]{
   $\Omega_B(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{bless} = \next¬hostcall \\
+  \texttt{bless} = 15 \\
   $g = 10$}&
   $\begin{aligned}
     \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
@@ -756,7 +749,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_A(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{assign} = \next¬hostcall \\
+  \texttt{assign} = 16 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{c, o, a} &= \registers\subrange{7}{3} \\
@@ -775,7 +768,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_D(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{designate} = \next¬hostcall \\
+  \texttt{designate} = 17 \\
   $g = 10$} &
   $\begin{aligned}
     \using o &= \registers_7 \\
@@ -792,7 +785,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_C(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{checkpoint} = \next¬hostcall \\
+  \texttt{checkpoint} = 18 \\
   $g = 10$} &
   $\begin{aligned}
     \imY' &\equiv \imX \\
@@ -801,7 +794,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_N(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{new} = \next¬hostcall \\
+  \texttt{new} = 19 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, l, \sa¬minaccgas, \sa¬minmemogas, \sa¬gratis, \local¬desiredid} &= \registers\subrange{7}{6} \\
@@ -841,7 +834,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
     $\Omega_U(\gascounter, \registers, \memory, \imXY)$ \\
-    \texttt{upgrade} = \next¬hostcall \\
+    \texttt{upgrade} = 20 \\
     $g = 10$
   } &
   $\begin{aligned}
@@ -858,7 +851,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_T(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{transfer} = \next¬hostcall \\
+  \texttt{transfer} = 21 \\
   $g = 10 + t$} &
   $\begin{aligned}
     \using \sq{\dx¬dest, \dx¬amount, l, o} &= \registers\subrange{7}{4},  \\
@@ -890,7 +883,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_J(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{eject} = \next¬hostcall \\
+  \texttt{eject} = 22 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{d, o} &= \registers_{7, 8} \\
@@ -915,7 +908,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Q(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{query} = \next¬hostcall \\
+  \texttt{query} = 23 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{7, 8} \\
@@ -939,7 +932,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_S(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{solicit} = \next¬hostcall \\
+  \texttt{solicit} = 24 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{7, 8} \\
@@ -963,7 +956,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_F(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{forget} = \next¬hostcall \\
+  \texttt{forget} = 25 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{7, 8} \\
@@ -992,7 +985,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_\Taurus(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{yield} = \next¬hostcall \\
+  \texttt{yield} = 26 \\
   $g = 10$} &
   $\begin{aligned}
     \using o &= \registers_7 \\
@@ -1008,7 +1001,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_\Aries(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{provide} = \next¬hostcall \\
+  \texttt{provide} = 27 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{8, 9} \\
