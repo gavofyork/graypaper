@@ -911,6 +911,7 @@ Note that the first tuple item is the amount of gas consumed by the operation, b
 \newcommand*{\in¬rob}{{\gas¬sim¬state_{\rob}}}
 \newcommand*{\in¬rob¬entry}[1]{{\in¬rob\subb{#1}}}
 \newcommand*{\in¬rob¬field}[2]{\in¬rob¬entry{#1}_{#2}}
+\newcommand*{\in¬rob¬len}{\N_{\len{\in¬rob}}}
 
 % This is like an \abracegroup, but with two independently aligned chunks.
 % It makes it possible to have a nicer looking abracegroup blocks where a single
@@ -931,11 +932,11 @@ Note that the first tuple item is the amount of gas consumed by the operation, b
 
 The gas cost model for the \textsc{pvm} is a simplified model of a modern CPU microarchitecture, heavily inspired by what's used by production-grade compilers to predict how much time a given piece of code will take. For each basic block in the program the model simulates its execution flow and computes the required number of virtual CPU cycles that would be needed to execute it.
 
-The gas simulation state type $\gas¬sim¬ty$ contains the current instruction counter $\imath$, a cycle counter $\ctr¬cycles$, the number of decode slots $\remaining¬decodeslots$ remaining in the current cycle, the maximum number of instructions $\remaining¬startpercycle$ which are still allowed to start execution in the current cycle, the remaining available execution units $\remaining¬execunits$, and the reorder buffer $\rob$. Formally:
+A gas simulation state, of set $\gas¬sim¬ty$, contains the current instruction counter $\imath$, a cycle counter $\ctr¬cycles$, the number of decode slots $\remaining¬decodeslots$ remaining in the current cycle, the maximum number of instructions $\remaining¬startpercycle$ which are still allowed to start execution in the current cycle, the remaining available execution units $\remaining¬execunits$, and the reorder buffer $\rob$. Formally:
 
 \begin{equation}
   \gas¬sim¬ty \equiv \tuple{
-    \isa{\imath}{\set{\pvmreg, \none}},
+    \isa{\imath}{\pvmreg \cup \set{\none}},
     \isa{\ctr¬cycles}{\N},
     \isa{\remaining¬decodeslots}{\N},
     \isa{\remaining¬startpercycle}{\N},
@@ -944,7 +945,7 @@ The gas simulation state type $\gas¬sim¬ty$ contains the current instruction c
   }\\
 \end{equation}
 
-The reorder buffer entry type $\rob¬entry¬ty$ contains its current state $\rob¬state$, the number of cycles left $\rob¬cyclesleft$, a set of reorder buffer indices considered its dependencies $\rob¬deps$, a set of clobbered registers $\rob¬regs$, and the execution units used $\rob¬execunits$. Formally:
+A reorder buffer entry state, of set $\rob¬entry¬ty$, contains its current state $\rob¬state$, the number of cycles left $\rob¬cyclesleft$, a set of reorder buffer indices considered its dependencies $\rob¬deps$, a set of clobbered registers $\rob¬regs$, and the execution units used $\rob¬execunits$. Formally:
 
 \begin{equation}
   \rob¬entry¬ty \equiv \tuple{
@@ -956,7 +957,7 @@ The reorder buffer entry type $\rob¬entry¬ty$ contains its current state $\rob
   }\\
 \end{equation}
 
-The type $\execunits¬ty$ is a tuple which maps each execution unit kind (${\ALU, \LOAD, \STORE, \MUL, \DIV}$) into a number:
+A set $\execunits¬ty$ maps each execution unit kind (${\ALU, \LOAD, \STORE, \MUL, \DIV}$) into a number:
 
 \begin{equation}
   \execunits¬ty \equiv \tuple{
@@ -968,16 +969,16 @@ The type $\execunits¬ty$ is a tuple which maps each execution unit kind (${\ALU
   }
 \end{equation}
 
-For convenience we define addition and subtraction of two values of type $\execunits¬ty$ to be equivalent to the memberwise operation of the same kind; formally:
+For convenience we define addition and subtraction of two sets $\execunits¬ty$ to be equivalent to the memberwise operation of the same kind; formally:
 
 \begin{equation}
 \begin{aligned}
   \forall a,b \in \execunits¬ty;\forall \oplus \in \set{+, -}&: a \oplus b \equiv c\\
-  \where \forall k \in \set{\ALU, \LOAD, \STORE, \MUL, \DIV}&:c_k \equiv a_k \oplus b_k\\
+  \where c \in \execunits¬ty, \forall k \in \set{\ALU, \LOAD, \STORE, \MUL, \DIV}&:c_k \equiv a_k \oplus b_k\\
 \end{aligned}
 \end{equation}
 
-Similarly, a comparison between two values of type $\execunits¬ty$ is true if and only if the chosen comparison holds for all corresponding members:
+Similarly, a comparison between two sets $\execunits¬ty$ is true if and only if the chosen comparison holds for all corresponding members:
 
 \begin{equation}
 \begin{aligned}
@@ -986,9 +987,9 @@ Similarly, a comparison between two values of type $\execunits¬ty$ is true if a
 \end{aligned}
 \end{equation}
 
-We define function $\inst¬srcregs(\mathbf{c}, \mathbf{k}, \imath)$ which returns a set of source registers read by a given instruction at $\imath$, and the function $\inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath)$ which returns a set of destination registers which are written by a given instruction, as described by the equations in \ref{sec:instructiontables}. This is regardless of whether those registers would actually have been modified by that instruction when executed at runtime. \token{ecalli} is assumed to neither read nor write to any registers in this model.
+We define the function $\inst¬srcregs(\mathbf{c}, \mathbf{k}, \imath)$ which returns the set of source registers read by the instruction at $\imath$, and the function $\inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath)$ which returns the set of destination registers written by the instruction at $\imath$, as described by the equations in \ref{sec:instructiontables}. This is regardless of whether those registers would actually have been modified by that instruction when executed at runtime. \token{ecalli} is assumed to neither read nor write to any registers in this model.
 
-We also define function $\cost¬cycles(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of cycles a given instruction needs to finish execution, $\cost¬decodeslots(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of decoding slots necessary to decode it, and $\cost¬execunits(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of virtual CPU execution units required to start its execution. These simply return the values as specified in \ref{sec:gascosttables}.
+We also define the function $\cost¬cycles(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of cycles the instruction at $\imath$ needs to finish execution, $\cost¬decodeslots(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of decoding slots necessary to decode it, and $\cost¬execunits(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of virtual CPU execution units required to start its execution. These simply return the values as specified in \ref{sec:gascosttables}.
 
 The gas cost of a given basic block starting at instruction opcode index $\imath \in \basicblocks$ and given the instruction data $\mathbf{c}$ and the opcode bitmask $\mathbf{k}$ is defined by the number of virtual CPU cycles as determined by the gas cost model transition function, up until every instruction of the basic block it has ingested has been retired and the simulation has converged. Formally:
 
@@ -998,7 +999,7 @@ The gas cost of a given basic block starting at instruction opcode index $\imath
     \tup{\mathbf{c}, \mathbf{k}, \imath} &\mapsto \max(\gas¬sim¬state^{\text{final}}_{\ctr¬cycles} - 3, 1)\\
   }{
     \where &\gas¬sim¬state^{\text{final}} &=&\text{ }\gas¬sim(\mathbf{c}, \mathbf{k}, \gas¬sim¬state^{\text{init}})\\
-      &\gas¬sim¬state^{\text{init}} &=&\text{ }\tup{\imath, 0, \const¬maxdecodepercycle, \const¬maxstartpercycle, \tup{4, 4, 4, 1, 1}, \sequence{}}
+      &\gas¬sim¬state^{\text{init}} &=&\text{ }\tup{\imath, 0, \const¬maxdecodepercycle, \const¬maxstartpercycle, \tup{4, 4, 4, 1, 1}, \sq{}}
   }
 \end{equation}
 
@@ -1013,7 +1014,7 @@ The gas cost model simulation function $\gas¬sim$ is defined as follows:
       \gas¬sim¬state &\otherwhen \gas¬sim¬state_{\imath} = \none \land l = 0 \\
       \gas¬sim(\mathbf{c}, \mathbf{k}, \gas¬sim'''(\gas¬sim¬state)) &\otherwise \\
     \end{cases}\\
-    \where l &= |\set{\build{i}{ i \in \N, \in¬rob¬field{i}{\rob¬state} \neq \none }}|
+    \where l &= \len{\sq{\build{r}{ r \orderedin \in¬rob, r_{\rob¬state} \neq \none }}}
   }
 \end{equation}
 
@@ -1036,17 +1037,16 @@ The \token{move\_reg} instruction is special-cased to be handled by the frontend
     \tup{\blob, \bitstring, \gas¬sim¬ty} &\to \gas¬sim¬ty \\
     \tup{\mathbf{c}, \mathbf{k}, \gas¬sim¬state} &\mapsto \gas¬sim¬state'
   }{
-    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except the following:}\\
+    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except:}\\
       \gas¬sim¬state'_{\imath} &= \gas¬sim¬state_{\imath} + 1 + \Fskip(\gas¬sim¬state_{\imath}) \\
       \gas¬sim¬state'_{\remaining¬decodeslots} &= \remaining¬decodeslots - 1 \\
-      \gas¬sim¬state'_{\rob} &= \in¬rob\text{ except the following:}\\
+      \gas¬sim¬state'_{\rob} &= \in¬rob\text{ except:}\\
       &\begin{aligned}
-        \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{j}{\rob¬regs} &= \begin{cases}
+        \forall j &\in \in¬rob¬len : \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{j}{\rob¬regs} &= \begin{cases}
           \in¬rob¬field{j}{\rob¬regs} \cup \inst¬dstregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) &\when \in¬rob¬field{j}{\rob¬regs} \cap \inst¬srcregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \neq \emptyset \\
           \in¬rob¬field{j}{\rob¬regs} \setminus \inst¬dstregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) &\otherwise
         \end{cases} \\
-      \end{aligned} \\
-      j &\in \N
+      \end{aligned}
   }
 \end{equation}
 
@@ -1057,19 +1057,18 @@ Every other instruction is fully decoded and added to the reorder buffer as foll
     \tup{\blob, \bitstring, \gas¬sim¬ty} &\to \gas¬sim¬ty \\
     \tup{\mathbf{c}, \mathbf{k}, \gas¬sim¬state} &\mapsto \gas¬sim¬state'
   }{
-    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except the following:}\\
+    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except:}\\
     \gas¬sim¬state'_{\imath} &= \begin{cases}
       \none &\when \text{opcode}(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \in T \\
       \gas¬sim¬state_{\imath} + 1 + \Fskip(\gas¬sim¬state_{\imath}) &\otherwise
     \end{cases}\\
     \gas¬sim¬state'_{\remaining¬decodeslots} &= \remaining¬decodeslots - \cost¬decodeslots(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
-    \rob¬entry{\rob'}{j} &= \in¬rob¬entry{j}\text{ except: } \rob¬entry¬field{\rob'}{j}{\rob¬regs} = \in¬rob¬field{j}{\rob¬regs} \setminus \rob¬regs'\\
-    j &\in \N \\
-    \rob¬regs' &= \inst¬dstregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
-    \rob¬cyclesleft' &= \cost¬cycles(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
-    \rob¬execunits' &= \cost¬execunits(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
-    \rob¬deps' &= \set{\build{i}{ i \in N, \inst¬srcregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \cap \in¬rob¬field{i}{\rob¬regs} \neq \emptyset }} \\
-    \gas¬sim¬state'_{\rob} &= \rob' \concat \tuple{\state¬decoding, \rob¬cyclesleft', \rob¬deps', \rob¬regs', \rob¬execunits'} \\
+    \rob &= \in¬rob\text{ except: } \forall j \in \in¬rob¬len : \rob¬entry¬field{\rob}{j}{\rob¬regs} = \in¬rob¬field{j}{\rob¬regs} \setminus \rob¬regs\\
+    \rob¬regs &= \inst¬dstregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
+    \rob¬cyclesleft &= \cost¬cycles(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
+    \rob¬execunits &= \cost¬execunits(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
+    \rob¬deps &= \set{\build{i}{ i \in \in¬rob¬len, \inst¬srcregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \cap \in¬rob¬field{i}{\rob¬regs} \neq \emptyset }} \\
+    \gas¬sim¬state'_{\rob} &= \rob \append \tuple{\state¬decoding, \rob¬cyclesleft, \rob¬deps, \rob¬regs, \rob¬execunits} \\
   }
 \end{equation}
 
@@ -1080,20 +1079,26 @@ The state transition function $\gas¬sim''$ which starts the execution of the ne
     \gas¬sim¬ty &\to \gas¬sim¬ty \\
     \gas¬sim¬state &\mapsto \gas¬sim¬state'\\
   }{
-    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except the following:}\\
+    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except:}\\
     \gas¬sim¬state'_{\remaining¬startpercycle} &= \gas¬sim¬state_{\remaining¬startpercycle} - 1\\
     n &= \find¬readytostart(\gas¬sim¬state)\\
     \gas¬sim¬state'_{\remaining¬execunits} &= \gas¬sim¬state_{\remaining¬execunits} - \in¬rob¬field{n}{\rob¬execunits}\\
-    \gas¬sim¬state'_{\rob} &= \in¬rob\text{ except: } \rob¬entry¬field{\rob'}{n}{\rob¬state} = \state¬executing
+    \gas¬sim¬state'_{\rob} &= \in¬rob\text{ except: } \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{n}{\rob¬state} = \state¬executing
   }
 \end{equation}
 
 The function $\find¬readytostart$ which checks which instruction inside of the reorder buffer is ready to start executing (and whether such an instruction even exists) is defined as follows:
 
 \begin{equation}
-  \find¬readytostart\colon \abracegroup{
-    \gas¬sim¬ty &\to \set{\N, \none}\\
-    \gas¬sim¬state &\mapsto \min(j \in \N : \in¬rob¬field{j}{\rob¬state} = \state¬waiting \land \in¬rob¬field{j}{\rob¬execunits} \leq \gas¬sim¬state_{\remaining¬execunits} \land (\forall k \in \in¬rob¬field{j}{\rob¬deps} \Rightarrow \in¬rob¬field{k}{\rob¬cyclesleft} \leq 0))
+  \find¬readytostart\colon \abracegrouptwo{
+    \gas¬sim¬ty &\to \N \cup \set{\none}\\
+    \gas¬sim¬state &\mapsto \begin{cases}
+      \none &\when s = \none\\
+      \min(s) &\otherwise
+    \end{cases}\\
+  }{
+    \\[0.2pt]
+    \where s &= \set{\build{j \in \in¬rob¬len}{\in¬rob¬field{j}{\rob¬state} = \state¬waiting \land \in¬rob¬field{j}{\rob¬execunits} \leq \gas¬sim¬state_{\remaining¬execunits} \land (\forall k \in \in¬rob¬field{j}{\rob¬deps} : \in¬rob¬field{k}{\rob¬cyclesleft} = 0)}}
   }
 \end{equation}
 
@@ -1104,27 +1109,22 @@ The state transition function $\gas¬sim'''$ which simulates the rest of the vir
     \gas¬sim¬ty &\to \gas¬sim¬ty \\
     \gas¬sim¬state &\mapsto \gas¬sim¬state'\\
   }{
-    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except the following:}\\
+    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except:}\\
     \gas¬sim¬state'_{\remaining¬decodeslots} &= \const¬maxdecodepercycle, \gas¬sim¬state'_{\remaining¬startpercycle} = \const¬maxstartpercycle, \gas¬sim¬state'_{\ctr¬cycles} = \gas¬sim¬state_{\ctr¬cycles} + 1\\
-    \gas¬sim¬state'_{\remaining¬execunits} &= \gas¬sim¬state_{\remaining¬execunits} + \sum_{n \in \N \Rightarrow \in¬rob¬field{n}{\rob¬state} = \state¬executing \land \in¬rob¬field{n}{\rob¬cyclesleft} = 1} \in¬rob¬field{j}{\rob¬execunits} \\
-    \rob¬entry{\gas¬sim¬state'_{\rob}}{j} &= \in¬rob¬entry{j}\text{ except the following:} \\
+    \gas¬sim¬state'_{\remaining¬execunits} &= \gas¬sim¬state_{\remaining¬execunits} + \sum_{n \in \in¬rob¬len, \in¬rob¬field{n}{\rob¬state} = \state¬executing \land \in¬rob¬field{n}{\rob¬cyclesleft} = 1} \in¬rob¬field{n}{\rob¬execunits} \\
+    \gas¬sim¬state'_{\rob} &= \in¬rob\text{ except } \forall j \in \in¬rob¬len: \\
     &\begin{aligned}
       \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{j}{\rob¬state} &= \begin{cases}
-        \none &\when \forall k \in \N,\quad 0 \leq k \leq j \Rightarrow \in¬rob¬field{k}{\rob¬state} = \state¬executed \\
+        \none &\when \forall k \in \N_{j+1} : \in¬rob¬field{k}{\rob¬state} \in \set{\state¬executed, \none} \\
         \state¬waiting &\when \in¬rob¬field{j}{\rob¬state} = \state¬decoding \\
         \state¬executed &\when \in¬rob¬field{j}{\rob¬state} = \state¬executing \land \in¬rob¬field{j}{\rob¬cyclesleft} = 0 \\
         \in¬rob¬field{j}{\rob¬state} &\otherwise \\
       \end{cases} \\
       \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{j}{\rob¬cyclesleft} &= \begin{cases}
-        \in¬rob¬field{j}{\rob¬cyclesleft} - 1 &\when \in¬rob¬field{j}{\rob¬state} = \state¬executing \\
+        \in¬rob¬field{j}{\rob¬cyclesleft} - 1 &\when \in¬rob¬field{j}{\rob¬state} = \state¬executing \land \in¬rob¬field{j}{\rob¬cyclesleft} > 0 \\
         \in¬rob¬field{j}{\rob¬cyclesleft} &\otherwise \\
       \end{cases} \\
-      \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{j}{\rob¬regs} &= \begin{cases}
-        \none &\when \in¬rob¬field{j}{\rob¬state} = \state¬executing \land \in¬rob¬field{j}{\rob¬cyclesleft} = 1 \\
-        \in¬rob¬field{j}{\rob¬regs} &\otherwise \\
-      \end{cases} \\
-    \end{aligned} \\
-    j &\in \N
+    \end{aligned}
   }
 \end{equation}
 
@@ -1166,7 +1166,7 @@ The cost of memory accesses is defined as follows:
   \mathfrak{m} \equiv 25
 \end{equation}
 
-The cost of a branch depends on whether any of its targets (either the jump target or the implicit fallthrough) points to an instruction byte which is equal to the opcode for the \token{unlikely} or the \token{trap} instruction; formally:
+The cost of a branch depends on whether any of its targets (either the jump target or the implicit fallthrough) point to an instruction byte which is equal to the opcode for the \token{unlikely} or the \token{trap} instruction; formally:
 
 \begin{equation}
   \mathfrak{b}\colon \abracegrouptwo{
