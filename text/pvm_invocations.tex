@@ -276,9 +276,9 @@ The general functions are all broadly of the form $\tup{\gascounter' \in \signed
 
 Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \serviceaccount$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
-Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified. If a given hostcall doesn't explicitly define $\gascounter'$ then the following holds:
+Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
-  \gascounter' &\equiv \gascounter - g\\
+  \gascounter' &\equiv \gascounter - g\text{ unless $\gascounter'$ is explicitly defined below}\\
   \tup{\execst', \registers', \memory', \mathbf{s}'} &\equiv \begin{cases}
     \tup{\oog, \registers, \memory, \mathbf{s}} &\when \gascounter < g\\
     \tup{\continue, \registers, \memory, \mathbf{s}} \text{ except as indicated below} &\otherwise
