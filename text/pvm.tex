@@ -154,34 +154,43 @@ We must now define the single-step \textsc{pvm} state-transition function $\Psi_
 On the very first step of execution, and every time the execution enters a new basic block or jumps back to the beginning of the current basic block, the gas counter of the machine is updated according to the gas cost function $\gascostforblock$~(\ref{eq:gascostforblock}) of the target basic block. No instruction is allowed to execute within a basic block unless the gas cost for the entire basic block has been charged in advance. In case there's not enough gas remaining to cover the full gas cost, the execution is interrupted and the gas counter remains unchanged. Formally:
 
 \begin{equation}
-  \tup{\tilde{\varepsilon}, \gascounter', \gaschargedflag'} = \begin{cases}
+  \tup{\varepsilon^{\gascounter}, \gascounter^*, \gaschargedflag'} = \begin{cases}
     \tup{\continue, \gascounter, \top} &\when \gaschargedflag = \top \\
     \tup{\continue, \gascounter - \gascostforblock(\mathbf{c}, \mathbf{k}, \startofbasicblock(\imath)), \top} &\otherwhen \gascounter \ge \gascostforblock(\mathbf{c}, \mathbf{k}, \startofbasicblock(\imath)) \\
     \tup{\oog, \gascounter, \bot} &\otherwise
   \end{cases}
 \end{equation}
 
-We also have to adjust the state based on the posterior value of the instruction counter, to force a gas charge on the next step when necessary:
+During the course of executing instructions \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
 
+Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\mu$ as following:
+\begin{equation}
+  \begin{aligned}
+    \varepsilon^{\mu} &= \begin{cases}
+      \continue &\when \mathbf{x} = \emptyset \\
+      \panic &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
+      \fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize} &\otherwise
+    \end{cases}\\
+    \where \mathbf{x} &= \set{\build{x}{x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \readable\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \writable\mem}}
+  \end{aligned}
+\end{equation}
+
+We define the final execution state, the value of the instruction counter, the values of the registers and the memory as follows:
+\begin{align}
+  \tup{\varepsilon^*, \imath^*, \registers^*, \mem^*} &= \begin{cases}
+    \tup{\varepsilon^{\gascounter}, \imath, \registers, \mem} &\when \varepsilon^{\gascounter} \neq \continue \\
+    \tup{\varepsilon^{\mu}, \imath, \registers, \mem} &\otherwhen \varepsilon^{\mu} \neq \continue \\
+    \tup{\varepsilon, \imath', \registers', \mem'} &\otherwise
+  \end{cases}
+\end{align}
+
+We also have to adjust the state based on the posterior value of the instruction counter, to force a gas charge on the next step when necessary:
 \begin{equation}
   \gaschargedflag^* = \begin{cases}
     \bot &\when \gaschargedflag' = \bot \lor (\mathbf{c}_\imath \in T \land \varepsilon^* \in \set{\continue} \cup \set{\host} \times \pvmreg) \\
     \top &\otherwise
   \end{cases}
 \end{equation}
-
-During the course of executing instructions \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
-
-Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\mu$ which shall, if not $\continue$, singly effect the returned return of $\Psi_1$ as following:
-\begin{align}
-  \using \mathbf{x} &= \set{\build{x}{x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \readable\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \writable\mem}} \\
-  \tup{\varepsilon^*, \imath^*, \gascounter^*, \registers^*, \mem^*} &= \begin{cases}
-    \tup{\oog, \imath, \gascounter', \registers, \mem} &\when \tilde{\varepsilon} = \oog \\
-    \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &\when \mathbf{x} = \emset \\
-    \tup{\panic, \imath, \gascounter', \registers, \mem} &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
-    \tup{\fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize}, \imath, \gascounter', \registers, \mem} &\otherwise
-  \end{cases}
-\end{align}
 
 We define $\varepsilon$ together with the posterior values of regular execution (denoted as prime) of each of the items of the machine state as being in accordance with the table below. When transitioning machine state for an instruction, a number of conditions typically hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one and \textsc{ram} \& registers are unchanged. Formally:
 \begin{equation}
