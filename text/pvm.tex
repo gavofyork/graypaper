@@ -70,8 +70,6 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
 
 The \textsc{pvm} exit reason $\varepsilon \in \set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg$ may be one of regular halt $\halt$, panic $\panic$ or out-of-gas $\oog$, or alternatively a host-call $\host$, in which the host-call identifier is associated, or page-fault $\fault$ in which case the address into \textsc{ram} is associated.
 
-Assuming the program blob is valid (which can be validated statically), some gas is always charged whenever execution is attempted. This is the case even if no instruction is effectively executed and machine state is unchanged (\ie the result state is equal to the parameter).
-
 In the case of a final halt, either through panic or success, the instruction counter returned is zero. In all other cases, the return value of the instruction counter indexes the one \emph{which caused the exit to happen} and the machine state represents the prior state of said instruction, thus ensuring \emph{de facto} consistency. In order to continue beyond these exit cases, some environmental factor must be adjusted; for a page-fault, \textsc{ram} must be changed, for a gas-underflow, more gas must be supplied and for a host-call, the instruction-counter must be incremented and the relevant host-call state-transition performed.
 
 \subsection{Instructions, Opcodes and Skip-distance}\label{sec:programdecoding}
