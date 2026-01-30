@@ -35,10 +35,9 @@
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a \textsc{pvm} program blob, validates its structure, and verifies whether the given $\imath$ is a valid instruction counter location within the program:
 \begin{align}
   \Psi&\colon \abracegroup{
-    \tuple{\blob, \pvmreg, \gas, \bool, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \bool, \regs, \ram}\\
+    \tuple{\blob, \pvmreg, \gas, \bool, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \gas, \bool, \regs, \ram}\\
     \tup{\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\mapsto \begin{cases}
       \Psi(\pvm¬blob, \imath', \gascounter', \gaschargedflag', \registers', \mem') &\when \varepsilon = \continue\\
-      \tup{\oog, \imath, \gascounter', \gaschargedflag', \registers, \mem} &\when \gascounter' < 0\\
       \tup{\varepsilon, 0, \gascounter', \gaschargedflag', \registers', \mem'} &\when \varepsilon \in \set{ \panic, \halt }\\
       \tup{\varepsilon, \imath, \gascounter', \gaschargedflag', \registers, \mem} &\otherwise
     \end{cases} \\
@@ -146,7 +145,7 @@ For convenience we will define function $\startofbasicblock$ which represents th
 We must now define the single-step \textsc{pvm} state-transition function $\Psi_1$:
 \begin{equation}
   \Psi_1\colon \abracegroup{
-    \tuple{\blob, \bitstring, \sequence{\pvmreg}, \pvmreg, \gas, \bool, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \bool, \regs, \ram}\\
+    \tuple{\blob, \bitstring, \sequence{\pvmreg}, \pvmreg, \gas, \bool, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \gas, \bool, \regs, \ram}\\
     \tup{\pvm¬blob, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\mapsto \tup{\varepsilon^*, \imath^*, \gascounter^*, \gaschargedflag^*, \registers^*, \mem^*}
   }
 \end{equation}
