@@ -165,7 +165,7 @@ We also have to adjust the state based on the posterior value of the instruction
 
 \begin{equation}
   \gaschargedflag^* = \begin{cases}
-    \bot &\when \gaschargedflag' = \bot \lor \imath' < \imath \lor \startofbasicblock(\imath') \ne \startofbasicblock(\imath) \\
+    \bot &\when \gaschargedflag' = \bot \lor (\mathbf{c}_\imath \in T \land \varepsilon^* \in \set{\continue} \cup \set{\host} \times \pvmreg) \\
     \top &\otherwise
   \end{cases}
 \end{equation}
