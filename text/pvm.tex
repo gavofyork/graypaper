@@ -32,8 +32,7 @@
 \newcommand*{\rtz}{\text{rtz}}
 \newcommand*{\gascostforblock}{\gascounter^{\Delta}}
 \newcommand*{\startofbasicblock}{\mathfrak{L}}
-
-We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a \textsc{pvm} program blob:
+We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a \textsc{pvm} program blob, validates its structure, and verifies whether the given $\imath$ is a valid instruction counter location within the program:
 \begin{align}
   \Psi&\colon \abracegroup{
     \tuple{\blob, \pvmreg, \gas, \bool, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \bool, \regs, \ram}\\
@@ -44,16 +43,28 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
       \tup{\varepsilon, \imath, \gascounter', \gaschargedflag', \registers, \mem} &\otherwise
     \end{cases} \\
     \where \tup{\varepsilon, \imath', \gascounter', \gaschargedflag', \registers', \mem'} &= \begin{cases}
-      \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \gaschargedflag, \registers, \mem) &\when \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} = \deblob(\pvm¬blob) \\
+      \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \gaschargedflag, \registers, \mem) &\when \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} = \deblob(\pvm¬blob, \imath) \\
       \tup{\panic, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\otherwise
     \end{cases}
   }\\
   \deblob&\colon\abracegroup{
-    \blob &\to \tuple{\blob, \bitstring, \sequence{\pvmreg}} \cup \error \\
-    \pvm¬blob &\mapsto \begin{cases}
-      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \pvm¬blob = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
+    (\blob, \pvmreg) &\to \tuple{\blob, \bitstring, \sequence{\pvmreg}} \cup \error \\
+    (\pvm¬blob, \imath) &\mapsto \begin{cases}
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \pvm¬blob = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, 0) \land \mathfrak{v}_{\text{loc}}(\mathbf{c}, \mathbf{k}, \imath) \\
       \error &\otherwise
     \end{cases} \\
+    \where &\mathfrak{v}_{\text{blob}}\colon\abracegroup{
+      \tuple{\blob, \bitstring, \pvmreg} &\to \bool \\
+      (\mathbf{c}, \mathbf{k}, \imath) &\mapsto \begin{cases}
+        \top &\when \imath > 0 \land \imath = \len{\mathbf{k}}\\
+        \mathfrak{v}(\mathbf{c}, \mathbf{k}, \imath + 1 + \text{skip}(\imath)) &\otherwhen \mathfrak{v}_{\text{loc}}(\mathbf{c}, \mathbf{k}, \imath)\\
+        \bot &\otherwise
+      \end{cases}
+    }\\
+    &\mathfrak{v}_{\text{loc}}\colon\abracegroup{
+      \tuple{\blob, \bitstring, \pvmreg} &\to \bool \\
+      (\mathbf{c}, \mathbf{k}, \imath) &\mapsto \len{\mathbf{k}} = \len{\mathbf{c}} \land \imath < \len{\mathbf{k}} \land \mathbf{k}_{\imath} = 1 \land \mathbf{c}_\imath \in U
+    }
   }
 \end{align}
 
@@ -242,17 +253,6 @@ As with other irregular alterations to the program counter, target code index mu
 \end{equation}
 
 \subsection{Instruction Tables}\label{sec:instructiontables}
-
-Only instructions which are defined in the following tables and whose opcode has its corresponding bit set in the bitmask are considered valid, otherwise the instruction behaves as-if its opcode was equal to zero. Assuming $U$ denotes all valid opcode indices, formally:
-\begin{equation}
-  \text{opcode}\colon\abracegroup{
-    \N &\to \N\\
-    n &\mapsto \begin{cases}
-    \mathbf{c}\sub{n} &\when \mathbf{k}\sub{n} = 1 \wedge \mathbf{c}\sub{n} \in U \\
-    0 &\otherwise
-    \end{cases}
-  }
-\end{equation}
 
 We assume the skip length $\ell$ is well-defined:
 \begin{equation}
@@ -1024,7 +1024,7 @@ The state transition function $\gas¬sim'$ which decodes the instructions withou
   \gas¬sim'\colon \abracegroup{
     \tup{\blob, \bitstring, \gas¬sim¬ty} &\to \gas¬sim¬ty \\
     \tup{\mathbf{c}, \mathbf{k}, \gas¬sim¬state} &\mapsto \begin{cases}
-      \gas¬sim^{\text{mov}}(\mathbf{c}, \mathbf{k}, \gas¬sim¬state) &\when \text{opcode}(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) = \token{move\_reg} \\
+      \gas¬sim^{\text{mov}}(\mathbf{c}, \mathbf{k}, \gas¬sim¬state) &\when \imath < \len{\mathbf{c}} \land \mathbf{c}_{\imath} = \token{move\_reg} \\
       \gas¬sim^{\text{dec}}(\mathbf{c}, \mathbf{k}, \gas¬sim¬state) &\otherwise
     \end{cases}
   }
@@ -1059,9 +1059,10 @@ Every other instruction is fully decoded and added to the reorder buffer as foll
   }{
     \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except:}\\
     \gas¬sim¬state'_{\imath} &= \begin{cases}
-      \none &\when \text{opcode}(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \in T \\
+      \none &\when \instructions_{\imath} \in T \\
       \gas¬sim¬state_{\imath} + 1 + \Fskip(\gas¬sim¬state_{\imath}) &\otherwise
     \end{cases}\\
+    \mathbf{c} &\mapsto \instructions \text{ according to \ref{eq:instructions}}\\
     \gas¬sim¬state'_{\remaining¬decodeslots} &= \remaining¬decodeslots - \cost¬decodeslots(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
     \rob &= \in¬rob\text{ except: } \forall j \in \in¬rob¬len : \rob¬entry¬field{\rob}{j}{\rob¬regs} = \in¬rob¬field{j}{\rob¬regs} \setminus \rob¬regs\\
     \rob¬regs &= \inst¬dstregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
