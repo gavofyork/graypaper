@@ -238,11 +238,19 @@ Immediate arguments are encoded in little-endian format with the most-significan
   }
 \end{align}
 
-Any alterations of the program counter stemming from a static jump, call or branch must be to the start of a basic block or else a panic occurs. Hypotheticals are not considered. Formally:
+Any alterations of the program counter stemming from an unconditional static jump must be to the start of a basic block or else a panic occurs. Formally:
+\begin{equation}
+  \token{sjump}(b) \implies \tup{\varepsilon, \imath'} = \begin{cases}
+    \tup{\panic, \imath} &\when b \not\in \basicblocks \\
+    \tup{\continue, b} &\otherwise
+  \end{cases}
+\end{equation}
+
+Similarly, conditional jumps are valid if and only if both branches point to the start of a basic block (regardless of whether a branch is taken), otherwise a panic occurs:
 \begin{equation}
   \token{branch}(b, C) \implies \tup{\varepsilon, \imath'} = \begin{cases}
-    \tup{\continue, \imath} &\when \lnot C \\
-    \tup{\panic, \imath} &\otherwhen b \not\in \basicblocks \\
+    \tup{\panic, \imath} &\when b \not\in \basicblocks \lor \imath + 1 + \text{skip}(\imath) \not\in \basicblocks \\
+    \tup{\continue, \imath} &\otherwhen \lnot C \\
     \tup{\continue, b} &\otherwise
   \end{cases}
 \end{equation}
@@ -275,7 +283,7 @@ We assume the skip length $\ell$ is well-defined:
   \endhead
   0&\token{trap}&$\varepsilon = \panic$\\
   \mrule
-  1&\token{fallthrough}&\\
+  1&\token{fallthrough}&$\token{sjump}(\imath + 1 + \text{skip}(\imath))$\\
   \mrule
   2&\token{unlikely}&\\
   \bottomrule
@@ -353,7 +361,7 @@ We assume the skip length $\ell$ is well-defined:
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  40&\token{jump}&$\token{branch}(\immed_X, \top)$\\
+  40&\token{jump}&$\token{sjump}(\immed_X)$\\
 \bottomrule
 \end{longtable}
 
@@ -435,7 +443,7 @@ We assume the skip length $\ell$ is well-defined:
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  80&\token{load\_imm\_jump}&$\token{branch}(\immed_Y, \top)\ ,\qquad \reg_A' = \immed_X$\\ \mrule
+  80&\token{load\_imm\_jump}&$\token{sjump}(\immed_Y)\ ,\qquad \reg_A' = \immed_X$\\ \mrule
   81&\token{branch\_eq\_imm}&$\token{branch}(\immed_Y, \reg_A = \immed_X)$\\ \mrule
   82&\token{branch\_ne\_imm}&$\token{branch}(\immed_Y, \reg_A \ne \immed_X)$\\ \mrule
   83&\token{branch\_lt\_u\_imm}&$\token{branch}(\immed_Y, \reg_A < \immed_X)$\\ \mrule
