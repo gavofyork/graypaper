@@ -67,6 +67,8 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
       \tuple{\blob, \bitstring, \pvmreg} &\to \bool \\
       (\mathbf{c}, \mathbf{k}, \imath) &\mapsto \len{\mathbf{k}} = \len{\mathbf{c}} \land \imath < \len{\mathbf{k}} \land \mathbf{k}_{\imath} = 1 \land \mathbf{c}_\imath \in U
     }\\
+    \\[0.2pt]
+    &U\text{ and }T\text{ are described in sec. \ref{sec:basicblocks}, and \emph{skip} in eq. \ref{eq:skip}}
   }
 \end{align}
 
@@ -85,7 +87,7 @@ The \textsc{pvm} counts instructions in octet terms (rather than in terms of ins
 \newcommand{\Fskip}{\text{skip}}
 
 We define the Skip function $\Fskip$ which provides the number of octets, minus one, to the next instruction's opcode, given the index of instruction's opcode index into $\mathbf{c}$ (and by extension $\mathbf{k}$):
-\begin{equation}
+\begin{equation}\label{eq:skip}
   \Fskip\colon\abracegroup{
     \N &\to \N\\
     i &\mapsto \min(24,\ j \in \N : \tup{\mathbf{k} \concat \sq{1, 1, \dots}}_{i + 1 + j} = 1)
@@ -101,7 +103,7 @@ We define $\instructions$ as being equivalent to the instructions $\mathbf{c}$ e
   \instructions \equiv \mathbf{c} \concat \sq{0, 0, \dots}
 \end{equation}
 
-\subsection{Basic Blocks and Termination Instructions}
+\subsection{Basic Blocks and Termination Instructions}\label{sec:basicblocks}
 
 Instructions of the following opcodes are considered basic-block termination instructions; other than $\token{trap}$ \& $\token{fallthrough}$, they correspond to instructions which may define the instruction-counter to be something other than its prior value plus the instruction's skip amount:
 \begin{itemize}
