@@ -928,23 +928,6 @@ Note that the first tuple item is the amount of gas consumed by the operation, b
 \newcommand*{\in¬rob¬field}[2]{\in¬rob¬entry{#1}_{#2}}
 \newcommand*{\in¬rob¬len}{\N_{\len{\in¬rob}}}
 
-% This is like an \abracegroup, but with two independently aligned chunks.
-% It makes it possible to have a nicer looking abracegroup blocks where a single
-% overly long column doesn't mess up the spacing of the rest of it.
-\newcommand{\abracegrouptwo}[2]{%
-  \left\{%
-  \begin{array}{@{}l@{}}
-    \begin{aligned}
-      #1
-    \end{aligned}
-    \\[14pt]
-    \hspace{8pt}\begin{aligned}
-      #2
-    \end{aligned}
-  \end{array}
-  \right.
-}
-
 The gas cost model for the \textsc{pvm} is a simplified model of a modern CPU microarchitecture, heavily inspired by what's used by production-grade compilers to predict how much time a given piece of code will take. For each basic block in the program the model simulates its execution flow and computes the required number of virtual CPU cycles that would be needed to execute it.
 
 A gas simulation state, of set $\gas¬sim¬ty$, contains the current instruction counter $\imath$, a cycle counter $\ctr¬cycles$, the number of decode slots $\remaining¬decodeslots$ remaining in the current cycle, the maximum number of instructions $\remaining¬startpercycle$ which are still allowed to start execution in the current cycle, the remaining available execution units $\remaining¬execunits$, and the reorder buffer $\rob$. Formally:

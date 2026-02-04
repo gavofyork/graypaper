@@ -806,6 +806,23 @@
 %%%%%%%%%%%%
 % Other stuff
 
+% This is like an \abracegroup, but with two independently aligned chunks.
+% It makes it possible to have a nicer looking abracegroup blocks where a single
+% overly long column doesn't mess up the spacing of the rest of it.
+\newcommand{\abracegrouptwo}[2]{%
+  \left\{%
+  \begin{array}{@{}l@{}}
+    \begin{aligned}
+      #1
+    \end{aligned}
+    \\[14pt]
+    \hspace{8pt}\begin{aligned}
+      #2
+    \end{aligned}
+  \end{array}
+  \right.
+}
+
 \newcommand*{\jamdraftversion}{\input{VERSION}\!\!\!\!}
 \newcommand*{\jamdraftversionstring}{\jamdraftversion}
 
