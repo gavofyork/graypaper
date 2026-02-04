@@ -183,7 +183,7 @@ We define the final execution state, the value of the instruction counter, the v
   \end{cases}
 \end{align}
 
-We also have to adjust the state based on the posterior value of the instruction counter, to force a gas charge on the next step when necessary:
+We also have to adjust the state based on the executed instruction, to force a gas charge on the next step when necessary:
 \begin{equation}
   \gaschargedflag^* = \begin{cases}
     \bot &\when \gaschargedflag' = \bot \lor (\mathbf{c}_\imath \in T \land \varepsilon^* \in \set{\continue} \cup \set{\host} \times \pvmreg) \\
@@ -951,7 +951,7 @@ A gas simulation state, of set $\gas¬sim¬ty$, contains the current instruction
   }\\
 \end{equation}
 
-A reorder buffer entry state, of set $\rob¬entry¬ty$, contains its current state $\rob¬state$, the number of cycles left $\rob¬cyclesleft$, a set of reorder buffer indices considered its dependencies $\rob¬deps$, a set of clobbered registers $\rob¬regs$, and the execution units used $\rob¬execunits$. Formally:
+A reorder buffer entry, of set $\rob¬entry¬ty$, contains its current state $\rob¬state$, the number of cycles left $\rob¬cyclesleft$, a set of reorder buffer indices considered its dependencies $\rob¬deps$, a set of clobbered registers $\rob¬regs$, and the execution units used $\rob¬execunits$. Formally:
 
 \begin{equation}
   \rob¬entry¬ty \equiv \tuple{
@@ -963,7 +963,7 @@ A reorder buffer entry state, of set $\rob¬entry¬ty$, contains its current sta
   }\\
 \end{equation}
 
-A set $\execunits¬ty$ maps each execution unit kind (${\ALU, \LOAD, \STORE, \MUL, \DIV}$) into a number:
+A tuple of the set $\execunits¬ty$ maps each execution unit kind (${\ALU, \LOAD, \STORE, \MUL, \DIV}$) into a number:
 
 \begin{equation}
   \execunits¬ty \equiv \tuple{
@@ -975,7 +975,7 @@ A set $\execunits¬ty$ maps each execution unit kind (${\ALU, \LOAD, \STORE, \MU
   }
 \end{equation}
 
-For convenience we define addition and subtraction of two sets $\execunits¬ty$ to be equivalent to the memberwise operation of the same kind; formally:
+For convenience we define addition and subtraction of two tuples of the set $\execunits¬ty$ to be equivalent to the memberwise operation of the same kind; formally:
 
 \begin{equation}
 \begin{aligned}
@@ -984,7 +984,7 @@ For convenience we define addition and subtraction of two sets $\execunits¬ty$ 
 \end{aligned}
 \end{equation}
 
-Similarly, a comparison between two sets $\execunits¬ty$ is true if and only if the chosen comparison holds for all corresponding members:
+Similarly, a comparison between two tuples of the set $\execunits¬ty$ is true if and only if the chosen comparison holds for all corresponding members:
 
 \begin{equation}
 \begin{aligned}
