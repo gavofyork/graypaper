@@ -46,25 +46,27 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
       \tup{\panic, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\otherwise
     \end{cases}
   }\\
-  \deblob&\colon\abracegroup{
+  \deblob&\colon\abracegrouptwo{
     (\blob, \pvmreg) &\to \tuple{\blob, \bitstring, \sequence{\pvmreg}} \cup \error \\
     (\pvm¬blob, \imath) &\mapsto \begin{cases}
-      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \pvm¬blob = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, 0) \land \mathfrak{v}_{\text{loc}}(\mathbf{c}, \mathbf{k}, \imath) \\
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \pvm¬blob = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, 0) \land \mathfrak{v}_{\text{inst}}(\mathbf{c}, \mathbf{k}, \imath) \\
       \error &\otherwise
     \end{cases} \\
-    \where &\mathfrak{v}_{\text{blob}}\colon\abracegroup{
+  }{
+    \\[0.2pt]
+    \where \mathfrak{v}_{\text{blob}}\colon&\abracegroup{
       \tuple{\blob, \bitstring, \pvmreg} &\to \bool \\
       (\mathbf{c}, \mathbf{k}, \imath) &\mapsto \begin{cases}
         \top &\when \imath > 0 \land \imath = \len{\mathbf{k}}\\
         \bot &\otherwhen \imath + 1 + \text{skip}(\imath) = \len{\mathbf{k}} \land \mathbf{c}_\imath \not\in T\\
-        \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, \imath + 1 + \text{skip}(\imath)) &\otherwhen \mathfrak{v}_{\text{loc}}(\mathbf{c}, \mathbf{k}, \imath)\\
+        \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, \imath + 1 + \text{skip}(\imath)) &\otherwhen \mathfrak{v}_{\text{inst}}(\mathbf{c}, \mathbf{k}, \imath)\\
         \bot &\otherwise
       \end{cases}
     }\\
-    &\mathfrak{v}_{\text{loc}}\colon\abracegroup{
+    \mathfrak{v}_{\text{inst}}\colon&\abracegroup{
       \tuple{\blob, \bitstring, \pvmreg} &\to \bool \\
       (\mathbf{c}, \mathbf{k}, \imath) &\mapsto \len{\mathbf{k}} = \len{\mathbf{c}} \land \imath < \len{\mathbf{k}} \land \mathbf{k}_{\imath} = 1 \land \mathbf{c}_\imath \in U
-    }
+    }\\
   }
 \end{align}
 
