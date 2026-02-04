@@ -56,7 +56,8 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
       \tuple{\blob, \bitstring, \pvmreg} &\to \bool \\
       (\mathbf{c}, \mathbf{k}, \imath) &\mapsto \begin{cases}
         \top &\when \imath > 0 \land \imath = \len{\mathbf{k}}\\
-        \mathfrak{v}(\mathbf{c}, \mathbf{k}, \imath + 1 + \text{skip}(\imath)) &\otherwhen \mathfrak{v}_{\text{loc}}(\mathbf{c}, \mathbf{k}, \imath)\\
+        \bot &\otherwhen \imath + 1 + \text{skip}(\imath) = \len{\mathbf{k}} \land \mathbf{c}_\imath \not\in T\\
+        \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, \imath + 1 + \text{skip}(\imath)) &\otherwhen \mathfrak{v}_{\text{loc}}(\mathbf{c}, \mathbf{k}, \imath)\\
         \bot &\otherwise
       \end{cases}
     }\\
