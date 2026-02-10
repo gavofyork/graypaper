@@ -1041,7 +1041,7 @@ The \token{move\_reg} instruction is special-cased to be handled by the frontend
   }{
     \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except:}\\
       \gas¬sim¬state'_{\imath} &= \gas¬sim¬state_{\imath} + 1 + \Fskip(\gas¬sim¬state_{\imath}) \\
-      \gas¬sim¬state'_{\remaining¬decodeslots} &= \remaining¬decodeslots - 1 \\
+      \gas¬sim¬state'_{\remaining¬decodeslots} &= \gas¬sim¬state_{\remaining¬decodeslots} - 1 \\
       \gas¬sim¬state'_{\rob} &= \in¬rob\text{ except:}\\
       &\begin{aligned}
         \forall j &\in \in¬rob¬len : \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{j}{\rob¬regs} &= \begin{cases}
@@ -1065,7 +1065,7 @@ Every other instruction is fully decoded and added to the reorder buffer as foll
       \gas¬sim¬state_{\imath} + 1 + \Fskip(\gas¬sim¬state_{\imath}) &\otherwise
     \end{cases}\\
     \mathbf{c} &\mapsto \instructions \text{ according to \ref{eq:instructions}}\\
-    \gas¬sim¬state'_{\remaining¬decodeslots} &= \remaining¬decodeslots - \cost¬decodeslots(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
+    \gas¬sim¬state'_{\remaining¬decodeslots} &= \gas¬sim¬state_{\remaining¬decodeslots} - \cost¬decodeslots(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
     \rob &= \in¬rob\text{ except: } \forall j \in \in¬rob¬len : \rob¬entry¬field{\rob}{j}{\rob¬regs} = \in¬rob¬field{j}{\rob¬regs} \setminus \rob¬regs\\
     \rob¬regs &= \inst¬dstregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
     \rob¬cyclesleft &= \cost¬cycles(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
