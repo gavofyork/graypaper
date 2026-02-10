@@ -321,21 +321,19 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
     \using b &= \frac{2^{32} - 3\Cpvminitzonesize - \Cpvminitinputsize - \rnp{s}}{\Cpvmpagesize} \\
     % Current writable page count of the RW data region.
     \using c &= |\set{\build{p \in \Nclamp{a}{b}}{\memory_\ram¬access\subb{p} = \mathrm{W}}}| \\
+    % Current heap pointer.
+    \using h &= a + c \\
     % The total gas cost, based on the number of pages that will become writable after this call.
-    \using g &= 100 + \max(0, \registers_7 - a - c) \cdot 10 \\
-    % Clamp so that ranges make sense.
-    \using h &= \max(a, \registers_7) \\
-    \tup{\execst', \gascounter', \registers'_7, (\memory'_\ram¬access)\interval{a}{h}} &\equiv \begin{cases}
-      % Not enough gas to even cover the constant cost of the call, regardless of whether it's a no-op or not.
-      \tup{\oog, \gascounter, \registers_7, (\memory_\ram¬access)\interval{a}{h}} &\when \gascounter < 100 \\
-      % Expand the accessible RW data region, and return the new page count.
-      \tup{\continue, \gascounter - g, \max(a + c, h), \sq{\mathrm{W}, \dots, \mathrm{W}}} &\otherwhen h \leq b \land \gascounter \ge g \\
-      % Otherwise just return the current writable page count.
-      %
-      % This will also trigger when the user doesn't have enough gas to request as many pages
-      % as they want, in which case they will be able to gracefully handle this situation.
-      \tup{\continue, \gascounter - 100, a + c, (\memory_\ram¬access)\interval{a}{h}} &\otherwise \\
-    \end{cases}
+    \using g &= 100 + (\registers_7 - h) \cdot 10 \\
+    \tup{\execst', \gascounter', \registers'_7} &\equiv \begin{cases}
+      % Do nothing if the heap is large enough already, or if the requested size was too large.
+      \tup{\continue, \gascounter - 100, h} &\when \registers_7 \leq h \lor \registers_7 > b \\
+      % Only enlarge the heap if we have enough gas; otherwise abort with OOG.
+      \tup{\oog, \gascounter, h} &\otherwhen \gascounter < g \\
+      % Charge gas and expand the accessible RW data region.
+      \tup{\continue, \gascounter - g, \registers_7} &\otherwise \\
+    \end{cases}\\
+    (\memory'_\ram¬access)\interval{a}{\registers_7'} &\equiv \sq{\mathrm{W}, \dots, \mathrm{W}}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
