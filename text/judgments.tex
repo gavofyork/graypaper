@@ -152,7 +152,15 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
     }}\!\!\!\!
 \end{align}
 
-Although this should not be expected in practice, in theory it is possible that the number of offenses could be large (up to 1/3V faults and up to 3 culprits for each bad verdict). In order not to burden block creation overmuch, implementations can spread the contents of offenses over different blocks' extrinsics, with the proviso that the entries in $\xtculprits$ and $\xtfaults$ have to refer to a report already existing in some verdict-set of the posterior state, as per equations \ref{eq:culprits} and \ref{eq:faults}. Notice that this state is updated when we received the verdict, together with the first batch of offenses. Offenses in later batches are communicated without the corresponding verdict, but its report will be in one of $\goodset$ or $\badset$ and therefore also in $\goodset'$ or $\badset'$, thereby satisfying those equations.
+Although this should not be expected in practice, in theory it is possible that the number of offenses could be large (up to 1/3V faults and up to 3 culprits for each bad verdict). In order not to burden block creation overmuch, we specify practical limits to the number of verdicts and offenses which can be included in a single block.
+
+Formally,
+\begin{align}
+  \label{eq:limitextrinsicverdicts}\len{\xtverdicts} &\le \Cmaxextrinsicverdicts \\
+  \label{eq:limitextrinsicoffenses}\len{\xtculprits} + \len{\xtfaults} &\le \Cmaxextrinsicoffenses
+\end{align}
+
+Implementations can spread the contents of offenses over different blocks' extrinsics, with the proviso that the entries in $\xtculprits$ and $\xtfaults$ have to refer to a report already existing in some verdict-set of the posterior state, as per equations \ref{eq:culprits} and \ref{eq:faults}. Notice that this state is updated when we received the verdict, together with the first batch of offenses. Offenses in later batches are communicated without the corresponding verdict, but its report will be in one of $\goodset$ or $\badset$ and therefore also in $\goodset'$ or $\badset'$, thereby satisfying those equations.
 
 \subsection{Header}\label{sec:judgmentmarker}
 
