@@ -23,35 +23,40 @@ The \emph{disputes} state includes four items, three of which concern verdicts: 
 
 \subsection{Extrinsic}
 
-The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise independent extrinsics. It comprises \emph{verdicts} $\xtverdicts$, \emph{culprits} $\xtculprits$, and \emph{faults} $\xtfaults$. Verdicts are a compilation of judgments coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\activeset$ or $\previousset$. Culprits and faults are proofs of the misbehavior of one or more validators, respectively either by guaranteeing a work-report found to be invalid, or by signing a judgment found to be contradiction to a work-report's validity. Both of these are considered a kind of \emph{offense}. Formally:
+The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise independent extrinsics. It comprises \emph{verdicts} $\xtverdicts$, \emph{culprits} $\xtculprits$, and \emph{faults} $\xtfaults$. Verdicts are a compilation of judgments coming from either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\activeset$ or $\previousset$. Culprits and faults are proofs of the misbehavior of one or more validators, respectively either by guaranteeing a work-report found to be invalid, or by signing a judgment found to be contradiction to a work-report's validity. Both of these are considered a kind of \emph{offense}. Formally:
 \begin{equation}
   \begin{aligned}
     \xtdisputes &\equiv \tuple{\xtverdicts, \xtculprits, \xtfaults} \\
     \where \xtverdicts &\in \sequence{\tuple{
       \hash,
       \ffrac{\thetime}{\Cepochlen} - \N_2,
-      \sequence[\floor{\twothirds\Cvalcount} + 1]{\tuple{
+      \sequence{\tuple{
         \set{\top, \bot},
-        \valindex,
+        \N,
         \edsignaturebase
       }}
     }}\\
-    \also \xtculprits &\in \sequence{\tuple{\hash, \edkey, \edsignaturebase}} \,,\quad
-    \xtfaults \in \sequence{\tuple{\hash, \set{\top,\bot}, \edkey, \edsignaturebase}}
+    \also \xtculprits &\in \sequence{\tuple{\hash, \edkey, \edsignaturebase}} \\
+    \also \xtfaults &\in \sequence{\tuple{\hash, \set{\top,\bot}, \edkey, \edsignaturebase}}
   \end{aligned}
 \end{equation}
 
-The signatures of all judgments must be valid in terms of one of the two allowed validator key-sets, identified by the verdict's second term which must be either the epoch index of the prior state or one less. Formally:
-\begin{align}
-  &\begin{aligned}
-    &\forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts, \forall \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments : \xvj¬signature \in \edsignature{\mathbf{k}[\xvj¬judgeindex]_\vk¬ed}{\mathsf{X}\sub{v} \concat \xv¬reporthash}\\
-    &\quad\where \mathbf{k} = \begin{cases}
-      \activeset &\when \xv¬epochindex = \displaystyle \ffrac{\thetime}{\Cepochlen}\\
-      \previousset &\otherwise\\
-    \end{cases}
+The signatures of all judgments must be valid in terms of one of the two allowed validator key-sets, identified by the verdict's second term which must be either the epoch index of the prior state or one less. Each verdict must contain judgments from exactly two-thirds plus one of the identified validators. Formally:
+\begin{gather}
+  K(\xv¬epochindex) \equiv \begin{cases}
+    \activeset &\when \xv¬epochindex = \displaystyle \ffrac{\thetime}{\Cepochlen}\\
+    \previousset &\otherwise
+  \end{cases}\\
+  \begin{aligned}
+    \forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts : \bigwedge &\abracegroup{
+      &\len{\xv¬judgments} = \floor{\twothirds\len{\mathbf{k}}} + 1 \,,\\
+      &\forall \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments :\\
+      &\quad \xvj¬judgeindex < \len{\mathbf{k}} \wedge \xvj¬signature \in \edsignature{\mathbf{k}[\xvj¬judgeindex]_\vk¬ed}{\Xvalidif{v} \concat \xv¬reporthash}
+    }\\
+    &\where \mathbf{k} = K(\xv¬epochindex)
   \end{aligned}\\
-  &\Xvalid \equiv \text{{\small \texttt{\$jam\_valid}}}\,,\ \Xinvalid \equiv \text{{\small \texttt{\$jam\_invalid}}}
-\end{align}
+  \Xvalid \equiv \text{{\small \texttt{\$jam\_valid}}}\,,\ \Xinvalid \equiv \text{{\small \texttt{\$jam\_invalid}}}
+\end{gather}
 
 Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set:
 \begin{align}
@@ -63,7 +68,7 @@ Offender signatures must be similarly valid and reference work-reports with judg
   \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
     &\xf¬reporthash \in \badset' \Leftrightarrow \xf¬reporthash \not\in \goodset' \Leftrightarrow \xf¬validity \,,\\
     &\xf¬offenderindex \in \mathbf{k} \,,\\
-    &\xf¬signature \in \edsignature{\xf¬offenderindex}{\mathsf{X}\sub{v} \concat \xf¬reporthash}\\
+    &\xf¬signature \in \edsignature{\xf¬offenderindex}{\Xvalidif{v} \concat \xf¬reporthash}\\
   }\\
   \nonumber\where \mathbf{k} &= \set{\build{i_\vk¬ed}{i \in \previousset \cup \activeset}} \setminus \offenders
 \end{align}
@@ -71,7 +76,7 @@ Offender signatures must be similarly valid and reference work-reports with judg
 Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
 \begin{align}
   &\xtverdicts = \sqorderuniqby{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}\\
-  &\xtculprits = \sqorderuniqby{\xc¬offenderindex}{\tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} \in \xtculprits} \,,\ 
+  &\xtculprits = \sqorderuniqby{\xc¬offenderindex}{\tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} \in \xtculprits} \,,\
   \xtfaults = \sqorderuniqby{\xf¬offenderindex}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!\\
   &\set{\build{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}} \disjoint \goodset \cup \badset \cup \wonkyset
 \end{align}
@@ -83,30 +88,31 @@ The judgments of all verdicts must be ordered by validator index and there may b
 
 \newcommand*{\verdicts}{\mathbf{v}}
 \newcommand*{\vs¬reporthash}{\¬reporthash}
-\newcommand*{\vs¬approval}{t}
+\newcommand*{\vs¬valid}{v}
 
-We define $\verdicts$ to derive from the sequence of verdicts introduced in the block's extrinsic, containing only the report hash and the sum of positive judgments. We require this total to be either exactly two-thirds-plus-one, zero or one-third of the validator set indicating, respectively, that the report is good, that it's bad, or that it's wonky.\footnote{This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{cryptoeprint:2024/961} discusses the security implications in depth).} Formally:
-\begin{align}\label{eq:verdicts}
-  \verdicts &\in \sequence{\tup{
-    \hash,
-    \set{0, \floor{\onethird\Cvalcount}, \floor{\twothirds\Cvalcount} + 1}
-  }} \\
-  \verdicts &= \sq{\build{
-      \tup{
-        \xv¬reporthash,
-        \sum_{\tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments}\!\!\!\!
-        \xvj¬validity
-      }
+We define $\verdicts$ to derive from the sequence of verdicts introduced in the block's extrinsic. For each verdict, $\verdicts$ contains only the report hash and whether the report is good ($\top$), bad ($\bot$) or wonky ($\none$), which is determined from the sum of positive judgments. We require this sum to be either exactly two-thirds-plus-one, zero or one-third of the validator set indicating, respectively, that the report is good, that it's bad, or that it's wonky.\footnote{This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{cryptoeprint:2024/961} discusses the security implications in depth).} Formally:
+\begin{equation}\label{eq:verdicts}
+  \begin{aligned}
+    \verdicts &\in \sequence{\tup{\hash, \set{\top, \bot, \none}}} \\
+    \verdicts &\equiv \sq{\build{
+      \tup{\xv¬reporthash, V(\xv¬epochindex, \xv¬judgments)}
     }{
       \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \orderedin \xtverdicts
-    }}
-\end{align}
+    }} \\
+    V(\xv¬epochindex, \xv¬judgments) &\equiv \begin{cases}
+      \top &\when t = \floor{\twothirds\len{K(\xv¬epochindex)}} + 1 \\
+      \bot &\when t = 0 \\
+      \none &\when t = \floor{\onethird\len{K(\xv¬epochindex)}}
+    \end{cases} \\
+    \where t &= \sum_{\tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments}\!\!\!\! \xvj¬validity
+  \end{aligned}
+\end{equation}
 
 There are some constraints placed on the composition of this extrinsic: any verdict containing solely valid judgments implies the same report having at least one valid entry in the faults sequence $\xtfaults$. Any verdict containing solely invalid judgments implies the same report having at least two valid entries in the culprits sequence $\xtculprits$. Formally:
 \begin{align}
-  \forall \tup{\¬reporthash, \floor{\twothirds\Cvalcount} + 1} \in \verdicts &:
+  \forall \tup{\¬reporthash, \top} \in \verdicts &:
     \exists \tup{\¬reporthash, \dots} \in \xtfaults \\
-  \forall \tup{\¬reporthash, 0} \in \verdicts &:
+  \forall \tup{\¬reporthash, \bot} \in \verdicts &:
     \len{\set{\tup{\¬reporthash, \dots} \in \xtculprits}} \ge 2
 \end{align}
 
@@ -114,8 +120,8 @@ We clear any work-reports which we judged as uncertain or invalid from their cor
 \begin{equation}\label{eq:removenonpositive}
   \forall c \in \coreindex : \reportspostjudgement\subb{c} = \begin{cases}
     \none &\!\!\!\!\when
-      \tup{\blake{\reports\subb{c}_\rs¬workreport}, \vs¬approval} \in \verdicts,
-      \vs¬approval < \floor{\twothirds\Cvalcount} \\
+      \tup{\blake{\reports\subb{c}_\rs¬workreport}, \vs¬valid} \in \verdicts,
+      \vs¬valid \in \set{\bot, \none} \\
     \reports\subb{c} &\!\!\!\!\otherwise
   \end{cases}\!\!\!\!\!\!\!
 \end{equation}
@@ -126,30 +132,33 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
   \goodset' &\equiv \goodset \cup \set{\build{
       \vs¬reporthash
     }{
-      \tup{\vs¬reporthash, \floor{\twothirds\Cvalcount} + 1} \in \verdicts
+      \tup{\vs¬reporthash, \top} \in \verdicts
     }} \\
   \label{eq:badsetdef}
   \badset' &\equiv \badset \cup \set{\build{
       \vs¬reporthash
     }{
-      \tup{\vs¬reporthash, 0} \in \verdicts
+      \tup{\vs¬reporthash, \bot} \in \verdicts
     }} \\
   \label{eq:wonkysetdef}
-  \!\!\wonkyset' &\equiv \wonkyset \cup \set{\build{
+  \wonkyset' &\equiv \wonkyset \cup \set{\build{
       \vs¬reporthash
     }{
-      \tup{\vs¬reporthash, \floor{\onethird\Cvalcount}} \in \verdicts
+      \tup{\vs¬reporthash, \none} \in \verdicts
     }} \\
   \label{eq:offendersdef}
-  \offenders' &\equiv \offenders \cup \set{\build{
-      \¬offenderindex
-    }{
-      \tup{\¬offenderindex, \dots} \in \xtculprits
-    }} \cup \set{\build{
-      \¬offenderindex
-    }{
-      \tup{\¬offenderindex, \dots} \in \xtfaults
-    }}\!\!\!\!
+  \begin{split}
+    \offenders' &\equiv \offenders \cup \set{\build{
+        \¬offenderindex
+      }{
+        \tup{\¬offenderindex, \dots} \in \xtculprits
+      }} \\
+    &\phantom{{} \equiv \offenders {}} \cup \set{\build{
+        \¬offenderindex
+      }{
+        \tup{\¬offenderindex, \dots} \in \xtfaults
+      }}
+  \end{split}
 \end{align}
 
 \subsection{Header}\label{sec:judgmentmarker}

@@ -14,7 +14,7 @@ We now define the three practical instances where we wish to invoke a \textsc{pv
   \item[$\mathtt{CORE} = 2^{64} - 6$] Core index unknown.
   \item[$\mathtt{CASH} = 2^{64} - 7$] Insufficient funds.
   \item[$\mathtt{LOW} = 2^{64} - 8$] Gas limit too low.
-  \item[$\mathtt{HUH} = 2^{64} - 9$] The item is already solicited, cannot be forgotten or the operation is invalid due to privilege level.
+  \item[$\mathtt{HUH} = 2^{64} - 9$] The operation is invalid. For example, the item is already solicited, cannot be forgotten, or the service is insufficiently privileged.
   \item[$\mathtt{OK} = 0$] The return value indicating general success.
 \end{description}
 
@@ -360,22 +360,18 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
           \encode[2]{\Cmaxreportdeps},
           \encode[2]{\Cmaxblocktickets},\\
           &\encode[4]{\Cmaxlookupanchorage},
-          \encode[2]{\Cticketentries},
           \encode[2]{\Cauthpoolsize},
           \encode[2]{\Cslotseconds},
           \encode[2]{\Cauthqueuesize},
           \encode[2]{\Crotationperiod},
           \encode[2]{\Cmaxpackagexts},
           \encode[2]{\Cassurancetimeoutperiod},\\
-          &\encode[2]{\Cvalcount},
-          \encode[4]{\Cmaxauthcodesize},
+          &\encode[4]{\Cmaxauthcodesize},
           \encode[4]{\Cmaxbundlesize},
           \encode[4]{\Cmaxservicecodesize},
-          \encode[4]{\Cecpiecesize},
-          \encode[4]{\Cmaxpackageimports},\\
-          &\encode[4]{\Csegmentecpieces},
-          \encode[4]{\Cmaxreportvarsize},
-          \encode[4]{\Cmemosize},
+          \encode[4]{\Cmaxpackageimports},
+          \encode[4]{\Cmaxreportvarsize},\\
+          &\encode[4]{\Cmemosize},
           \encode[4]{\Cmaxpackageexports},
           \encode[4]{\Cepochtailstart}
         \end{aligned}
@@ -771,14 +767,14 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{designate} = 17 \\
   $g = 10$} &
   $\begin{aligned}
-    \using o &= \registers_7 \\
+    \using \sq{o, z} &= \registers\subrange{7}{2} \\
     \using \mathbf{v} &= \begin{cases}
-      \sq{\build{\memory\subrange{o + 336i}{336}}{i \orderedin \valindex}} &\when \Nrange{o}{336\Cvalcount} \subseteq \readable{\memory} \\
+      \sq{\build{\memory\subrange{o + 336i}{336}}{i \orderedin \N_z}} &\when \Nrange{o}{336z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬stagingset} &= \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬stagingset} &\when \mathbf{v} = \error\\
-      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬stagingset} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬delegator\\
+      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬stagingset} &\otherwhen z \not\in \valcount \vee \imX_\im¬id \ne (\imX_\im¬state)_\ps¬delegator\\
       \tup{\continue, \mathtt{OK}, \mathbf{v}} &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\

@@ -134,7 +134,12 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \encodedisputes{\xtdisputes}
   }
   \\
-  \encodetickets{\xttickets} &= \encode{\var{\xttickets}} 
+  \encodetickets{\xttickets} &= \encode{
+    \var{\sq{\build{
+      \tup{\encode[1]{\xt¬entryindex}, \xt¬proof}
+    }{
+      \tup{\xt¬entryindex, \xt¬proof} \orderedin \xttickets}
+    }}}
   \\
   \encodepreimages{\xtpreimages} &= \encode{
     \var{\sq{\build{
@@ -166,12 +171,12 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \encodedisputes{\tup{\mathbf{v}, \mathbf{c}, \mathbf{f}}} &= \encode{
     \var{\sq{\build{
       \tup{\xv¬reporthash, \encode[4]{\xv¬epochindex},
-        \sq{\build{
+        \var{\sq{\build{
           \tup{\xvj¬validity, \encode[2]{\xvj¬judgeindex}, \xvj¬signature}
         }{
           \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \orderedin \xv¬judgments
         }}
-      }
+      }}
     }{
       \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \orderedin \mathbf{v}
     }}},
@@ -189,12 +194,16 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \H_\¬priorstateroot,
     \H_\¬extrinsichash,
     \encode[4]{\H_\¬timeslot},
-    \maybe{\H_\¬epochmark},
+    \encodeepochmark{\H_\¬epochmark},
     \maybe{\H_\¬winnersmark},
     \encode[2]{\H_\¬authorindex},
     \H_\¬vrfsig,
     \var{\H_\¬offendersmark}
   }
+  \\
+  \encodeepochmark{\none} &= \encode{0}
+  \\
+  \encodeepochmark{\tup{\entropyaccumulator, \entropy_1, \mathbf{k}}} &= \encode{1, \entropyaccumulator, \entropy_1, \var{\mathbf{k}}}
   \\
   \encode{\wcX \in \workcontext} &\equiv \encode{
     \wcX_\wc¬anchorhash,
@@ -209,6 +218,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \asX_\as¬packagehash,
     \encode[4]{\asX_\as¬bundlelen},
     \asX_\as¬erasureroot,
+    \encode[2]{\asX_\as¬erasureshards},
     \asX_\as¬segroot,
     \encode[2]{\asX_\as¬segcount}
   }
@@ -265,7 +275,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \\
   \encode{\stX \in \safroleticket} &\equiv \encode{
     \stX_\st¬id,
-    \stX_\st¬entryindex
+    \encode[1]{\stX_\st¬entryindex}
   }
   \\
   \encode[X]{\dxX \in \defxfer} &\equiv \encode{
@@ -311,4 +321,4 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \end{cases}
 \end{align}
 
-Note the use of $O$ above to succinctly encode the result of a work item and the slight transformations of $\xtguarantees$ and $\xtpreimages$ to take account of the fact their inner tuples contain variable-length sequence terms $a$ and $p$ which need length discriminators.
+Note the use of $O$ above to succinctly encode the result of a work item and the slight transformations of \eg $\xtguarantees$ and $\xtpreimages$ to take account of the fact their inner tuples contain variable-length sequence terms $a$ and $p$ which need length discriminators.

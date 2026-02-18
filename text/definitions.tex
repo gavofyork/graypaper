@@ -50,6 +50,7 @@
   \item[$\partialstate$] The set representating a portion of overall $\mathbb{S}$tate, used during accumulation. See equation \ref{eq:partialstate}.
   \item[$\safroleticket$] The set of seal-key $\mathbb{T}$ickets. See equation \ref{eq:ticket}.
   \item[$\operandtuple$] The information concerning a single work-item once prepared as an operand for the accumulation function. See equation \ref{eq:operandtuple}.
+  \item[$\valcount$] The set of $\mathbb{V}$alidator key-set sizes. See equation \ref{eq:valcount}.
   \item[$\readable{\memory}$] The set of $\mathbb{V}$alidly readable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
   \item[$\writable{\memory}$] The set of $\mathbb{V}$alidly writable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
   \item[$\edsignature{k}{m}$] The set of $\mathbb{V}$alid Ed25519 signatures of the key $k$ and message $m$. A subset of $\blob[64]$. See section \ref{sec:cryptography}.
@@ -73,7 +74,8 @@
 %  \item[$\gascounter$] Unused.
 %  \item[$\Pi$] Unused.
   \item[$\histlookup$] The historical lookup function. See equation \ref{eq:historicallookup}.
-  \item[$\computereport$] The work-report computation function. See equation \ref{eq:workdigestfunction}.
+  \item[$\computereport$] The work-report computation function. See equation \ref{eq:computereport}.
+  \item[$\makebundle$] The bundle assembly function. See equation \ref{eq:makebundle}.
   \item[$\transitionstate$] The general state transition function. See equations \ref{eq:statetransition}, \ref{eq:transitionfunctioncomposition}.
 %  \item[$\Sigma$] Unused.
   \item[$\Phi$] The key-nullifier function. See equation \ref{eq:blacklistfilter}.
@@ -124,17 +126,17 @@
 \begin{description}
   \item[$\fnmmrappend(\dots)$] The Merkle mountain range append function. See equation \ref{eq:mmrappend}.
   \item[$\fnoctetstobits\sub{n}(\dots)$] The octets-to-bits function for $n$ octets. Superscripted ${}^{-1}$ to denote the inverse. See equation \ref{eq:bitsfunc}.
-  \item[$\fnerasurecode\sub{n}(\dots)$] The erasure-coding functions for $n$ chunks. See equation \ref{eq:erasurecoding}.
-%  \item[$\mathcal{D}$] Unused.
+  \item[$\erasurecode{v}{n}{\dots}$] The erasure-coding function for $v$ validators and $n$ pieces. See equation \ref{eq:erasurecoding}.
+  \item[$\fnecoriginalshards(\dots)$] The original-chunk-count function. See equation \ref{eq:ecoriginalshards}.
   \item[$\encode{\dots}$] The octet-sequence encode function. Superscripted ${}^{-1}$ to denote the inverse. See appendix \ref{sec:serialization}.
   \item[$\fnfyshuffle(\dots)$] The Fisher-Yates shuffle function. See equation \ref{eq:suffle}.
   \item[$\blake{\dots}$] The Blake 2b 256-bit hash function. See section \ref{sec:cryptography}.
   \item[$\keccak{\dots}$] The Keccak 256-bit hash function. See section \ref{sec:cryptography}.
 
 
-  \item[$\fnmerklejustsubpath{x}$] The justification path to a specific $2^x$ size page of a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerklejust}.
+  \item[$\fnmerklejustsubpath{x}(\dots)$] The justification path to a specific $2^x$ size page of a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerklejust}.
   \item[$\keys{\dots}$] The domain, or set of keys, of a dictionary. See section \ref{sec:dictionaries}.
-  \item[$\fnmerklesubtreepage{x}$] The $2^x$ size page function for a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerkleleafpage}.
+  \item[$\fnmerklesubtreepage{x}(\dots)$] The $2^x$ size page function for a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerkleleafpage}.
   \item[$\merklizecd{\dots}$] The constant-depth binary Merklization function. See appendix \ref{sec:merklization}.
   \item[$\merklizewb{\dots}$] The well-balanced binary Merklization function. See appendix \ref{sec:merklization}.
   \item[$\merklizestate{\dots}$] The state Merklization function. See appendix \ref{sec:statemerklization}.
@@ -142,7 +144,7 @@
   \item[$\getringroot{\dots}$] The Bandersnatch ring root function. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
   \item[$\zeropad{n}{\dots}$] The octet-array zero-padding function. See equation \ref{eq:zeropadding}.
   \item[$\seqfromhash{}{\dots}$] The numeric-sequence-from-hash function. See equation \ref{eq:sequencefromhash}.
-  \item[$\ecrecover{\dots}$] The group of erasure-coding piece-recovery functions. See equation \ref{eq:erasurecodinginv}.
+  \item[$\ecrecover{v}{n}{\dots}$] The erasure-coding recovery function for $v$ validators and $n$ pieces. See equation \ref{eq:erasurecodinginv}.
   \item[$\edsigndata{k}{\dots}$] The Ed25519 signing function. See section \ref{sec:cryptography}.
   \item[$\blssigndata{k}{\dots}$] The \textsc{bls} signing function. See section \ref{sec:cryptography}.
   \item[$\wallclock$] The current time expressed in seconds after the start of the \Jam Common Era. See section \ref{sec:commonera}.
@@ -166,8 +168,8 @@ These terms are all contextualized to a single block. They may be superscripted 
   \item[$\reporters$] The set of Ed25519 guarantor keys who made a work-report. See equation \ref{eq:guarantorsig}.
   \item[$\header$] The block header. See equation \ref{eq:header}.
   \item[$\accumulationstatistics$] Service-indexed accumulation statistics for this block. See equations \ref{eq:accumulationstatisticsspec} and \ref{eq:accumulationstatisticsdef}.
-  \item[$\guarantorassignments$] The mapping from cores to guarantor keys. See section \ref{sec:coresandvalidators}.
-  \item[$\guarantorassignmentsunderlastrotation$] The mapping from cores to guarantor keys for the previous rotation. See section \ref{sec:coresandvalidators}.
+  \item[$\guarantorassignments$] The current core assignments. See section \ref{sec:coresandvalidators}.
+  \item[$\guarantorassignmentsunderlastrotation$] The core assignments in the previous rotation. See section \ref{sec:coresandvalidators}.
   \item[$\justbecameavailable$] The sequence of work-reports which have now become available and ready for accumulation. See equation \ref{eq:availableworkreports}.
   \item[$\isticketed$] The ticketed condition, true if the block was sealed with a ticket signature rather than a fallback. See equations \ref{eq:ticketconditiontrue} and \ref{eq:ticketconditionfalse}.
   \item[$\isaudited$] The audit condition, equal to $\top$ once the block is audited. See section \ref{sec:auditing}.
@@ -266,7 +268,6 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cmaxreportdeps = 8$] The maximum sum of dependency items in a work-report. See equation \ref{eq:limitreportdeps}.
   \item[$\Cmaxblocktickets = 16$] The maximum number of tickets which may be submitted in a single extrinsic. See equation \ref{eq:enforceticketlimit}.
   \item[$\Cmaxlookupanchorage = 14,400$] The maximum age in timeslots of the lookup anchor. See equation \ref{eq:limitlookupanchorage}.
-  \item[$\Cticketentries = 2$] The number of ticket entries per validator. See equation \ref{eq:ticketsextrinsic}.
   \item[$\Cauthpoolsize = 8$] The maximum number of items in the authorizations pool. See equation \ref{eq:authstatecomposition}.
   \item[$\Cslotseconds = 6$] The slot period, in seconds. See equation \ref{sec:epochsandslots}.
   \item[$\Cauthqueuesize = 80$] The number of items in the authorizations queue. See equation \ref{eq:authstatecomposition}.
@@ -274,15 +275,12 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cminpublicindex = 2^{16}$] The minimum public service index. Services of indices below these may only be created by the Registrar. See equation \ref{eq:newserviceindex}.
   \item[$\Cmaxpackagexts = 128$] The maximum number of extrinsics in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
   \item[$\Cassurancetimeoutperiod = 5$] The period in timeslots after which reported but unavailable work may be replaced. See equation \ref{eq:reportspostguaranteesdef}.
-  \item[$\Cvalcount = 1023$] The total number of validators.
   \item[$\Cmaxauthcodesize = 64,000$] The maximum size of is-authorized code in octets. See equation \ref{eq:isauthinvocation}.
   \item[$\Cmaxbundlesize = 13,791,360$] The maximum size of the concatenated variable-size blobs, extrinsics and imported segments of a work-package, in octets. See equation \ref{eq:checkextractsize}.
   \item[$\Cmaxservicecodesize = 4,000,000$] The maximum size of service code in octets. See equations \ref{eq:refinvocation}, \ref{eq:accinvocation} \& \ref{eq:onxferinvocation}.
-  \item[$\Cecpiecesize = 684$] The basic size of erasure-coded pieces in octets. See equation \ref{eq:erasurecoding}.
-  \item[$\Csegmentsize = \Csegmentecpieces\Cecpiecesize = 4104$] The size of a segment in octets. See section \ref{sec:segments}.
-  \item[$\Csegmentfootprint = \Csegmentsize + 32\ceil{\log_2(\Cmaxpackageimports)} = 4488$] The additional footprint in the Audits DA of a single imported segment. See equation \ref{eq:segmentfootprint}.
+  \item[$\Csegmentsize = 4104$] The size of a segment in octets. See section \ref{sec:segments}.
+  \item[$\Csegmentfootprint = \Csegmentsize + 32\ceil{\log_2(\Cmaxpackageexports)} = 4488$] The additional footprint in the Audits DA of a single imported segment. See equation \ref{eq:segmentfootprint}.
   \item[$\Cmaxpackageimports = 3,072$] The maximum number of imports in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
-  \item[$\Csegmentecpieces = 6$] The number of erasure-coded pieces in a segment.
   \item[$\Cmaxreportvarsize = 48\cdot2^{10}$] The maximum total size of all unbounded blobs in a work-report, in octets. See equation \ref{eq:limitworkreportsize}.
   \item[$\Cmemosize = 128$] The size of a transfer memo in octets. See equation \ref{eq:defxfer}.
   \item[$\Cmaxpackageexports = 3,072$] The maximum number of exports in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
