@@ -74,7 +74,7 @@ Here, $\safroleticket$ is used to denote the set of \emph{tickets}, a combinatio
   \label{eq:ticket}
   \safroleticket &\equiv \tuple{
     \isa{\st¬id}{\hash},\,
-    \isa{\st¬entryindex}{\ticketentryindex}
+    \isa{\st¬entryindex}{\N}
   }
 \end{align}
 
@@ -90,14 +90,16 @@ As we state in section \ref{sec:sealandentropy}, Safrole requires that every blo
 \subsection{Key Rotation}
 \label{sec:keyrotation}
 
-In addition to the active set of validator keys $\activeset$ and staging set $\stagingset$, internal to the Safrole state we retain a pending set $\pendingset$. The active set is the set of keys identifying the nodes which are currently privileged to author blocks and carry out the validation processes, whereas the pending set $\pendingset$, which is reset to $\stagingset$ at the beginning of each epoch, is the set of keys which will be active in the next epoch and which determine the Bandersnatch ring root which authorizes tickets into the sealing-key contest for the next epoch.
-\begin{align}
+In addition to the active set of validator keys $\activeset$ and staging set $\stagingset$, internal to the Safrole state we retain a pending set $\pendingset$. The active set is the set of keys identifying the nodes which are currently privileged to author blocks and carry out the validation processes, whereas the pending set $\pendingset$, which is reset to $\stagingset$ at the beginning of each epoch, is the set of keys which will be active in the next epoch and which determine the Bandersnatch ring root which authorizes tickets into the sealing-key contest for the next epoch. The length of each set is always a multiple of 3 between 6 and $3\Ccorecount$.
+\begin{gather}
   \label{eq:validatorkeys}
   \stagingset \in \allvalkeys \;,\quad
   \pendingset \in \allvalkeys \;,\quad
   \activeset \in \allvalkeys \;,\quad
-  \previousset \in \allvalkeys
-\end{align}
+  \previousset \in \allvalkeys \\
+  \label{eq:valcount}
+  \valcount \equiv \set{\build{3c}{c \in \Nclamp{2}{\Ccorecount+1}}}
+\end{gather}
 
 We must introduce $\valkey$, the set of validator key tuples. This is a combination of a set of cryptographic public keys and metadata which is an opaque octet sequence, but utilized to specify practical identifiers for the validator, not least a hardware address.
 
@@ -251,7 +253,7 @@ As mentioned earlier, the header's epoch marker $\H_\¬epochmark$ is either empt
       \tup{k_\vk¬bs, k_\vk¬ed}
     }{
       k \orderedin \pendingset'
-    }} } \qquad\qquad &\when e' > e \\
+    }} } &\when e' > e \\
     \none & \otherwise
   \end{cases}
 \end{align}
@@ -284,13 +286,16 @@ The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket im
 
 Towards the end of the epoch (\ie $\Cepochtailstart$ slots from the start) this contest is closed implying successive blocks within the same epoch must have an empty tickets extrinsic. At this point, the following epoch's seal key sequence becomes fixed.
 
-We define the extrinsic as a sequence of proofs of valid tickets, each of which is a tuple of an entry index (a natural number less than $\Cticketentries$) and a proof of ticket validity. Formally:
+We define the extrinsic as a sequence of proofs of valid tickets, each of which is a tuple of an entry index and a proof of ticket validity. To ensure the accumulator can be saturated, when there are fewer validators, each validator is permitted more tickets. Formally:
 \begin{align}
   \label{eq:ticketsextrinsic}
-  \xttickets &\in \sequence{\tuple{
-    \isa{\xt¬entryindex}{\Nmax{\Cticketentries}},\,
-    \isa{\xt¬proof}{\bsringproof{\epochroot'}{\Xticket \concat \entropy'_2 \append \xt¬entryindex}{\sq{}}}
-  }} \\
+  \begin{split}
+    \xttickets &\in \sequence{\tuple{
+      \isa{\xt¬entryindex}{\Nmax{n}},\,
+      \isa{\xt¬proof}{\bsringproof{\epochroot'}{\Xticket \concat \entropy'_2 \append \xt¬entryindex}{\sq{}}}
+    }} \\
+    &\phantom{{}\in{}} \where n = \ceil{\frac{2\Cepochlen}{\len{\pendingset'}}}
+  \end{split} \\
   \label{eq:enforceticketlimit}
   \len{\xttickets} &\le \begin{cases}
       \Cmaxblocktickets &\when m' < \Cepochtailstart \\
