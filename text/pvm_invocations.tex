@@ -46,6 +46,7 @@ The Is-Authorized invocation is the first and simplest of the three, being total
   \label{eq:isauthorizedmutator}F \in \contextmutator{\emset} &\colon
     \tup{n, \gascounter, \registers, \memory} \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory) &\when n = \mathtt{gas} \\
+      \Omega_\Gemini(\gascounter, \registers, \memory, \wpX_\wp¬authcode) &\when n = \mathtt{grow\_heap} \\
       \Omega_Y(\gascounter, \registers, \memory, \wpX, \none, \none, \none, \none, \none, \none, \none) &\when n = \mathtt{fetch} \\
       \tup{\oog, \gascounter', \registers', \memory} &\otherwhen \gascounter' < 0 \\
       \tup{\continue, \gascounter', \registers', \memory} &\otherwise \\
@@ -66,9 +67,9 @@ The historical-lookup host-call function, $\Omega_H$, is designed to give the sa
 \end{equation}
 
 
-The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvmguest$. It holds some program code, instruction counter and \textsc{ram}:
+The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvmguest$. It holds a \textsc{pvm} program blob, instruction counter, \textsc{ram} and a flag denoting whether gas was already charged for the currently executing basic block:
 \begin{equation}\label{eq:pvmguest}
-  \pvmguest \equiv \tuple{\isa{\pg¬code}{\blob}, \isa{\pg¬ram}{\ram}, \isa{\pg¬pc}{\pvmreg}}
+  \pvmguest \equiv \tuple{\isa{\pg¬code}{\blob}, \isa{\pg¬ram}{\ram}, \isa{\pg¬pc}{\pvmreg}, \isa{\pg¬gaschargedflag}{\bool}}
 \end{equation}
 
 The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\Csegmentsize$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
@@ -82,8 +83,8 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \tup{\token{BAD}, \sq{}, 0} &\when w_\wi¬serviceindex \not\in \keys{\accounts} \vee \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash) = \none \\
       \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)} > \Cmaxservicecodesize \\
       &\otherwise: \\
-      &\quad\using \mathbf{a} = \encode{c, i, w_\wi¬serviceindex, \var{w_\wi¬payload}, \blake{p}}\;,\ \encode{\var{\mathbf{z}}, \mathbf{c}} = \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
-      &\quad\also \tup{u, \mathbf{o}, \tup{\mathbf{m}, \mathbf{e}}} = \Psi_M(\mathbf{c}, 0, w_\wi¬refgaslimit, \mathbf{a}, F, \tup{\emptyset, \sq{}})\ \colon\\
+      &\quad\using \mathbf{a} = \encode{c, i, w_\wi¬serviceindex, \var{w_\wi¬payload}, \blake{p}}\;,\ \encode{\var{\mathbf{z}}, \jam¬blob} = \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
+      &\quad\also \tup{u, \mathbf{o}, \tup{\mathbf{m}, \mathbf{e}}} = \Psi_M(\jam¬blob, 0, w_\wi¬refgaslimit, \mathbf{a}, F, \tup{\emptyset, \sq{}})\ \colon\\
       \tup{\mathbf{o}, \sq{}, u} &\quad\when \mathbf{o} \in \set{ \oog, \panic }  \\
       \tup{\mathbf{o}, \mathbf{e}, u} &\quad\otherwise \\
       \multicolumn{2}{l}{\where w = p_\wp¬workitems\subb{i}}
@@ -93,6 +94,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
   &F \in \contextmutator{\tuple{\dictionary{\N}{\pvmguest}, \sequence{\segment}}} \colon
     (n, \gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{gas} \\
+      \Omega_\Gemini(\gascounter, \registers, \memory, \jam¬blob) &\when n = \mathtt{grow\_heap} \\
       \Omega_Y(\gascounter, \registers, \memory, p, \zerohash, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{fetch}\\
       \Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, w_\wi¬serviceindex, \accounts, (p_\wp¬context)_\wc¬lookupanchortime) &\when n = \mathtt{historical\_lookup}\\
       \Omega_E(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, \segoff) &\when n = \mathtt{export}\\
@@ -159,11 +161,11 @@ We define $\Psi_A$, the Accumulation invocation function as:
         \is{\ao¬gasused}{0},
         \is{\ao¬provisions}{\sq{}}
       }
-        &\when \mathbf{c} = \none \vee \len{\mathbf{c}} > \Cmaxservicecodesize \\
-      C(\Psi_M(\mathbf{c}, 5, g, \encode{t, s, \len{\mathbf{i}}}, F, I(\local¬postxferstate, s)^2))
+        &\when \jam¬blob = \none \vee \len{\jam¬blob} > \Cmaxservicecodesize \\
+      C(\Psi_M(\jam¬blob, 5, g, \encode{t, s, \len{\mathbf{i}}}, F, I(\local¬postxferstate, s)^2))
         &\otherwise \\
       \begin{aligned}
-        &\quad\where \mathbf{c} = \local¬basestate_\ps¬accounts\subb{s}_\sa¬code\\
+        &\quad\where \jam¬blob = \local¬basestate_\ps¬accounts\subb{s}_\sa¬code\\
         &\quad\also \local¬postxferstate = \local¬basestate \exc \local¬postxferstate_\ps¬accounts\subb{s}_\sa¬balance = \local¬basestate_\ps¬accounts\subb{s}_\sa¬balance + \sum_{r \in \mathbf{x}}r_\dx¬amount\\
         &\quad\also \mathbf{x} = \sq{\build{i}{
           i \orderedin \mathbf{i} ,
@@ -186,6 +188,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
   }\\
   F \in \contextmutator{\implicationspair} &\colon \tup{n, \gascounter, \registers, \memory, \imXY} \mapsto \begin{cases}
   \Omega_G(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{gas} \\
+    \Omega_\Gemini(\gascounter, \registers, \memory, \jam¬blob) &\when n = \mathtt{grow\_heap} \\
     \Omega_Y(\gascounter, \registers, \memory, \none, \entropyaccumulator', \none, \none, \none, \none, \mathbf{i}, \imXY) &\when n = \mathtt{fetch}\\
     G(\Omega_R(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id, (\imX_\im¬state)_\ps¬accounts), \imXY) &\when n = \mathtt{read} \\
     G(\Omega_W(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id), \imXY) &\when n = \mathtt{write} \\
@@ -273,9 +276,9 @@ The general functions are all broadly of the form $\tup{\gascounter' \in \signed
 
 Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \serviceaccount$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
-Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
+Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
-  \gascounter' &\equiv \gascounter - g\\
+  \gascounter' &\equiv \gascounter - g\text{ unless $\gascounter'$ is explicitly defined below}\\
   \tup{\execst', \registers', \memory', \mathbf{s}'} &\equiv \begin{cases}
     \tup{\oog, \registers, \memory, \mathbf{s}} &\when \gascounter < g\\
     \tup{\continue, \registers, \memory, \mathbf{s}} \text{ except as indicated below} &\otherwise
@@ -299,8 +302,43 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
+  $\Omega_\Gemini(\gascounter, \registers, \memory, \jam¬blob)$ \\
+  \texttt{grow\_heap} = 1} &
+  $\begin{aligned}
+    % This hostcall can be used to expand the RW data region of memory, or to query its size.
+    %
+    % It takes a single argument: the index of last writable page (plus one) the user would like
+    % to be able to access within the RW data region of the address space.
+    %
+    % It returns the index (plus one) of the last writable page in the RW data region, regardless
+    % of whether anything has changed.
+    %
+    % Extract the RO data size and the stack size from the JAM program blob.
+    \using (\mathbf{o}, s) &\mapsto \jam¬blob \text{ according to eq. \ref{eq:conditions}} \\
+    % Page index of the start of the RW data region.
+    \using a &= \frac{2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}}}{\Cpvmpagesize} \\
+    % Page index plus one of the last possible RW data region page.
+    \using b &= \frac{2^{32} - 3\Cpvminitzonesize - \Cpvminitinputsize - \rnp{s}}{\Cpvmpagesize} \\
+    % Current writable page count of the RW data region.
+    \using c &= |\set{\build{p \in \Nclamp{a}{b}}{\memory_\ram¬access\subb{p} = \mathrm{W}}}| \\
+    % Current heap pointer.
+    \using h &= a + c \\
+    % The total gas cost, based on the number of pages that will become writable after this call.
+    \using g &= 100 + (\registers_7 - h) \cdot 10 \\
+    \tup{\execst', \gascounter', \registers'_7} &\equiv \begin{cases}
+      % Do nothing if the heap is large enough already, or if the requested size was too large.
+      \tup{\continue, \gascounter - 100, h} &\when \registers_7 \leq h \lor \registers_7 > b \\
+      % Only enlarge the heap if we have enough gas; otherwise abort with OOG.
+      \tup{\oog, \gascounter, h} &\otherwhen \gascounter < g \\
+      % Charge gas and expand the accessible RW data region.
+      \tup{\continue, \gascounter - g, \registers_7} &\otherwise \\
+    \end{cases}\\
+    (\memory'_\ram¬access)\interval{a}{\registers_7'} &\equiv \sq{\mathrm{W}, \dots, \mathrm{W}}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
   $\Omega_Y(\gascounter, \registers, \memory, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{i}, \dots)$ \\
-  \texttt{fetch} = 1 \\
+  \texttt{fetch} = 2 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{v} &= \begin{cases}
@@ -372,7 +410,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
-  \texttt{lookup} = 2 \\
+  \texttt{lookup} = 3 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -397,7 +435,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
-  \texttt{read} = 3 \\
+  \texttt{read} = 4 \\
   $g = 10$} &
   % gas cost for cold reads dependent on trie depth.
   $\begin{aligned}
@@ -427,7 +465,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s)$ \\
-  \texttt{write} = 4 \\
+  \texttt{write} = 5 \\
   $g = 10$
   } &
   $\begin{aligned}
@@ -454,7 +492,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_I(\gascounter, \registers, \memory, s, \mathbf{d})$ \\
-  \texttt{info} = 5 \\
+  \texttt{info} = 6 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -502,7 +540,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \endhead
   \makecell*[l]{
   $\Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, s, \mathbf{d}, t)$ \\
-  \texttt{historical\_lookup} = 6 \\
+  \texttt{historical\_lookup} = 7 \\
   $g = 10$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -527,7 +565,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_E(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, \segoff)$ \\
-  \texttt{export} = 7 \\
+  \texttt{export} = 8 \\
   $g = 10$} &
   $\begin{aligned}
     \using p &= \registers_7 \\
@@ -545,7 +583,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{machine} = 8 \\
+  \texttt{machine} = 9 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{p_O, p_Z, i} &= \registers\subrange{7}{3} \\
@@ -553,18 +591,18 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \memory\subrange{p_O}{p_Z} &\when \Nrange{p_O}{p_Z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using n &= \min(n \in \N, n \not\in \keys{\mathbf{m}}) \\
+    \using n &= \min(n \in \N : n \not\in \keys{\mathbf{m}}) \\
     \using \mathbf{u} &= \tup{\is{\ram¬value}{[0, 0, \dots]},\is{\ram¬access}{[\none, \none, \dots]}} \\
     \tup{\execst', \registers'_7, \mathbf{m}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{m}} &\when \mathbf{p} = \error \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{m}} &\otherwhen \deblob(\mathbf{p}) = \error \\
-      \tup{\continue, n, \mathbf{m} \cup \set{\kv{n}{\tup{\mathbf{p}, \mathbf{u}, i}}} } &\otherwise \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{m}} &\otherwhen \deblob(\mathbf{p}, i) = \error \\
+      \tup{\continue, n, \mathbf{m} \cup \set{\kv{n}{\tup{\mathbf{p}, \mathbf{u}, i, \bot}}} } &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_P(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{peek} = 9 \\
+  \texttt{peek} = 10 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, o, s, z} &= \registers\subrange{7}{4} \\
@@ -579,7 +617,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_O(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{poke} = 10 \\
+  \texttt{poke} = 11 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, s, o, z} &= \registers\subrange{7}{4} \\
@@ -594,7 +632,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{pages} = 11 \\
+  \texttt{pages} = 12 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, p, c, r} &= \registers\subrange{7}{4} \\
@@ -623,7 +661,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_K(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{invoke} = 12 \\
+  \texttt{invoke} = 13 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, o} &= \registers_{7, 8} \\
@@ -632,14 +670,15 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       %\tup{\decode[8]{\memr\subrange{o}{8}}, \sq{\build{\decode[4]{\memr\subrange{o+8+8x}{8}}}{x \orderedin \Nmax{13}}}} &\when \Nrange{o}{60} \subset \writable_\mem} \\
       \tup{\error, \error} &\otherwise
     \end{cases} \\
-    \using \tup{c, i', g', \mathbf{w}', \mathbf{u}'} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram)\\
+    \using \tup{c, i', g', \pg¬gaschargedflag', \mathbf{w}', \mathbf{u}'} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g, \mathbf{m}\subb{n}_{\pg¬gaschargedflag}, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram)\\
     \using \mem^* &= \mem \exc \mem^*\subrange{o}{112} = \encode[8]{g'} \concat \encode[8]{\mathbf{w}'}\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*\subb{n}_\pg¬ram = \mathbf{u}'\\
       \mathbf{m}^*\subb{n}_\pg¬pc = \begin{cases}
         i' + \Fskip(\imath') + 1 &\when c \in \set{ \host } \times \pvmreg\\
         i' &\otherwise
-      \end{cases}
+      \end{cases}\\
+      \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
     \end{cases}\\
     \tup{\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}} &\when g = \error \\
@@ -654,7 +693,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_X(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{expunge} = 13 \\
+  \texttt{expunge} = 14 \\
   $g = 10$} &
   $\begin{aligned}
     \using n &= \registers_7 \\
@@ -689,7 +728,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \endhead
   \makecell*[l]{
   $\Omega_B(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{bless} = 14 \\
+  \texttt{bless} = 15 \\
   $g = 10$}&
   $\begin{aligned}
     \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
@@ -710,7 +749,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_A(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{assign} = 15 \\
+  \texttt{assign} = 16 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{c, o, a} &= \registers\subrange{7}{3} \\
@@ -729,7 +768,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_D(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{designate} = 16 \\
+  \texttt{designate} = 17 \\
   $g = 10$} &
   $\begin{aligned}
     \using o &= \registers_7 \\
@@ -746,7 +785,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_C(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{checkpoint} = 17 \\
+  \texttt{checkpoint} = 18 \\
   $g = 10$} &
   $\begin{aligned}
     \imY' &\equiv \imX \\
@@ -755,7 +794,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_N(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{new} = 18 \\
+  \texttt{new} = 19 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, l, \sa¬minaccgas, \sa¬minmemogas, \sa¬gratis, \local¬desiredid} &= \registers\subrange{7}{6} \\
@@ -795,7 +834,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
     $\Omega_U(\gascounter, \registers, \memory, \imXY)$ \\
-    \texttt{upgrade} = 19 \\
+    \texttt{upgrade} = 20 \\
     $g = 10$
   } &
   $\begin{aligned}
@@ -812,7 +851,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_T(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{transfer} = 20 \\
+  \texttt{transfer} = 21 \\
   $g = 10 + t$} &
   $\begin{aligned}
     \using \sq{\dx¬dest, \dx¬amount, l, o} &= \registers\subrange{7}{4},  \\
@@ -844,7 +883,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_J(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{eject} = 21 \\
+  \texttt{eject} = 22 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{d, o} &= \registers_{7, 8} \\
@@ -869,7 +908,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Q(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{query} = 22 \\
+  \texttt{query} = 23 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{7, 8} \\
@@ -893,7 +932,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_S(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{solicit} = 23 \\
+  \texttt{solicit} = 24 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{7, 8} \\
@@ -917,7 +956,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_F(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{forget} = 24 \\
+  \texttt{forget} = 25 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{7, 8} \\
@@ -946,7 +985,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_\Taurus(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{yield} = 25 \\
+  \texttt{yield} = 26 \\
   $g = 10$} &
   $\begin{aligned}
     \using o &= \registers_7 \\
@@ -962,7 +1001,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_\Aries(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{provide} = 26 \\
+  \texttt{provide} = 27 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{8, 9} \\

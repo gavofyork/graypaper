@@ -9,10 +9,7 @@
 \newcommand*{\mem}{{\memory}}
 \newcommand*{\memr}{\cyclic{\mem}}
 \newcommand*{\memwr}{\cyclic{\mem'}}
-\newcommand*{\rnp}[1]{P(#1)}
-\newcommand*{\rnq}[1]{Z(#1)}
 \newcommand*{\continue}{\blacktriangleright}
-\newcommand*{\gascost}{\gascounter_\Delta}
 \newcommand*{\instrlen}{\ell}
 \newcommand*{\revbitsfunc}[1]{\overleftarrow{\fnoctetstobits}_{#1}}
 \newcommand*{\revunbitsfunc}[1]{\revbitsfunc{#1}^{-1}}
@@ -33,40 +30,55 @@
 \newcommand*{\deblob}{\text{deblob}}
 \newcommand*{\smod}{\text{smod}}
 \newcommand*{\rtz}{\text{rtz}}
-
-We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a program blob:
+\newcommand*{\gascostforblock}{\gascounter^{\Delta}}
+\newcommand*{\startofbasicblock}{\mathfrak{L}}
+We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function define $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a \textsc{pvm} program blob, validates its structure, and verifies whether the given $\imath$ is a valid instruction counter location within the program:
 \begin{align}
   \Psi&\colon \abracegroup{
-    \tuple{\blob, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
-    \tup{\mathbf{p}, \imath, \gascounter, \registers, \mem} &\mapsto \begin{cases}
-      \Psi(\mathbf{p}, \imath', \gascounter', \registers', \mem') &\when \varepsilon = \continue\\
-      \tup{\oog, \imath, \gascounter', \registers, \mem} &\when \gascounter' < 0\\
-      \tup{\varepsilon, 0, \gascounter', \registers', \mem'} &\when \varepsilon \in \set{ \panic, \halt }\\
-      \tup{\varepsilon, \imath, \gascounter', \registers, \mem} &\otherwise
+    \tuple{\blob, \pvmreg, \gas, \bool, \regs, \ram} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \gas, \bool, \regs, \ram}\\
+    \tup{\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\mapsto \begin{cases}
+      \Psi(\pvm¬blob, \imath', \gascounter', \gaschargedflag', \registers', \mem') &\when \varepsilon = \continue\\
+      \tup{\varepsilon, 0, \gascounter', \gaschargedflag', \registers', \mem'} &\when \varepsilon \in \set{ \panic, \halt }\\
+      \tup{\varepsilon, \imath, \gascounter', \gaschargedflag', \registers, \mem} &\otherwise
     \end{cases} \\
-    \where \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &= \begin{cases}
-      \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem) &\when \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} = \deblob(\mathbf{p}) \\
-      \tup{\panic, \imath, \gascounter, \registers, \mem} &\otherwise
+    \where \tup{\varepsilon, \imath', \gascounter', \gaschargedflag', \registers', \mem'} &= \begin{cases}
+      \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \gaschargedflag, \registers, \mem) &\when \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} = \deblob(\pvm¬blob, \imath) \\
+      \tup{\panic, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\otherwise
     \end{cases}
   }\\
-  \deblob&\colon\abracegroup{
-    \blob &\to \tuple{\blob, \bitstring, \sequence{\pvmreg}} \cup \error \\
-    \mathbf{p} &\mapsto \begin{cases}
-      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \mathbf{p} = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \len{\mathbf{k}} = \len{\mathbf{c}} \\
+  \deblob&\colon\abracegrouptwo{
+    (\blob, \pvmreg) &\to \tuple{\blob, \bitstring, \sequence{\pvmreg}} \cup \error \\
+    (\pvm¬blob, \imath) &\mapsto \begin{cases}
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \pvm¬blob = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, 0) \land \mathfrak{v}_{\text{inst}}(\mathbf{c}, \mathbf{k}, \imath) \\
       \error &\otherwise
     \end{cases} \\
+  }{
+    \\[0.2pt]
+    \where \mathfrak{v}_{\text{blob}}\colon&\abracegroup{
+      \tuple{\blob, \bitstring, \pvmreg} &\to \bool \\
+      (\mathbf{c}, \mathbf{k}, \imath) &\mapsto \begin{cases}
+        \top &\when \imath > 0 \land \imath = \len{\mathbf{k}}\\
+        \bot &\otherwhen \imath + 1 + \text{skip}(\imath) = \len{\mathbf{k}} \land \mathbf{c}_\imath \not\in T\\
+        \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, \imath + 1 + \text{skip}(\imath)) &\otherwhen \mathfrak{v}_{\text{inst}}(\mathbf{c}, \mathbf{k}, \imath)\\
+        \bot &\otherwise
+      \end{cases}
+    }\\
+    \mathfrak{v}_{\text{inst}}\colon&\abracegroup{
+      \tuple{\blob, \bitstring, \pvmreg} &\to \bool \\
+      (\mathbf{c}, \mathbf{k}, \imath) &\mapsto \len{\mathbf{k}} = \len{\mathbf{c}} \land \imath < \len{\mathbf{k}} \land \mathbf{k}_{\imath} = 1 \land \mathbf{c}_\imath \in U
+    }\\
+    \\[0.2pt]
+    &U\text{ and }T\text{ are described in sec. \ref{sec:basicblocks}, and \emph{skip} in eq. \ref{eq:skip}}
   }
 \end{align}
 
 The \textsc{pvm} exit reason $\varepsilon \in \set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg$ may be one of regular halt $\halt$, panic $\panic$ or out-of-gas $\oog$, or alternatively a host-call $\host$, in which the host-call identifier is associated, or page-fault $\fault$ in which case the address into \textsc{ram} is associated.
 
-Assuming the program blob is valid (which can be validated statically), some gas is always charged whenever execution is attempted. This is the case even if no instruction is effectively executed and machine state is unchanged (\ie the result state is equal to the parameter).
-
 In the case of a final halt, either through panic or success, the instruction counter returned is zero. In all other cases, the return value of the instruction counter indexes the one \emph{which caused the exit to happen} and the machine state represents the prior state of said instruction, thus ensuring \emph{de facto} consistency. In order to continue beyond these exit cases, some environmental factor must be adjusted; for a page-fault, \textsc{ram} must be changed, for a gas-underflow, more gas must be supplied and for a host-call, the instruction-counter must be incremented and the relevant host-call state-transition performed.
 
-\subsection{Instructions, Opcodes and Skip-distance}
+\subsection{Instructions, Opcodes and Skip-distance}\label{sec:programdecoding}
 
-The program blob $\mathbf{p}$ is split into a series of octets which make up the \emph{instruction data} $\mathbf{c}$ and the \emph{opcode bitmask} $\mathbf{k}$ as well as the \emph{dynamic jump table}, $\mathbf{j}$. The former two imply an instruction sequence, and by extension a \emph{basic-block sequence}, itself a sequence of indices of the instructions which follow a \emph{block-termination} instruction.
+The \textsc{pvm} program blob $\pvm¬blob$ is split into a series of octets which make up the \emph{instruction data} $\mathbf{c}$ and the \emph{opcode bitmask} $\mathbf{k}$ as well as the \emph{dynamic jump table}, $\mathbf{j}$. The former two imply an instruction sequence, and by extension a \emph{basic-block sequence}, itself a sequence of indices of the instructions which follow a \emph{block-termination} instruction.
 
 The latter, dynamic jump table, is a sequence of indices into the instruction data blob and is indexed into when dynamically-computed jumps are taken. It is encoded as a sequence of natural numbers (i.e. non-negative integers) each encoded with the same length in octets. This length, term $z$ above, is itself encoded prior.
 
@@ -75,7 +87,7 @@ The \textsc{pvm} counts instructions in octet terms (rather than in terms of ins
 \newcommand{\Fskip}{\text{skip}}
 
 We define the Skip function $\Fskip$ which provides the number of octets, minus one, to the next instruction's opcode, given the index of instruction's opcode index into $\mathbf{c}$ (and by extension $\mathbf{k}$):
-\begin{equation}
+\begin{equation}\label{eq:skip}
   \Fskip\colon\abracegroup{
     \N &\to \N\\
     i &\mapsto \min(24,\ j \in \N : \tup{\mathbf{k} \concat \sq{1, 1, \dots}}_{i + 1 + j} = 1)
@@ -91,7 +103,7 @@ We define $\instructions$ as being equivalent to the instructions $\mathbf{c}$ e
   \instructions \equiv \mathbf{c} \concat \sq{0, 0, \dots}
 \end{equation}
 
-\subsection{Basic Blocks and Termination Instructions}
+\subsection{Basic Blocks and Termination Instructions}\label{sec:basicblocks}
 
 Instructions of the following opcodes are considered basic-block termination instructions; other than $\token{trap}$ \& $\token{fallthrough}$, they correspond to instructions which may define the instruction-counter to be something other than its prior value plus the instruction's skip amount:
 \begin{itemize}
@@ -124,34 +136,70 @@ We denote this set, as opcode indices rather than names, as $T$, which is a subs
   \basicblocks \equiv \left(\set{0} \cup \set{\build{n + 1 + \Fskip(n)}{n \in \Nmax{\len{\mathbf{c}}} \wedge \mathbf{k}\sub{n} = 1 \wedge \mathbf{c}\sub{n} \in T}}\right) \cap \set{\build{n}{\mathbf{k}\sub{n} = 1 \wedge \mathbf{c}\sub{n} \in U}}
 \end{equation}
 
+For convenience we will define function $\startofbasicblock$ which represents the start of a basic block for any $\imath$ within that basic block. Formally:
+
+\begin{equation}
+  \startofbasicblock\colon \abracegroup{
+    \pvmreg &\to \pvmreg\\
+    \imath &\mapsto \max(j \in \basicblocks : j \le \imath)
+  }
+\end{equation}
+
 \subsection{Single-Step State Transition}
 
 We must now define the single-step \textsc{pvm} state-transition function $\Psi_1$:
 \begin{equation}
   \Psi_1\colon \abracegroup{
-    \tuple{\blob, \bitstring, \sequence{\pvmreg}, \pvmreg, \gas, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram}\\
-    \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \registers, \mem} &\mapsto \tup{\varepsilon^*, \imath^*, \gascounter^*, \registers^*, \mem^*}
+    \tuple{\blob, \bitstring, \sequence{\pvmreg}, \pvmreg, \gas, \bool, \regs, \ram} &\to \tuple{\set{\panic, \halt, \continue } \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \gas, \bool, \regs, \ram}\\
+    \tup{\pvm¬blob, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\mapsto \tup{\varepsilon^*, \imath^*, \gascounter^*, \gaschargedflag^*, \registers^*, \mem^*}
   }
+\end{equation}
+
+On the very first step of execution, and every time the execution enters a new basic block or jumps back to the beginning of the current basic block, the gas counter of the machine is updated according to the gas cost function $\gascostforblock$~(\ref{eq:gascostforblock}) of the target basic block. No instruction is allowed to execute within a basic block unless the gas cost for the entire basic block has been charged in advance. In case there's not enough gas remaining to cover the full gas cost, the execution is interrupted and the gas counter remains unchanged. Formally:
+
+\begin{equation}
+  \tup{\varepsilon^{\gascounter}, \gascounter^*, \gaschargedflag'} = \begin{cases}
+    \tup{\continue, \gascounter, \top} &\when \gaschargedflag = \top \\
+    \tup{\continue, \gascounter - \gascostforblock(\mathbf{c}, \mathbf{k}, \startofbasicblock(\imath)), \top} &\otherwhen \gascounter \ge \gascostforblock(\mathbf{c}, \mathbf{k}, \startofbasicblock(\imath)) \\
+    \tup{\oog, \gascounter, \bot} &\otherwise
+  \end{cases}
 \end{equation}
 
 During the course of executing instructions \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
 
-Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\mu$ which shall, if not $\continue$, singly effect the returned return of $\Psi_1$ as following:
+Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\mu$ as following:
+\begin{equation}
+  \begin{aligned}
+    \varepsilon^{\mu} &= \begin{cases}
+      \continue &\when \mathbf{x} = \emptyset \\
+      \panic &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
+      \fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize} &\otherwise
+    \end{cases}\\
+    \where \mathbf{x} &= \set{\build{x}{x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \readable\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \writable\mem}}
+  \end{aligned}
+\end{equation}
+
+We define the final execution state, the value of the instruction counter, the values of the registers and the memory as follows:
 \begin{align}
-  \using \mathbf{x} &= \set{\build{x}{x \in \mathbf{r} \wedge x \bmod 2^{32} \not\in \readable\mem\ \vee\ x \in \mathbf{w} \wedge x \bmod 2^{32} \not\in \writable\mem}} \\
-  \tup{\varepsilon^*, \imath^*, \gascounter^*, \registers^*, \mem^*} &= \begin{cases}
-    \tup{\varepsilon, \imath', \gascounter', \registers', \mem'} &\when \mathbf{x} = \emset \\
-    \tup{\panic, \imath, \gascounter', \registers, \mem} &\when \min(\mathbf{x}) \bmod 2^{32} < 2^{16} \\
-    \tup{\fault \times \Cpvmpagesize\floor{\min(\mathbf{x}) \bmod 2^{32} \div \Cpvmpagesize}, \imath, \gascounter', \registers, \mem} &\otherwise
+  \tup{\varepsilon^*, \imath^*, \registers^*, \mem^*} &= \begin{cases}
+    \tup{\varepsilon^{\gascounter}, \imath, \registers, \mem} &\when \varepsilon^{\gascounter} \neq \continue \\
+    \tup{\varepsilon^{\mu}, \imath, \registers, \mem} &\otherwhen \varepsilon^{\mu} \neq \continue \\
+    \tup{\varepsilon, \imath', \registers', \mem'} &\otherwise
   \end{cases}
 \end{align}
 
-We define $\varepsilon$ together with the posterior values of regular execution (denoted as prime) of each of the items of the machine state as being in accordance with the table below. When transitioning machine state for an instruction, a number of conditions typically hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one, the gas remaining is reduced by the amount corresponding to the instruction type and \textsc{ram} \& registers are unchanged. Formally:
+We also have to adjust the state based on the executed instruction, to force a gas charge on the next step when necessary:
 \begin{equation}
-  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \gascounter' = \gascounter - \gascost,\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
+  \gaschargedflag^* = \begin{cases}
+    \bot &\when \gaschargedflag' = \bot \lor (\mathbf{c}_\imath \in T \land \varepsilon^* \in \set{\continue} \cup \set{\host} \times \pvmreg) \\
+    \top &\otherwise
+  \end{cases}
 \end{equation}
 
-In the case that $\Psi_1$ takes the $\varepsilon^\mu$
+We define $\varepsilon$ together with the posterior values of regular execution (denoted as prime) of each of the items of the machine state as being in accordance with the table below. When transitioning machine state for an instruction, a number of conditions typically hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one and \textsc{ram} \& registers are unchanged. Formally:
+\begin{equation}
+  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
+\end{equation}
 
 We define signed/unsigned transitions for various octet widths:
 \begin{align}
@@ -195,11 +243,19 @@ Immediate arguments are encoded in little-endian format with the most-significan
   }
 \end{align}
 
-Any alterations of the program counter stemming from a static jump, call or branch must be to the start of a basic block or else a panic occurs. Hypotheticals are not considered. Formally:
+Any alterations of the program counter stemming from an unconditional static jump must be to the start of a basic block or else a panic occurs. Formally:
+\begin{equation}
+  \token{sjump}(b) \implies \tup{\varepsilon, \imath'} = \begin{cases}
+    \tup{\panic, \imath} &\when b \not\in \basicblocks \\
+    \tup{\continue, b} &\otherwise
+  \end{cases}
+\end{equation}
+
+Similarly, conditional jumps are valid if and only if both branches point to the start of a basic block (regardless of whether a branch is taken), otherwise a panic occurs:
 \begin{equation}
   \token{branch}(b, C) \implies \tup{\varepsilon, \imath'} = \begin{cases}
-    \tup{\continue, \imath} &\when \lnot C \\
-    \tup{\panic, \imath} &\otherwhen b \not\in \basicblocks \\
+    \tup{\panic, \imath} &\when b \not\in \basicblocks \lor \imath + 1 + \text{skip}(\imath) \not\in \basicblocks \\
+    \tup{\continue, \imath} &\otherwhen \lnot C \\
     \tup{\continue, b} &\otherwise
   \end{cases}
 \end{equation}
@@ -217,17 +273,6 @@ As with other irregular alterations to the program counter, target code index mu
 
 \subsection{Instruction Tables}\label{sec:instructiontables}
 
-Only instructions which are defined in the following tables and whose opcode has its corresponding bit set in the bitmask are considered valid, otherwise the instruction behaves as-if its opcode was equal to zero. Assuming $U$ denotes all valid opcode indices, formally:
-\begin{equation}
-  \text{opcode}\colon\abracegroup{
-    \N &\to \N\\
-    n &\mapsto \begin{cases}
-    \mathbf{c}\sub{n} &\when \mathbf{k}\sub{n} = 1 \wedge \mathbf{c}\sub{n} \in U \\
-    0 &\otherwise
-    \end{cases}
-  }
-\end{equation}
-
 We assume the skip length $\ell$ is well-defined:
 \begin{equation}
   \ell \equiv \Fskip(\imath)
@@ -235,15 +280,17 @@ We assume the skip length $\ell$ is well-defined:
 
 \subsubsection{Instructions without Arguments}
 
-\newcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{20mm} p{5mm} p{100mm}}
+\newcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{20mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  0&\token{trap}&1&$\varepsilon = \panic$\\
+  0&\token{trap}&$\varepsilon = \panic$\\
   \mrule
-  1&\token{fallthrough}&1&\\
+  1&\token{fallthrough}&$\token{sjump}(\imath + 1 + \text{skip}(\imath))$\\
+  \mrule
+  2&\token{unlikely}&\\
   \bottomrule
 \end{longtable}
 
@@ -255,13 +302,13 @@ We assume the skip length $\ell$ is well-defined:
 \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{25mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  10&\token{ecalli}&1&$\varepsilon = \host \times \immed_X$\\
+  10&\token{ecalli}&$\varepsilon = \host \times \immed_X$\\
 \bottomrule
 \end{longtable}
 
@@ -272,13 +319,13 @@ We assume the skip length $\ell$ is well-defined:
   \immed_X \equiv \decode[8]{\instructions\subrange{\imath+2}{8}}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{25mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  20&\token{load\_imm\_64}&1&$\reg'_A = \immed_X$\\
+  20&\token{load\_imm\_64}&$\reg'_A = \immed_X$\\
 \bottomrule
 \end{longtable}
 
@@ -292,16 +339,16 @@ We assume the skip length $\ell$ is well-defined:
 \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{25mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  30&\token{store\_imm\_u8}&1&$\memwr_{\immed_X} = \immed_Y \bmod 2^8 $\\ \mrule
-  31&\token{store\_imm\_u16}&1&$\memwr\subrange{\immed_X}{2} = \encode[2]{\immed_Y \bmod 2^{16}}$\\ \mrule
-  32&\token{store\_imm\_u32}&1&$\memwr\subrange{\immed_X}{4} = \encode[4]{\immed_Y \bmod 2^{32}}$\\ \mrule
-  33&\token{store\_imm\_u64}&1&$\memwr\subrange{\immed_X}{8} = \encode[8]{\immed_Y}$\\
+  30&\token{store\_imm\_u8}&$\memwr_{\immed_X} = \immed_Y \bmod 2^8 $\\ \mrule
+  31&\token{store\_imm\_u16}&$\memwr\subrange{\immed_X}{2} = \encode[2]{\immed_Y \bmod 2^{16}}$\\ \mrule
+  32&\token{store\_imm\_u32}&$\memwr\subrange{\immed_X}{4} = \encode[4]{\immed_Y \bmod 2^{32}}$\\ \mrule
+  33&\token{store\_imm\_u64}&$\memwr\subrange{\immed_X}{8} = \encode[8]{\immed_Y}$\\
 \bottomrule
 \end{longtable}
 
@@ -313,13 +360,13 @@ We assume the skip length $\ell$ is well-defined:
 \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{25mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  40&\token{jump}&1&$\token{branch}(\immed_X, \top)$\\
+  40&\token{jump}&$\token{sjump}(\immed_X)$\\
 \bottomrule
 \end{longtable}
 
@@ -334,25 +381,25 @@ We assume the skip length $\ell$ is well-defined:
 \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{25mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  50&\token{jump\_ind}&1&$\token{djump}((\reg_A + \immed_X) \bmod 2^{32})$\\ \mrule
-  51&\token{load\_imm}&1&$\reg'_A = \immed_X$\\ \mrule
-  52&\token{load\_u8}&1&$\reg'_A = \memr_{\immed_X}$\\ \mrule
-  53&\token{load\_i8}&1&$\reg'_A = \sext{1}{\memr_{\immed_X}}$\\ \mrule
-  54&\token{load\_u16}&1&$\reg'_A = \decode[2]{\memr\subrange{\immed_X}{2}}$\\ \mrule
-  55&\token{load\_i16}&1&$\reg'_A = \sext{2}{\decode[2]{\memr\subrange{\immed_X}{2}}}$\\ \mrule
-  56&\token{load\_u32}&1&$\reg'_A = \decode[4]{\memr\subrange{\immed_X}{4}}$\\ \mrule
-  57&\token{load\_i32}&1&$\reg'_A = \sext{4}{\decode[4]{\memr\subrange{\immed_X}{4}}}$\\ \mrule
-  58&\token{load\_u64}&1&$\reg'_A = \decode[8]{\memr\subrange{\immed_X}{8}}$\\ \mrule
-  59&\token{store\_u8}&1&$\memwr_{\immed_X} = \reg_A \bmod 2^8$\\ \mrule
-  60&\token{store\_u16}&1&$\memwr\subrange{\immed_X}{2} = \encode[2]{\reg_A \bmod 2^{16}}$\\ \mrule
-  61&\token{store\_u32}&1&$\memwr\subrange{\immed_X}{4} = \encode[4]{\reg_A \bmod 2^{32}}$\\ \mrule
-  62&\token{store\_u64}&1&$\memwr\subrange{\immed_X}{8} = \encode[8]{\reg_A}$\\
+  50&\token{jump\_ind}&$\token{djump}((\reg_A + \immed_X) \bmod 2^{32})$\\ \mrule
+  51&\token{load\_imm}&$\reg'_A = \immed_X$\\ \mrule
+  52&\token{load\_u8}&$\reg'_A = \memr_{\immed_X}$\\ \mrule
+  53&\token{load\_i8}&$\reg'_A = \sext{1}{\memr_{\immed_X}}$\\ \mrule
+  54&\token{load\_u16}&$\reg'_A = \decode[2]{\memr\subrange{\immed_X}{2}}$\\ \mrule
+  55&\token{load\_i16}&$\reg'_A = \sext{2}{\decode[2]{\memr\subrange{\immed_X}{2}}}$\\ \mrule
+  56&\token{load\_u32}&$\reg'_A = \decode[4]{\memr\subrange{\immed_X}{4}}$\\ \mrule
+  57&\token{load\_i32}&$\reg'_A = \sext{4}{\decode[4]{\memr\subrange{\immed_X}{4}}}$\\ \mrule
+  58&\token{load\_u64}&$\reg'_A = \decode[8]{\memr\subrange{\immed_X}{8}}$\\ \mrule
+  59&\token{store\_u8}&$\memwr_{\immed_X} = \reg_A \bmod 2^8$\\ \mrule
+  60&\token{store\_u16}&$\memwr\subrange{\immed_X}{2} = \encode[2]{\reg_A \bmod 2^{16}}$\\ \mrule
+  61&\token{store\_u32}&$\memwr\subrange{\immed_X}{4} = \encode[4]{\reg_A \bmod 2^{32}}$\\ \mrule
+  62&\token{store\_u64}&$\memwr\subrange{\immed_X}{8} = \encode[8]{\reg_A}$\\
 \bottomrule
 \end{longtable}
 
@@ -369,16 +416,16 @@ We assume the skip length $\ell$ is well-defined:
 \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{25mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  70&\token{store\_imm\_ind\_u8}&1&$\memwr_{\reg_A + \immed_X} = \immed_Y \bmod 2^8$\\ \mrule
-  71&\token{store\_imm\_ind\_u16}&1&$\memwr\subrange{\reg_A + \immed_X}{2} = \encode[2]{\immed_Y \bmod 2^{16}}$\\ \mrule
-  72&\token{store\_imm\_ind\_u32}&1&$\memwr\subrange{\reg_A + \immed_X}{4} = \encode[4]{\immed_Y \bmod 2^{32}}$\\ \mrule
-  73&\token{store\_imm\_ind\_u64}&1&$\memwr\subrange{\reg_A + \immed_X}{8} = \encode[8]{\immed_Y}$\\
+  70&\token{store\_imm\_ind\_u8}&$\memwr_{\reg_A + \immed_X} = \immed_Y \bmod 2^8$\\ \mrule
+  71&\token{store\_imm\_ind\_u16}&$\memwr\subrange{\reg_A + \immed_X}{2} = \encode[2]{\immed_Y \bmod 2^{16}}$\\ \mrule
+  72&\token{store\_imm\_ind\_u32}&$\memwr\subrange{\reg_A + \immed_X}{4} = \encode[4]{\immed_Y \bmod 2^{32}}$\\ \mrule
+  73&\token{store\_imm\_ind\_u64}&$\memwr\subrange{\reg_A + \immed_X}{8} = \encode[8]{\immed_Y}$\\
   \bottomrule
 \end{longtable}
 
@@ -395,23 +442,23 @@ We assume the skip length $\ell$ is well-defined:
   \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{25mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  80&\token{load\_imm\_jump}&1&$\token{branch}(\immed_Y, \top)\ ,\qquad \reg_A' = \immed_X$\\ \mrule
-  81&\token{branch\_eq\_imm}&1&$\token{branch}(\immed_Y, \reg_A = \immed_X)$\\ \mrule
-  82&\token{branch\_ne\_imm}&1&$\token{branch}(\immed_Y, \reg_A \ne \immed_X)$\\ \mrule
-  83&\token{branch\_lt\_u\_imm}&1&$\token{branch}(\immed_Y, \reg_A < \immed_X)$\\ \mrule
-  84&\token{branch\_le\_u\_imm}&1&$\token{branch}(\immed_Y, \reg_A \le \immed_X)$\\ \mrule
-  85&\token{branch\_ge\_u\_imm}&1&$\token{branch}(\immed_Y, \reg_A \ge \immed_X)$\\ \mrule
-  86&\token{branch\_gt\_u\_imm}&1&$\token{branch}(\immed_Y, \reg_A > \immed_X)$\\ \mrule
-  87&\token{branch\_lt\_s\_imm}&1&$\token{branch}(\immed_Y, \signed{\reg_A} < \signed{\immed_X})$\\ \mrule
-  88&\token{branch\_le\_s\_imm}&1&$\token{branch}(\immed_Y, \signed{\reg_A} \le \signed{\immed_X})$\\ \mrule
-  89&\token{branch\_ge\_s\_imm}&1&$\token{branch}(\immed_Y, \signed{\reg_A} \ge \signed{\immed_X})$\\ \mrule
-  90&\token{branch\_gt\_s\_imm}&1&$\token{branch}(\immed_Y, \signed{\reg_A} > \signed{\immed_X})$\\
+  80&\token{load\_imm\_jump}&$\token{sjump}(\immed_Y)\ ,\qquad \reg_A' = \immed_X$\\ \mrule
+  81&\token{branch\_eq\_imm}&$\token{branch}(\immed_Y, \reg_A = \immed_X)$\\ \mrule
+  82&\token{branch\_ne\_imm}&$\token{branch}(\immed_Y, \reg_A \ne \immed_X)$\\ \mrule
+  83&\token{branch\_lt\_u\_imm}&$\token{branch}(\immed_Y, \reg_A < \immed_X)$\\ \mrule
+  84&\token{branch\_le\_u\_imm}&$\token{branch}(\immed_Y, \reg_A \le \immed_X)$\\ \mrule
+  85&\token{branch\_ge\_u\_imm}&$\token{branch}(\immed_Y, \reg_A \ge \immed_X)$\\ \mrule
+  86&\token{branch\_gt\_u\_imm}&$\token{branch}(\immed_Y, \reg_A > \immed_X)$\\ \mrule
+  87&\token{branch\_lt\_s\_imm}&$\token{branch}(\immed_Y, \signed{\reg_A} < \signed{\immed_X})$\\ \mrule
+  88&\token{branch\_le\_s\_imm}&$\token{branch}(\immed_Y, \signed{\reg_A} \le \signed{\immed_X})$\\ \mrule
+  89&\token{branch\_ge\_s\_imm}&$\token{branch}(\immed_Y, \signed{\reg_A} \ge \signed{\immed_X})$\\ \mrule
+  90&\token{branch\_gt\_s\_imm}&$\token{branch}(\immed_Y, \signed{\reg_A} > \signed{\immed_X})$\\
   \bottomrule
 \end{longtable}
 
@@ -427,34 +474,26 @@ We assume the skip length $\ell$ is well-defined:
 \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{32mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{32mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  100&\token{move\_reg}&1&$\reg'_D = \reg_A$\\ \mrule
-  101&\token{sbrk}&1&$\begin{aligned}
-    \reg'_D \equiv &\min(x \in \pvmreg): \\
-    &x \ge h\\
-    &\Nrange{x}{\reg_A} \not\subseteq \readable{\memory}\\
-    &\Nrange{x}{\reg_A} \subseteq \writable{\memory'}
-  \end{aligned}$\\ \mrule
-  102&\token{count\_set\_bits\_64}&1&$\displaystyle\reg'_D = \sum_{i = 0}^{63}\bitsfunc{8}(\reg_A)\sub{i}$\\ \mrule
-  103&\token{count\_set\_bits\_32}&1&$\displaystyle\reg'_D = \sum_{i = 0}^{31}\bitsfunc{4}(\reg_A \bmod 2^{32})\sub{i}$\\ \mrule
-  104&\token{leading\_zero\_bits\_64}&1&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{8}(\reg_A)\sub{i} = 0$\\ \mrule
-  105&\token{leading\_zero\_bits\_32}&1&$\displaystyle\reg'_D = \max(n \in \Nmax{33})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{4}(\reg_A \bmod 2^{32})\sub{i} = 0$\\ \mrule
-  106&\token{trailing\_zero\_bits\_64}&1&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \bitsfunc{8}(\reg_A)\sub{i} = 0$\\ \mrule
-  107&\token{trailing\_zero\_bits\_32}&1&$\displaystyle\reg'_D = \max(n \in \Nmax{33})\ \where \sum_{i = 0}^{i < n} \bitsfunc{4}(\reg_A \bmod 2^{32})\sub{i} = 0$\\ \mrule
-  108&\token{sign\_extend\_8}&1&$\reg'_D = \unsigned{\signedn{1}{\reg_A \bmod 2^8}}$\\ \mrule
-  109&\token{sign\_extend\_16}&1&$\reg'_D = \unsigned{\signedn{2}{\reg_A \bmod 2^{16}}}$\\ \mrule
-  110&\token{zero\_extend\_16}&1&$\reg'_D = \reg_A \bmod 2^{16}$\\ \mrule
-  111&\token{reverse\_bytes}&1&$\forall i \in \N_8 : \encode[8]{\reg'_D}\sub{i} = \encode[8]{\reg_A}_{7-i}$\\
-%  10X&\token{}&1&$\reg'_D = ...$\\ \mrule
+  100&\token{move\_reg}&$\reg'_D = \reg_A$\\ \mrule
+  101&\token{count\_set\_bits\_64}&$\displaystyle\reg'_D = \sum_{i = 0}^{63}\bitsfunc{8}(\reg_A)\sub{i}$\\ \mrule
+  102&\token{count\_set\_bits\_32}&$\displaystyle\reg'_D = \sum_{i = 0}^{31}\bitsfunc{4}(\reg_A \bmod 2^{32})\sub{i}$\\ \mrule
+  103&\token{leading\_zero\_bits\_64}&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{8}(\reg_A)\sub{i} = 0$\\ \mrule
+  104&\token{leading\_zero\_bits\_32}&$\displaystyle\reg'_D = \max(n \in \Nmax{33})\ \where \sum_{i = 0}^{i < n} \revbitsfunc{4}(\reg_A \bmod 2^{32})\sub{i} = 0$\\ \mrule
+  105&\token{trailing\_zero\_bits\_64}&$\displaystyle\reg'_D = \max(n \in \Nmax{65})\ \where \sum_{i = 0}^{i < n} \bitsfunc{8}(\reg_A)\sub{i} = 0$\\ \mrule
+  106&\token{trailing\_zero\_bits\_32}&$\displaystyle\reg'_D = \max(n \in \Nmax{33})\ \where \sum_{i = 0}^{i < n} \bitsfunc{4}(\reg_A \bmod 2^{32})\sub{i} = 0$\\ \mrule
+  107&\token{sign\_extend\_8}&$\reg'_D = \unsigned{\signedn{1}{\reg_A \bmod 2^8}}$\\ \mrule
+  108&\token{sign\_extend\_16}&$\reg'_D = \unsigned{\signedn{2}{\reg_A \bmod 2^{16}}}$\\ \mrule
+  109&\token{zero\_extend\_16}&$\reg'_D = \reg_A \bmod 2^{16}$\\ \mrule
+  110&\token{reverse\_bytes}&$\forall i \in \N_8 : \encode[8]{\reg'_D}\sub{i} = \encode[8]{\reg_A}_{7-i}$\\
+%  10X&\token{}&$\reg'_D = ...$\\ \mrule
 \bottomrule
 \end{longtable}
-
-Note, the term $h$ above refers to the beginning of the heap, the second major section of memory as defined in equation \ref{eq:memlayout} as $2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}}$. If $\token{sbrk}$ instruction is invoked on a \textsc{pvm} instance which does not have such a memory layout, then $h = 0$.
 
 \subsubsection{Instructions with Arguments of Two Registers \& One Immediate}
 \begin{equation}
@@ -470,61 +509,61 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{35mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{35mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  120&\token{store\_ind\_u8}&1&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
-  121&\token{store\_ind\_u16}&1&$\memwr\subrange{\reg_B + \immed_X}{2} = \encode[2]{\reg_A \bmod 2^{16}}$\\ \mrule
-  122&\token{store\_ind\_u32}&1&$\memwr\subrange{\reg_B + \immed_X}{4} = \encode[4]{\reg_A \bmod 2^{32}}$\\ \mrule
-  123&\token{store\_ind\_u64}&1&$\memwr\subrange{\reg_B + \immed_X}{8} = \encode[8]{\reg_A}$\\ \mrule
-  124&\token{load\_ind\_u8}&1&$\reg'_A = \memr_{\reg_B + \immed_X}$\\ \mrule
-  125&\token{load\_ind\_i8}&1&$\reg'_A = \unsigned{\signedn{1}{\memr_{\reg_B + \immed_X}}}$\\ \mrule
-  126&\token{load\_ind\_u16}&1&$\reg'_A = \decode[2]{\memr\subrange{\reg_B + \immed_X}{2}}$\\ \mrule
-  127&\token{load\_ind\_i16}&1&$\reg'_A = \unsigned{\signedn{2}{\decode[2]{\memr\subrange{\reg_B + \immed_X}{2}}}}$\\ \mrule
-  128&\token{load\_ind\_u32}&1&$\reg'_A = \decode[4]{\memr\subrange{\reg_B + \immed_X}{4}}$\\ \mrule
-  129&\token{load\_ind\_i32}&1&$\reg'_A = \unsigned{\signedn{4}{\decode[4]{\memr\subrange{\reg_B + \immed_X}{4}}}}$\\ \mrule
-  130&\token{load\_ind\_u64}&1&$\reg'_A = \decode[8]{\memr\subrange{\reg_B + \immed_X}{8}}$\\ \mrule
-  131&\token{add\_imm\_32}&1&$\reg'_A = \sext{4}{(\reg_B + \immed_X) \bmod 2^{32}}$\\ \mrule
-  132&\token{and\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \wedge \bits{\immed_X}\sub{i}$\\ \mrule
-  133&\token{xor\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \oplus \bits{\immed_X}\sub{i}$\\ \mrule
-  134&\token{or\_imm}&1&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \vee \bits{\immed_X}\sub{i}$\\ \mrule
-  135&\token{mul\_imm\_32}&1&$\reg'_A = \sext{4}{(\reg_B \cdot \immed_X) \bmod 2^{32}}$\\ \mrule
-  136&\token{set\_lt\_u\_imm}&1&$\reg'_A = \reg_B < \immed_X$\\ \mrule
-  137&\token{set\_lt\_s\_imm}&1&$\reg'_A = \signed{\reg_B} < \signed{\immed_X}$\\ \mrule
-  138&\token{shlo\_l\_imm\_32}&1&$\reg'_A = \sext{4}{(\reg_B \cdot 2^{\immed_X \bmod 32}) \bmod 2^{32}}$\\ \mrule
-  139&\token{shlo\_r\_imm\_32}&1&$\reg'_A = \sext{4}{\floor{\reg_B \bmod 2^{32} \div 2^{\immed_X \bmod 32}}}$\\ \mrule
-  140&\token{shar\_r\_imm\_32}&1&$\reg'_A = \unsigned{\floor{\signedn{4}{\reg_B \bmod 2^{32} } \div 2^{\immed_X \bmod 32}}}$\\ \mrule
-  141&\token{neg\_add\_imm\_32}&1&$\reg'_A = \sext{4}{(\immed_X + 2^{32} - \reg_B) \bmod 2^{32}}$\\ \mrule
-  142&\token{set\_gt\_u\_imm}&1&$\reg'_A = \reg_B > \immed_X$\\ \mrule
-  143&\token{set\_gt\_s\_imm}&1&$\reg'_A = \signed{\reg_B} > \signed{\immed_X}$\\ \mrule
-  144&\token{shlo\_l\_imm\_alt\_32}&1&$\reg'_A = \sext{4}{(\immed_X \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}}$\\ \mrule
-  145&\token{shlo\_r\_imm\_alt\_32}&1&$\reg'_A = \sext{4}{\floor{\immed_X \bmod 2^{32} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
-  146&\token{shar\_r\_imm\_alt\_32}&1&$\reg'_A = \unsigned{\floor{\signedn{4}{\immed_X \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
-  147&\token{cmov\_iz\_imm}&1&$\reg'_A = \begin{cases}
+  120&\token{store\_ind\_u8}&$\memwr_{\reg_B + \immed_X} = \reg_A \bmod 2^8$\\ \mrule
+  121&\token{store\_ind\_u16}&$\memwr\subrange{\reg_B + \immed_X}{2} = \encode[2]{\reg_A \bmod 2^{16}}$\\ \mrule
+  122&\token{store\_ind\_u32}&$\memwr\subrange{\reg_B + \immed_X}{4} = \encode[4]{\reg_A \bmod 2^{32}}$\\ \mrule
+  123&\token{store\_ind\_u64}&$\memwr\subrange{\reg_B + \immed_X}{8} = \encode[8]{\reg_A}$\\ \mrule
+  124&\token{load\_ind\_u8}&$\reg'_A = \memr_{\reg_B + \immed_X}$\\ \mrule
+  125&\token{load\_ind\_i8}&$\reg'_A = \unsigned{\signedn{1}{\memr_{\reg_B + \immed_X}}}$\\ \mrule
+  126&\token{load\_ind\_u16}&$\reg'_A = \decode[2]{\memr\subrange{\reg_B + \immed_X}{2}}$\\ \mrule
+  127&\token{load\_ind\_i16}&$\reg'_A = \unsigned{\signedn{2}{\decode[2]{\memr\subrange{\reg_B + \immed_X}{2}}}}$\\ \mrule
+  128&\token{load\_ind\_u32}&$\reg'_A = \decode[4]{\memr\subrange{\reg_B + \immed_X}{4}}$\\ \mrule
+  129&\token{load\_ind\_i32}&$\reg'_A = \unsigned{\signedn{4}{\decode[4]{\memr\subrange{\reg_B + \immed_X}{4}}}}$\\ \mrule
+  130&\token{load\_ind\_u64}&$\reg'_A = \decode[8]{\memr\subrange{\reg_B + \immed_X}{8}}$\\ \mrule
+  131&\token{add\_imm\_32}&$\reg'_A = \sext{4}{(\reg_B + \immed_X) \bmod 2^{32}}$\\ \mrule
+  132&\token{and\_imm}&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \wedge \bits{\immed_X}\sub{i}$\\ \mrule
+  133&\token{xor\_imm}&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \oplus \bits{\immed_X}\sub{i}$\\ \mrule
+  134&\token{or\_imm}&$\forall i \in \Nmax{64} : \bits{\reg'_A}\sub{i} = \bits{\reg_B}\sub{i} \vee \bits{\immed_X}\sub{i}$\\ \mrule
+  135&\token{mul\_imm\_32}&$\reg'_A = \sext{4}{(\reg_B \cdot \immed_X) \bmod 2^{32}}$\\ \mrule
+  136&\token{set\_lt\_u\_imm}&$\reg'_A = \reg_B < \immed_X$\\ \mrule
+  137&\token{set\_lt\_s\_imm}&$\reg'_A = \signed{\reg_B} < \signed{\immed_X}$\\ \mrule
+  138&\token{shlo\_l\_imm\_32}&$\reg'_A = \sext{4}{(\reg_B \cdot 2^{\immed_X \bmod 32}) \bmod 2^{32}}$\\ \mrule
+  139&\token{shlo\_r\_imm\_32}&$\reg'_A = \sext{4}{\floor{\reg_B \bmod 2^{32} \div 2^{\immed_X \bmod 32}}}$\\ \mrule
+  140&\token{shar\_r\_imm\_32}&$\reg'_A = \unsigned{\floor{\signedn{4}{\reg_B \bmod 2^{32} } \div 2^{\immed_X \bmod 32}}}$\\ \mrule
+  141&\token{neg\_add\_imm\_32}&$\reg'_A = \sext{4}{(\immed_X + 2^{32} - \reg_B) \bmod 2^{32}}$\\ \mrule
+  142&\token{set\_gt\_u\_imm}&$\reg'_A = \reg_B > \immed_X$\\ \mrule
+  143&\token{set\_gt\_s\_imm}&$\reg'_A = \signed{\reg_B} > \signed{\immed_X}$\\ \mrule
+  144&\token{shlo\_l\_imm\_alt\_32}&$\reg'_A = \sext{4}{(\immed_X \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}}$\\ \mrule
+  145&\token{shlo\_r\_imm\_alt\_32}&$\reg'_A = \sext{4}{\floor{\immed_X \bmod 2^{32} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  146&\token{shar\_r\_imm\_alt\_32}&$\reg'_A = \unsigned{\floor{\signedn{4}{\immed_X \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  147&\token{cmov\_iz\_imm}&$\reg'_A = \begin{cases}
     \immed_X &\when \reg_B = 0\\
     \reg_A &\otherwise
   \end{cases}$\\ \mrule
-  148&\token{cmov\_nz\_imm}&1&$\reg'_A = \begin{cases}
+  148&\token{cmov\_nz\_imm}&$\reg'_A = \begin{cases}
     \immed_X &\when \reg_B \ne 0\\
     \reg_A &\otherwise
   \end{cases}$\\ \mrule
-  149&\token{add\_imm\_64}&1&$\reg'_A = (\reg_B + \immed_X) \bmod 2^{64}$\\ \mrule
-  150&\token{mul\_imm\_64}&1&$\reg'_A = (\reg_B \cdot \immed_X) \bmod 2^{64}$\\ \mrule
+  149&\token{add\_imm\_64}&$\reg'_A = (\reg_B + \immed_X) \bmod 2^{64}$\\ \mrule
+  150&\token{mul\_imm\_64}&$\reg'_A = (\reg_B \cdot \immed_X) \bmod 2^{64}$\\ \mrule
   % \sext{8} is a no-op - WTF is this doing here??
-  151&\token{shlo\_l\_imm\_64}&1&$\reg'_A = \sext{8}{(\reg_B \cdot 2^{\immed_X \bmod 64}) \bmod 2^{64}}$\\ \mrule
-  152&\token{shlo\_r\_imm\_64}&1&$\reg'_A = \sext{8}{\floor{\reg_B \div 2^{\immed_X \bmod 64}}}$\\ \mrule
-  153&\token{shar\_r\_imm\_64}&1&$\reg'_A = \unsigned{\floor{\signed{\reg_B} \div 2^{\immed_X \bmod 64}}}$\\ \mrule
-  154&\token{neg\_add\_imm\_64}&1&$\reg'_A = (\immed_X + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
-  155&\token{shlo\_l\_imm\_alt\_64}&1&$\reg'_A = (\immed_X \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
-  156&\token{shlo\_r\_imm\_alt\_64}&1&$\reg'_A = \floor{\immed_X \div 2^{\reg_B \bmod 64}}$\\ \mrule
-  157&\token{shar\_r\_imm\_alt\_64}&1&$\reg'_A = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
-  158&\token{rot\_r\_64\_imm}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_A)\sub{i} = \bitsfunc{8}(\reg_B)_{(i + \immed_X) \bmod 64}$\\ \mrule
-  159&\token{rot\_r\_64\_imm\_alt}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_A)\sub{i} = \bitsfunc{8}(\immed_X)_{(i + \reg_B) \bmod 64}$\\ \mrule
-  160&\token{rot\_r\_32\_imm}&1&$\reg'_A = \sext{4}{x} \ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\reg_B)_{(i + \immed_X) \bmod 32}$\\ \mrule
-  161&\token{rot\_r\_32\_imm\_alt}&1&$\reg'_A = \sext{4}{x} \ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\immed_X)_{(i + \reg_B) \bmod 32}$\\
+  151&\token{shlo\_l\_imm\_64}&$\reg'_A = \sext{8}{(\reg_B \cdot 2^{\immed_X \bmod 64}) \bmod 2^{64}}$\\ \mrule
+  152&\token{shlo\_r\_imm\_64}&$\reg'_A = \sext{8}{\floor{\reg_B \div 2^{\immed_X \bmod 64}}}$\\ \mrule
+  153&\token{shar\_r\_imm\_64}&$\reg'_A = \unsigned{\floor{\signed{\reg_B} \div 2^{\immed_X \bmod 64}}}$\\ \mrule
+  154&\token{neg\_add\_imm\_64}&$\reg'_A = (\immed_X + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
+  155&\token{shlo\_l\_imm\_alt\_64}&$\reg'_A = (\immed_X \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
+  156&\token{shlo\_r\_imm\_alt\_64}&$\reg'_A = \floor{\immed_X \div 2^{\reg_B \bmod 64}}$\\ \mrule
+  157&\token{shar\_r\_imm\_alt\_64}&$\reg'_A = \unsigned{\floor{\signed{\immed_X} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
+  158&\token{rot\_r\_64\_imm}&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_A)\sub{i} = \bitsfunc{8}(\reg_B)_{(i + \immed_X) \bmod 64}$\\ \mrule
+  159&\token{rot\_r\_64\_imm\_alt}&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_A)\sub{i} = \bitsfunc{8}(\immed_X)_{(i + \reg_B) \bmod 64}$\\ \mrule
+  160&\token{rot\_r\_32\_imm}&$\reg'_A = \sext{4}{x} \ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\reg_B)_{(i + \immed_X) \bmod 32}$\\ \mrule
+  161&\token{rot\_r\_32\_imm\_alt}&$\reg'_A = \sext{4}{x} \ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\immed_X)_{(i + \reg_B) \bmod 32}$\\
   \bottomrule
 \end{longtable}
 
@@ -542,18 +581,18 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{25mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  170&\token{branch\_eq}&1&$\token{branch}(\immed_X, \reg_A = \reg_B)$\\ \mrule
-  171&\token{branch\_ne}&1&$\token{branch}(\immed_X, \reg_A \ne \reg_B)$\\ \mrule
-  172&\token{branch\_lt\_u}&1&$\token{branch}(\immed_X, \reg_A < \reg_B)$\\ \mrule
-  173&\token{branch\_lt\_s}&1&$\token{branch}(\immed_X, \signed{\reg_A} < \signed{\reg_B})$\\ \mrule
-  174&\token{branch\_ge\_u}&1&$\token{branch}(\immed_X, \reg_A \ge \reg_B)$\\ \mrule
-  175&\token{branch\_ge\_s}&1&$\token{branch}(\immed_X, \signed{\reg_A} \ge \signed{\reg_B})$\\
+  170&\token{branch\_eq}&$\token{branch}(\immed_X, \reg_A = \reg_B)$\\ \mrule
+  171&\token{branch\_ne}&$\token{branch}(\immed_X, \reg_A \ne \reg_B)$\\ \mrule
+  172&\token{branch\_lt\_u}&$\token{branch}(\immed_X, \reg_A < \reg_B)$\\ \mrule
+  173&\token{branch\_lt\_s}&$\token{branch}(\immed_X, \signed{\reg_A} < \signed{\reg_B})$\\ \mrule
+  174&\token{branch\_ge\_u}&$\token{branch}(\immed_X, \reg_A \ge \reg_B)$\\ \mrule
+  175&\token{branch\_ge\_s}&$\token{branch}(\immed_X, \signed{\reg_A} \ge \signed{\reg_B})$\\
 \bottomrule
 \end{longtable}
 
@@ -574,13 +613,13 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
   \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}{p{8mm} p{25mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}{p{8mm} p{25mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  180&\token{load\_imm\_jump\_ind}&1&$
+  180&\token{load\_imm\_jump\_ind}&$
     \token{djump}((\reg_B + \immed_Y) \bmod 2^{32}) \ ,\qquad
     \reg_A' = \immed_X
   $\\
@@ -602,89 +641,89 @@ Note, the term $h$ above refers to the beginning of the heap, the second major s
 \end{aligned}
 \end{equation}
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-4}}
-\begin{longtable}[t]{p{8mm} p{20mm} p{5mm} p{100mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-3}}
+\begin{longtable}[t]{p{8mm} p{20mm} p{100mm}}
   \toprule
-  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{$\gascost$} & \thead{\textbf{Mutations}} \\
+  \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  190&\token{add\_32}&1&$\reg'_D = \sext{4}{(\reg_A + \reg_B) \bmod 2^{32}}$\\ \mrule
-  191&\token{sub\_32}&1&$\reg'_D = \sext{4}{(\reg_A + 2^{32} - (\reg_B \bmod 2^{32})) \bmod 2^{32}}$\\ \mrule
-  192&\token{mul\_32}&1&$\reg'_D = \sext{4}{(\reg_A \cdot \reg_B) \bmod 2^{32}}$\\ \mrule
-  193&\token{div\_u\_32}&1&$\reg'_D = \begin{cases}
+  190&\token{add\_32}&$\reg'_D = \sext{4}{(\reg_A + \reg_B) \bmod 2^{32}}$\\ \mrule
+  191&\token{sub\_32}&$\reg'_D = \sext{4}{(\reg_A + 2^{32} - (\reg_B \bmod 2^{32})) \bmod 2^{32}}$\\ \mrule
+  192&\token{mul\_32}&$\reg'_D = \sext{4}{(\reg_A \cdot \reg_B) \bmod 2^{32}}$\\ \mrule
+  193&\token{div\_u\_32}&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B \bmod 2^{32} = 0\\
     \sext{4}{\floor{(\reg_A \bmod 2^{32}) \div (\reg_B \bmod 2^{32})}} &\otherwise
   \end{cases}$\\ \mrule
-  194&\token{div\_s\_32}&1&$\reg'_D = \begin{cases}
+  194&\token{div\_s\_32}&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when b = 0\\
     \unsigned{a} &\when a = -2^{31} \wedge b = -1\\
     \unsigned{\rtz(a \div b)} &\otherwise \\[2pt]
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
-  195&\token{rem\_u\_32}&1&$\reg'_D = \begin{cases}
+  195&\token{rem\_u\_32}&$\reg'_D = \begin{cases}
     \sext{4}{\reg_A \bmod 2^{32}} &\when \reg_B \bmod 2^{32} = 0\\
     \sext{4}{(\reg_A \bmod 2^{32}) \bmod (\reg_B \bmod 2^{32})} &\otherwise
   \end{cases}$\\ \mrule
-  196&\token{rem\_s\_32}&1&$\reg'_D = \begin{cases}
+  196&\token{rem\_s\_32}&$\reg'_D = \begin{cases}
     0 &\when a = -2^{31} \wedge b = -1 \\
     \unsigned{\smod(a, b)} &\otherwise \\[2pt]
     \multicolumn{2}{l}{\quad \where a = \signedn{4}{\reg_A \bmod 2^{32}}\,,\ b = \signedn{4}{\reg_B \bmod 2^{32}}}\\
   \end{cases}$\\ \mrule
-  197&\token{shlo\_l\_32}&1&$\reg'_D = \sext{4}{(\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}}$\\ \mrule
-  198&\token{shlo\_r\_32}&1&$\reg'_D = \sext{4}{\floor{(\reg_A \bmod 2^{32}) \div 2^{\reg_B \bmod 32}}}$\\ \mrule
-  199&\token{shar\_r\_32}&1&$\reg'_D = \unsigned{\floor{\signedn{4}{\reg_A \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  197&\token{shlo\_l\_32}&$\reg'_D = \sext{4}{(\reg_A \cdot 2^{\reg_B \bmod 32}) \bmod 2^{32}}$\\ \mrule
+  198&\token{shlo\_r\_32}&$\reg'_D = \sext{4}{\floor{(\reg_A \bmod 2^{32}) \div 2^{\reg_B \bmod 32}}}$\\ \mrule
+  199&\token{shar\_r\_32}&$\reg'_D = \unsigned{\floor{\signedn{4}{\reg_A \bmod 2^{32}} \div 2^{\reg_B \bmod 32}}}$\\ \mrule
 
-  200&\token{add\_64}&1&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{64}$\\ \mrule
-  201&\token{sub\_64}&1&$\reg'_D = (\reg_A + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
-  202&\token{mul\_64}&1&$\reg'_D = (\reg_A \cdot \reg_B) \bmod 2^{64}$\\ \mrule
-  203&\token{div\_u\_64}&1&$\reg'_D = \begin{cases}
+  200&\token{add\_64}&$\reg'_D = (\reg_A + \reg_B) \bmod 2^{64}$\\ \mrule
+  201&\token{sub\_64}&$\reg'_D = (\reg_A + 2^{64} - \reg_B) \bmod 2^{64}$\\ \mrule
+  202&\token{mul\_64}&$\reg'_D = (\reg_A \cdot \reg_B) \bmod 2^{64}$\\ \mrule
+  203&\token{div\_u\_64}&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B = 0\\
     \floor{\reg_A \div \reg_B} &\otherwise
   \end{cases}$\\ \mrule
-  204&\token{div\_s\_64}&1&$\reg'_D = \begin{cases}
+  204&\token{div\_s\_64}&$\reg'_D = \begin{cases}
     2^{64} - 1 &\when \reg_B = 0\\
     \reg_A &\when \signed{\reg_A} = -2^{63} \wedge \signed{\reg_B} = -1\\
     \unsigned{\rtz(\signed{\reg_A} \div \signed{\reg_B})} &\otherwise
   \end{cases}$\\ \mrule
-  205&\token{rem\_u\_64}&1&$\reg'_D = \begin{cases}
+  205&\token{rem\_u\_64}&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
     \reg_A \bmod \reg_B &\otherwise
   \end{cases}$\\ \mrule
-  206&\token{rem\_s\_64}&1&$\reg'_D = \begin{cases}
+  206&\token{rem\_s\_64}&$\reg'_D = \begin{cases}
     0 &\when \signed{\reg_A} = -2^{63} \wedge \signed{\reg_B} = -1\\
     \unsigned{\smod(\signed{\reg_A}, \signed{\reg_B})} &\otherwise
   \end{cases}$\\ \mrule
-  207&\token{shlo\_l\_64}&1&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
-  208&\token{shlo\_r\_64}&1&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 64}}$\\ \mrule
-  209&\token{shar\_r\_64}&1&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
+  207&\token{shlo\_l\_64}&$\reg'_D = (\reg_A \cdot 2^{\reg_B \bmod 64}) \bmod 2^{64}$\\ \mrule
+  208&\token{shlo\_r\_64}&$\reg'_D = \floor{\reg_A \div 2^{\reg_B \bmod 64}}$\\ \mrule
+  209&\token{shar\_r\_64}&$\reg'_D = \unsigned{\floor{\signed{\reg_A} \div 2^{\reg_B \bmod 64}}}$\\ \mrule
 
-  210&\token{and}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \wedge \bits{\reg_B}\sub{i}$\\ \mrule
-  211&\token{xor}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \oplus \bits{\reg_B}\sub{i}$\\ \mrule
-  212&\token{or}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \vee \bits{\reg_B}\sub{i}$\\ \mrule
-  213&\token{mul\_upper\_s\_s}&1&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \signed{\reg_B}) \div 2^{64}}}$\\ \mrule
-  214&\token{mul\_upper\_u\_u}&1&$\reg'_D = \floor{(\reg_A \cdot \reg_B) \div 2^{64}}$\\ \mrule
-  215&\token{mul\_upper\_s\_u}&1&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \reg_B) \div 2^{64}}}$\\ \mrule
-  216&\token{set\_lt\_u}&1&$\reg'_D = \reg_A < \reg_B$\\ \mrule
-  217&\token{set\_lt\_s}&1&$\reg'_D = \signed{\reg_A} < \signed{\reg_B}$\\ \mrule
-  218&\token{cmov\_iz}&1&$\reg'_D = \begin{cases}
+  210&\token{and}&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \wedge \bits{\reg_B}\sub{i}$\\ \mrule
+  211&\token{xor}&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \oplus \bits{\reg_B}\sub{i}$\\ \mrule
+  212&\token{or}&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \vee \bits{\reg_B}\sub{i}$\\ \mrule
+  213&\token{mul\_upper\_s\_s}&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \signed{\reg_B}) \div 2^{64}}}$\\ \mrule
+  214&\token{mul\_upper\_u\_u}&$\reg'_D = \floor{(\reg_A \cdot \reg_B) \div 2^{64}}$\\ \mrule
+  215&\token{mul\_upper\_s\_u}&$\reg'_D = \unsigned{\floor{(\signed{\reg_A} \cdot \reg_B) \div 2^{64}}}$\\ \mrule
+  216&\token{set\_lt\_u}&$\reg'_D = \reg_A < \reg_B$\\ \mrule
+  217&\token{set\_lt\_s}&$\reg'_D = \signed{\reg_A} < \signed{\reg_B}$\\ \mrule
+  218&\token{cmov\_iz}&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B = 0\\
     \reg_D &\otherwise
   \end{cases}$\\ \mrule
-  219&\token{cmov\_nz}&1&$\reg'_D = \begin{cases}
+  219&\token{cmov\_nz}&$\reg'_D = \begin{cases}
     \reg_A &\when \reg_B \ne 0\\
     \reg_D &\otherwise
   \end{cases}$\\ \mrule
-  220&\token{rot\_l\_64}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_D)_{(i + \reg_B) \bmod 64} = \bitsfunc{8}(\reg_A)\sub{i}$\\ \mrule
-  221&\token{rot\_l\_32}&1&$\reg'_D = \sext{4}{x}\ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)_{(i + \reg_B) \bmod 32} = \bitsfunc{4}(\reg_A)\sub{i}$\\ \mrule
-  222&\token{rot\_r\_64}&1&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_D)\sub{i} = \bitsfunc{8}(\reg_A)_{(i + \reg_B) \bmod 64}$\\ \mrule
-  223&\token{rot\_r\_32}&1&$\reg'_D = \sext{4}{x}\ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\reg_A)_{(i + \reg_B) \bmod 32}$\\ \mrule
-  224&\token{and\_inv}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \wedge \lnot \bits{\reg_B}\sub{i}$\\ \mrule
-  225&\token{or\_inv}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \vee \lnot \bits{\reg_B}\sub{i}$\\ \mrule
-  226&\token{xnor}&1&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \lnot ( \bits{\reg_A}\sub{i} \oplus \bits{\reg_B}\sub{i} )$\\ \mrule
-  227&\token{max}&1&$\reg'_D = \unsigned{\max \tup{ \signed{\reg_A}, \signed{\reg_B} }}$\\ \mrule
-  228&\token{max\_u}&1&$\reg'_D = \max \tup{ \reg_A, \reg_B }$\\ \mrule
-  229&\token{min}&1&$\reg'_D = \unsigned{\min \tup{ \signed{\reg_A}, \signed{\reg_B} }}$\\ \mrule
-  230&\token{min\_u}&1&$\reg'_D = \min \tup{ \reg_A, \reg_B }$\\
+  220&\token{rot\_l\_64}&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_D)_{(i + \reg_B) \bmod 64} = \bitsfunc{8}(\reg_A)\sub{i}$\\ \mrule
+  221&\token{rot\_l\_32}&$\reg'_D = \sext{4}{x}\ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)_{(i + \reg_B) \bmod 32} = \bitsfunc{4}(\reg_A)\sub{i}$\\ \mrule
+  222&\token{rot\_r\_64}&$\forall i \in \Nmax{64} : \bitsfunc{8}(\reg'_D)\sub{i} = \bitsfunc{8}(\reg_A)_{(i + \reg_B) \bmod 64}$\\ \mrule
+  223&\token{rot\_r\_32}&$\reg'_D = \sext{4}{x}\ \where x \in \Nbits{32}, \forall i \in \Nmax{32} : \bitsfunc{4}(x)\sub{i} = \bitsfunc{4}(\reg_A)_{(i + \reg_B) \bmod 32}$\\ \mrule
+  224&\token{and\_inv}&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \wedge \lnot \bits{\reg_B}\sub{i}$\\ \mrule
+  225&\token{or\_inv}&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \bits{\reg_A}\sub{i} \vee \lnot \bits{\reg_B}\sub{i}$\\ \mrule
+  226&\token{xnor}&$\forall i \in \Nmax{64} : \bits{\reg'_D}\sub{i} = \lnot ( \bits{\reg_A}\sub{i} \oplus \bits{\reg_B}\sub{i} )$\\ \mrule
+  227&\token{max}&$\reg'_D = \unsigned{\max \tup{ \signed{\reg_A}, \signed{\reg_B} }}$\\ \mrule
+  228&\token{max\_u}&$\reg'_D = \max \tup{ \reg_A, \reg_B }$\\ \mrule
+  229&\token{min}&$\reg'_D = \unsigned{\min \tup{ \signed{\reg_A}, \signed{\reg_B} }}$\\ \mrule
+  230&\token{min\_u}&$\reg'_D = \min \tup{ \reg_A, \reg_B }$\\
 \bottomrule
 \end{longtable}
 
@@ -714,31 +753,32 @@ Division operations always round their result towards zero. Formally:
 
 An extended version of the \textsc{pvm} invocation which is able to progress an inner \emph{host-call} state-machine in the case of a host-call halt condition is defined as $\Psi_H$:
 \begin{align}
-  &\Psi_H\colon \abracegroup{
+  &\Psi_H^*\colon \abracegroup{
     \tuple{\begin{aligned}
-      &\blob, \pvmreg, \gas, \regs,\\&\ram, \contextmutator{X}, X
+      &\blob, \pvmreg, \gas, \bool,\\&\regs, \ram, \contextmutator{X}, X
     \end{aligned}
     }
     &\to
-    \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \pvmreg, \signedgas, \regs, \ram, X}\\
-    \tup{\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x}} &\mapsto \begin{cases}
-      \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \registers', \mem') = \Psi(\mathbf{c}, \imath, \gascounter, \registers, \mem):} \\[8pt]
-      \tup{\varepsilon', \imath', \gascounter', \registers', \mem', \mathbf{x}} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
+    \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \pvmreg, \signedgas, \bool, \regs, \ram, X}\\
+    \tup{\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem, f, \mathbf{x}} &\mapsto \begin{cases}
+      \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem') = \Psi(\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem):} \\[8pt]
+      \tup{\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem', \mathbf{x}} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
       \begin{aligned}
-        &\Psi_H(\mathbf{c}, \imath'', \gascounter'', \registers'', \mem'', f, \mathbf{x}'')\\[2pt]
+        &\Psi_H^*(\pvm¬blob, \imath'', \gascounter'', \gaschargedflag', \registers'', \mem'', f, \mathbf{x}'')\\[2pt]
         &\quad \where \imath'' = \imath' + 1 + \Fskip(\imath')
       \end{aligned}
        &\when \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
         &\tup{\continue, \gascounter'', \registers'', \mem'', \mathbf{x}''} = f(h, \gascounter', \registers', \mem', \mathbf{x})
       }\\[8pt]
-      \tup{\varepsilon'', \imath', \gascounter'', \registers'', \mem'', \mathbf{x}''} &\when  \bigwedge\abracegroup[\;]{
+      \tup{\varepsilon'', \imath', \gascounter'', \gaschargedflag', \registers'', \mem'', \mathbf{x}''} &\when  \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
         &\tup{\varepsilon'', \gascounter'', \registers'', \mem'', \mathbf{x}''} = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
         &\varepsilon'' \in \set{\panic, \halt, \oog}
       }\\[8pt]
     \end{cases} \\
     }\!\!\!\!\!\!\!\!\\
+    &\Psi_H(\pvm¬blob, \imath, \gascounter, \registers, \mem, f, \mathbf{x}) \equiv \Psi_H^*(\pvm¬blob, \imath, \gascounter, \bot, \registers, \mem, f, \mathbf{x})\\
     &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X}
 \end{align}
 
@@ -749,24 +789,24 @@ With $\Phi_H$, host-calls (\ie \token{ecalli} instructions) are in effect handle
 \subsection{Standard Program Initialization}\label{sec:standardprograminit}
 The software programs which will run in each of the three instances where the \textsc{pvm} is utilized in the main document have a very typical setup pattern characteristic of an output of a compiler and linker. This means that \textsc{ram} has sections for program-specific read-only data, read-write (heap) data and the stack. An adjunct to this, very typical of our usage patterns is an extra read-only section via which invocation-specific data may be passed (\ie arguments). It thus makes sense to define this properly in a single initializer function. These sections are quantized into \emph{major zones}, and one major zone is always left unallocated between sections in order to reduce accidental overrun. Sections are padded with zeroes to the nearest \textsc{pvm} memory page boundary.
 
-We thus define the standard program code format $\mathbf{p}$, which includes not only the instructions and jump table (previously represented by the term $\mathbf{c}$), but also information on the state of the \textsc{ram} at program start. Given program blob $\mathbf{p}$ and argument data $\mathbf{a}$, we can decode the program code $\mathbf{c}$, registers $\registers$, and \textsc{ram} $\mem$ by invoking the standard initialization function $Y(\mathbf{p}, \mathbf{a})$:
+We thus define the standard JAM program blob format $\jam¬blob$, which includes not only the raw \textsc{pvm} program blob $\pvm¬blob$, but also information on the state of the \textsc{ram} at program start. Given JAM program blob $\jam¬blob$ and argument data $\mathbf{a}$, we can decode the \textsc{pvm} program blob $\pvm¬blob$, registers $\registers$, and \textsc{ram} $\mem$ by invoking the standard initialization function $Y(\jam¬blob, \mathbf{a})$:
 \begin{equation}
 Y\colon\abracegroup{
   \tuple{\blob, \blob[:\Cpvminitinputsize]} &\to \tuple{\blob, \regs, \ram}? \\
-  \tup{\mathbf{p}, \mathbf{a}} &\mapsto \begin{cases}
-    \tup{\mathbf{c}, \registers, \mem} &\when \exists! \tup{\mathbf{c}, \mathbf{o}, \mathbf{w}, z, s} \text{ which satisfy equation \ref{eq:conditions}}\\
+  \tup{\jam¬blob, \mathbf{a}} &\mapsto \begin{cases}
+    \tup{\pvm¬blob, \registers, \mem} &\when \exists! \tup{\pvm¬blob, \mathbf{o}, \mathbf{w}, z, s} \text{ which satisfy equation \ref{eq:conditions}}\\
     \none &\otherwise
   \end{cases}
 }
 \end{equation}
 With conditions:
 \begin{align}\label{eq:conditions}
-  &\using \mathcal{E}_3(\len{\mathbf{o}}) \concat \mathcal{E}_3(\len{\mathbf{w}}) \concat \mathcal{E}_2(z) \concat \mathcal{E}_3(s) \concat \mathbf{o} \concat \mathbf{w} \concat \mathcal{E}_4(\len{\mathbf{c}}) \concat \mathbf{c} = \mathbf{p}\\
+  &\using \mathcal{E}_3(\len{\mathbf{o}}) \concat \mathcal{E}_3(\len{\mathbf{w}}) \concat \mathcal{E}_2(z) \concat \mathcal{E}_3(s) \concat \mathbf{o} \concat \mathbf{w} \concat \mathcal{E}_4(\len{\pvm¬blob}) \concat \pvm¬blob = \jam¬blob\\
   &\Cpvminitzonesize = 2^{16}\ ,\quad\Cpvminitinputsize = 2^{24}\\
   &\using \rnp{x \in \N} \equiv \Cpvmpagesize\ceil{ \frac{x}{\Cpvmpagesize} }\quad,\qquad\rnq{x \in \N} \equiv \Cpvminitzonesize\ceil{ \frac{x}{\Cpvminitzonesize} }\\
   &5\Cpvminitzonesize + \rnq{\len{\mathbf{o}}} + \rnq{\len{\mathbf{w}} + z\Cpvmpagesize} + \rnq{s} + \Cpvminitinputsize \leq 2^{32}
 \end{align}
-Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\mathbf{c}$ as above and $\mem$, $\registers$ such that:
+Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\pvm¬blob$ as above and $\mem$, $\registers$ such that:
 \begin{equation}\label{eq:memlayout}
   \forall i \in \Nbits{32} : ((\mem_\ram¬value)\sub{i}, (\mem_\ram¬access)_{\floor{\nicefrac{i}{\Cpvmpagesize}}}) = \bracegroup{\begin{alignedat}{5}
     &\tup{\is{\ram¬value}{\mathbf{o}_{i - \Cpvminitzonesize}},\,\is{\ram¬access}{R}} &&\ \when
@@ -818,9 +858,9 @@ The three instances where the \textsc{pvm} is utilized each expect to be able to
     \tuple{
       \blob, \pvmreg, \gas, \blob[:\Cpvminitinputsize], \contextmutator{X}, X
     } &\to \tuple{\gas, \blob \cup \set{\panic, \oog}, X}\\
-    \tup{\mathbf{p}, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}} &\mapsto \begin{cases}
-      \tup{0, \panic, \mathbf{x}} &\when Y(\mathbf{p}, \mathbf{a}) = \none\\
-      R(\gascounter, \Psi_H(\mathbf{c}, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\mathbf{p}, \mathbf{a}) = \tup{\mathbf{c}, \registers, \mem}\\
+    \tup{\jam¬blob, \imath, \gascounter, \mathbf{a}, f, \mathbf{x}} &\mapsto \begin{cases}
+      \tup{0, \panic, \mathbf{x}} &\when Y(\jam¬blob, \mathbf{a}) = \none\\
+      R(\gascounter, \Psi_H(\pvm¬blob, \imath, \gascounter, \registers, \mem, f, \mathbf{x})) &\when Y(\jam¬blob, \mathbf{a}) = \tup{\pvm¬blob, \registers, \mem}\\
       \multicolumn{2}{l}{
         \quad \where R \colon \tup{\gascounter, \tup{\begin{alignedat}{5}
           &\varepsilon,\, &&\imath',\, &&\gascounter',\\
@@ -839,3 +879,517 @@ The three instances where the \textsc{pvm} is utilized each expect to be able to
 \end{equation}
 
 Note that the first tuple item is the amount of gas consumed by the operation, but never greater than the amount of gas provided for the operation.
+
+\subsection{Gas Cost Model}\label{sec:gascostmodel}
+
+% Variable/field symbols
+\newcommand*{\gas¬sim¬state}{\mathbf{x}}
+\newcommand*{\ctr¬cycles}{c}
+\newcommand*{\remaining¬decodeslots}{d}
+\newcommand*{\remaining¬startpercycle}{e}
+\newcommand*{\remaining¬execunits}{t}
+\newcommand*{\rob}{\mathbf{r}}
+\newcommand*{\rob¬state}{s}
+\newcommand*{\rob¬cyclesleft}{c}
+\newcommand*{\rob¬deps}{p}
+\newcommand*{\rob¬regs}{r}
+\newcommand*{\rob¬execunits}{t}
+
+\newcommand*{\ALU}{\text{A}}
+\newcommand*{\LOAD}{\text{L}}
+\newcommand*{\STORE}{\text{S}}
+\newcommand*{\MUL}{\text{M}}
+\newcommand*{\DIV}{\text{D}}
+
+% Functions
+\newcommand*{\gas¬sim}{\mathfrak{X}}
+\newcommand*{\find¬readytostart}{\mathfrak{S}}
+\newcommand*{\cost¬decodeslots}{\check{d}}
+\newcommand*{\cost¬cycles}{\check{c}}
+\newcommand*{\cost¬execunits}{\check{x}}
+\newcommand*{\inst¬dstregs}{\check{r}}
+\newcommand*{\inst¬srcregs}{\check{s}}
+
+% Types
+\newcommand*{\gas¬sim¬ty}{\mathbb{S}}
+\newcommand*{\execunits¬ty}{\mathbb{E}}
+\newcommand*{\rob¬entry¬ty}{\mathbb{R}}
+\newcommand*{\rob¬state¬ty}{\set{\state¬decoding, \state¬waiting, \state¬executing, \state¬executed, \none}}
+
+% Constants
+\newcommand*{\state¬decoding}{\text{DEC}}
+\newcommand*{\state¬waiting}{\text{WAIT}}
+\newcommand*{\state¬executing}{\text{EXE}}
+\newcommand*{\state¬executed}{\text{FIN}}
+\newcommand*{\const¬maxdecodepercycle}{4}
+\newcommand*{\const¬maxstartpercycle}{5}
+
+% Helpers
+\newcommand*{\rob¬entry}[2]{#1\subb{#2}}
+\newcommand*{\rob¬entry¬field}[3]{\rob¬entry{#1}{#2}_{#3}}
+\newcommand*{\in¬rob}{{\gas¬sim¬state_{\rob}}}
+\newcommand*{\in¬rob¬entry}[1]{{\in¬rob\subb{#1}}}
+\newcommand*{\in¬rob¬field}[2]{\in¬rob¬entry{#1}_{#2}}
+\newcommand*{\in¬rob¬len}{\N_{\len{\in¬rob}}}
+
+The gas cost model for the \textsc{pvm} is a simplified model of a modern CPU microarchitecture, heavily inspired by what's used by production-grade compilers to predict how much time a given piece of code will take. For each basic block in the program the model simulates its execution flow and computes the required number of virtual CPU cycles that would be needed to execute it.
+
+A gas simulation state, of set $\gas¬sim¬ty$, contains the current instruction counter $\imath$, a cycle counter $\ctr¬cycles$, the number of decode slots $\remaining¬decodeslots$ remaining in the current cycle, the maximum number of instructions $\remaining¬startpercycle$ which are still allowed to start execution in the current cycle, the remaining available execution units $\remaining¬execunits$, and the reorder buffer $\rob$. Formally:
+
+\begin{equation}
+  \gas¬sim¬ty \equiv \tuple{
+    \isa{\imath}{\pvmreg \cup \set{\none}},
+    \isa{\ctr¬cycles}{\N},
+    \isa{\remaining¬decodeslots}{\N},
+    \isa{\remaining¬startpercycle}{\N},
+    \isa{\remaining¬execunits}{\execunits¬ty},
+    \isa{\rob}{\sequence{\rob¬entry¬ty}}
+  }\\
+\end{equation}
+
+A reorder buffer entry, of set $\rob¬entry¬ty$, contains its current state $\rob¬state$, the number of cycles left $\rob¬cyclesleft$, a set of reorder buffer indices considered its dependencies $\rob¬deps$, a set of clobbered registers $\rob¬regs$, and the execution units used $\rob¬execunits$. Formally:
+
+\begin{equation}
+  \rob¬entry¬ty \equiv \tuple{
+    \isa{\rob¬state}{\rob¬state¬ty},
+    \isa{\rob¬cyclesleft}{\N},
+    \rob¬deps \subseteq \N,
+    \rob¬regs \subseteq \Nmax{13},
+    \isa{\rob¬execunits}{\execunits¬ty}
+  }\\
+\end{equation}
+
+A tuple of the set $\execunits¬ty$ maps each execution unit kind (${\ALU, \LOAD, \STORE, \MUL, \DIV}$) into a number:
+
+\begin{equation}
+  \execunits¬ty \equiv \tuple{
+    \isa{\ALU}{\N},
+    \isa{\LOAD}{\N},
+    \isa{\STORE}{\N},
+    \isa{\MUL}{\N},
+    \isa{\DIV}{\N}
+  }
+\end{equation}
+
+For convenience we define addition and subtraction of two tuples of the set $\execunits¬ty$ to be equivalent to the memberwise operation of the same kind; formally:
+
+\begin{equation}
+\begin{aligned}
+  \forall a,b \in \execunits¬ty;\forall \oplus \in \set{+, -}&: a \oplus b \equiv c\\
+  \where c \in \execunits¬ty, \forall k \in \set{\ALU, \LOAD, \STORE, \MUL, \DIV}&:c_k \equiv a_k \oplus b_k\\
+\end{aligned}
+\end{equation}
+
+Similarly, a comparison between two tuples of the set $\execunits¬ty$ is true if and only if the chosen comparison holds for all corresponding members:
+
+\begin{equation}
+\begin{aligned}
+  &\forall a,b \in \execunits¬ty;\forall \oplus \in \set{<, >, \le, \ge}: \\
+  &\quad a \oplus b \equiv \bigwedge_{k \in \set{\ALU, \LOAD, \STORE, \MUL, \DIV}} a_k \oplus b_k
+\end{aligned}
+\end{equation}
+
+We define the function $\inst¬srcregs(\mathbf{c}, \mathbf{k}, \imath)$ which returns the set of source registers read by the instruction at $\imath$, and the function $\inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath)$ which returns the set of destination registers written by the instruction at $\imath$, as described by the equations in \ref{sec:instructiontables}. This is regardless of whether those registers would actually have been modified by that instruction when executed at runtime. \token{ecalli} is assumed to neither read nor write to any registers in this model.
+
+We also define the function $\cost¬cycles(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of cycles the instruction at $\imath$ needs to finish execution, $\cost¬decodeslots(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of decoding slots necessary to decode it, and $\cost¬execunits(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of virtual CPU execution units required to start its execution. These simply return the values as specified in \ref{sec:gascosttables}.
+
+The gas cost of a given basic block starting at instruction opcode index $\imath \in \basicblocks$ and given the instruction data $\mathbf{c}$ and the opcode bitmask $\mathbf{k}$ is defined by the number of virtual CPU cycles as determined by the gas cost model transition function, up until every instruction of the basic block it has ingested has been retired and the simulation has converged. Formally:
+
+\begin{equation}\label{eq:gascostforblock}
+  \gascostforblock\colon \abracegrouptwo{
+    \tup{\blob, \bitstring, \pvmreg} &\to \N\\
+    \tup{\mathbf{c}, \mathbf{k}, \imath} &\mapsto \max(\gas¬sim¬state^{\text{final}}_{\ctr¬cycles} - 3, 1)\\
+  }{
+    \where &\gas¬sim¬state^{\text{final}} &=&\text{ }\gas¬sim(\mathbf{c}, \mathbf{k}, \gas¬sim¬state^{\text{init}})\\
+      &\gas¬sim¬state^{\text{init}} &=&\text{ }\tup{\imath, 0, \const¬maxdecodepercycle, \const¬maxstartpercycle, \tup{4, 4, 4, 1, 1}, \sq{}}
+  }
+\end{equation}
+
+The gas cost model simulation function $\gas¬sim$ is defined as follows:
+
+\begin{equation}
+  \gas¬sim\colon \abracegroup{
+    \tup{\blob, \bitstring, \gas¬sim¬ty} &\to \gas¬sim¬ty \\
+    \tup{\mathbf{c}, \mathbf{k}, \gas¬sim¬state} &\mapsto \begin{cases}
+      \gas¬sim(\mathbf{c}, \mathbf{k}, \gas¬sim'(\mathbf{c}, \mathbf{k}, \gas¬sim¬state)) &\when \gas¬sim¬state_{\imath} \neq \none \land \cost¬decodeslots(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \leq \gas¬sim¬state_{\remaining¬decodeslots} \land l < 32 \\
+      \gas¬sim(\mathbf{c}, \mathbf{k}, \gas¬sim''(\gas¬sim¬state)) &\otherwhen \find¬readytostart(\gas¬sim¬state) \neq \none \land \gas¬sim¬state_{\remaining¬startpercycle} > 0 \\
+      \gas¬sim¬state &\otherwhen \gas¬sim¬state_{\imath} = \none \land l = 0 \\
+      \gas¬sim(\mathbf{c}, \mathbf{k}, \gas¬sim'''(\gas¬sim¬state)) &\otherwise \\
+    \end{cases}\\
+    \where l &= \len{\sq{\build{r}{ r \orderedin \in¬rob, r_{\rob¬state} \neq \none }}}
+  }
+\end{equation}
+
+The state transition function $\gas¬sim'$ which decodes the instructions without triggering the virtual CPU pipeline simulation is defined as follows:
+
+\begin{equation}
+  \gas¬sim'\colon \abracegroup{
+    \tup{\blob, \bitstring, \gas¬sim¬ty} &\to \gas¬sim¬ty \\
+    \tup{\mathbf{c}, \mathbf{k}, \gas¬sim¬state} &\mapsto \begin{cases}
+      \gas¬sim^{\text{mov}}(\mathbf{c}, \mathbf{k}, \gas¬sim¬state) &\when \imath < \len{\mathbf{c}} \land \mathbf{c}_{\imath} = \token{move\_reg} \\
+      \gas¬sim^{\text{dec}}(\mathbf{c}, \mathbf{k}, \gas¬sim¬state) &\otherwise
+    \end{cases}
+  }
+\end{equation}
+
+The \token{move\_reg} instruction is special-cased to be handled by the frontend of our virtual CPU, without being added to the reorder buffer:
+
+\begin{equation}
+  \gas¬sim^{\text{mov}}\colon \abracegrouptwo{
+    \tup{\blob, \bitstring, \gas¬sim¬ty} &\to \gas¬sim¬ty \\
+    \tup{\mathbf{c}, \mathbf{k}, \gas¬sim¬state} &\mapsto \gas¬sim¬state'
+  }{
+    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except:}\\
+      \gas¬sim¬state'_{\imath} &= \gas¬sim¬state_{\imath} + 1 + \Fskip(\gas¬sim¬state_{\imath}) \\
+      \gas¬sim¬state'_{\remaining¬decodeslots} &= \gas¬sim¬state_{\remaining¬decodeslots} - 1 \\
+      \gas¬sim¬state'_{\rob} &= \in¬rob\text{ except:}\\
+      &\begin{aligned}
+        \forall j &\in \in¬rob¬len : \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{j}{\rob¬regs} &= \begin{cases}
+          \in¬rob¬field{j}{\rob¬regs} \cup \inst¬dstregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) &\when \in¬rob¬field{j}{\rob¬regs} \cap \inst¬srcregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \neq \emptyset \\
+          \in¬rob¬field{j}{\rob¬regs} \setminus \inst¬dstregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) &\otherwise
+        \end{cases} \\
+      \end{aligned}
+  }
+\end{equation}
+
+Every other instruction is fully decoded and added to the reorder buffer as follows:
+
+\begin{equation}
+  \gas¬sim^{\text{dec}}\colon \abracegrouptwo{
+    \tup{\blob, \bitstring, \gas¬sim¬ty} &\to \gas¬sim¬ty \\
+    \tup{\mathbf{c}, \mathbf{k}, \gas¬sim¬state} &\mapsto \gas¬sim¬state'
+  }{
+    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except:}\\
+    \gas¬sim¬state'_{\imath} &= \begin{cases}
+      \none &\when \instructions_{\imath} \in T \\
+      \gas¬sim¬state_{\imath} + 1 + \Fskip(\gas¬sim¬state_{\imath}) &\otherwise
+    \end{cases}\\
+    \mathbf{c} &\mapsto \instructions \text{ according to \ref{eq:instructions}}\\
+    \gas¬sim¬state'_{\remaining¬decodeslots} &= \gas¬sim¬state_{\remaining¬decodeslots} - \cost¬decodeslots(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
+    \rob &= \in¬rob\text{ except: } \forall j \in \in¬rob¬len : \rob¬entry¬field{\rob}{j}{\rob¬regs} = \in¬rob¬field{j}{\rob¬regs} \setminus \rob¬regs\\
+    \rob¬regs &= \inst¬dstregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
+    \rob¬cyclesleft &= \cost¬cycles(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
+    \rob¬execunits &= \cost¬execunits(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \\
+    \rob¬deps &= \set{\build{i}{ i \in \in¬rob¬len, \inst¬srcregs(\mathbf{c}, \mathbf{k}, \gas¬sim¬state_{\imath}) \cap \in¬rob¬field{i}{\rob¬regs} \neq \emptyset }} \\
+    \gas¬sim¬state'_{\rob} &= \rob \append \tuple{\state¬decoding, \rob¬cyclesleft, \rob¬deps, \rob¬regs, \rob¬execunits} \\
+  }
+\end{equation}
+
+The state transition function $\gas¬sim''$ which starts the execution of the next pending instruction is defined as follows:
+
+\begin{equation}
+  \gas¬sim''\colon \abracegrouptwo{
+    \gas¬sim¬ty &\to \gas¬sim¬ty \\
+    \gas¬sim¬state &\mapsto \gas¬sim¬state'\\
+  }{
+    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except:}\\
+    \gas¬sim¬state'_{\remaining¬startpercycle} &= \gas¬sim¬state_{\remaining¬startpercycle} - 1\\
+    n &= \find¬readytostart(\gas¬sim¬state)\\
+    \gas¬sim¬state'_{\remaining¬execunits} &= \gas¬sim¬state_{\remaining¬execunits} - \in¬rob¬field{n}{\rob¬execunits}\\
+    \gas¬sim¬state'_{\rob} &= \in¬rob\text{ except: } \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{n}{\rob¬state} = \state¬executing
+  }
+\end{equation}
+
+The function $\find¬readytostart$ which checks which instruction inside of the reorder buffer is ready to start executing (and whether such an instruction even exists) is defined as follows:
+
+\begin{equation}
+  \find¬readytostart\colon \abracegrouptwo{
+    \gas¬sim¬ty &\to \N \cup \set{\none}\\
+    \gas¬sim¬state &\mapsto \begin{cases}
+      \none &\when s = \none\\
+      \min(s) &\otherwise
+    \end{cases}\\
+  }{
+    \\[0.2pt]
+    \where s &= \set{\build{j \in \in¬rob¬len}{\in¬rob¬field{j}{\rob¬state} = \state¬waiting \land \in¬rob¬field{j}{\rob¬execunits} \leq \gas¬sim¬state_{\remaining¬execunits} \land (\forall k \in \in¬rob¬field{j}{\rob¬deps} : \in¬rob¬field{k}{\rob¬cyclesleft} = 0)}}
+  }
+\end{equation}
+
+The state transition function $\gas¬sim'''$ which simulates the rest of the virtual CPU pipeline is defined as follows:
+
+\begin{equation}
+  \gas¬sim'''\colon \abracegrouptwo{
+    \gas¬sim¬ty &\to \gas¬sim¬ty \\
+    \gas¬sim¬state &\mapsto \gas¬sim¬state'\\
+  }{
+    \where \gas¬sim¬state' &= \gas¬sim¬state\text{ except:}\\
+    \gas¬sim¬state'_{\remaining¬decodeslots} &= \const¬maxdecodepercycle, \gas¬sim¬state'_{\remaining¬startpercycle} = \const¬maxstartpercycle, \gas¬sim¬state'_{\ctr¬cycles} = \gas¬sim¬state_{\ctr¬cycles} + 1\\
+    \gas¬sim¬state'_{\remaining¬execunits} &= \gas¬sim¬state_{\remaining¬execunits} + \sum_{n \in \in¬rob¬len, \in¬rob¬field{n}{\rob¬state} = \state¬executing \land \in¬rob¬field{n}{\rob¬cyclesleft} = 1} \in¬rob¬field{n}{\rob¬execunits} \\
+    \gas¬sim¬state'_{\rob} &= \in¬rob\text{ except } \forall j \in \in¬rob¬len: \\
+    &\begin{aligned}
+      \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{j}{\rob¬state} &= \begin{cases}
+        \none &\when \forall k \in \N_{j+1} : \in¬rob¬field{k}{\rob¬state} \in \set{\state¬executed, \none} \\
+        \state¬waiting &\when \in¬rob¬field{j}{\rob¬state} = \state¬decoding \\
+        \state¬executed &\when \in¬rob¬field{j}{\rob¬state} = \state¬executing \land \in¬rob¬field{j}{\rob¬cyclesleft} = 0 \\
+        \in¬rob¬field{j}{\rob¬state} &\otherwise \\
+      \end{cases} \\
+      \rob¬entry¬field{\gas¬sim¬state'_{\rob}}{j}{\rob¬cyclesleft} &= \begin{cases}
+        \in¬rob¬field{j}{\rob¬cyclesleft} - 1 &\when \in¬rob¬field{j}{\rob¬state} = \state¬executing \land \in¬rob¬field{j}{\rob¬cyclesleft} > 0 \\
+        \in¬rob¬field{j}{\rob¬cyclesleft} &\otherwise \\
+      \end{cases} \\
+    \end{aligned}
+  }
+\end{equation}
+
+\subsection{Gas Cost Tables}\label{sec:gascosttables}
+
+For some of the instructions their cost depends on whether the destination register overlaps with any of the source registers:
+
+\begin{equation}
+  \mathfrak{P}\colon \abracegroup{
+    (\N, \N, \blob, \bitstring, \pvmreg) &\to \N\\
+    (a, b, \mathbf{c}, \mathbf{k}, \imath) &\mapsto \begin{cases}
+      a &\when \inst¬srcregs(\mathbf{c}, \mathbf{k}, \imath) \cap \inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath) \neq \emptyset \\
+      b &\otherwise
+    \end{cases}
+  }
+\end{equation}
+
+For non-immediate shift and rotate instructions only the first source register matters:
+
+\begin{equation}
+  \mathfrak{P}_{S}\colon \abracegrouptwo{
+    (\N, \N, \blob, \bitstring, \pvmreg) &\to \N\\
+    (a, b, \mathbf{c}, \mathbf{k}, \imath) &\mapsto \begin{cases}
+      a &\when \reg_A = \reg_D \\
+      b &\otherwise
+    \end{cases}\\
+  }{
+    \\[0.2pt]
+    &\where (\mathbf{c}, \mathbf{k}, \imath) \mapsto (\reg_A, \reg_D) \text{ according to \ref{sec:programdecoding} and \ref{sec:instructiontables}} \\
+  }
+\end{equation}
+
+% NOTE: This is a *temporary* placeholder. We'll later replace this with a proper equation
+%       once we introduce gas metering of the paging mechanism and memory limits,
+%       so that's why I'm not inlining this into the table.
+The cost of memory accesses is defined as follows:
+
+\begin{equation}
+  \mathfrak{m} \equiv 25
+\end{equation}
+
+The cost of a branch depends on whether any of its targets (either the jump target or the implicit fallthrough) point to an instruction byte which is equal to the opcode for the \token{unlikely} or the \token{trap} instruction; formally:
+
+\begin{equation}
+  \mathfrak{b}\colon \abracegrouptwo{
+    (\blob, \pvmreg) &\to \N\\
+    (\mathbf{c}, \imath) &\mapsto \begin{cases}
+      1 &\when \{ \instructions_{\imath + 1 + \Fskip(\imath)}, \instructions_{\imath_{\text{target}}} \} \cap \{ \token{unlikely}, \token{trap} \} \neq \emptyset \\
+      20 &\otherwise
+    \end{cases}
+  }{
+    \\[0.2pt]
+    \where &\mathbf{c} \mapsto \instructions \text{ according to \ref{eq:instructions}}\\
+      &\imath_{\text{target}} \text{ is the target of the branch according to \ref{sec:instructiontables}}
+  }
+\end{equation}
+
+\newcommand*{\ifdstandsrcoverlap}[2]{$\mathfrak{P}(#1, #2)$}
+\newcommand*{\ifdstandsrcoverlapshift}[2]{$\mathfrak{P}_{S}(#1, #2)$}
+\newcommand*{\loadcost}{$\mathfrak{m}$}
+\newcommand*{\storecost}{25}
+\newcommand*{\branchcost}{$\mathfrak{b}$}
+
+\newcommand*{\simplealuthreeop}{1&\ifdstandsrcoverlap{1}{2}&1&0&0&0&0}
+\newcommand*{\simplealuthreeopthirtytwo}{2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0}
+\newcommand*{\simplealutwoop}{1&\ifdstandsrcoverlap{1}{2}&1&0&0&0&0}
+\newcommand*{\simplealutwoopthirtytwo}{2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0}
+\newcommand*{\trivialtwooponecycle}{1&1&1&0&0&0&0}
+\newcommand*{\trivialtwooptwocycles}{2&1&2&0&0&0&0}
+\newcommand*{\shiftsandrotates}{1&\ifdstandsrcoverlapshift{2}{3}&1&0&0&0&0}
+\newcommand*{\shiftsandrotatesthirtytwo}{2&\ifdstandsrcoverlapshift{3}{4}&1&0&0&0&0}
+\newcommand*{\shiftsandrotatesalt}{1&3&1&0&0&0&0}
+\newcommand*{\shiftsandrotatesaltthirtytwo}{2&4&1&0&0&0&0}
+\newcommand*{\regcomp}{3&3&1&0&0&0&0}
+\newcommand*{\regcompimm}{3&3&1&0&0&0&0}
+\newcommand*{\cmov}{2&2&1&0&0&0&0}
+\newcommand*{\cmovimm}{2&3&1&0&0&0&0}
+\newcommand*{\minmax}{3&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0}
+\newcommand*{\indirectload}{\loadcost&1&1&1&0&0&0}
+\newcommand*{\directload}{\loadcost&1&1&1&0&0&0}
+\newcommand*{\indirectstoreimm}{\storecost&1&1&0&1&0&0}
+\newcommand*{\indirectstore}{\storecost&1&1&0&1&0&0}
+\newcommand*{\storeimm}{\storecost&1&1&0&1&0&0}
+\newcommand*{\directstore}{\storecost&1&1&0&1&0&0}
+\newcommand*{\branch}{\branchcost&1&1&0&0&0&0}
+\newcommand*{\branchimm}{\branchcost&1&1&0&0&0&0}
+\newcommand*{\divrem}{60&4&1&0&0&0&1}
+\newcommand*{\finish}[1]{#1&1&0&0&0&0&0}
+
+In the following table the $\mathbf{c}$, $\mathbf{k}$, and $\imath$ arguments are omitted for clarity.
+
+\renewcommand*{\mrule}{\cmidrule(lr){1-8}}
+\begin{longtable}[t]{p{30mm} p{12mm} p{12mm} p{4mm} p{4mm} p{4mm} p{4mm} p{4mm}}
+  \toprule
+  \thead{\textbf{Instruction}} & \thead{$\cost¬cycles$} & \thead{$\cost¬decodeslots$} & \thead{$\cost¬execunits_{\ALU}$} & \thead{$\cost¬execunits_{\LOAD}$} & \thead{$\cost¬execunits_{\STORE}$} & \thead{$\cost¬execunits_{\MUL}$} & \thead{$\cost¬execunits_{\DIV}$} \\
+  \midrule
+  \endhead
+  \token{move\_reg}&0&1&0&0&0&0&0 \\ \mrule
+
+  \token{and}&\simplealuthreeop \\ \mrule
+  \token{xor}&\simplealuthreeop \\ \mrule
+  \token{or}&\simplealuthreeop \\ \mrule
+  \token{add\_64}&\simplealuthreeop \\ \mrule
+  \token{sub\_64}&\simplealuthreeop \\ \mrule
+
+  \token{add\_32}&\simplealuthreeopthirtytwo \\ \mrule
+  \token{sub\_32}&\simplealuthreeopthirtytwo \\ \mrule
+
+  \token{and\_imm}&\simplealutwoop \\ \mrule
+  \token{xor\_imm}&\simplealutwoop \\ \mrule
+  \token{or\_imm}&\simplealutwoop \\ \mrule
+  \token{add\_imm\_64}&\simplealutwoop \\ \mrule
+  \token{shlo\_r\_imm\_64}&\simplealutwoop \\ \mrule
+  \token{shar\_r\_imm\_64}&\simplealutwoop \\ \mrule
+  \token{shlo\_l\_imm\_64}&\simplealutwoop \\ \mrule
+  \token{rot\_r\_64\_imm}&\simplealutwoop \\ \mrule
+  \token{reverse\_bytes}&\simplealutwoop \\ \mrule
+
+  \token{add\_imm\_32}&\simplealutwoopthirtytwo \\ \mrule
+  \token{shlo\_r\_imm\_32}&\simplealutwoopthirtytwo \\ \mrule
+  \token{shar\_r\_imm\_32}&\simplealutwoopthirtytwo \\ \mrule
+  \token{shlo\_l\_imm\_32}&\simplealutwoopthirtytwo \\ \mrule
+  \token{rot\_r\_32\_imm}&\simplealutwoopthirtytwo \\ \mrule
+
+  \token{count\_set\_bits\_64}&\trivialtwooponecycle \\ \mrule
+  \token{count\_set\_bits\_32}&\trivialtwooponecycle \\ \mrule
+  \token{leading\_zero\_bits\_64}&\trivialtwooponecycle \\ \mrule
+  \token{leading\_zero\_bits\_32}&\trivialtwooponecycle \\ \mrule
+  \token{sign\_extend\_8}&\trivialtwooponecycle \\ \mrule
+  \token{sign\_extend\_16}&\trivialtwooponecycle \\ \mrule
+  \token{zero\_extend\_16}&\trivialtwooponecycle \\ \mrule
+
+  \token{trailing\_zero\_bits\_64}&\trivialtwooptwocycles \\ \mrule
+  \token{trailing\_zero\_bits\_32}&\trivialtwooptwocycles \\ \mrule
+
+  \token{shlo\_l\_64}&\shiftsandrotates \\ \mrule
+  \token{shlo\_r\_64}&\shiftsandrotates \\ \mrule
+  \token{shar\_r\_64}&\shiftsandrotates \\ \mrule
+  \token{rot\_l\_64}&\shiftsandrotates \\ \mrule
+  \token{rot\_r\_64}&\shiftsandrotates \\ \mrule
+
+  \token{shlo\_l\_32}&\shiftsandrotatesthirtytwo \\ \mrule
+  \token{shlo\_r\_32}&\shiftsandrotatesthirtytwo \\ \mrule
+  \token{shar\_r\_32}&\shiftsandrotatesthirtytwo \\ \mrule
+  \token{rot\_l\_32}&\shiftsandrotatesthirtytwo \\ \mrule
+  \token{rot\_r\_32}&\shiftsandrotatesthirtytwo \\ \mrule
+
+  \token{shlo\_l\_imm\_alt\_64}&\shiftsandrotatesalt \\ \mrule
+  \token{shlo\_r\_imm\_alt\_64}&\shiftsandrotatesalt \\ \mrule
+  \token{shar\_r\_imm\_alt\_64}&\shiftsandrotatesalt \\ \mrule
+  \token{rot\_r\_64\_imm\_alt}&\shiftsandrotatesalt \\ \mrule
+
+  \token{shlo\_l\_imm\_alt\_32}&\shiftsandrotatesaltthirtytwo \\ \mrule
+  \token{shlo\_r\_imm\_alt\_32}&\shiftsandrotatesaltthirtytwo \\ \mrule
+  \token{shar\_r\_imm\_alt\_32}&\shiftsandrotatesaltthirtytwo \\ \mrule
+  \token{rot\_r\_32\_imm\_alt}&\shiftsandrotatesaltthirtytwo \\ \mrule
+
+  \token{set\_lt\_u}&\regcomp \\ \mrule
+  \token{set\_lt\_s}&\regcomp \\ \mrule
+
+  \token{set\_lt\_u\_imm}&\regcompimm \\ \mrule
+  \token{set\_lt\_s\_imm}&\regcompimm \\ \mrule
+  \token{set\_gt\_u\_imm}&\regcompimm \\ \mrule
+  \token{set\_gt\_s\_imm}&\regcompimm \\ \mrule
+
+  \token{cmov\_iz}&\cmov \\ \mrule
+  \token{cmov\_nz}&\cmov \\ \mrule
+  \token{cmov\_iz\_imm}&\cmovimm \\ \mrule
+  \token{cmov\_nz\_imm}&\cmovimm \\ \mrule
+
+  \token{max}&\minmax \\ \mrule
+  \token{max\_u}&\minmax \\ \mrule
+  \token{min}&\minmax \\ \mrule
+  \token{min\_u}&\minmax \\ \mrule
+
+  \token{load\_ind\_u8}&\indirectload \\ \mrule
+  \token{load\_ind\_i8}&\indirectload \\ \mrule
+  \token{load\_ind\_u16}&\indirectload \\ \mrule
+  \token{load\_ind\_i16}&\indirectload \\ \mrule
+  \token{load\_ind\_u32}&\indirectload \\ \mrule
+  \token{load\_ind\_i32}&\indirectload \\ \mrule
+  \token{load\_ind\_u64}&\indirectload \\ \mrule
+
+  \token{load\_u8}&\directload \\ \mrule
+  \token{load\_i8}&\directload \\ \mrule
+  \token{load\_u16}&\directload \\ \mrule
+  \token{load\_i16}&\directload \\ \mrule
+  \token{load\_u32}&\directload \\ \mrule
+  \token{load\_i32}&\directload \\ \mrule
+  \token{load\_u64}&\directload \\ \mrule
+
+  \token{store\_imm\_ind\_u8}&\indirectstoreimm \\ \mrule
+  \token{store\_imm\_ind\_u16}&\indirectstoreimm \\ \mrule
+  \token{store\_imm\_ind\_u32}&\indirectstoreimm \\ \mrule
+  \token{store\_imm\_ind\_u64}&\indirectstoreimm \\ \mrule
+
+  \token{store\_ind\_u8}&\indirectstore \\ \mrule
+  \token{store\_ind\_u16}&\indirectstore \\ \mrule
+  \token{store\_ind\_u32}&\indirectstore \\ \mrule
+  \token{store\_ind\_u64}&\indirectstore \\ \mrule
+
+  \token{store\_imm\_u8}&\storeimm \\ \mrule
+  \token{store\_imm\_u16}&\storeimm \\ \mrule
+  \token{store\_imm\_u32}&\storeimm \\ \mrule
+  \token{store\_imm\_u64}&\storeimm \\ \mrule
+
+  \token{store\_u8}&\directstore \\ \mrule
+  \token{store\_u16}&\directstore \\ \mrule
+  \token{store\_u32}&\directstore \\ \mrule
+  \token{store\_u64}&\directstore \\ \mrule
+
+  \token{branch\_eq}&\branch \\ \mrule
+  \token{branch\_ne}&\branch \\ \mrule
+  \token{branch\_lt\_u}&\branch \\ \mrule
+  \token{branch\_lt\_s}&\branch \\ \mrule
+  \token{branch\_ge\_u}&\branch \\ \mrule
+  \token{branch\_ge\_s}&\branch \\ \mrule
+
+  \token{branch\_eq\_imm}&\branchimm \\ \mrule
+  \token{branch\_ne\_imm}&\branchimm \\ \mrule
+  \token{branch\_lt\_u\_imm}&\branchimm \\ \mrule
+  \token{branch\_le\_u\_imm}&\branchimm \\ \mrule
+  \token{branch\_ge\_u\_imm}&\branchimm \\ \mrule
+  \token{branch\_gt\_u\_imm}&\branchimm \\ \mrule
+  \token{branch\_lt\_s\_imm}&\branchimm \\ \mrule
+  \token{branch\_le\_s\_imm}&\branchimm \\ \mrule
+  \token{branch\_ge\_s\_imm}&\branchimm \\ \mrule
+  \token{branch\_gt\_s\_imm}&\branchimm \\ \mrule
+
+  \token{div\_u\_32}&\divrem \\ \mrule
+  \token{div\_s\_32}&\divrem \\ \mrule
+  \token{rem\_u\_32}&\divrem \\ \mrule
+  \token{rem\_s\_32}&\divrem \\ \mrule
+  \token{div\_u\_64}&\divrem \\ \mrule
+  \token{div\_s\_64}&\divrem \\ \mrule
+  \token{rem\_u\_64}&\divrem \\ \mrule
+  \token{rem\_s\_64}&\divrem \\ \mrule
+
+  \token{and\_inv}&2&3&1&0&0&0&0\\ \mrule
+  \token{or\_inv}&2&3&1&0&0&0&0\\ \mrule
+  \token{xnor}&2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0\\ \mrule
+  \token{neg\_add\_imm\_64}&2&3&1&0&0&0&0\\ \mrule
+  \token{neg\_add\_imm\_32}&3&4&1&0&0&0&0\\ \mrule
+  \token{load\_imm}&1&1&0&0&0&0&0\\ \mrule
+  \token{load\_imm\_64}&1&2&0&0&0&0&0\\ \mrule
+
+  \token{mul\_64}&3&\ifdstandsrcoverlap{1}{2}&1&0&0&1&0\\ \mrule
+  \token{mul\_32}&4&\ifdstandsrcoverlap{2}{3}&1&0&0&1&0\\ \mrule
+  \token{mul\_imm\_64}&3&\ifdstandsrcoverlap{1}{2}&1&0&0&1&0\\ \mrule
+  \token{mul\_imm\_32}&4&\ifdstandsrcoverlap{2}{3}&1&0&0&1&0\\ \mrule
+  \token{mul\_upper\_s\_s}&4&4&1&0&0&1&0\\ \mrule
+  \token{mul\_upper\_u\_u}&4&4&1&0&0&1&0\\ \mrule
+  \token{mul\_upper\_s\_u}&6&4&1&0&0&1&0\\ \mrule
+
+  \token{trap}&\finish{2} \\ \mrule
+  \token{fallthrough}&\finish{2}\\ \mrule
+  \token{unlikely}&40&1&0&0&0&0&0\\ \mrule
+  \token{jump}&\finish{15}\\ \mrule
+  \token{load\_imm\_jump}&\finish{15}\\ \mrule
+  \token{jump\_ind}&22&1&0&0&0&0&0\\ \mrule
+  \token{load\_imm\_jump\_ind}&22&1&0&0&0&0&0\\ \mrule
+
+  \token{ecalli}&100&4&1&0&0&0&0\\
+\bottomrule
+\end{longtable}

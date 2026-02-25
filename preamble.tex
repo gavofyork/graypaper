@@ -405,9 +405,10 @@
 %%%%%%%%%%%%
 % Named types (blackboard)
 \newcommand*{\pvmguest}{\mathbb{G}}
-\newcommand*{\pg¬code}{\mathbf{p}}
+\newcommand*{\pg¬code}{\pvm¬blob}
 \newcommand*{\pg¬ram}{\mathbf{u}}
 \newcommand*{\pg¬pc}{i}
+\newcommand*{\pg¬gaschargedflag}{\tilde{g}}
 
 \newcommand*{\implications}{\mathbb{L}}
 \newcommand*{\imX}{\mathbf{x}}
@@ -788,7 +789,10 @@
 %%%%%%%%%%%%
 % PVM-SPECIFIC ITEMS
 
+\newcommand*{\jam¬blob}{\mathfrak{j}}
+\newcommand*{\pvm¬blob}{\mathfrak{p}}
 \newcommand*{\gascounter}{\varrho}
+\newcommand*{\gaschargedflag}{\tilde{\gascounter}}
 \newcommand*{\registers}{\varphi}
 \newcommand*{\memory}{\mu}
 \newcommand*{\pvmreg}{\N_R}
@@ -796,11 +800,29 @@
 \newcommand*{\segoff}{\varsigma}
 \newcommand*{\execst}{\varepsilon}
 
-
+\newcommand*{\rnp}[1]{P(#1)}
+\newcommand*{\rnq}[1]{Z(#1)}
 \newcommand*{\contextmutator}[1]{\Omega\ang{#1}}
 
 %%%%%%%%%%%%
 % Other stuff
+
+% This is like an \abracegroup, but with two independently aligned chunks.
+% It makes it possible to have a nicer looking abracegroup blocks where a single
+% overly long column doesn't mess up the spacing of the rest of it.
+\newcommand{\abracegrouptwo}[2]{%
+  \left\{%
+  \begin{array}{@{}l@{}}
+    \begin{aligned}
+      #1
+    \end{aligned}
+    \\[14pt]
+    \hspace{8pt}\begin{aligned}
+      #2
+    \end{aligned}
+  \end{array}
+  \right.
+}
 
 \newcommand*{\jamdraftversion}{\input{VERSION}\!\!\!\!}
 \newcommand*{\jamdraftversionstring}{\jamdraftversion}
