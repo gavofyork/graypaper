@@ -27,7 +27,7 @@ The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise i
 \begin{equation}
   \begin{aligned}
     \xtdisputes &\equiv \tuple{\xtverdicts, \xtculprits, \xtfaults} \\
-    \where \xtverdicts &\in \sequence{\tuple{
+    \where \xtverdicts &\in \sequence[:\Cmaxextrinsicverdicts]{\tuple{
       \hash,
       \ffrac{\thetime}{\Cepochlen} - \N_2,
       \sequence[\floor{\twothirds\Cvalcount} + 1]{\tuple{
@@ -36,8 +36,8 @@ The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise i
         \edsignaturebase
       }}
     }}\\
-    \also \xtculprits &\in \sequence{\tuple{\hash, \edkey, \edsignaturebase}} \,,\quad
-    \xtfaults \in \sequence{\tuple{\hash, \set{\top,\bot}, \edkey, \edsignaturebase}}
+    \also \xtculprits &\in \sequence[:\Cmaxextrinsicoffenses]{\tuple{\hash, \edkey, \edsignaturebase}} \,,\quad
+    \xtfaults \in \sequence[:\Cmaxextrinsicoffenses]{\tuple{\hash, \set{\top,\bot}, \edkey, \edsignaturebase}}
   \end{aligned}
 \end{equation}
 
@@ -152,12 +152,13 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
     }}\!\!\!\!
 \end{align}
 
-Although this should not be expected in practice, in theory it is possible that the number of offenses could be large (up to 1/3V faults and up to 3 culprits for each bad verdict). In order not to burden block creation overmuch, we specify practical limits to the number of verdicts and offenses which can be included in a single block.
+Although this should not be expected in practice, in theory it is possible that the number of offenses could be large (up to $\onethird \Cvalcount$ faults and up to 3 culprits for each bad verdict). In order not to burden block creation overmuch, we specify practical limits to the number of verdicts and offenses which can be included in a single block.
 
 Formally,
 \begin{align}
   \label{eq:limitextrinsicverdicts}\len{\xtverdicts} &\le \Cmaxextrinsicverdicts \\
-  \label{eq:limitextrinsicoffenses}\len{\xtculprits} + \len{\xtfaults} &\le \Cmaxextrinsicoffenses
+  \label{eq:limitextrinsicculprits}\len{\xtculprits} &\le \Cmaxextrinsicoffenses \\
+  \label{eq:limitextrinsicfaults}\len{\xtfaults} &\le \Cmaxextrinsicoffenses
 \end{align}
 
 The limits are clearly below the theoretical maximum, but they are expected to be sufficient for practical purposes as we don't expect bad verdicts to happen often. In the presence of these limits, if all the offenders had to be included in the same block as the corresponding verdict, we could run into a situation where some would be irrevocably missed. However, implementations can spread the contents of offenses over different blocks' extrinsics, with the proviso that the entries in $\xtculprits$ and $\xtfaults$ have to refer to a report already existing in some verdict-set of the posterior state, as per equations \ref{eq:culprits} and \ref{eq:faults}. Notice that this state is updated when we received the verdict, together with the first batch of offenses. Offenses in later batches are communicated without the corresponding verdict, but its report will be in one of $\goodset$ or $\badset$ and therefore also in $\goodset'$ or $\badset'$, thereby satisfying those equations.
