@@ -128,6 +128,7 @@
 %  \item[$\mathcal{D}$] Unused.
   \item[$\encode{\dots}$] The octet-sequence encode function. Superscripted ${}^{-1}$ to denote the inverse. See appendix \ref{sec:serialization}.
   \item[$\fnfyshuffle(\dots)$] The Fisher-Yates shuffle function. See equation \ref{eq:suffle}.
+  \item[$\fnmemgas(L, \ell)$] The memory-sized gas function: $\fnmemgas(L, \ell) = \floor{(L \cdot \ell + 1024) / 1024}$. See \ref{sec:gascostcalculation}.
   \item[$\blake{\dots}$] The Blake 2b 256-bit hash function. See section \ref{sec:cryptography}.
   \item[$\keccak{\dots}$] The Keccak 256-bit hash function. See section \ref{sec:cryptography}.
 
@@ -292,6 +293,78 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cpvminitinputsize = 2^{24}$] The standard \textsc{pvm} program initialization input data size. See equation \ref{sec:standardprograminit}.
   \item[$\Cpvmpagesize = 2^{12}$] The \textsc{pvm} memory page size. See equation \ref{eq:pvmmemory}.
   \item[$\Cpvminitzonesize = 2^{16}$] The standard \textsc{pvm} program initialization zone size. See section \ref{sec:standardprograminit}.
+
+  \medskip
+  \textbf{Host-function gas costs} (appendix \ref{sec:virtualmachineinvocations}). Memory-sized linear terms are given as the rate per 1024 octets; gas for $\ell$ octets at rate $L$ is $\fnmemgas(L, \ell)$ (see \ref{sec:gascostcalculation}). With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. Page terms are per \textsc{pvm} page. Subscripts match $\Omega$ in I.2. All values are in gas units.
+  \item[$\Cgaschunksize = 1024$] The octet denominator for memory-sized gas (used in $\fnmemgas$, see \ref{sec:gascostcalculation}).
+  \item[$\CgasA = 1818$] $\Omega_A$ (\texttt{assign}) base gas cost.
+  \item[$\CgasBconst = 422$] $\Omega_B$ (\texttt{bless}) base gas cost.
+  \item[$\CgasBlinear = 20$] $\Omega_B$ (\texttt{bless}) gas per item.
+  \item[$\CgasC = 103$] $\Omega_C$ (\texttt{checkpoint}) base gas cost.
+  \item[$\CgasD = 308920$] $\Omega_D$ (\texttt{designate}) base gas cost.
+  \item[$\CgasE = 3521$] $\Omega_E$ (\texttt{export}) base gas cost.
+  \item[$\CgasF = 3250$] $\Omega_F$ (\texttt{forget}) base gas cost.
+  \item[$\CgasG = 48$] $\Omega_G$ (\texttt{gas}) base gas cost.
+  \item[$\CgasHconst = 1125$] $\Omega_H$ (\texttt{historical\_lookup}) base gas cost.
+  \item[$\CgasHlinear = 264$] $\Omega_H$ (\texttt{historical\_lookup}) gas per 1024 octets ($\fnmemgas(\CgasHlinear, \ell)$).
+  \item[$\CgasI = 703$] $\Omega_I$ (\texttt{info}) base gas cost.
+  \item[$\CgasJ = 458$] $\Omega_J$ (\texttt{eject}) base gas cost.
+  \item[$\CgasK = 968$] $\Omega_K$ (\texttt{invoke}) base gas cost.
+  \item[$\CgasLconst = 600$] $\Omega_L$ (\texttt{lookup}) base gas cost.
+  \item[$\CgasLlinear = 248$] $\Omega_L$ (\texttt{lookup}) gas per 1024 octets ($\fnmemgas(\CgasLlinear, \ell)$).
+  \item[$\CgasMconst = 1862$] $\Omega_M$ (\texttt{machine}) base gas cost.
+  \item[$\CgasMlinear = 112$] $\Omega_M$ (\texttt{machine}) gas per 1024 octets, program size ($\fnmemgas(\CgasMlinear, \ell)$).
+  \item[$\CgasN = 3855$] $\Omega_N$ (\texttt{new}) base gas cost.
+  \item[$\CgasOconst = 297$] $\Omega_O$ (\texttt{poke}) base gas cost.
+  \item[$\CgasOlinear = 224$] $\Omega_O$ (\texttt{poke}) gas per 1024 octets ($\fnmemgas(\CgasOlinear, \ell)$).
+  \item[$\CgasPconst = 377$] $\Omega_P$ (\texttt{peek}) base gas cost.
+  \item[$\CgasPlinear = 336$] $\Omega_P$ (\texttt{peek}) gas per 1024 octets ($\fnmemgas(\CgasPlinear, \ell)$).
+  \item[$\CgasQ = 643$] $\Omega_Q$ (\texttt{query}) base gas cost.
+  \item[$\CgasRconst = 2407$] $\Omega_R$ (\texttt{read}) base gas cost.
+  \item[$\CgasRkeylinear = 1736$] $\Omega_R$ (\texttt{read}) key gas per 1024 octets ($\fnmemgas(\CgasRkeylinear, \ell)$).
+  \item[$\CgasRvallinear = 248$] $\Omega_R$ (\texttt{read}) value gas per 1024 octets ($\fnmemgas(\CgasRvallinear, \ell)$).
+  \item[$\CgasS = 2193$] $\Omega_S$ (\texttt{solicit}) base gas cost.
+  \item[$\CgasT = 575$] $\Omega_T$ (\texttt{transfer}) base gas cost.
+  \item[$\CgasU = 1028$] $\Omega_U$ (\texttt{upgrade}) base gas cost.
+  \item[$\CgasWconst = 2442$] $\Omega_W$ (\texttt{write}) base gas cost.
+  \item[$\CgasWvallinear = 216$] $\Omega_W$ (\texttt{write}) gas per 1024 octets ($\fnmemgas(\CgasWvallinear, \ell)$).
+  \item[$\CgasWkeylinear = 3358$] $\Omega_W$ (\texttt{write}) key gas per 1024 octets ($\fnmemgas(\CgasWkeylinear, \ell)$).
+  \item[$\CgasX = 335$] $\Omega_X$ (\texttt{expunge}) base gas cost.
+  \item[$\CgasYprotoacc = 390$] $\Omega_Y$ (\texttt{fetch}) protocol parameters (accumulate) base gas cost.
+  \item[$\CgasYaccumitemsconst = 287$] $\Omega_Y$ (\texttt{fetch}) accumulate items base gas cost.
+  \item[$\CgasYaccumitemslinear = 400$] $\Omega_Y$ (\texttt{fetch}) accumulate items gas per 1024 octets ($\fnmemgas(\CgasYaccumitemslinear, \ell)$).
+  \item[$\CgasYanyaccumconst = 355$] $\Omega_Y$ (\texttt{fetch}) any accumulate item base gas cost.
+  \item[$\CgasYanyaccumlinear = 344$] $\Omega_Y$ (\texttt{fetch}) any accumulate item gas per 1024 octets ($\fnmemgas(\CgasYanyaccumlinear, \ell)$).
+  \item[$\CgasYprotoref = 352$] $\Omega_Y$ (\texttt{fetch}) protocol parameters (refine) base gas cost.
+  \item[$\CgasYentropy = 103$] $\Omega_Y$ (\texttt{fetch}) entropy base gas cost.
+  \item[$\CgasYauthtraceconst = 80$] $\Omega_Y$ (\texttt{fetch}) auth trace base gas cost.
+  \item[$\CgasYauthtracelinear = 96$] $\Omega_Y$ (\texttt{fetch}) auth trace gas per 1024 octets ($\fnmemgas(\CgasYauthtracelinear, \ell)$).
+  \item[$\CgasYworkpackconst = 85$] $\Omega_Y$ (\texttt{fetch}) work package base gas cost.
+  \item[$\CgasYworkpacklinear = 96$] $\Omega_Y$ (\texttt{fetch}) work package gas per 1024 octets ($\fnmemgas(\CgasYworkpacklinear, \ell)$).
+  \item[$\CgasYauthconfig = 84$] $\Omega_Y$ (\texttt{fetch}) auth config base gas cost.
+  \item[$\CgasYauthtoken = 88$] $\Omega_Y$ (\texttt{fetch}) auth token base gas cost.
+  \item[$\CgasYrefinectx = 111$] $\Omega_Y$ (\texttt{fetch}) refine context base gas cost.
+  \item[$\CgasYitemssummary = 317$] $\Omega_Y$ (\texttt{fetch}) items summary base gas cost.
+  \item[$\CgasYanyitemsummary = 250$] $\Omega_Y$ (\texttt{fetch}) any item summary base gas cost.
+  \item[$\CgasYanypayloadconst = 95$] $\Omega_Y$ (\texttt{fetch}) any payload base gas cost.
+  \item[$\CgasYanypayloadlinear = 96$] $\Omega_Y$ (\texttt{fetch}) any payload gas per 1024 octets ($\fnmemgas(\CgasYanypayloadlinear, \ell)$).
+  \item[$\CgasYanyextrinsicconst = 92$] $\Omega_Y$ (\texttt{fetch}) any extrinsic base gas cost.
+  \item[$\CgasYanyextrinsiclinear = 96$] $\Omega_Y$ (\texttt{fetch}) any extrinsic gas per 1024 octets ($\fnmemgas(\CgasYanyextrinsiclinear, \ell)$).
+  \item[$\CgasYourextrinsicconst = 97$] $\Omega_Y$ (\texttt{fetch}) our extrinsic base gas cost.
+  \item[$\CgasYourextrinsiclinear = 96$] $\Omega_Y$ (\texttt{fetch}) our extrinsic gas per 1024 octets ($\fnmemgas(\CgasYourextrinsiclinear, \ell)$).
+  \item[$\CgasYanyimport = 171$] $\Omega_Y$ (\texttt{fetch}) any import base gas cost.
+  \item[$\CgasYourimport = 171$] $\Omega_Y$ (\texttt{fetch}) our import base gas cost.
+  \item[$\CgasZallocconst = 275$] $\Omega_Z$ (\texttt{pages}) alloc base gas cost.
+  \item[$\CgasZalloclinear = 121$] $\Omega_Z$ (\texttt{pages}) alloc gas per page.
+  \item[$\CgasZfreeconst = 212$] $\Omega_Z$ (\texttt{pages}) free base gas cost.
+  \item[$\CgasZfreelinear = 118$] $\Omega_Z$ (\texttt{pages}) free gas per page.
+  \item[$\CgasZsetmodeconst = 130$] $\Omega_Z$ (\texttt{pages}) setmode base gas cost.
+  \item[$\CgasZsetmodelinear = 29$] $\Omega_Z$ (\texttt{pages}) setmode gas per page.
+  \item[$\CgasTaurus = 98$] $\Omega_\Taurus$ (\texttt{yield}) base gas cost.
+  \item[$\CgasAriesconst = 3980$] $\Omega_\Aries$ (\texttt{provide}) base gas cost.
+  \item[$\CgasArieslinear = 2264$] $\Omega_\Aries$ (\texttt{provide}) gas per 1024 octets ($\fnmemgas(\CgasArieslinear, \ell)$).
+  \item[$\CgasGeminiconst = 275$] $\Omega_\Gemini$ (\texttt{grow\_heap}) base gas cost.
+  \item[$\CgasGeminilinear = 121$] $\Omega_\Gemini$ (\texttt{grow\_heap}) gas per additional page.
 \end{description}
 
 \subsubsection{Signing Contexts}
