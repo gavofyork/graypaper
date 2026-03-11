@@ -297,9 +297,9 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
 
 \aboverulesep = 1.5mm \belowrulesep = 2mm
 
-\begin{longtable}{p{3.5cm} p{12.5cm}}
+\begin{longtable}{p{5cm} p{11cm}}
   \toprule
-  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage}} &
+  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage (}g\textbf{)}} &
   \thead{\textbf{Mutations}} \\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
@@ -314,7 +314,7 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
   \makecell*[l]{
   $\Omega_\Gemini(\gascounter, \registers, \memory, \jam¬blob)$ \\
   \texttt{grow\_heap} = 1 \\
-  \textit{(gas below)}} &
+  $g = \CgasGeminiconst + \max(0, \registers_7 - h) \cdot \CgasGeminilinear$} &
   $\begin{aligned}
     % This hostcall can be used to expand the RW data region of memory, or to query its size.
     %
@@ -350,7 +350,23 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
   \makecell*[l]{
   $\Omega_Y(\gascounter, \registers, \memory, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{i}, \dots)$ \\
   \texttt{fetch} = 2 \\
-  \textit{(gas below)}} &
+  $g = \begin{cases}
+    \CgasYprotoacc &\when \registers_{10} = 0 \\
+    \CgasYentropy &\when \registers_{10} = 1 \\
+    \CgasYauthtraceconst + \fnmemgas(\CgasYauthtracelinear, \len{\mathbf{v}}) &\when \registers_{10} = 2 \\
+    \CgasYworkpackconst + \fnmemgas(\CgasYworkpacklinear, \len{\mathbf{v}}) &\when \registers_{10} \in \set{3, 4, 7} \\
+    \CgasYanyimport &\when \registers_{10} = 5 \\
+    \CgasYourimport &\when \registers_{10} = 6 \\
+    \CgasYauthconfig &\when \registers_{10} = 8 \\
+    \CgasYauthtoken &\when \registers_{10} = 9 \\
+    \CgasYrefinectx &\when \registers_{10} = 10 \\
+    \CgasYitemssummary &\when \registers_{10} = 11 \\
+    \CgasYanyitemsummary &\when \registers_{10} = 12 \\
+    \CgasYanypayloadconst + \fnmemgas(\CgasYanypayloadlinear, \len{\mathbf{v}}) &\when \registers_{10} = 13 \\
+    \CgasYaccumitemsconst + \fnmemgas(\CgasYaccumitemslinear, \len{\mathbf{v}}) &\when \registers_{10} = 14 \\
+    \CgasYanyaccumconst + \fnmemgas(\CgasYanyaccumlinear, \len{\mathbf{v}}) &\when \registers_{10} = 15 \\
+    \CgasYprotoref &\otherwise
+  \end{cases}$} &
   $\begin{aligned}
     \using \mathbf{v} &= \begin{cases}
       \mathbf{c} &\when \registers_{10} = 0 \\
@@ -409,23 +425,6 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
       \encode{\mathbf{i}[\registers_{11}]} &\when \mathbf{i} \ne \none \wedge \registers_{10} = 15 \wedge \registers_{11} < \len{\mathbf{i}} \\
       \none &\otherwise
     \end{cases} \\
-    \using g &= \begin{cases}
-      \CgasYprotoacc &\when \registers_{10} = 0 \\
-      \CgasYentropy &\when \registers_{10} = 1 \\
-      \CgasYauthtraceconst + \fnmemgas(\CgasYauthtracelinear, \len{\mathbf{v}}) &\when \registers_{10} = 2 \\
-      \CgasYworkpackconst + \fnmemgas(\CgasYworkpacklinear, \len{\mathbf{v}}) &\when \registers_{10} \in \set{3, 4, 7} \\
-      \CgasYanyimport &\when \registers_{10} = 5 \\
-      \CgasYourimport &\when \registers_{10} = 6 \\
-      \CgasYauthconfig &\when \registers_{10} = 8 \\
-      \CgasYauthtoken &\when \registers_{10} = 9 \\
-      \CgasYrefinectx &\when \registers_{10} = 10 \\
-      \CgasYitemssummary &\when \registers_{10} = 11 \\
-      \CgasYanyitemsummary &\when \registers_{10} = 12 \\
-      \CgasYanypayloadconst + \fnmemgas(\CgasYanypayloadlinear, \len{\mathbf{v}}) &\when \registers_{10} = 13 \\
-      \CgasYaccumitemsconst + \fnmemgas(\CgasYaccumitemslinear, \len{\mathbf{v}}) &\when \registers_{10} = 14 \\
-      \CgasYanyaccumconst + \fnmemgas(\CgasYanyaccumlinear, \len{\mathbf{v}}) &\when \registers_{10} = 15 \\
-      \CgasYprotoref &\otherwise
-    \end{cases} \\
     \using o &= \registers_7 \\
     \using f &= \min(\registers_8, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_9, \len{\mathbf{v}} - f) \\
@@ -439,7 +438,7 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
   \makecell*[l]{
   $\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
   \texttt{lookup} = 3 \\
-  \textit{(gas below)}} &
+  $g = \CgasLconst + \fnmemgas(\CgasLlinear, \len{\mathbf{v}}) $} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
       \mathbf{s} &\when \registers_7 \in \set{ s, 2^{64} - 1 } \\
@@ -452,7 +451,6 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
       \none &\otherwhen \mathbf{a} = \none \vee \memory\subrange{h}{32} \not\in \keys{\mathbf{a}_\sa¬preimages} \\
       \mathbf{a}_\sa¬preimages[\memory\subrange{h}{32}] &\otherwise \\
     \end{cases} \\
-    \using g &= \begin{cases} \CgasLconst + \fnmemgas(\CgasLlinear, \len{\mathbf{v}}) &\when \mathbf{v} \ne \none \\ \CgasLconst &\otherwise \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_{11}, \len{\mathbf{v}} - f) \\
     \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
@@ -465,7 +463,7 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
   \makecell*[l]{
   $\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
   \texttt{read} = 4 \\
-  \textit{(gas below)}} &
+  $g = \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear, \len{\mathbf{v}}) $} &
   $\begin{aligned}
     \using s^* &= \begin{cases}
       s &\when \registers_7 = 2^{64} - 1 \\
@@ -482,7 +480,6 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
       \mathbf{a}_\sa¬storage\subb{\mathbf{k}} &\otherwhen \mathbf{a} \ne \none \wedge \mathbf{k} \in \keys{\mathbf{a}_\sa¬storage}\,,\ \where \mathbf{k} = \memory\subrange{k_O}{k_Z} \\
       \none &\otherwise
     \end{cases} \\
-    \using g &= \begin{cases} \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z)  + \fnmemgas(\CgasRvallinear, \len{\mathbf{v}}) &\when \mathbf{v} \ne \none \\ \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) &\otherwise \end{cases} \\
     \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_{12}, \len{\mathbf{v}} - f) \\
     \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
@@ -495,10 +492,9 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
   \makecell*[l]{
   $\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s)$ \\
   \texttt{write} = 5 \\
-  \textit{(gas below)}} &
+  $g = \CgasWconst + \fnmemgas(\CgasWkeylinear, k_Z) + \fnmemgas(\CgasWvallinear, v_Z)$} &
   $\begin{aligned}
     \using \sq{k_O, k_Z, v_O, v_Z} &= \registers\subrange{7}{4} \\
-    \using g &= \CgasWconst + \fnmemgas(\CgasWkeylinear, k_Z) + \fnmemgas(\CgasWvallinear, v_Z) \\
     \using \mathbf{k} &= \begin{cases}
       \memory\subrange{k_O}{k_Z} &\when \Nrange{k_O}{k_Z} \subseteq \readable{\memory} \\
       \error &\otherwise
@@ -570,7 +566,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \makecell*[l]{
   $\Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, s, \mathbf{d}, t)$ \\
   \texttt{historical\_lookup} = 7 \\
-  \textit{(gas below)}} &
+  $g = \CgasHconst + \fnmemgas(\CgasHlinear, \len{\mathbf{v}})$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
       \mathbf{d}\subb{s} &\when \registers_7 = 2^{64} - 1 \wedge s \in \keys{\mathbf{d}} \\
@@ -583,7 +579,6 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \none &\otherwhen \mathbf{a} = \none \\
       \histlookup(\mathbf{a}, t, \memory\subrange{h}{32}) &\otherwise \\
     \end{cases} \\
-    \using g &= \begin{cases} \CgasHconst + \fnmemgas(\CgasHlinear, \len{\mathbf{v}}) &\when \mathbf{v} \ne \none \\ \CgasHconst &\otherwise \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_{11}, \len{\mathbf{v}} - f) \\
     \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
@@ -614,14 +609,13 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \makecell*[l]{
   $\Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
   \texttt{machine} = 9 \\
-  \textit{(gas below)}} &
+  $g = \CgasMconst + \fnmemgas(\CgasMlinear, \len{\mathbf{p}})$ }&
   $\begin{aligned}
     \using \sq{p_O, p_Z, i} &= \registers\subrange{7}{3} \\
     \using \mathbf{p} &= \begin{cases}
       \memory\subrange{p_O}{p_Z} &\when \Nrange{p_O}{p_Z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using g &= \CgasMconst + \fnmemgas(\CgasMlinear, \len{\mathbf{p}}) \\
     \using n &= \min(n \in \N : n \not\in \keys{\mathbf{m}}) \\
     \using \mathbf{u} &= \tup{\is{\ram¬value}{[0, 0, \dots]},\is{\ram¬access}{[\none, \none, \dots]}} \\
     \tup{\execst', \registers'_7, \mathbf{m}} &\equiv \begin{cases}
@@ -634,10 +628,9 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \makecell*[l]{
   $\Omega_P(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
   \texttt{peek} = 10 \\
-  \textit{(gas below)}} &
+  $g = \CgasPconst + \fnmemgas(\CgasPlinear, z)$ }&
   $\begin{aligned}
     \using \sq{n, o, s, z} &= \registers\subrange{7}{4} \\
-    \using g &= \CgasPconst + \fnmemgas(\CgasPlinear, z) \\
     \tup{\execst', \registers'_7, \mem'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mem} &\when \Nrange{o}{z} \not\subseteq \writable{\memory} \\
       \tup{\continue, \mathtt{WHO}, \mem} &\otherwhen n \not\in \keys{\mathbf{m}} \\
@@ -650,10 +643,9 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \makecell*[l]{
   $\Omega_O(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
   \texttt{poke} = 11 \\
-  \textit{(gas below)}} &
+  $g = \CgasOconst + \fnmemgas(\CgasOlinear, z)$ }&
   $\begin{aligned}
     \using \sq{n, s, o, z} &= \registers\subrange{7}{4} \\
-    \using g &= \CgasOconst + \fnmemgas(\CgasOlinear, z) \\
     \tup{\execst', \registers'_7, \mathbf{m}'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{m}} &\when \Nrange{s}{z} \not\subseteq \readable{\memory} \\
       \tup{\continue, \mathtt{WHO}, \mathbf{m}} &\otherwhen n \not\in \keys{\mathbf{m}} \\
@@ -666,10 +658,9 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \makecell*[l]{
   $\Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
   \texttt{pages} = 12 \\
-  \textit{(gas below)}} &
+  $g =  \begin{cases} \CgasZfreeconst + c \cdot \CgasZfreelinear &\when r = 0 \\ \CgasZallocconst + c \cdot \CgasZalloclinear &\when r \in \set{1, 2} \\ \CgasZsetmodeconst + c \cdot \CgasZsetmodelinear &\when r \in \set{3, 4} \end{cases} $ }&
   $\begin{aligned}
     \using \sq{n, p, c, r} &= \registers\subrange{7}{4} \\
-    \using g &= \begin{cases} \CgasZfreeconst + c \cdot \CgasZfreelinear &\when r = 0 \\ \CgasZallocconst + c \cdot \CgasZalloclinear &\when r \in \set{1, 2} \\ \CgasZsetmodeconst + c \cdot \CgasZsetmodelinear &\when r \in \set{3, 4} \end{cases} \\
     \using \mathbf{u} &= \begin{cases}
       \mathbf{m}\subb{n}_\pg¬ram &\when n \in \keys{\mathbf{m}} \\
       \error &\otherwise\\
@@ -763,10 +754,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \makecell*[l]{
   $\Omega_B(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{bless} = 15 \\
-  \textit{(gas below)}}&
+  $g = \CgasBconst + n \cdot \CgasBlinear $ }&
   $\begin{aligned}
     \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
-    \using g &= \CgasBconst + n \cdot \CgasBlinear \\
     \using \mathbf{a} &= \begin{cases}
       \decode[4]{\memory\subrange{a}{4\Ccorecount}} &\when \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
       \error &\otherwise
@@ -887,7 +877,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \makecell*[l]{
   $\Omega_T(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{transfer} = 21 \\
-  \textit{(gas below)}} &
+  $g = \CgasT$} &
   $\begin{aligned}
     \using \sq{\dx¬dest, \dx¬amount, l, o} &= \registers\subrange{7}{4},  \\
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts\\
@@ -1037,10 +1027,9 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \makecell*[l]{
   $\Omega_\Aries(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{provide} = 27 \\
-  \textit{(gas below)}} &
+  $g = \CgasAriesconst + \fnmemgas(\CgasArieslinear, z)$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{8, 9} \\
-    \using g &= \CgasAriesconst + \fnmemgas(\CgasArieslinear, z) \\
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts\\
     \using s &= \begin{cases}
       \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
