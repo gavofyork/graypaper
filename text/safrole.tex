@@ -62,11 +62,11 @@ $\epochroot$ is the epoch's root, a Bandersnatch ring root composed with the one
   \epochroot &\in \ringroot
 \end{align}
 
-Finally, $\ticketaccumulator$ is the ticket accumulator, a sequence of highest-scoring ticket identifiers to be used for the next epoch. $\sealtickets$ is the current epoch's slot-sealer sequence, which is either a full complement of $\Cepochlen$ tickets or, in the case of a fallback mode, a sequence of $\Cepochlen$ Bandersnatch keys:
+Finally, $\ticketaccumulator$ is the ticket accumulator, a sequence of best-scoring ticket identifiers to be used for the next epoch, and $\sealtickets$ is the current epoch's slot-sealer sequence:
 \begin{align}
   \label{eq:ticketaccumulatorsealticketsspec}
   \ticketaccumulator \in \sequence[:\Cepochlen]{\safroleticket} \,,\quad
-  \sealtickets \in \sequence[\Cepochlen]{\safroleticket} \cup \sequence[\Cepochlen]{\bskey}
+  \sealtickets \in \sequence[\Cepochlen]{\safroleticket}
 \end{align}
 
 Here, $\safroleticket$ is used to denote the set of \emph{tickets}, a combination of a verifiably random ticket identifier $\st¬id$ and the ticket's entry-index $\st¬entryindex$:
@@ -79,6 +79,13 @@ Here, $\safroleticket$ is used to denote the set of \emph{tickets}, a combinatio
 \end{align}
 
 As we state in section \ref{sec:sealandentropy}, Safrole requires that every block header $\H$ contain a valid seal $\H_\¬sealsig$, which is a Bandersnatch signature produced with the private key corresponding to the entry at index $m'$ of the current epoch's slot-sealer sequence $\sealtickets'$.
+
+If too few tickets were submitted in the previous epoch, it is possible for $\sealtickets'[m']$ to be the invalid ticket $\zeroticket$, defined as:
+\begin{equation}
+  \zeroticket \equiv \tup{\is{\st¬id}{\zerohash}, \is{\st¬entryindex}{0}}
+\end{equation}
+
+In this case, the corresponding key is pseudorandomly selected from $\activeset'$.
 
 
 
@@ -141,16 +148,16 @@ Note that on epoch changes the posterior queued validator key sequence $\pending
 
 The header must contain a valid seal and valid entropy source. These are two \textsc{vrf} signatures both using the private key corresponding to the slot-sealer sequence entry for the current timeslot; the message data of the former is the header's serialization omitting the seal component $\H_\¬sealsig$, whereas the latter is used as a bias-resistant entropy source and thus its message must already have been fixed: we use the entropy stemming from the \textsc{vrf} of the seal signature. Formally:
 \begin{align}
-  \nonumber \using i = \cyclic{\sealtickets'[\H_\¬timeslot]}\colon \\
+  \nonumber \using i &= \sealtickets'[m']\colon \\
   \label{eq:ticketconditiontrue}
-  \sealtickets' \in \sequence{\safroleticket} &\implies \abracegroup[\,]{
+  i \ne \zeroticket &\implies \abracegroup[\,]{
       &i_\st¬id = \banderout{\H_\¬sealsig}\,,\\
       &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\Xticket \concat \entropy'_3 \append i_\st¬entryindex}{\encodeunsignedheader{\H}}\,,\\
       &\isticketed = 1
   }\\
   \label{eq:ticketconditionfalse}
-  \sealtickets' \in \sequence{\bskey} &\implies \abracegroup[\,]{
-      &i = \H_\¬authorbskey\,,\\
+  i = \zeroticket &\implies \abracegroup[\,]{
+      &\H_\¬authorbskey = F(\entropy'_2, \activeset', m')\,,\\
       &\H_\¬sealsig \in \bssignature{\H_\¬authorbskey}{\Xfallback \concat \entropy'_3}{\encodeunsignedheader{\H}}\,,\\
       &\isticketed = 0
   }\\
@@ -159,11 +166,19 @@ The header must contain a valid seal and valid entropy source. These are two \te
   \Xentropy &= \token{\$jam\_entropy}\\
   \Xfallback &= \token{\$jam\_fallback\_seal}\\
   \Xticket &= \token{\$jam\_ticket\_seal}
-  \end{align}
+\end{align}
 
-Sealing using the ticket is of greater security, and we utilize this knowledge when determining a candidate block on which to extend the chain, detailed in section \ref{sec:bestchain}. We thus note that the block was sealed under the regular security with the boolean marker $\isticketed$. We define this only for the purpose of ease of later specification.
+Here, $F$ is the fallback key selection function which pseudorandomly selects a validator key using entropy collected on-chain $r$:
+\begin{equation}
+  F\colon \abracegroup[\ ]{
+    \tuple{\hash,\,\sequence{\valkey},\,\Nmax{\Cepochlen}} &\to \bskey\\
+    \tup{r,\, \mathbf{k},\, i} &\mapsto \cyclic{\mathbf{k}\subb{\decode[4]{\blake{r \concat \encode[4]{i}}_{\dots 4}}}}_\vk¬bs
+  }
+\end{equation}
 
-In addition to the entropy accumulator $\entropyaccumulator$, we retain three additional historical values of the accumulator at the point of each of the three most recently ended epochs, $\entropy_1$, $\entropy_2$ and $\entropy_3$. The second-oldest of these $\entropy_2$ is utilized to help ensure future entropy is unbiased (see equation \ref{eq:ticketsextrinsic}) and seed the fallback slot-sealer generation function with randomness (see equation \ref{eq:slotkeysequence}). The oldest is used to regenerate this randomness when verifying the seal above (see equations \ref{eq:ticketconditionfalse} and \ref{eq:ticketconditiontrue}).
+Sealing using a ticket is of greater security, and we utilize this knowledge when determining a candidate block on which to extend the chain, detailed in section \ref{sec:bestchain}. We thus note that the block was sealed under the regular security with the boolean marker $\isticketed$. We define this only for the purpose of ease of later specification.
+
+In addition to the entropy accumulator $\entropyaccumulator$, we retain three additional historical values of the accumulator at the point of each of the three most recently ended epochs, $\entropy_1$, $\entropy_2$ and $\entropy_3$. The second-oldest of these $\entropy_2$ is utilized to help ensure future entropy is unbiased (see equation \ref{eq:ticketsextrinsic}) and seed the fallback key selection function with randomness (see equation \ref{eq:ticketconditionfalse} above). The oldest is used to regenerate this randomness when verifying the seal above (see equations \ref{eq:ticketconditionfalse} and \ref{eq:ticketconditiontrue}).
 \begin{align}
   \label{eq:entropycomposition}
   \entropy &\in \sequence[4]{\hash}
@@ -196,36 +211,30 @@ On an epoch transition (identified as the condition $e' > e$), we therefore rota
 \subsection{The Slot-Sealer Sequence}
 \label{sec:slotkeysequence}
 
-The posterior slot-sealer sequence $\sealtickets'$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\sealtickets$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it takes the value of the prior ticket accumulator $\ticketaccumulator$. Otherwise, it takes the value of the fallback key sequence. Formally:
+The posterior slot-sealer sequence $\sealtickets'$ is one of three expressions depending on the circumstance of the block. If the block is not the first in an epoch, then it remains unchanged from the prior $\sealtickets$. If the block signals the next epoch (by epoch index) and the previous block's slot was within the closing period of the previous epoch, then it is built from the value of the prior ticket accumulator $\ticketaccumulator$. Otherwise, it is filled with invalid tickets, implying use of the fallback key in every slot in the epoch. Formally:
 \begin{align}
   \label{eq:slotkeysequence}
   \sealtickets' &\equiv \begin{cases}
-    Z(\ticketaccumulator) &\when e' = e + 1 \wedge m \geq \Cepochtailstart \wedge \len{\ticketaccumulator} = \Cepochlen\!\!\\
+    Z(P(\ticketaccumulator)) &\when e' = e + 1 \wedge m \geq \Cepochtailstart \\
     \sealtickets &\when e' = e \\
-    F(\entropy'_2, \activeset') \!\!\!&\otherwise
+    \sq{\zeroticket, \zeroticket, \dots} &\otherwise
   \end{cases}
 \end{align}
 
-Here, we use $Z$ as the outside-in sequencer function, defined as follows:
-\begin{equation}
-  Z\colon\abracegroup[\,]{
-    \sequence[\Cepochlen]{\safroleticket} &\to \sequence[\Cepochlen]{\safroleticket}\\
-    \mathbf{s} &\mapsto \sq{\mathbf{s}_0, \mathbf{s}_{\len{\mathbf{s}} - 1}, \mathbf{s}_1, \mathbf{s}_{\len{\mathbf{s}} - 2}, \dots}\\
+Here, we use $P$ as the accumulator padding function and $Z$ as the outside-in sequencer function, defined as follows:
+\begin{align}
+  P&\colon\abracegroup[\,]{
+    \sequence[:\Cepochlen]{\safroleticket} &\to \sequence[\Cepochlen]{\safroleticket} \\
+    \mathbf{s} &\mapsto \mathbf{s} \concat \sq{\zeroticket, \zeroticket, \dots}\interval{}{\Cepochlen - \len{\mathbf{s}}}
+  } \\
+  Z&\colon\abracegroup[\,]{
+    \sequence{\safroleticket} &\to \sequence{\safroleticket} \\
+    \mathbf{s} &\mapsto \begin{cases}
+        \mathbf{s} &\when \len{s} \le 1 \\
+        \sq{\mathbf{s}_1} \concat Z(\mathbf{s}\interval{2}{}) \concat \sq{\mathbf{s}_0} &\otherwise
+    \end{cases}
   }
-\end{equation}
-
-Finally, $F$ is the fallback key sequence function which selects an epoch's worth of validator Bandersnatch keys ($\sequence[\Cepochlen]{\bskey}$) from the validator key sequence $\mathbf{k}$ using the entropy collected on-chain $r$:
-\begin{equation}
-  \label{eq:fallbackkeysequence}
-  F\colon \abracegroup[\ ]{
-    \tuple{\hash,\,\sequence{\valkey}} &\to \sequence[\Cepochlen]{\bskey}\\
-    \tup{r,\, \mathbf{k}} &\mapsto \sq{\build{
-      \cyclic{\mathbf{k}\sub{\decode[4]{\blake{r \concat \encode[4]{i}}_{\dots 4}}}}_\vk¬bs
-    }{
-      i \in \epochindex
-    }}
-  }\!\!\!
-\end{equation}
+\end{align}
 
 
 
@@ -256,11 +265,11 @@ As mentioned earlier, the header's epoch marker $\H_\¬epochmark$ is either empt
   \end{cases}
 \end{align}
 
-The winning-tickets marker $\H_\¬winnersmark$ is either empty or, if the block is the first after the end of the submission period for tickets and if the ticket accumulator is saturated, then the final sequence of ticket identifiers. Formally:
+The winning-tickets marker $\H_\¬winnersmark$ is either empty or, if the block is the first after the end of the submission period for tickets, then the final sequence of ticket identifiers. Formally:
 \begin{align}
   \label{eq:winningticketsmarker}
   \H_\¬winnersmark &\equiv \begin{cases}
-    Z(\ticketaccumulator) &\when e' = e \wedge m < \Cepochtailstart \le m' \wedge \len{\ticketaccumulator} = \Cepochlen \\
+    Z(P(\ticketaccumulator)) &\when e' = e \wedge m < \Cepochtailstart \le m' \\
     \none & \otherwise
   \end{cases}
 \end{align}
@@ -315,6 +324,11 @@ The tickets submitted via the extrinsic must already have been placed in order o
   \mathbf{n} &= \sqorderuniqby{x_\st¬id}{x \in \mathbf{n}} \\
   \set{ \build{ x_\st¬id }{ x \in \mathbf{n} }} &\disjoint \set{ \build { x_\st¬id }{ x \in \ticketaccumulator }}
 \end{align}
+
+To reduce the number of distributed and submitted tickets while maintaining an adequate level of anonymity at the end of epochs, we require the first byte of the identifier of each submitted ticket to be no greater than $\Cmaxticketfirstbyte$:
+\begin{equation}
+  \forall x \in \mathbf{n}: x_\st¬id\subb{0} \le \Cmaxticketfirstbyte
+\end{equation}
 
 The new ticket accumulator $\ticketaccumulator'$ is constructed by merging new tickets into the previous accumulator value (or the empty sequence if it is a new epoch):
 \begin{equation}
