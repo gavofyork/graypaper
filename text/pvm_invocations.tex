@@ -922,7 +922,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \tup{\execst', \registers'_7, \registers'_8} &\equiv \begin{cases}
       \tup{\continue, \mathtt{HUH}, \registers_8} &\when z \not\in \bloblength \\
-      \tup{\panic, \registers_7, \registers_8} &\when h = \error \\
+      \tup{\panic, \registers_7, \registers_8} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{NONE}, 0} &\otherwhen \mathbf{a} = \error \\
       \tup{\continue, 0, 0} &\otherwhen \mathbf{a} = \sq{} \\
       \tup{\continue, 1 + 2^{32}x, 0} &\otherwhen \mathbf{a} = \sq{x} \\
@@ -949,7 +949,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\when z \not \in \bloblength \\
-      \tup{\panic, \registers_7, \imX_\im¬self} &\when h = \error \\
+      \tup{\panic, \registers_7, \imX_\im¬self} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\otherwhen \mathbf{a} = \error \\
       \tup{\continue, \mathtt{FULL}, \imX_\im¬self} &\otherwhen \mathbf{a}_\sa¬balance < \mathbf{a}_\sa¬minbalance \\
       \tup{\continue, \mathtt{OK}, \mathbf{a}} &\otherwise \\
@@ -980,7 +980,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\when z \not \in \bloblength \\
-      \tup{\panic, \registers_7, \imX_\im¬self} &\when h = \error \\
+      \tup{\panic, \registers_7, \imX_\im¬self} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\otherwhen \mathbf{a} = \error \\
       \tup{\continue, \mathtt{OK}, \mathbf{a}} &\otherwise \\
     \end{cases} \\
@@ -1023,7 +1023,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬provisions} &\equiv \begin{cases}
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\when z \not \in \bloblength \\
-      \tup{\panic, \registers_7, \imX_\im¬provisions} &\when \mathbf{i} = \error \\
+      \tup{\panic, \registers_7, \imX_\im¬provisions} &\otherwhen \mathbf{i} = \error \\
       \tup{\continue, \mathtt{WHO}, \imX_\im¬provisions} &\otherwhen \mathbf{a} = \none \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \mathbf{a}_\sa¬requests[\tup{\blake{\mathbf{i}}, z}] \ne \sq{} \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \tup{s, \mathbf{i}} \in \imX_\im¬provisions \\
