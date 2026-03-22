@@ -191,7 +191,7 @@
 \newcommand*{\fnzeropad}[1]{\mathcal{P}_{#1}}
 \newcommand*{\fnseqfromhash}[1]{\mathcal{Q}_{#1}}
 \newcommand*{\fnecrecover}{\mathcal{R}}
-\newcommand*{\fnsigndata}[1]{\mathcal{S}_{#1}}
+\newcommand*{\fnsigndata}{\mathcal{S}}
 \newcommand*{\fnsubifnone}{\mathcal{U}}
 \newcommand*{\fnsext}[1]{\mathcal{X}_{#1}}
 \newcommand*{\fnbanderout}{\mathcal{Y}}
@@ -275,6 +275,7 @@
 \newcommand*{\Cmaxbundlesize}{\mathsf{W}_B}
 \newcommand*{\Cmaxservicecodesize}{\mathsf{W}_C}
 \newcommand*{\Cecpiecesize}{\mathsf{W}_E}
+\newcommand*{\Csegmentfootprint}{\mathsf{W}_F}
 \newcommand*{\Csegmentsize}{\mathsf{W}_G}
 \newcommand*{\Cmaxpackageimports}{\mathsf{W}_M}
 \newcommand*{\Csegmentecpieces}{\mathsf{W}_P}
@@ -346,9 +347,8 @@
 \newcommand*{\ringroot}{\accentset{\circ}{\blob}}
 \newcommand*{\blskey}{\accentset{\mathrm{B\!L\!S}}{\blob}}
 
-\newcommand*{\edsigndata}[2]{\bar{\fnsigndata{#1}}\left(#2\right)}
-\newcommand*{\bssigndata}[2]{\accentset{\backsim}{\fnsigndata{#1}}\left(#2\right)}
-\newcommand*{\blssigndata}[2]{\accentset{\mathrm{B\!L\!S}}{\fnsigndata{#1}}\left(#2\right)}
+\newcommand*{\edsigndata}[2]{\bar{\fnsigndata}_{#1}\left(#2\right)}
+\newcommand*{\blssigndata}[2]{\accentset{\mathrm{B\!L\!S}}{\fnsigndata}_{#1}\left(#2\right)}
 
 %%%%%%%%%%%%
 % Specialized numeric types (blackboard N subscripts)
@@ -403,9 +403,10 @@
 %%%%%%%%%%%%
 % Named types (blackboard)
 \newcommand*{\pvmguest}{\mathbb{G}}
-\newcommand*{\pg¬code}{\mathbf{p}}
+\newcommand*{\pg¬code}{\pvm¬blob}
 \newcommand*{\pg¬ram}{\mathbf{u}}
 \newcommand*{\pg¬pc}{i}
+\newcommand*{\pg¬gaschargedflag}{\tilde{g}}
 
 \newcommand*{\implications}{\mathbb{L}}
 \newcommand*{\imX}{\mathbf{x}}
@@ -786,7 +787,10 @@
 %%%%%%%%%%%%
 % PVM-SPECIFIC ITEMS
 
+\newcommand*{\jam¬blob}{\mathfrak{j}}
+\newcommand*{\pvm¬blob}{\mathfrak{p}}
 \newcommand*{\gascounter}{\varrho}
+\newcommand*{\gaschargedflag}{\tilde{\gascounter}}
 \newcommand*{\registers}{\varphi}
 \newcommand*{\memory}{\mu}
 \newcommand*{\pvmreg}{\N_R}
@@ -794,11 +798,29 @@
 \newcommand*{\segoff}{\varsigma}
 \newcommand*{\execst}{\varepsilon}
 
-
+\newcommand*{\rnp}[1]{P(#1)}
+\newcommand*{\rnq}[1]{Z(#1)}
 \newcommand*{\contextmutator}[1]{\Omega\ang{#1}}
 
 %%%%%%%%%%%%
 % Other stuff
+
+% This is like an \abracegroup, but with two independently aligned chunks.
+% It makes it possible to have a nicer looking abracegroup blocks where a single
+% overly long column doesn't mess up the spacing of the rest of it.
+\newcommand{\abracegrouptwo}[2]{%
+  \left\{%
+  \begin{array}{@{}l@{}}
+    \begin{aligned}
+      #1
+    \end{aligned}
+    \\[14pt]
+    \hspace{8pt}\begin{aligned}
+      #2
+    \end{aligned}
+  \end{array}
+  \right.
+}
 
 \newcommand*{\jamdraftversion}{\input{VERSION}\!\!\!\!}
 \newcommand*{\jamdraftversionstring}{\jamdraftversion}

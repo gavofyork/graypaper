@@ -5,6 +5,7 @@
 \newcommand*{\local¬fnprovide}{I}
 \newcommand*{\local¬numberofreportsaccumulated}{n}
 \newcommand*{\local¬servicegasused}{\mathbf{u}}
+\newcommand*{\local¬processedtransfers}{\mathbf{t}}
 
 \section{Accumulation}
 \label{sec:accumulation}
@@ -149,21 +150,21 @@ Finally, we define $\local¬fnservouts$ and $\local¬fngasused$, the sets charac
   \local¬fngasused \equiv \sequence{\tuple{\serviceid, \gas}}
 \end{equation}
 
-We define the outer accumulation function $\accseq$ which transforms a gas-limit, a sequence of deferred transfers, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the number of work-reports accumulated, a posterior state-context, the resultant accumulation-output pairings and the service-indexed gas usage:
+We define the outer accumulation function $\accseq$ which transforms a gas-limit, a sequence of deferred transfers, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the number of work-reports accumulated, a posterior state-context, the resultant accumulation-output pairings, the service-indexed gas usage and the sequence of processed transfers:
 \begin{equation}
   \label{eq:accseq}
   \accseq\colon\abracegroup{
-    &\tuple{\gas, \defxfers, \workreports, \partialstate, \dictionary{\serviceid}{\gas}} \to \tuple{\N, \partialstate, \local¬fnservouts, \local¬fngasused} \\
+    &\tuple{\gas, \defxfers, \workreports, \partialstate, \dictionary{\serviceid}{\gas}} \to \tuple{\N, \partialstate, \local¬fnservouts, \local¬fngasused, \defxfers} \\
     &\tup{g, \mathbf{t}, \mathbf{r}, \psX, \mathbf{f}} \!\mapsto\! \begin{cases}
-      \tup{0, \psX, \emset, \sq{}} &
+      \tup{0, \psX, \emset, \sq{}, \sq{}} &
         \when n = 0 \\
-      \tup{i + j, \psX', \mathbf{b}^* \!\cup \mathbf{b}, \mathbf{u}^* \!\!\concat \mathbf{u}}\!\!\!\! &
+      \tup{i + j, \psX', \mathbf{b}^* \!\cup \mathbf{b}, \mathbf{u}^* \!\!\concat \mathbf{u}, \mathbf{t} \concat \mathbf{t}^\dagger}\!\!\!\! &
         \text{o/w}\!\!\!\!\!\!\!\! \\
     \end{cases} \\
     &\quad\where i = \max(\Nmax{\len{\mathbf{r}} + 1}): \sum_{r \in \mathbf{r}\sub{\dots i}, d \in r_\wr¬digests}(d_\wd¬gaslimit) \le g \\
     &\quad\also n = \len{\mathbf{t}} + i + \len{\mathbf{f}} \\
     &\quad\also \tup{\psX^*\!\!, \mathbf{t}^*\!\!, \mathbf{b}^*\!\!, \mathbf{u}^*} = \accpar(\psX, \mathbf{t},\mathbf{r}\sub{\dots i}, \mathbf{f}) \\
-    &\quad\also \tup{j, \psX'\!, \mathbf{b}, \mathbf{u}} = \accseq(g^* - \!\!\!\!\!\!\sum_{\tup{s, u} \in \mathbf{u}^*}\!\!\!\!\!\!(u), \mathbf{t}^*\!\!, \mathbf{r}\sub{i\dots}, \psX^*\!\!, \emset)\\
+    &\quad\also \tup{j, \psX'\!, \mathbf{b}, \mathbf{u}, \mathbf{t}^\dagger} = \accseq(g^* - \!\!\!\!\!\!\sum_{\tup{s, u} \in \mathbf{u}^*}\!\!\!\!\!\!(u), \mathbf{t}^*\!\!, \mathbf{r}\sub{i\dots}, \psX^*\!\!, \emset)\\
     &\quad\also g^* = g + \sum_{t \in \mathbf{t}}(t_\dx¬gas)
   }
 \end{equation}
@@ -365,7 +366,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
   \!\!\!\!\!\\
   \label{eq:finalstateaccumulation}
   &\tup{
-    \local¬numberofreportsaccumulated, \psX', \mathbf{b}, \local¬servicegasused
+    \local¬numberofreportsaccumulated, \psX', \mathbf{b}, \local¬servicegasused, \local¬processedtransfers
   } \equiv \accseq(g, \sq{}, \justbecameavailable^*, \psX, \alwaysaccers) \\
   &\lastaccout' \equiv \sq{\tup{s, h} \in \mathbf{b}} \\
   \label{eq:accountspostaccdef}
@@ -382,25 +383,32 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
   \!\!\!\!\!
 \end{align}
 
-From this formulation, we also receive $\local¬numberofreportsaccumulated$, the total number of work-reports accumulated and $\local¬servicegasused$, the gas used in the accumulation process for each service. We compose $\accumulationstatistics$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-items accumulated. Formally:
+From this formulation, we also receive $\local¬numberofreportsaccumulated$, the total number of work-reports accumulated and $\local¬servicegasused$, the gas used in the accumulation process for each service. We compose $\accumulationstatistics$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-items and transfers accumulated. Formally:
 \begin{align}
   \label{eq:accumulationstatisticsspec}
-  &\accumulationstatistics \in \dictionary{\serviceid}{\tuple{\gas, \N}} \\
+  &\accumulationstatistics \in \dictionary{\serviceid}{\tuple{\N, \N, \gas}} \\
   \label{eq:accumulationstatisticsdef}
   &\textstyle \accumulationstatistics \equiv \set{\build{
-    \kv{s}{\tup{G(s), N(s)}}
+    \kv{s}{S(s)}
   }{
-    G(s) + N(s) \ne 0
+    S(s) \ne \tup{0, 0, 0}
   }}
   \!\!\!\!\\
   \nonumber
-  \where &G(s) \equiv \sum_{\tup{s, u} \in \mathbf{u}}(u) \\
+  \where &S(s) \equiv \tup{N(s), T(s), G(s)} \\
   \nonumber
   \also &N(s) \equiv \len{\sq{\build{d}{
     r \orderedin \justbecameavailable^*\sub{\dots n} ,
     d \orderedin r_\wr¬digests ,
     d_\wd¬serviceindex = s
-  }}}
+  }}} \\
+  \nonumber
+  \also &T(s) \equiv \len{\sq{\build{t}{
+    t \orderedin \local¬processedtransfers ,
+    t_\dx¬dest = s
+  }}} \\
+  \nonumber
+  \also &G(s) \equiv \sum_{\tup{s, u} \in \mathbf{u}}(u)
 \end{align}
 
 The second intermediate state $\accountspostxfer$ may then be defined with the last-accumulation record being updated for all accumulated services:

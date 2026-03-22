@@ -41,7 +41,6 @@
     \item[$\edkey$] The set of Ed25519 public keys. A subset of $\blob[32]$. See section \ref{sec:signing}.
     \item[$\bskey$] The set of Bandersnatch public keys. A subset of $\blob[32]$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
   \end{description}
-  \item[$\operandtuple$] The $\mathbb{I}$nformation concerning a single work-item once prepared as an operand for the accumulation function. See equation \ref{eq:operandtuple}.
   \item[$\segment$] The set of data segments, equivalent to $\blob[\Csegmentsize]$. See equation \ref{eq:segment}.
   \item[$\valkey$] The set of validator $\mathbb{K}$ey-sets. See equation \ref{eq:validatorkeys}.
   \item[$\implications$] The set representing implications of accumulation. See equation \ref{eq:implications}.
@@ -50,6 +49,7 @@
   \item[$\workreport$] The set of work-$\mathbb{R}$eports. See equation \ref{eq:workreport}. \emph{Note used for the set of real numbers.}
   \item[$\partialstate$] The set representating a portion of overall $\mathbb{S}$tate, used during accumulation. See equation \ref{eq:partialstate}.
   \item[$\safroleticket$] The set of seal-key $\mathbb{T}$ickets. See equation \ref{eq:ticket}.
+  \item[$\operandtuple$] The information concerning a single work-item once prepared as an operand for the accumulation function. See equation \ref{eq:operandtuple}.
   \item[$\readable{\memory}$] The set of $\mathbb{V}$alidly readable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
   \item[$\writable{\memory}$] The set of $\mathbb{V}$alidly writable indices for \textsc{pvm} \textsc{ram} $\memory$. See appendix \ref{sec:virtualmachine}.
   \item[$\edsignature{k}{m}$] The set of $\mathbb{V}$alid Ed25519 signatures of the key $k$ and message $m$. A subset of $\blob[64]$. See section \ref{sec:cryptography}.
@@ -115,6 +115,7 @@
     \item[$\Omega_Z$] Pages inner-\textsc{pvm} memory host-call.
     \item[$\Omega_\Taurus$] Yield accumulation trie result host-call.
     \item[$\Omega_\Aries$] Provide preimage host-call.
+    \item[$\Omega_\Gemini$] Grow heap host-call.
   \end{description}
 \end{description}
 
@@ -164,7 +165,7 @@ These terms are all contextualized to a single block. They may be superscripted 
   \item[$\accoutcommitment{v}$] The \textsc{Beefy} signed commitment of validator $v$. See equation \ref{eq:accoutsignedcommitment}.
   \item[$\reporters$] The set of Ed25519 guarantor keys who made a work-report. See equation \ref{eq:guarantorsig}.
   \item[$\header$] The block header. See equation \ref{eq:header}.
-  \item[$\accumulationstatistics$] The sequence of work-reports which were accumulated this in this block. See equations \ref{eq:accumulationstatisticsspec} and \ref{eq:accumulationstatisticsdef}.
+  \item[$\accumulationstatistics$] Service-indexed accumulation statistics for this block. See equations \ref{eq:accumulationstatisticsspec} and \ref{eq:accumulationstatisticsdef}.
   \item[$\guarantorassignments$] The mapping from cores to guarantor keys. See section \ref{sec:coresandvalidators}.
   \item[$\guarantorassignmentsunderlastrotation$] The mapping from cores to guarantor keys for the previous rotation. See section \ref{sec:coresandvalidators}.
   \item[$\justbecameavailable$] The sequence of work-reports which have now become available and ready for accumulation. See equation \ref{eq:availableworkreports}.
@@ -275,10 +276,11 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cassurancetimeoutperiod = 5$] The period in timeslots after which reported but unavailable work may be replaced. See equation \ref{eq:reportspostguaranteesdef}.
   \item[$\Cvalcount = 1023$] The total number of validators.
   \item[$\Cmaxauthcodesize = 64,000$] The maximum size of is-authorized code in octets. See equation \ref{eq:isauthinvocation}.
-  \item[$\Cmaxbundlesize = 13,794,305$] The maximum size of an encoded work-package together with its extrinsic data and import implications, in octets. See equation \ref{eq:checkextractsize}.
+  \item[$\Cmaxbundlesize = 13,791,360$] The maximum size of the concatenated variable-size blobs, extrinsics and imported segments of a work-package, in octets. See equation \ref{eq:checkextractsize}.
   \item[$\Cmaxservicecodesize = 4,000,000$] The maximum size of service code in octets. See equations \ref{eq:refinvocation}, \ref{eq:accinvocation} \& \ref{eq:onxferinvocation}.
   \item[$\Cecpiecesize = 684$] The basic size of erasure-coded pieces in octets. See equation \ref{eq:erasurecoding}.
-  \item[$\Csegmentsize = \Csegmentecpieces\Cecpiecesize = 4104$] The size of a segment in octets. See equation \ref{sec:segments}.
+  \item[$\Csegmentsize = \Csegmentecpieces\Cecpiecesize = 4104$] The size of a segment in octets. See section \ref{sec:segments}.
+  \item[$\Csegmentfootprint = \Csegmentsize + 32\ceil{\log_2(\Cmaxpackageimports)} = 4488$] The additional footprint in the Audits DA of a single imported segment. See equation \ref{eq:segmentfootprint}.
   \item[$\Cmaxpackageimports = 3,072$] The maximum number of imports in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
   \item[$\Csegmentecpieces = 6$] The number of erasure-coded pieces in a segment.
   \item[$\Cmaxreportvarsize = 48\cdot2^{10}$] The maximum total size of all unbounded blobs in a work-report, in octets. See equation \ref{eq:limitworkreportsize}.
