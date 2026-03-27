@@ -822,7 +822,14 @@
   \right.
 }
 
-\newcommand*{\jamdraftversion}{\input{VERSION}\!\!\!\!}
+% Using \include inside of a \title is broken in newer versions of TeX live for some reason;
+% fortunately we can just manually read the file as a workaround.
+\newread\versionfile
+  \openin\versionfile=VERSION
+  \read\versionfile to\jamdraftversionraw
+\closein\versionfile
+
+\newcommand*{\jamdraftversion}{\jamdraftversionraw\!\!\!\!}
 \newcommand*{\jamdraftversionstring}{\jamdraftversion}
 
 \newcommand*{\makegpbackground}{
