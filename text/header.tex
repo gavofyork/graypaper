@@ -28,11 +28,16 @@ The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking 
   \H_\¬extrinsichash \equiv \blake{\encode{\blakemany{\mathbf{a}}}} \\
   \where \mathbf{a} &= \sq{
     \encodetickets{\xttickets},
-    \encodepreimages{\xtpreimages},
+    \mathbf{p},
     \mathbf{g},
     \encodeassurances{\xtassurances},
     \encodedisputes{\xtdisputes}
   } \\
+  \also \mathbf{p} &= \encode{\var{\sq{\build{
+    \tup{\encode[4]{\xp¬serviceindex}, \blake{\xg¬data}}
+  }{
+    \tup{\xg¬serviceindex, \xg¬data} \orderedin \xtpreimages
+  }}}}
   \also \mathbf{g} &= \encode{\var{\sq{\build{
     \tup{\blake{\xg¬workreport}, \encode[4]{\xg¬timeslot}, \var{\xg¬credential}}
   }{
