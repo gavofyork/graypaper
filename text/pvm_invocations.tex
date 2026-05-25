@@ -590,7 +590,8 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \using n &= \min(n \in \N : n \not\in \keys{\mathbf{m}}) \\
     \using \mathbf{u} &= \tup{\is{\ram¬value}{[0, 0, \dots]},\is{\ram¬access}{[\none, \none, \dots]}} \\
     \tup{\execst', \registers'_7, \mathbf{m}} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mathbf{m}} &\when \mathbf{p} = \error \\
+      \tup{\continue, \mathtt{FULL}, \mathbf{m}} &\when \len{\mathbf{m}} \ge 63 \\
+      \tup{\panic, \registers_7, \mathbf{m}} &\otherwhen \mathbf{p} = \error \\
       \tup{\continue, \mathtt{HUH}, \mathbf{m}} &\otherwhen \deblob(\mathbf{p}, i) = \error \\
       \tup{\continue, n, \mathbf{m} \cup \set{\kv{n}{\tup{\mathbf{p}, \mathbf{u}, i, \bot}}} } &\otherwise \\
     \end{cases} \\
