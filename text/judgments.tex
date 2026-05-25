@@ -23,21 +23,21 @@ The \emph{disputes} state includes four items, three of which concern verdicts: 
 
 \subsection{Extrinsic}
 
-The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise independent extrinsics. It comprises \emph{verdicts} $\xtverdicts$, \emph{culprits} $\xtculprits$, and \emph{faults} $\xtfaults$. Verdicts are a compilation of judgments coming from either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\activeset$ or $\previousset$. Culprits and faults are proofs of the misbehavior of one or more validators, respectively either by guaranteeing a work-report found to be invalid, or by signing a judgment found to be contradiction to a work-report's validity. Both of these are considered a kind of \emph{offense}. Formally:
+The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise independent extrinsics. It comprises \emph{verdicts} $\xtverdicts$, \emph{culprits} $\xtculprits$, and \emph{faults} $\xtfaults$. Verdicts are a compilation of judgments coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\activeset$ or $\previousset$. Culprits and faults are proofs of the misbehavior of one or more validators, respectively either by guaranteeing a work-report found to be invalid, or by signing a judgment found to be in contradiction to a work-report's validity. Both of these are considered a kind of \emph{offense}. Formally:
 \begin{equation}
   \begin{aligned}
     \xtdisputes &\equiv \tuple{\xtverdicts, \xtculprits, \xtfaults} \\
-    \where \xtverdicts &\in \sequence{\tuple{
+    \where \xtverdicts &\in \sequence[:\Cmaxextrinsicverdicts]{\tuple{
       \hash,
       \ffrac{\thetime}{\Cepochlen} - \N_2,
-      \sequence{\tuple{
+      \sequence[\floor{\twothirds\valcount} + 1]{\tuple{
         \set{\top, \bot},
         \N,
         \edsignaturebase
       }}
     }}\\
-    \also \xtculprits &\in \sequence{\tuple{\hash, \edkey, \edsignaturebase}} \\
-    \also \xtfaults &\in \sequence{\tuple{\hash, \set{\top,\bot}, \edkey, \edsignaturebase}}
+    \also \xtculprits &\in \sequence[:\Cmaxextrinsicoffenses]{\tuple{\hash, \edkey, \edsignaturebase}} \\
+    \also \xtfaults &\in \sequence[:\Cmaxextrinsicoffenses]{\tuple{\hash, \set{\top,\bot}, \edkey, \edsignaturebase}}
   \end{aligned}
 \end{equation}
 
@@ -60,12 +60,12 @@ The signatures of all judgments must be valid in terms of one of the two allowed
 
 Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set:
 \begin{align}
-  \forall \tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
+  \label{eq:culprits}\forall \tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
     &\xc¬reporthash \in \badset' \,,\\
     &\xc¬offenderindex \in \mathbf{k} \,,\\
     &\xc¬signature \in \edsignature{\xc¬offenderindex}{\Xguarantee \concat \xc¬reporthash}
   }\\
-  \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
+  \label{eq:faults}\forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
     &\xf¬reporthash \in \badset' \Leftrightarrow \xf¬reporthash \not\in \goodset' \Leftrightarrow \xf¬validity \,,\\
     &\xf¬offenderindex \in \mathbf{k} \,,\\
     &\xf¬signature \in \edsignature{\xf¬offenderindex}{\Xvalidif{v} \concat \xf¬reporthash}\\
@@ -108,14 +108,6 @@ We define $\verdicts$ to derive from the sequence of verdicts introduced in the 
     \also \mathbf{k} &= K(\xv¬epochindex)
   \end{aligned}
 \end{equation}
-
-There are some constraints placed on the composition of this extrinsic: any verdict containing solely valid judgments implies the same report having at least one valid entry in the faults sequence $\xtfaults$. Any verdict containing solely invalid judgments implies the same report having at least two valid entries in the culprits sequence $\xtculprits$. Formally:
-\begin{align}
-  \forall \tup{\¬reporthash, \top} \in \verdicts &:
-    \exists \tup{\¬reporthash, \dots} \in \xtfaults \\
-  \forall \tup{\¬reporthash, \bot} \in \verdicts &:
-    \len{\set{\tup{\¬reporthash, \dots} \in \xtculprits}} \ge 2
-\end{align}
 
 We clear any work-reports which we judged as uncertain or invalid from their core:
 \begin{equation}\label{eq:removenonpositive}
@@ -161,6 +153,26 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
       }}
   \end{split}
 \end{align}
+
+There are some logical consequences derived from the composition of this extrinsic: any verdict containing solely valid judgments implies the existence of at least one validator's vote against it that must have triggered the dispute, which in turn implies a fault; and any verdict containing solely invalid judgments implies the existence of at least two guarantees signed for that report, which in turn implies the existence of at least two culprits. 
+Faults and culprits must never list keys that have already been included in the punish-set following some previously seen offence (equations \ref{eq:culprits} and \ref{eq:faults}), and so although logically these minimum offenses must exist for each corresponding verdict, they may not be actually included in a faults or culprits extrinsic: good verdicts should only be generated when there is at least one associated new fault offender; bad verdicts should always be generated even when they don't have any new associated culprit offender since we need to exclude bad reports.
+
+Formally:
+\begin{align}
+  \forall \tup{\¬reporthash, \floor{\twothirds\valcount} + 1} \in \verdicts &:
+    \exists \tup{\¬reporthash, \dots} \in \xtfaults
+\end{align}
+
+Although this should not be expected in practice, in theory it is possible that the number of offenses could be large (up to $\onethird \valcount$ faults and up to three culprits for each bad verdict). In order not to burden block creation overmuch, we specify practical limits to the number of verdicts and offenses which can be included in a single block.
+
+Formally,
+\begin{align}
+  \label{eq:limitextrinsicverdicts}\len{\xtverdicts} &\le \Cmaxextrinsicverdicts \\
+  \label{eq:limitextrinsicculprits}\len{\xtculprits} &\le \Cmaxextrinsicoffenses \\
+  \label{eq:limitextrinsicfaults}\len{\xtfaults} &\le \Cmaxextrinsicoffenses
+\end{align}
+
+The limits are clearly below the theoretical maximum, but they are expected to be sufficient for practical purposes as we don't expect bad verdicts to happen often. In the presence of these limits, if all the offenders had to be included in the same block as the corresponding verdict, we could run into a situation where some would be irrevocably missed. However, implementations can spread the contents of offenses over different blocks' extrinsics, with the proviso that the entries in $\xtculprits$ and $\xtfaults$ have to refer to a report already existing in some verdict-set of the posterior state, as per equations \ref{eq:culprits} and \ref{eq:faults}. Notice that this state is updated when we receive the verdict, together with the first batch of offenses. Offenses in later batches are communicated without the corresponding verdict, but its report will be in one of $\goodset$ or $\badset$ and therefore also in $\goodset'$ or $\badset'$, thereby satisfying those equations.
 
 \subsection{Header}\label{sec:judgmentmarker}
 
