@@ -174,7 +174,8 @@
 % Special constants/functions (Upper caligraphic letters)
 \newcommand*{\fnmmrappend}{\mathcal{A}}
 \newcommand*{\fnoctetstobits}{\mathcal{B}}
-\newcommand*{\fnerasurecode}{\mathcal{C}}
+\newcommand*{\fnerasurecode}[2]{\mathcal{C}^{#1}_{#2}}
+\newcommand*{\fnecoriginalshards}{\mathcal{D}}
 \newcommand*{\fnencode}[1][]{\mathcal{E}_{#1}}
 \newcommand*{\fndecode}[1][]{\mathcal{E}^{-1}_{#1}}
 \newcommand*{\fnmmrencode}{\fnencode[M]}
@@ -190,7 +191,7 @@
 \newcommand*{\fngetringroot}{\mathcal{O}}
 \newcommand*{\fnzeropad}[1]{\mathcal{P}_{#1}}
 \newcommand*{\fnseqfromhash}[1]{\mathcal{Q}_{#1}}
-\newcommand*{\fnecrecover}{\mathcal{R}}
+\newcommand*{\fnecrecover}[2]{\mathcal{R}^{#1}_{#2}}
 \newcommand*{\fnsigndata}{\mathcal{S}}
 \newcommand*{\fnsubifnone}{\mathcal{U}}
 \newcommand*{\fnsext}[1]{\mathcal{X}_{#1}}
@@ -200,8 +201,8 @@
 
 % Caligraphic Functions
 \newcommand*{\mmrappend}[1]{\fnmmrappend\left(#1\right)}
-\newcommand*{\erasurecode}[2][]{\fnerasurecode_{#1}\left(#2\right)}
-\newcommand*{\erasurecodemany}[2][]{\fnerasurecode^\#_{#1}\left(#2\right)}
+\newcommand*{\erasurecode}[3]{\fnerasurecode{#1}{#2}\left(#3\right)}
+\newcommand*{\erasurecodemany}[3]{\fnerasurecode{#1\#}{#2}\left(#3\right)}
 \newcommand*{\encode}[2][]{\fnencode[#1]\left(#2\right)}
 \newcommand*{\decode}[2][]{\fndecode[#1]\left(#2\right)}
 \newcommand*{\mmrencode}[1]{\fnmmrencode\left(#1\right)}
@@ -220,7 +221,7 @@
 \newcommand*{\getringroot}[1]{\fngetringroot\left(#1\right)}
 \newcommand*{\zeropad}[2]{\fnzeropad{#1}\left(#2\right)}
 \newcommand*{\seqfromhash}[2]{\fnseqfromhash{#1}\left(#2\right)}
-\newcommand*{\ecrecover}[1]{\fnecrecover\left(#1\right)}
+\newcommand*{\ecrecover}[3]{\fnecrecover{#1}{#2}\left(#3\right)}
 \newcommand*{\subifnone}[1]{\fnsubifnone\left(#1\right)}
 \newcommand*{\values}[1]{\mathcal{V}\left(#1\right)}
 \newcommand*{\sext}[2]{\fnsext{#1}\left(#2\right)}
@@ -239,6 +240,7 @@
 \newcommand*{\accseq}{\accumulate_+}
 \newcommand*{\histlookup}{\Lambda}
 \newcommand*{\computereport}{\Xi}
+\newcommand*{\makebundle}{B}
 \newcommand*{\transitionstate}{\Upsilon}
 
 %%%%%%%%%%%%
@@ -262,7 +264,6 @@
 \newcommand*{\Cmaxreportdeps}{\mathsf{J}}
 \newcommand*{\Cmaxblocktickets}{\mathsf{K}}
 \newcommand*{\Cmaxlookupanchorage}{\mathsf{L}}
-\newcommand*{\Cticketentries}{\mathsf{N}}
 \newcommand*{\Cauthpoolsize}{\mathsf{O}}
 \newcommand*{\Cslotseconds}{\mathsf{P}}
 \newcommand*{\Cauthqueuesize}{\mathsf{Q}}
@@ -270,15 +271,12 @@
 \newcommand*{\Cminpublicindex}{\mathsf{S}}
 \newcommand*{\Cmaxpackagexts}{\mathsf{T}}
 \newcommand*{\Cassurancetimeoutperiod}{\mathsf{U}}
-\newcommand*{\Cvalcount}{\mathsf{V}}
 \newcommand*{\Cmaxauthcodesize}{\mathsf{W}_A}
 \newcommand*{\Cmaxbundlesize}{\mathsf{W}_B}
 \newcommand*{\Cmaxservicecodesize}{\mathsf{W}_C}
-\newcommand*{\Cecpiecesize}{\mathsf{W}_E}
 \newcommand*{\Csegmentfootprint}{\mathsf{W}_F}
 \newcommand*{\Csegmentsize}{\mathsf{W}_G}
 \newcommand*{\Cmaxpackageimports}{\mathsf{W}_M}
-\newcommand*{\Csegmentecpieces}{\mathsf{W}_P}
 \newcommand*{\Cmaxreportvarsize}{\mathsf{W}_R}
 \newcommand*{\Cmemosize}{\mathsf{W}_T}
 \newcommand*{\Cmaxpackageexports}{\mathsf{W}_X}
@@ -312,6 +310,7 @@
 \newcommand*{\N}{\mathbb{N}}
 \newcommand*{\Z}{\mathbb{Z}}
 \newcommand*{\zerohash}{\hash[0]}
+\newcommand*{\valcount}{\mathbb{V}}
 
 %%%%%%%%%%%%
 % Blob and bitstring
@@ -363,8 +362,6 @@
 \newcommand*{\Nrange}[2]{\N_{#1 \dots+ #2}}
 \newcommand*{\Nbits}[1]{\Nmax{2^{#1}}}
 \newcommand*{\coreindex}{\Nmax{\Ccorecount}}
-\newcommand*{\valindex}{\Nmax{\Cvalcount}}
-\newcommand*{\ticketentryindex}{\Nmax{\Cticketentries}}
 \newcommand*{\epochindex}{\Nmax{\Cepochlen}}
 
 %%%%%%%%%%%%
@@ -498,6 +495,7 @@
 \newcommand*{\as¬packagehash}{\¬packagehash}
 \newcommand*{\as¬bundlelen}{\¬bundlelen}
 \newcommand*{\as¬erasureroot}{u}
+\newcommand*{\as¬erasureshards}{v}
 \newcommand*{\as¬segroot}{\¬segroot}
 \newcommand*{\as¬segcount}{n}
 
@@ -547,7 +545,7 @@
 \newcommand*{\vk¬ed}{e}
 \newcommand*{\vk¬bls}{l}
 \newcommand*{\vk¬metadata}{m}
-\newcommand*{\allvalkeys}{\sequence[\Cvalcount]{\valkey}}
+\newcommand*{\allvalkeys}{\sequence[\valcount]{\valkey}}
 
 \newcommand*{\partialstate}{\mathbb{S}}
 \newcommand*{\psX}{\mathbf{e}}
@@ -682,6 +680,7 @@
 \newcommand*{\theheader}{\header} % "THE header" is overloaded with "prototype header" for now.
 \newcommand*{\fnencodeunsignedheader}{\fnencode[U]}
 \newcommand*{\encodeunsignedheader}[1]{\encode[U]{#1}}
+\newcommand*{\encodeepochmark}[1]{\encode[E]{#1}}
 \newcommand*{\parentheader}[1]{{#1}^-}
 \newcommand*{\genesisheader}{\header^0}
 \renewcommand*{\H}{\theheader} % short-hand for \theheader, used in equations when subscripting to a field.
@@ -712,7 +711,6 @@
 
 % Additional iterators.
 \newcommand*{\cX}{c}
-\newcommand*{\wrcX}{\tup{\wrX, \cX}}
 
 
 %%%%%%%%%%%%
