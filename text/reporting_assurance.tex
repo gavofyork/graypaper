@@ -32,13 +32,13 @@ A work-report, of the set $\workreport$, is defined as a tuple of the work-packa
   \label{eq:workreport}
   \workreport \equiv \tuple{
     \begin{aligned}
-      &\isa{\wr¬avspec}{\avspec},\ 
-      \isa{\wr¬context}{\workcontext},\ 
-      \isa{\wr¬core}{\coreindex},\ 
-      \isa{\wr¬authorizer}{\hash},\ 
+      &\isa{\wr¬avspec}{\avspec},\
+      \isa{\wr¬context}{\workcontext},\
+      \isa{\wr¬core}{\coreindex},\
+      \isa{\wr¬authorizer}{\hash},\
       \isa{\wr¬authtrace}{\blob},\\
-      &\isa{\wr¬srlookup}{\dictionary{\hash}{\hash}},\ 
-      \isa{\wr¬digests}{\sequence[1:\Cmaxpackageitems]{\workdigest}},\ 
+      &\isa{\wr¬srlookup}{\dictionary{\hash}{\hash}},\
+      \isa{\wr¬digests}{\sequence[1:\Cmaxpackageitems]{\workdigest}},\
       \isa{\wr¬authgasused}{\gas}
     \end{aligned}
   }
@@ -66,19 +66,20 @@ A \emph{refinement context}, denoted by the set $\workcontext$, describes the co
 \end{equation}
 
 \subsubsection{Availability}
-We define the set of \emph{availability specifications}, $\avspec$, as the tuple of the work-package's hash $\as¬packagehash$, an auditable work bundle length $\as¬bundlelen$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $\as¬erasureroot$, a segment-root $\as¬segroot$ and segment-count $\as¬segcount$. Work-results include this availability specification in order to ensure they are able to correctly reconstruct and audit the purported ramifications of any reported work-package. Formally:
+We define the set of \emph{availability specifications}, $\avspec$, as the tuple of the work-package's hash $\as¬packagehash$, an auditable work bundle length $\as¬bundlelen$ (see section \ref{sec:availabiltyspecifier} for more clarity on what this is), together with an erasure-root $\as¬erasureroot$, the total number of erasure-coded chunks $\as¬erasureshards$, a segment-root $\as¬segroot$ and segment-count $\as¬segcount$. Work-reports include this availability specification in order to ensure the original work-package is able to be correctly reconstructed and the purported ramifications audited. Formally:
 \begin{align}
   \label{eq:avspec}
   \avspec &\equiv \tuple{
     \isa{\as¬packagehash}{\hash}\,,\;
     \isa{\as¬bundlelen}{\bloblength}\,,\;
     \isa{\as¬erasureroot}{\hash}\,,\;
+    \isa{\as¬erasureshards}{\valcount}\,,\;
     \isa{\as¬segroot}{\hash}\,,\;
     \isa{\as¬segcount}{\N}
   }
 \end{align}
 
-The \emph{erasure-root} ($\as¬erasureroot$) is the root of a binary Merkle tree which functions as a commitment to all data required for the auditing of the report and for use by later work-packages should they need to retrieve any data yielded. It is thus used by assurers to verify the correctness of data they have been sent by guarantors, and it is later verified as correct by auditors. It is discussed fully in section \ref{sec:workpackagesandworkreports}.
+The \emph{erasure-root} ($\as¬erasureroot$) is the root of a binary Merkle tree whose leaves are the $\as¬erasureshards$ chunks produced by erasure-coding the work-package bundle and exported segments. As one chunk is distributed to each assurer, the number of chunks must equal the size of the assuring validator set. The erasure-root functions as a commitment to all data required for the auditing of the report and for use by later work-packages should they need to retrieve any data yielded. It is thus used by assurers to verify the correctness of data they have been sent by guarantors, and it is later verified as correct by auditors. It is discussed fully in section \ref{sec:workpackagesandworkreports}.
 
 The \emph{segment-root} ($\as¬segroot$) is the root of a constant-depth, left-biased and zero-hash-padded binary Merkle tree committing to the hashes of each of the exported segments of each work-item. These are used by guarantors to verify the correctness of any reconstructed segments they are called upon to import for evaluation of some later work-package. It is also discussed in section \ref{sec:workpackagesandworkreports}.
 
@@ -119,9 +120,13 @@ Finally, we have five fields describing the level of activity which this workloa
 In order to ensure fair use of a block's extrinsic space, work-reports are limited in the maximum total size of the successful refinement output blobs together with the authorizer trace, effectively limiting their overall size:
 \begin{align}
   \label{eq:limitworkreportsize}
-  &\forall \wrX \in \workreport:
-    \len{\wrX_\wr¬authtrace} + \sum_{\wdX \in \wrX_\wr¬digests \cap \blob} \len{\wdX_\wd¬result} \le \Cmaxreportvarsize \\
-  &\Cmaxreportvarsize \equiv 48\cdot2^{10}
+  \forall \wrX \in \workreport &:
+    \len{\wrX_\wr¬authtrace} + \sum\limits_{i=0}^{i<\len{\wrX_\wr¬digests}} L(\wrX_\wr¬digests\subb{i}_\wd¬result) \le \Cmaxreportvarsize \\
+  L(\wd¬result \in \blob \cup \workerror) &\equiv \begin{cases}
+    \len{\wd¬result} &\when \wd¬result \in \blob \\
+    0 &\otherwise
+  \end{cases} \\
+  \Cmaxreportvarsize &\equiv 48\cdot2^{10}
 \end{align}
 
 
@@ -140,10 +145,10 @@ We first define $\reportspostguarantees$, the intermediate state to be utilized 
 The assurances extrinsic is a sequence of \emph{assurance} values, at most one per validator. Each assurance is a sequence of binary values (\ie a bitstring), one per core, together with a signature and the index of the validator who is assuring. A value of $1$ (or $\top$, if interpreted as a Boolean) at any given index implies that the validator assures they are contributing to its availability.\footnote{This is a ``soft'' implication since there is no consequence on-chain if dishonestly reported. For more information on this implication see section \ref{sec:assurance}.} Formally:
 \begin{align}
   \label{eq:xtassurances}
-  \xtassurances \in \sequence[\mathsf{:\Cvalcount}]{\tuple{
+  \xtassurances \in \sequence{\tuple{
     \isa{\xa¬anchor}{\hash},\,
     \isa{\xa¬availabilities}{\bitstring[\Ccorecount]},\,
-    \isa{\xa¬assurer}{\valindex},\,
+    \isa{\xa¬assurer}{\Nmax{\len{\activeset}}},\,
     \isa{\xa¬signature}{\edsignaturebase}
   }}
 \end{align}
@@ -168,26 +173,31 @@ A bit may only be set if the corresponding core has a report pending availabilit
 \end{equation}
 
 \subsubsection{Available Reports}
-A work-report is said to become \emph{available} if and only if there are a clear \twothirds super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\justbecameavailable$ as:
+A work-report is said to become \emph{available} if and only if there are a clear \twothirds\ super-majority of validators who have marked its core as set within the block's assurance extrinsic. Formally, we define the sequence of newly available work-reports $\justbecameavailable$ as:
 \begin{align}
   \label{eq:availableworkreports}
   \justbecameavailable &\equiv \sq{\build{
       \reportspostjudgement\subb{\cX}_\rs¬workreport
     }{
       \cX \orderedin \coreindex,\;
-      \sum_{a \in \xtassurances}\!a_\xa¬availabilities\subb{\cX}\,>\,\twothirds\,\Cvalcount
+      \sum_{a \in \xtassurances}\!a_\xa¬availabilities\subb{\cX}\,>\,\twothirds\,\len{\activeset}
     }}
 \end{align}
 
 This value is utilized in the definition of both $\accountspost$ and $\reportspostguarantees$ which we will define presently as equivalent to $\reportspostjudgement$ except for the removal of items which are either now available or have timed out:
-\begin{align}
+\begin{equation}
   \label{eq:reportspostguaranteesdef}
-  \forall \cX \in \coreindex: \reportspostguarantees\subb{\cX} \equiv \begin{cases}
-    \none &\when\reports\subb{\cX}_\rs¬workreport \in \justbecameavailable \vee \H_\¬timeslot \ge \reportspostjudgement\subb{\cX}_\rs¬timestamp + \Cassurancetimeoutperiod\\
-    \reportspostjudgement\subb{\cX} &\otherwise
-  \end{cases}
-\end{align}
+  \begin{aligned}
+    \forall \cX \in \coreindex: \reportspostguarantees\subb{\cX} \equiv {} &\begin{cases}
+      \none &\when p = \none \vee p_\rs¬workreport \in \justbecameavailable \vee {} \\
+      &\phantom{\when} \H_\¬timeslot \ge p_\rs¬timestamp + \Cassurancetimeoutperiod \vee \len{\activeset} \ne \len{\activeset'} \\
+      p &\otherwise
+    \end{cases} \\
+    &\where p = \reportspostjudgement\subb{\cX}
+  \end{aligned}
+\end{equation}
 
+Note that all pending work-reports are cleared when the size of the active validator key set $\activeset$ changes. Work-reports cleared in this way can be viewed as having timed out early.
 
 
 
@@ -200,33 +210,35 @@ This value is utilized in the definition of both $\accountspost$ and $\reportspo
 
 \subsection{Guarantor Assignments}\label{sec:coresandvalidators}
 
-Every block, each core has three validators uniquely assigned to guarantee work-reports for it. This is borne out with $\Cvalcount = 1,023$ validators and $\Ccorecount = 341$ cores, since $\nicefrac{\Cvalcount}{\Ccorecount} = 3$. The core index assigned to each of the validators, as well as the validators' keys are denoted by $\guarantorassignments$:
+As discussed in section \ref{sec:coremodelandservices}, the amount of in-core computation that is possible scales with the number of validator nodes. Concretely, while there are a fixed number of cores $\Ccorecount = 341$, only the first $\nicefrac{\len{\activeset'}}{3}$ are \emph{active} and capable of processing work-packages.
+
+Every block, each active core has three validators uniquely assigned to guarantee work-reports for it. The core index assigned to each of the validators, as well as the validators' keys are denoted by $\guarantorassignments$:
 \begin{equation}
-  \guarantorassignments \in \tuple{\sequence[\Cvalcount]{\coreindex}, \allvalkeys}
+  \guarantorassignments \in \tuple{\sequence[\len{\activeset'}]{\coreindex}, \sequence[\len{\activeset'}]{\valkey}}
 \end{equation}
 
 We determine the core to which any given validator is assigned through a shuffle using epochal entropy and a periodic rotation to help guard the security and liveness of the network. We use $\entropy_2$ for the epochal entropy rather than $\entropy_1$ to avoid the possibility of fork-magnification where uncertainty about chain state at the end of an epoch could give rise to two established forks before it naturally resolves.
 
-We define the permute function $P$, the rotation function $R$ and finally the guarantor assignments  $\guarantorassignments$ as follows:
+We define the rotation function $R$, the permute function $P$ and finally the guarantor assignments $\guarantorassignments$ as follows:
 \begin{align}
-  R(\mathbf{c}, n) &\equiv \sq{\build{(x + n) \bmod \Ccorecount}{x \orderedin \mathbf{c}}}\\
-  P(e, t) &\equiv R\left(
-    \fyshuffle{\sq{\build{\ffrac{\Ccorecount \cdot i}{\Cvalcount}}{i \orderedin \valindex}}, e},
+  R(\mathbf{c}, n) &\equiv \sq{\build{(x + n) \bmod \frac{\len{\mathbf{c}}}{3}}{x \orderedin \mathbf{c}}}\\
+  P(v, e, t) &\equiv R\left(
+    \fyshuffle{\sq{\build{\ffrac{i}{3}}{i \orderedin \Nmax{v}}}, e},
     \ffrac{t \bmod \Cepochlen}{\Crotationperiod}
   \right)\\
-  \guarantorassignments &\equiv \tup{P(\entropy'_2, \thetime'), \Phi(\activeset')}
+  \guarantorassignments &\equiv \tup{P(\len{\activeset'}, \entropy'_2, \thetime'), \Phi(\activeset')}
 \end{align}
 
 We also define $\guarantorassignmentsunderlastrotation$, which is equivalent to the value $\guarantorassignments$ as it would have been under the previous rotation:
 \begin{equation}
   \label{eq:priorassignments}
   \begin{aligned}
-    \using \tup{e, \mathbf{k}} &= \begin{cases}
-      \tup{\entropy'_2, \activeset'} &\when \displaystyle\ffrac{\thetime' - \Crotationperiod}{\Cepochlen} = \ffrac{\thetime'}{\Cepochlen}\\
-      \tup{\entropy'_3, \previousset'} &\otherwise
+    \using \tup{\mathbf{k}, e} &= \begin{cases}
+      \tup{\activeset', \entropy'_2} &\when \displaystyle\ffrac{\thetime' - \Crotationperiod}{\Cepochlen} = \ffrac{\thetime'}{\Cepochlen}\\
+      \tup{\previousset', \entropy'_3} &\otherwise
     \end{cases} \\
     \guarantorassignmentsunderlastrotation &\equiv \tup{
-      P(e, \thetime' - \Crotationperiod),
+      P(\len{\mathbf{k}}, e, \thetime' - \Crotationperiod),
       \Phi(\mathbf{k})
     }
   \end{aligned}
@@ -252,7 +264,7 @@ We begin by defining the guarantees extrinsic, $\xtguarantees$, a series of \emp
   \xtguarantees &\in \sequence[:\Ccorecount]{\tuple{
     \isa{\xg¬workreport}{\workreport},\,
     \isa{\xg¬timeslot}{\timeslot},\,
-    \isa{\xg¬credential}{\sequence[2:3]{\tuple{\valindex, \edsignaturebase}}}
+    \isa{\xg¬credential}{\sequence[2:3]{\tuple{\N, \edsignaturebase}}}
   }} \\
   \xtguarantees &= \sqorderuniqby{(g_\xg¬workreport)_\wr¬core}{g \in \xtguarantees}
 \end{align}
@@ -262,26 +274,26 @@ The credential is a sequence of two or three tuples of a unique validator index 
   \forall g &\in \xtguarantees : g_\xg¬credential = \sqorderuniqby{v}{\tup{v, s} \in g_\xg¬credential}
 \end{align}
 
-The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the hash of the work-report. The signing validators must be assigned to the core in question in either this block $\guarantorassignments$ if the timeslot for the guarantee is in the same rotation as this block's timeslot, or in the most recent previous set of assignments, $\guarantorassignmentsunderlastrotation$:
-\begin{align}
+The signature must be one whose public key is that of the validator identified in the credential, and whose message is the serialization of the hash of the work-report. The signing validators must have been assigned to the core in the given timeslot $\xg¬timeslot$, which must either be in the same rotation as this block's timeslot or in the previous rotation. Use of an inactive core is not permitted even if a timeslot in the previous rotation is used and the core was active then. Formally:
+\begin{gather}
   \label{eq:guarantorsig}
-  &\begin{aligned}
+  \begin{aligned}
     &\begin{aligned}
       \forall \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} &\in \xtguarantees,\\
       \forall \tup{v, s} &\in \xg¬credential
-    \end{aligned} :
-      \abracegroup[\,]{
-        &s \in \edsignature{(\mathbf{k}\sub{v})_\vk¬ed}{\Xguarantee\concat\blake{\xg¬workreport}}\\
-        &\mathbf{c}\sub{v} = \wrX_\wr¬core \wedge \Crotationperiod(\floor{\nicefrac{\thetime'}{\Crotationperiod}} - 1) \le \xg¬timeslot \le \thetime'\\
-      }\\
-      &k \in \reporters \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists \tup{v, s} \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
-      &\quad\where \tup{\mathbf{c}, \mathbf{k}} = \begin{cases}
-        \guarantorassignments &\when \displaystyle \ffrac{\thetime'}{\Crotationperiod} = \ffrac{t}{\Crotationperiod} \\
-        \guarantorassignmentsunderlastrotation &\otherwise
-      \end{cases}
+    \end{aligned} : \abracegroup[\,]{
+      &v < \len{\mathbf{k}} \wedge \mathbf{c}\sub{v} = \wrX_\wr¬core < \frac{\len{\activeset'}}{3}\\
+      &s \in \edsignature{(\mathbf{k}\sub{v})_\vk¬ed}{\Xguarantee\concat\blake{\xg¬workreport}}\\
+      &\Crotationperiod(\floor{\nicefrac{\thetime'}{\Crotationperiod}} - 1) \le \xg¬timeslot \le \thetime'
+    }\\
+    &k \in \reporters \Leftrightarrow \exists \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \in \xtguarantees, \exists \tup{v, s} \in \xg¬credential: k = (\mathbf{k}\sub{v})_\vk¬ed\\
+    &\quad\where \tup{\mathbf{c}, \mathbf{k}} = \begin{cases}
+      \guarantorassignments &\when \displaystyle \ffrac{\thetime'}{\Crotationperiod} = \ffrac{t}{\Crotationperiod} \\
+      \guarantorassignmentsunderlastrotation &\otherwise
+    \end{cases}
   \end{aligned}\\
-  &\Xguarantee \equiv \token{\$jam\_guarantee}
-\end{align}
+  \Xguarantee \equiv \token{\$jam\_guarantee}
+\end{gather}
 
 We note that the Ed25519 key of each validator whose signature is in a credential is placed in the \emph{reporters} set $\reporters$. This is utilized by the validator activity statistics bookkeeping system section \ref{sec:bookkeeping}.
 
@@ -293,6 +305,11 @@ We denote $\incomingreports$ to be the set of work-reports in the present extrin
   \using\incomingreports = \set{ \build { \xgX_\xg¬workreport }{ \xgX \in \xtguarantees } }
 \end{align}
 
+The total number of erasure-coded chunks for each report must match the number of active validators:
+\begin{equation}
+  \forall \wrX \in \incomingreports : (\wrX_\wr¬avspec)_\as¬erasureshards = \len{\activeset'}
+\end{equation}
+
 No reports may be placed on cores with a report pending availability on it. A report is valid only if the authorizer hash is present in the authorizer pool of the core on which the work is reported. Formally:
 \begin{equation}\label{eq:reportcoresareunusedortimedout}
   \forall \wrX \in \incomingreports :
@@ -302,7 +319,7 @@ No reports may be placed on cores with a report pending availability on it. A re
 We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\Creportaccgas$:
 \begin{equation}
   \forall \wrX \in \incomingreports:
-    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \Creportaccgas \ \wedge \ 
+    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \Creportaccgas \ \wedge \
     \forall \wdX \in \wrX_\wr¬digests: \wdX_\wd¬gaslimit \ge \accounts\subb{\wdX_\wd¬serviceindex}_\sa¬minaccgas
 \end{equation}
 
@@ -415,6 +432,8 @@ We define $\reportspostassurances$ as being equivalent to $\reportspostguarantee
       \reportspostguarantees\subb{\cX} &\otherwise
     \end{cases}
 \end{equation}
+
+It is worth noting that $\reportspostassurances\subb{\cX}$ is always $\none$ for $\cX \ge \nicefrac{\len{\activeset'}}{3}$; this in particular ensures that we will never have more reports to audit than can safely be managed with the number of active validators.
 
 This concludes the section on reporting and assurance. We now have a complete definition of $\reportspostassurances$ together with $\justbecameavailable$ to be utilized in section \ref{sec:accumulation}, describing the portion of the state transition happening once a work-report is guaranteed and made available.
 
