@@ -30,7 +30,7 @@ The state serialization is then defined as the dictionary built from the amalgam
       \mmrencode{\accoutbelt}
     } \;, \\
     &&C(4) &\mapsto \encode{
-      \pendingset,
+      \var{\pendingset},
       \epochroot,
       \abracegroupboth{
         0\ &\when \sealtickets \in \sequence[\Cepochlen]{\safroleticket}\\
@@ -46,9 +46,9 @@ The state serialization is then defined as the dictionary built from the amalgam
       \var{\sqorderby{x}{x \in \offenders}}
     } \;, \\
     &&C(6) &\mapsto \encode{\entropy} \;, \\
-    &&C(7) &\mapsto \encode{\stagingset} \;, \\
-    &&C(8) &\mapsto \encode{\activeset} \;, \\
-    &&C(9) &\mapsto \encode{\previousset} \;, \\
+    &&C(7) &\mapsto \encode{\var{\stagingset}} \;, \\
+    &&C(8) &\mapsto \encode{\var{\activeset}} \;, \\
+    &&C(9) &\mapsto \encode{\var{\previousset}} \;, \\
     &&C(10) &\mapsto \encode{
       \sq{\build{
         \maybe{\tup{\rs¬workreport, \encode[4]{\rs¬timestamp}}}
@@ -62,7 +62,8 @@ The state serialization is then defined as the dictionary built from the amalgam
       \alwaysaccers
     } \;, \\
     &&C(13) &\mapsto \encode{
-      \encode[4]{\valstatsaccumulator, \valstatsprevious},
+      \var{\sq{\build{\encode[4]{\mathbf{v}}}{\mathbf{v} \orderedin \valstatsaccumulator}}},
+      \var{\sq{\build{\encode[4]{\mathbf{v}}}{\mathbf{v} \orderedin \valstatsprevious}}},
       \corestats,
       \servicestats
     } \;, \\
