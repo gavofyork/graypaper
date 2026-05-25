@@ -22,7 +22,7 @@ $\fngetparent$ is thus defined as being the mapping from one block header to its
 
 We only require implementations to store headers of ancestors which were authored in the previous $\Cmaxlookupanchorage = 24$ hours of any block $\block$ they wish to validate.
 
-The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports to individually have their inclusion proven. Given any block $\block = \tup{\header, \extrinsic}$, then formally:
+The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports and preimages to individually have their inclusion proven. Given any block $\block = \tup{\header, \extrinsic}$, then formally:
 \begin{align}
   \H_\¬extrinsichash &\in \hash \ ,\quad
   \H_\¬extrinsichash \equiv \blake{\encode{\blakemany{\mathbf{a}}}} \\
