@@ -46,18 +46,18 @@ Finally, details of the most recent blocks and timeslot index are tracked in $\r
 
 Much as in the \emph{YP}, we specify $\transitionstate$ as the implication of formulating all items of posterior state in terms of the prior state and block. To aid the architecting of implementations which parallelize this computation, we minimize the depth of the dependency graph where possible. The overall dependency graph is specified here:
 \begin{align}\label{eq:transitionfunctioncomposition}
-  \thetime' &\prec \theheader \\
+  \thetime' &\prec \tup{\theheader, \thetime} \\
   \recenthistorypostparentstaterootupdate &\prec \tup{\theheader, \recenthistory} \label{eq:betadagger} \\
   \safrole' &\prec \tup{\theheader, \thetime, \xttickets, \safrole, \stagingset, \entropy', \activeset', \disputes'} \\
   \entropy' &\prec \tup{\theheader, \thetime, \entropy} \\
   \activeset' &\prec \tup{\theheader, \thetime, \activeset, \safrole} \\
   \previousset' &\prec \tup{\theheader, \thetime, \previousset, \activeset} \\
-  \disputes' &\prec \tup{\xtdisputes, \disputes} \\
+  \disputes' &\prec \tup{\xtdisputes, \thetime, \activeset, \previousset, \disputes} \\
   \reportspostjudgement &\prec \tup{\xtdisputes, \reports} \label{eq:rhodagger} \\
   \reportspostguarantees &\prec \tup{\xtassurances, \reportspostjudgement} \label{eq:rhoddagger} \\
-  \reports' &\prec \tup{\xtguarantees, \reportspostguarantees, \activeset, \thetime'} \label{eq:rhoprime} \\
+  \reports' &\prec \tup{\xtguarantees, \reportspostguarantees, \authpool, \accountspre, \thetime', \entropy', \recenthistorypostparentstaterootupdate} \label{eq:rhoprime} \\
   \justbecameavailable^* &\prec \tup{\xtassurances, \reportspostjudgement} \\
-  \tup{\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \authqueue', \lastaccout', \accumulationstatistics} &\prec \tup{\justbecameavailable^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \authqueue, \thetime, \thetime'} \label{eq:accountspostxfer} \\
+  \tup{\ready', \accumulated', \accountspostxfer, \privileges', \stagingset', \authqueue', \lastaccout', \accumulationstatistics} &\prec \tup{\justbecameavailable^*, \ready, \accumulated, \accountspre, \privileges, \stagingset, \authqueue, \thetime, \thetime', \entropy'} \label{eq:accountspostxfer} \\
   \recenthistory' &\prec \tup{\theheader, \xtguarantees, \recenthistorypostparentstaterootupdate, \lastaccout'} \label{eq:betaprime} \\
   \accountspostpreimage &\prec \tup{\xtpreimages, \accountspostxfer, \thetime'} \label{eq:accountspostpreimage} \\
   \authpool' &\prec \tup{\theheader, \xtguarantees, \authqueue', \authpool} \\
