@@ -6,10 +6,10 @@ The \Jam chain does not explicitly issue rewards---we leave this as a job to be 
 
 Such performance information cannot directly cover all aspects of validator activity; whereas block production, guarantor reports and availability assurance can easily be tracked on-chain, \textsc{Grandpa}, \textsc{Beefy} and auditing activity cannot. In the latter case, this is instead tracked with validator voting activity: validators vote on their impression of each other's efforts and a median may be accepted as the truth for any given validator. With an assumption of 50\% honest validators, this gives an adequate means of oraclizing this information.
 
-The validator statistics are made on a per-epoch basis and we retain one record of completed statistics together with one record which serves as an accumulator for the present epoch. Both are tracked in $\activity$, which is thus a sequence of two elements, with the first being the accumulator and the second the previous epoch's statistics. For each epoch we track a performance record for each validator:
+The validator statistics are made on a per-epoch basis and we retain one record of completed statistics ($\valstatsprevious$) together with one record which serves as an accumulator for the present epoch ($\valstatsaccumulator$). For each epoch we track a performance record for each validator. Together with the core and service statistics defined in the following section $\corestats$ and $\servicestats$, these form $\activity$, which is thus a tuple of four elements.
 \begin{align}\label{eq:activityspec}
   \activity &\equiv \tup{\valstatsaccumulator, \valstatsprevious, \corestats, \servicestats}\\
-  \tuple{\valstatsaccumulator, \valstatsprevious} &\in \sequence[\Cvalcount]{\tuple{
+  \tuple{\valstatsaccumulator, \valstatsprevious} &\in \sequence{\tuple{
     \isa{\vs¬blocks}{\N}\,,
     \isa{\vs¬tickets}{\N}\,,
     \isa{\vs¬preimagecount}{\N}\,,
@@ -18,7 +18,8 @@ The validator statistics are made on a per-epoch basis and we retain one record 
     \isa{\vs¬assurances}{\N}
 %    \isa{\mathbf{u}}{\sequence[\Cvalcount]{\N}}
   }}^2
-  \!\!\!\!\!\!\!\!\!\!
+  \!\!\!\!\!\!\!\!\!\!\\
+  \len{\valstatsaccumulator} &= \len{\activeset}\ , \qquad \len{\valstatsprevious} = \len{\previousset}
 \end{align}
 
 The six validator statistics we track are:
@@ -36,35 +37,41 @@ The six validator statistics we track are:
 
 The objective statistics are updated in line with their description, formally:
 \begin{align}
-  \using e =\; &\ffrac{\thetime}{\Cepochlen} \ ,\quad e' = \ffrac{\thetime'}{\Cepochlen}\\
-  \!\tup{\mathbf{a}, \valstatsprevious'} \equiv\;&\begin{cases}
-      \tup{\valstatsaccumulator, \valstatsprevious} &\when e' = e \\
-      \tup{\sq{\tup{0, \dots, \sq{0, \dots}}, \dots}, \valstatsaccumulator}\!\!\!\! &\otherwise
-  \end{cases}\!\!\!\!\\
-  \forall v \in \valindex :&\; \abracegroup{
-    \valstatsaccumulator'\subb{v}_\vs¬blocks &\equiv
-      \mathbf{a}\subb{v}_\vs¬blocks + (v = \H_\¬authorindex)\\
-    \valstatsaccumulator'\subb{v}_\vs¬tickets &\equiv
-      \mathbf{a}\subb{v}_\vs¬tickets + \begin{cases}
+  \begin{split}
+    \valstatsaccumulator^\dagger &\equiv \valstatsaccumulator \text{ except } \forall v \in \Nmax{\len{\activeset}}: \\
+    \valstatsaccumulator^\dagger\subb{v}_\vs¬assurances &=
+      \valstatsaccumulator\subb{v}_\vs¬assurances +
+        (\exists a \in \xtassurances : a_\xa¬assurer = v)
+  \end{split} \\
+  \begin{split}
+    \tup{\valstatsaccumulator^\ddagger, \valstatsprevious'} &\equiv \begin{cases}
+      \tup{\valstatsaccumulator^\dagger, \valstatsprevious} &\when e' = e \\
+      \tup{\sq{\tup{0, \dots}, \dots}, \valstatsaccumulator^\dagger} &\otherwise
+    \end{cases} \\
+    \where e &= \ffrac{\thetime}{\Cepochlen} \ ,\quad e' = \ffrac{\thetime'}{\Cepochlen}
+  \end{split} \\
+  \begin{split}
+    \valstatsaccumulator' &\equiv \valstatsaccumulator^\ddagger \text{ except } \forall v \in \Nmax{\len{\activeset'}}: \\
+    \valstatsaccumulator'\subb{v}_\vs¬blocks &=
+      \valstatsaccumulator^\ddagger\subb{v}_\vs¬blocks + (v = \H_\¬authorindex)\\
+    \valstatsaccumulator'\subb{v}_\vs¬tickets &=
+      \valstatsaccumulator^\ddagger\subb{v}_\vs¬tickets + \begin{cases}
         \len{\xttickets} &\when v = \H_\¬authorindex \\
         0 &\otherwise
       \end{cases}\\
-    \valstatsaccumulator'\subb{v}_\vs¬preimagecount &\equiv
-      \mathbf{a}\subb{v}_\vs¬preimagecount + \begin{cases}
+    \valstatsaccumulator'\subb{v}_\vs¬preimagecount &=
+      \valstatsaccumulator^\ddagger\subb{v}_\vs¬preimagecount + \begin{cases}
         \len{\xtpreimages} &\when v = \H_\¬authorindex \\
         0 &\otherwise
       \end{cases}\\
-    \valstatsaccumulator'\subb{v}_\vs¬preimagesize &\equiv
-      \mathbf{a}\subb{v}_\vs¬preimagesize + \begin{cases}
+    \valstatsaccumulator'\subb{v}_\vs¬preimagesize &=
+      \valstatsaccumulator^\ddagger\subb{v}_\vs¬preimagesize + \begin{cases}
         \sum_{d \in \xtpreimages}\len{d} &\when v = \H_\¬authorindex \\
         0 &\otherwise
       \end{cases}\\
-    \valstatsaccumulator'\subb{v}_\vs¬guarantees &\equiv
-      \mathbf{a}\subb{v}_\vs¬guarantees + (\activeset'\sub{v} \in \reporters)\\
-    \valstatsaccumulator'\subb{v}_\vs¬assurances &\equiv
-      \mathbf{a}\subb{v}_\vs¬assurances +
-        (\exists a \in \xtassurances : a_\xa¬assurer = v)
-  }\!\!\!\!\!
+    \valstatsaccumulator'\subb{v}_\vs¬guarantees &=
+      \valstatsaccumulator^\ddagger\subb{v}_\vs¬guarantees + (\activeset'\sub{v} \in \reporters)
+  \end{split}
 \end{align}
 
 Note that $\reporters$ is the \emph{Reporters} set, as defined in equation \ref{eq:guarantorsig}.

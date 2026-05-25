@@ -4,17 +4,24 @@
 \newcommand{\join}{\text{join}}
 \newcommand{\spl}[1]{\text{split}_{#1}}
 
-The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$) of rate 342:1023, the same transform as done by the algorithm of \cite{lin2014novel}. We use a little-endian $\blob[2]$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\fnencode[2]$. From this we may assume the encoding function $\fnerasurecode: \sequence[342]{\blob[2]} \to \sequence[1023]{\blob[2]}$ and the recovery function $\fnecrecover: \protoset{\tuple{\blob[2], \Nmax{1023}}}_{342} \to \sequence[342]{\blob[2]}$. Encoding is done by extrapolating a data blob of size 684 octets (provided in $\fnerasurecode$ here as 342 octet pairs) into 1,023 octet pairs. Recovery is done by collecting together any distinct 342 octet pairs, together with their indices, and transforming this into the original sequence of 342 octet pairs.
+The foundation of the data-availability and distribution system of \Jam is a systematic Reed-Solomon erasure coding function in \textsc{gf}($2^{16}$), the same transform as done by the algorithm of \cite{lin2014novel}. The coding rate is $\fnecoriginalshards(v)$:$v$, where $v \in \valcount$ is the number of validators.
+\begin{equation}\label{eq:ecoriginalshards}
+  \fnecoriginalshards(v \in \valcount) \equiv \max\left(\set{\build{d}{d \in \Nmax{\nicefrac{v}{3} + 2}, \Csegmentsize \rem 2d = 0}}\right)
+\end{equation}
 
-Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of 684 octets. Data whose length is not divisible by 684 must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit \textsc{da} and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import \textsc{da} system.
+This rate is derived from the fact we wish to be able to reconstruct even should almost two-thirds of the $v$ validators be malicious or incapacitated, the 16-bit Galois field on which the erasure-code is based and the desire to support, for simplicity, encoding segments of size $\Csegmentsize$ without padding. The rate is optimal, \ie there is no more redundancy than necessary, when $\fnecoriginalshards(v) = \nicefrac{v}{3} + 1$. This occurs when $v \in \set{6, 9, 15, 24, 33, 51, 54, 78, 105, 111, 159, 168, 225, 321, 339, 510, 681, 1023}$. Note that the rate is least efficient when $v$ is slightly below one of these values. For example, when $v = 1022$, the rate is approximately 1:4.5. It is recommended, for efficiency of the data availability system, that validator set sizes be chosen from the given set.
 
-For the Import \textsc{da} system, we deal with an input size of 4,104 octets resulting in data-parallelism of order six. We may attain a greater degree of data parallelism if encoding or recovering more than one segment at a time though for recovery, we may be restricted to requiring each segment to be formed from the same set of indices (depending on the specific algorithm).
+We use a little-endian $\blob[2]$ form of the 16-bit \textsc{gf} points with a functional equivalence given by $\fnencode[2]$. From this we may assume the encoding function $\fnerasurecode{v \in \valcount}{}: \sequence[\fnecoriginalshards(v)]{\blob[2]} \to \sequence[v]{\blob[2]}$ and the recovery function $\fnecrecover{v \in \valcount}{}: \protoset{\tuple{\blob[2], \Nmax{v}}}_{\fnecoriginalshards(v)} \to \sequence[\fnecoriginalshards(v)]{\blob[2]}$. Encoding is done by extrapolating a data blob of size $2 \cdot \fnecoriginalshards(v)$ octets (provided in $\fnerasurecode{v}{}$ here as $\fnecoriginalshards(v)$ octet pairs) into $v$ octet pairs. Recovery is done by collecting together any distinct $\fnecoriginalshards(v)$ octet pairs, together with their indices, and transforming this into the original sequence of $\fnecoriginalshards(v)$ octet pairs.
+
+Practically speaking, this allows for the efficient encoding and recovery of data whose size is a multiple of $2 \cdot \fnecoriginalshards(v)$ octets. Data whose length is not divisible by $2 \cdot \fnecoriginalshards(v)$ must be padded (we pad with zeroes). We use this erasure-coding in two contexts within the \Jam protocol; one where we encode variable sized (but typically very large) data blobs for the Audit \textsc{da} and block-distribution system, and the other where we encode much smaller fixed-size data \emph{segments} for the Import \textsc{da} system.
+
+For the Import \textsc{da} system, we deal with an input size of $\Csegmentsize = \text{4,104}$ octets resulting in data-parallelism of order 6 with 1023 validators. We may attain a greater degree of data parallelism if encoding or recovering more than one segment at a time though for recovery, we may be restricted to requiring each segment to be formed from the same set of indices (depending on the specific algorithm).
 
 \subsection{Blob Encoding and Recovery}
 
-We assume some data blob $\mathbf{d} \in \blob[684k], k \in \N$. This blob is split into a whole number of $k$ pieces, each a sequence of 342 octet pairs. Each piece is erasure-coded using $\fnerasurecode$ as above to give 1,023 octet pairs per piece.
+We assume $v \in \valcount$ validators and some data blob $\mathbf{d} \in \blob[2k \cdot \fnecoriginalshards(v)], k \in \N$. This blob is split into a whole number of $k$ pieces, each a sequence of $\fnecoriginalshards(v)$ octet pairs. Each piece is erasure-coded using $\fnerasurecode{v}{}$ as above to give $v$ octet pairs per piece.
 
-The resulting matrix is grouped by its pair-index and concatenated to form 1,023 \emph{chunks}, each of $k$ octet-pairs. Any 342 of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
+The resulting matrix is grouped by its pair-index and concatenated to form $v$ \emph{chunks}, each of $k$ octet-pairs. Any $\fnecoriginalshards(v)$ of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
 Formally we begin by defining two utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
 \begin{align}
@@ -27,24 +34,24 @@ We define the transposition operator hence:
   {}^\text{T}\sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{0, 1}, \mathbf{x}_{0, 2}, \dots}, \sq{\mathbf{x}_{1, 0}, \mathbf{x}_{1, 1}, \dots}, \dots} \equiv \sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{1, 0}, \mathbf{x}_{2, 0}, \dots}, \sq{\mathbf{x}_{0, 1}, \mathbf{x}_{1, 1}, \dots}, \dots}
 \end{equation}
 
-We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into 684 octets and results in a sequence of 1,023 smaller blobs:
+We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into $2 \cdot \fnecoriginalshards(v)$ octets and results in a sequence of $v$ smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
-  \fnerasurecode_{k \in \N}\colon\abracegroup{
-    \blob[684k] &\to \sequence[1023]{\blob[2k]} \\
-    \mathbf{d} &\mapsto \join^\#({}^{\text{T}}\sq{\build{\erasurecode{\mathbf{p}}}{\mathbf{p} \orderedin {}^\text{T}\spl{2}^\#(\spl{2k}(\mathbf{d}))}})
+  \fnerasurecode{v \in \valcount}{k \in \N}\colon\abracegroup{
+    \blob[2k \cdot \fnecoriginalshards(v)] &\to \sequence[v]{\blob[2k]} \\
+    \mathbf{d} &\mapsto \join^\#\left({}^{\text{T}}\sq{\build{\erasurecode{v}{}{\mathbf{p}}}{\mathbf{p} \orderedin {}^\text{T}\spl{2}^\#(\spl{2k}(\mathbf{d}))}}\right)
   }
 \end{equation}
 
-The original data may be reconstructed with any 342 of the 1,023 resultant items (along with their indices). If the original 342 items are known then reconstruction is just their concatenation.
+The original data may be reconstructed with any $\fnecoriginalshards(v)$ of the $v$ resultant items (along with their indices). If the original $\fnecoriginalshards(v)$ items are known then reconstruction is just their concatenation.
 \begin{equation}
   \label{eq:erasurecodinginv}
-  \fnecrecover_{k \in \N}\colon\abracegroup{
-    \protoset{\tuple{\blob[2k], \Nmax{1023}}}_{342} &\to \blob[684k] \\
+  \fnecrecover{v \in \valcount}{k \in \N}\colon\abracegroup{
+    \protoset{\tuple{\blob[2k], \Nmax{v}}}_{\fnecoriginalshards(v)} &\to \blob[2k \cdot \fnecoriginalshards(v)] \\
     \mathbf{c} &\mapsto \begin{cases}
-      \encode{\sq{\build{\mathbf{x}}{\tup{\mathbf{x}, i} \orderedin \sqorderby{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}}}} &\when \set{\build{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}} = \Nmax{342}\\
+      \encode{\sq{\build{\mathbf{x}}{\tup{\mathbf{x}, i} \orderedin \sqorderby{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}}}} &\when \set{\build{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}} = \Nmax{\fnecoriginalshards(v)}\\
       \join(\join^\#({}^\text{T}\sq{
         \build{
-          \ecrecover{{\set{\build{
+          \ecrecover{v}{}{{\set{\build{
            (\spl{2}(\mathbf{x})\sub{p}, i)
           }{
             \tup{\mathbf{x}, i} \in \mathbf{c}
@@ -59,7 +66,7 @@ The original data may be reconstructed with any 342 of the 1,023 resultant items
 
 
 
-Segment encoding/decoding may be done using the same functions albeit with a constant $k = 6$.
+Segment encoding/decoding may be done using the same functions albeit with a fixed $k = \nicefrac{\Csegmentsize}{2 \cdot \fnecoriginalshards(v)}$. Note that the definition of $\fnecoriginalshards$ ensures this is always an integer, \ie no padding is required.
 
 \subsection{Code Word representation}
 
@@ -118,9 +125,9 @@ Every message word $m\sub{i}=m_{i, 15} \ldots m\sub{i, 0}$ consists of 16 bits. 
 m\sub{i} = \tup{m\sub{i, 0} \ldots m\sub{i, 15}}
 \end{equation}
 
-Where $m_{i, 0}$ is the least significant bit of message word $m\sub{i}$. Accordingly we consider the field element $\tilde{m}\sub{i} = \sum^{15}_{j = 0} m\sub{i, j} v\sub{j}$ to represent that message word.
+Where $m_{i, 0}$ is the least significant bit of message word $m\sub{i}$. Accordingly we consider the field element $\widetilde{m\sub{i}} = \sum^{15}_{j = 0} m\sub{i, j} v\sub{j}$ to represent that message word.
 
-Similarly, we assign a unique index to each validator between 0 and 1,022 and we represent validator $i$ with the field element:
+Similarly, we assign a unique index to each validator between 0 and $v - 1$ and we represent validator $i$ with the field element:
 \begin{equation}
 \tilde{i} = \sum^{15}_{j = 0} i\sub{j} v\sub{j}
 \end{equation}
@@ -129,23 +136,23 @@ where $i = i_{15} \ldots i_0$ is the binary representation of $i$.
 
 \subsection{The Generator Polynomial}
 
-To erasure code a message of 342 words into 1023 code words, we represent each message as a field element as described in previous section and we interpolate the polynomial $p(y)$ of maximum 341 degree which satisfies the following equalities:
+To erasure code a message of $d = \fnecoriginalshards(v)$ words into $v$ code words, we represent each message as a field element as described in previous section and we interpolate the polynomial $p(y)$ of maximum $d - 1$ degree which satisfies the following equalities:
 \begin{equation}
    \begin{array}{l}
      p (\tilde{0}) = \widetilde{m_0}\\
      p (\tilde{1}) = \widetilde{m_1}\\
      \vdots\\
-     p (\widetilde{341}) = \widetilde{m_{341}}
+     p (\widetilde{d-1}) = \widetilde{m_{d-1}}
    \end{array}
 \end{equation}
 
 After finding $p(y)$ with such properties, we evaluate $p$ at the following points:
 \begin{equation}
    \begin{array}{l}
-     \widetilde{r_{342}} : = p (\widetilde{342})\\
-     \widetilde{r_{343}} : = p (\widetilde{343})\\
+     \widetilde{r_d} : = p (\widetilde{d})\\
+     \widetilde{r_{d+1}} : = p (\widetilde{d+1})\\
      \vdots\\
-     \widetilde{r_{1022}} : = p (\widetilde{1022})
+     \widetilde{r_{v-1}} : = p (\widetilde{v-1})
    \end{array}
 \end{equation}
 
@@ -153,7 +160,7 @@ We then distribute the message words and the extra code words among the validato
 
 %To ensure the availability of work-package data in an adversarial environment, we use a Reed-Solomon code over the field $GF(2^{16})$ with rate of three to get a three times redundant data to be distributed among validators. This ensures that one-third of the validators may be dishonest or malfunctioning and yet any party is still able to reconstruct a work-package once we are assured that two-thirds-plus-one of the validators have each received their set of chunks for said work-package.
 
-%A guarantor is responsible for making such an encoding for any work-package which they report and to ensure it is distributed among each validator. Further, validators 
+%A guarantor is responsible for making such an encoding for any work-package which they report and to ensure it is distributed among each validator. Further, validators
 
 %Essentially, we define a function:
 
