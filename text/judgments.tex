@@ -23,14 +23,14 @@ The \emph{disputes} state includes four items, three of which concern verdicts: 
 
 \subsection{Extrinsic}
 
-The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise independent extrinsics. It comprises \emph{verdicts} $\xtverdicts$, \emph{culprits} $\xtculprits$, and \emph{faults} $\xtfaults$. Verdicts are a compilation of judgments coming from exactly two-thirds plus one of either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\activeset$ or $\previousset$. Culprits and faults are proofs of the misbehavior of one or more validators, respectively either by guaranteeing a work-report found to be invalid, or by signing a judgment found to be in contradiction to a work-report's validity. Both of these are considered a kind of \emph{offense}. Formally:
+The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise independent extrinsics. It comprises \emph{verdicts} $\xtverdicts$, \emph{culprits} $\xtculprits$, and \emph{faults} $\xtfaults$. Verdicts are a compilation of judgments coming from either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\activeset$ or $\previousset$. Culprits and faults are proofs of the misbehavior of one or more validators, respectively either by guaranteeing a work-report found to be invalid, or by signing a judgment found to be in contradiction to a work-report's validity. Both of these are considered a kind of \emph{offense}. Formally:
 \begin{equation}
   \begin{aligned}
     \xtdisputes &\equiv \tuple{\xtverdicts, \xtculprits, \xtfaults} \\
     \where \xtverdicts &\in \sequence[:\Cmaxextrinsicverdicts]{\tuple{
       \hash,
       \ffrac{\thetime}{\Cepochlen} - \N_2,
-      \sequence[\floor{\twothirds\valcount} + 1]{\tuple{
+      \sequence{\tuple{
         \set{\top, \bot},
         \N,
         \edsignaturebase
