@@ -25,6 +25,7 @@ The \emph{disputes} state includes four items, three of which concern verdicts: 
 
 The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise independent extrinsics. It comprises \emph{verdicts} $\xtverdicts$, \emph{culprits} $\xtculprits$, and \emph{faults} $\xtfaults$. Verdicts are a compilation of judgments coming from either the active validator set or the previous epoch's validator set, \ie the Ed25519 keys of $\activeset$ or $\previousset$. Culprits and faults are proofs of the misbehavior of one or more validators, respectively either by guaranteeing a work-report found to be invalid, or by signing a judgment found to be in contradiction to a work-report's validity. Both of these are considered a kind of \emph{offense}. Formally:
 \begin{equation}
+  \label{eq:disputesextrinsics}
   \begin{aligned}
     \xtdisputes &\equiv \tuple{\xtverdicts, \xtculprits, \xtfaults} \\
     \where \xtverdicts &\in \sequence[:\Cmaxextrinsicverdicts]{\tuple{
@@ -154,8 +155,8 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
   \end{split}
 \end{align}
 
-There are some logical consequences derived from the composition of this extrinsic: any verdict containing solely valid judgments implies the existence of at least one validator's vote against it that must have triggered the dispute, which in turn implies a fault; and any verdict containing solely invalid judgments implies the existence of at least two guarantees signed for that report, which in turn implies the existence of at least two culprits. 
-Faults and culprits must never list keys that have already been included in the punish-set following some previously seen offence (equations \ref{eq:culprits} and \ref{eq:faults}), and so although logically these minimum offenses must exist for each corresponding verdict, they may not be actually included in a faults or culprits extrinsic: good verdicts should only be generated when there is at least one associated new fault offender; bad verdicts should always be generated even when they don't have any new associated culprit offender since we need to exclude bad reports.
+Any verdict containing solely valid judgments implies the existence of at least one validator's vote against it that must have triggered the dispute, which in turn implies a fault; and any verdict containing solely invalid judgments implies the existence of at least two guarantees signed for that report, which in turn implies the existence of at least two culprits. 
+Faults and culprits must never list keys that have already been included in the punish-set following some previously reported offence (equations \ref{eq:culprits} and \ref{eq:faults}), and so although logically these minimum offenses must exist for each corresponding verdict, it may not be possible to include them in the extrinsic. Good verdicts should only be generated when there is at least one associated new fault offender, as they otherwise would have no effect. Bad verdicts should always be generated even when they don't have any new associated culprit offender since we need to exclude bad reports.
 
 Formally:
 \begin{align}
@@ -163,14 +164,7 @@ Formally:
     \exists \tup{\¬reporthash, \dots} \in \xtfaults
 \end{align}
 
-Although this should not be expected in practice, in theory it is possible that the number of offenses could be large (up to $\onethird \valcount$ faults and up to three culprits for each bad verdict). In order not to burden block creation overmuch, we specify practical limits to the number of verdicts and offenses which can be included in a single block.
-
-Formally,
-\begin{align}
-  \label{eq:limitextrinsicverdicts}\len{\xtverdicts} &\le \Cmaxextrinsicverdicts \\
-  \label{eq:limitextrinsicculprits}\len{\xtculprits} &\le \Cmaxextrinsicoffenses \\
-  \label{eq:limitextrinsicfaults}\len{\xtfaults} &\le \Cmaxextrinsicoffenses
-\end{align}
+Although this should not be expected in practice, in theory it is possible that the number of offenses could be large (up to $\onethird$ of validators as faults and up to three culprits for each bad verdict). In order not to burden block creation overmuch, we specify practical limits to the number of verdicts and offenses which can be included in a single block as can be seen in equation \ref{eq:disputesextrinsics}.
 
 The limits are clearly below the theoretical maximum, but they are expected to be sufficient for practical purposes as we don't expect bad verdicts to happen often. In the presence of these limits, if all the offenders had to be included in the same block as the corresponding verdict, we could run into a situation where some would be irrevocably missed. However, implementations can spread the contents of offenses over different blocks' extrinsics, with the proviso that the entries in $\xtculprits$ and $\xtfaults$ have to refer to a report already existing in some verdict-set of the posterior state, as per equations \ref{eq:culprits} and \ref{eq:faults}. Notice that this state is updated when we receive the verdict, together with the first batch of offenses. Offenses in later batches are communicated without the corresponding verdict, but its report will be in one of $\goodset$ or $\badset$ and therefore also in $\goodset'$ or $\badset'$, thereby satisfying those equations.
 
