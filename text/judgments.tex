@@ -100,11 +100,12 @@ We define $\verdicts$ to derive from the sequence of verdicts introduced in the 
       \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \orderedin \xtverdicts
     }} \\
     V(\xv¬epochindex, \xv¬judgments) &\equiv \begin{cases}
-      \top &\when t = \floor{\twothirds\len{K(\xv¬epochindex)}} + 1 \\
+      \top &\when t = \floor{\twothirds\len{\mathbf{k}}} + 1 \\
       \bot &\when t = 0 \\
-      \none &\when t = \floor{\onethird\len{K(\xv¬epochindex)}}
+      \none &\when t = \floor{\onethird\len{\mathbf{k}}}
     \end{cases} \\
-    \where t &= \sum_{\tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments}\!\!\!\! \xvj¬validity
+    \where t &= \sum_{\tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments}\!\!\!\! \xvj¬validity \\
+    \also \mathbf{k} &= K(\xv¬epochindex)
   \end{aligned}
 \end{equation}
 

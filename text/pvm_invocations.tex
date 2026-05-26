@@ -567,7 +567,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \using p &= \registers_7 \\
     \using z &= \min(\registers_8, \Csegmentsize) \\
     \using \mathbf{x} &= \begin{cases}
-      \zeropad{\Csegmentsize}{\mem\subrange{p}{z}} &\when \Nrange{p}{z} \subseteq \readable[\memory]\\
+      \zeropad{\Csegmentsize}{\mem\subrange{p}{z}} &\when \Nrange{p}{z} \subseteq \readable{\memory}\\
       \error &\otherwise
     \end{cases}\\
     \tup{\execst', \registers'_7, \mathbf{e}'} &\equiv \begin{cases}
@@ -590,7 +590,8 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \using n &= \min(n \in \N : n \not\in \keys{\mathbf{m}}) \\
     \using \mathbf{u} &= \tup{\is{\ram¬value}{[0, 0, \dots]},\is{\ram¬access}{[\none, \none, \dots]}} \\
     \tup{\execst', \registers'_7, \mathbf{m}} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mathbf{m}} &\when \mathbf{p} = \error \\
+      \tup{\continue, \mathtt{FULL}, \mathbf{m}} &\when \len{\mathbf{m}} \ge 63 \\
+      \tup{\panic, \registers_7, \mathbf{m}} &\otherwhen \mathbf{p} = \error \\
       \tup{\continue, \mathtt{HUH}, \mathbf{m}} &\otherwhen \deblob(\mathbf{p}, i) = \error \\
       \tup{\continue, n, \mathbf{m} \cup \set{\kv{n}{\tup{\mathbf{p}, \mathbf{u}, i, \bot}}} } &\otherwise \\
     \end{cases} \\
@@ -603,7 +604,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   $\begin{aligned}
     \using \sq{n, o, s, z} &= \registers\subrange{7}{4} \\
     \tup{\execst', \registers'_7, \mem'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mem} &\when \Nrange{o}{z} \not\subseteq \writable[\memory] \\
+      \tup{\panic, \registers_7, \mem} &\when \Nrange{o}{z} \not\subseteq \writable{\memory} \\
       \tup{\continue, \mathtt{WHO}, \mem} &\otherwhen n \not\in \keys{\mathbf{m}} \\
       \tup{\continue, \mathtt{OOB}, \mem} &\otherwhen \Nrange{s}{z} \not\subseteq \readable{\mathbf{m}\subb{n}_\pg¬ram} \\
       \tup{\continue, \mathtt{OK}, \mem'} &\otherwise \\
@@ -618,7 +619,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   $\begin{aligned}
     \using \sq{n, s, o, z} &= \registers\subrange{7}{4} \\
     \tup{\execst', \registers'_7, \mathbf{m}'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mathbf{m}} &\when \Nrange{s}{z} \not\subseteq \readable[\memory] \\
+      \tup{\panic, \registers_7, \mathbf{m}} &\when \Nrange{s}{z} \not\subseteq \readable{\memory} \\
       \tup{\continue, \mathtt{WHO}, \mathbf{m}} &\otherwhen n \not\in \keys{\mathbf{m}} \\
       \tup{\continue, \mathtt{OOB}, \mathbf{m}} &\otherwhen \Nrange{o}{z} \not\subseteq \writable{\mathbf{m}\subb{n}_\pg¬ram} \\
       \tup{\continue, \mathtt{OK}, \mathbf{m}'}  &\otherwise \\
@@ -671,7 +672,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*\subb{n}_\pg¬ram = \mathbf{u}'\\
       \mathbf{m}^*\subb{n}_\pg¬pc = \begin{cases}
-        i' + \Fskip(\imath') + 1 &\when c \in \set{ \host } \times \pvmreg\\
+        i' + \Fskip(i') + 1 &\when c \in \set{ \host } \times \pvmreg\\
         i' &\otherwise
       \end{cases}\\
       \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
@@ -738,6 +739,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &= \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
+      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager \\
       \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \tup{m, v, r} \not\in \serviceid^3 \\
       \tup{\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwise \\
     \end{cases}
@@ -917,7 +919,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise\\
     \end{cases} \\
     \tup{\execst', \registers'_7, \registers'_8} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \registers_8} &\when h = \error \\
+      \tup{\continue, \mathtt{HUH}, \registers_8} &\when z \not\in \bloblength \\
+      \tup{\panic, \registers_7, \registers_8} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{NONE}, 0} &\otherwhen \mathbf{a} = \error \\
       \tup{\continue, 0, 0} &\otherwhen \mathbf{a} = \sq{} \\
       \tup{\continue, 1 + 2^{32}x, 0} &\otherwhen \mathbf{a} = \sq{x} \\
@@ -943,7 +946,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise\\
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \imX_\im¬self} &\when h = \error \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\when z \not \in \bloblength \\
+      \tup{\panic, \registers_7, \imX_\im¬self} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\otherwhen \mathbf{a} = \error \\
       \tup{\continue, \mathtt{FULL}, \imX_\im¬self} &\otherwhen \mathbf{a}_\sa¬balance < \mathbf{a}_\sa¬minbalance \\
       \tup{\continue, \mathtt{OK}, \mathbf{a}} &\otherwise \\
@@ -973,7 +977,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise\\
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \imX_\im¬self} &\when h = \error \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\when z \not \in \bloblength \\
+      \tup{\panic, \registers_7, \imX_\im¬self} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\otherwhen \mathbf{a} = \error \\
       \tup{\continue, \mathtt{OK}, \mathbf{a}} &\otherwise \\
     \end{cases} \\
@@ -1015,7 +1020,8 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \none &\otherwise
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬provisions} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \imX_\im¬provisions} &\when \mathbf{i} = \error \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\when z \not \in \bloblength \\
+      \tup{\panic, \registers_7, \imX_\im¬provisions} &\otherwhen \mathbf{i} = \error \\
       \tup{\continue, \mathtt{WHO}, \imX_\im¬provisions} &\otherwhen \mathbf{a} = \none \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \mathbf{a}_\sa¬requests[\tup{\blake{\mathbf{i}}, z}] \ne \sq{} \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \tup{s, \mathbf{i}} \in \imX_\im¬provisions \\
