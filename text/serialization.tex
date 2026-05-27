@@ -148,18 +148,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
       \tup{\xp¬serviceindex, \xp¬data} \orderedin \xtpreimages}
     }}}
   \\
-  \encodeguarantees{\xtguarantees} &= \encode{
-    \var{\sq{\build{
-      \tup{\xg¬workreport, \encode[4]{\xg¬timeslot}, \var{
-        \sq{\build{
-          \tup{\encode[2]{v}, s}
-        }{
-          \tup{v, s} \orderedin \xg¬credential
-        }}
-      }}
-    }{
-      \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \orderedin \xtguarantees}
-    }}}
+  \encodeguarantees{\xtguarantees} &= \encode{\var{\xtguarantees}}
   \\
   \encodeassurances{\xtassurances} &= \encode{
     \var{\sq{\build{
@@ -249,6 +238,12 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \var{\wrX_\wr¬digests}
   }
   \\
+  \encode{\gX \in \guarantee} &\equiv \encode{
+    \gX_\g¬workreport,
+    \encode[4]{\gX_\g¬timeslot},
+    \var{\sq{\build{\tup{\encode[2]{v}, s}}{\tup{v, s} \orderedin \gX_\g¬credential}}}
+  }
+  \\
   \encode{\wpX \in \workpackage} &\equiv \encode{
     \encode[4]{\wpX_\wp¬authcodehost},
     \wpX_\wp¬authcodehash,
@@ -278,7 +273,8 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \encode[1]{\stX_\st¬entryindex}
   }
   \\
-  \encode[X]{\dxX \in \defxfer} &\equiv \encode{
+  \encode{\dxX \in \defxfer} &\equiv \encode{
+    1,
     \encode[4]{\dxX_\dx¬source},
     \encode[4]{\dxX_\dx¬dest},
     \encode[8]{\dxX_\dx¬amount},
@@ -286,7 +282,8 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \encode[8]{\dxX_\dx¬gas}
   }
   \\
-  \encode[U]{\otX \in \operandtuple} &\equiv \encode{
+  \encode{\otX \in \operandtuple} &\equiv \encode{
+    0,
     \otX_\ot¬packagehash,
     \otX_\ot¬segroot,
     \otX_\ot¬authorizer,
@@ -295,11 +292,6 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \encoderesult{\otX_\ot¬result},
     \var{\otX_\ot¬authtrace}
   }
-  \\
-  \encode{\aiX \in \accinput} &\equiv \begin{cases}
-      \encode{0, \encode[U]{o}} &\when \aiX \in \operandtuple \\
-      \encode{1, \encode[X]{o}} &\when \aiX \in \defxfer \\
-  \end{cases}
   \\
   \encoderesult{o \in \workerror \cup \blob} &\equiv \begin{cases}
     \tup{0, \var{o}} &\when o \in \blob \\
