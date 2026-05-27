@@ -282,7 +282,7 @@ The winning-tickets marker $\H_\¬winnersmark$ is either empty or, if the block 
 \subsection{The Extrinsic and Tickets}
 \label{sec:safrolextandtickets}
 
-The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index (a natural number less than $\Cticketentries$) together with a proof of ticket's validity. The proof implies a ticket identifier, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input for the block's entropy source $\textsc{vrf}$ signature.
+The extrinsic $\xttickets$ is a sequence of proofs of valid tickets; a ticket implies an entry in our epochal ``contest'' to determine which validators are privileged to author a block for each timeslot in the following epoch. Tickets specify an entry index (a natural number less than the maximum number of ticket entries per validator, defined in equation \ref{eq:ticketsextrinsic}) together with a proof of ticket's validity. The proof implies a ticket identifier, a high-entropy unbiasable 32-octet sequence, which is used both as a score in the aforementioned contest and as input for the block's entropy source $\textsc{vrf}$ signature.
 
 Towards the end of the epoch (\ie $\Cepochtailstart$ slots from the start) this contest is closed implying successive blocks within the same epoch must have an empty tickets extrinsic. At this point, the following epoch's slot-sealer sequence becomes fixed.
 
