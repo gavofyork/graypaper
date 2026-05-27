@@ -61,7 +61,7 @@ The signatures of all judgments must be valid in terms of one of the two allowed
 
 Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set:
 \begin{align}
-  \label{eq:culprits}\forall \tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
+  \forall \tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
     &\xc¬reporthash \in \badset' \,,\\
     &\xc¬offenderindex \in \mathbf{k} \,,\\
     &\xc¬signature \in \edsignature{\xc¬offenderindex}{\Xguarantee \concat \xc¬reporthash}
@@ -110,6 +110,14 @@ We define $\verdicts$ to derive from the sequence of verdicts introduced in the 
   \end{aligned}
 \end{equation}
 
+Any verdict containing solely valid judgments implies the same report having at least one valid entry in the faults sequence $\xtfaults$.
+
+Formally:
+\begin{align}
+  \forall \tup{\¬reporthash, \top} \in \verdicts &:
+    \exists \tup{\¬reporthash, \dots} \in \xtfaults
+\end{align}
+
 We clear any work-reports which we judged as uncertain or invalid from their core:
 \begin{equation}\label{eq:removenonpositive}
   \forall c \in \coreindex : \reportspostjudgement\subb{c} = \begin{cases}
@@ -154,16 +162,6 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
       }}
   \end{split}
 \end{align}
-
-There are some constraints placed on the composition of this extrinsic: any verdict containing solely valid judgments implies the same report having at least one valid entry in the faults sequence $\xtfaults$. Good verdicts should only be reported when there is at least one associated new fault offender, as they otherwise would have no effect. Bad verdicts should always be reported.
-
-Formally:
-\begin{align}
-  \forall \tup{\¬reporthash, \top} \in \verdicts &:
-    \exists \tup{\¬reporthash, \dots} \in \xtfaults
-\end{align}
-
-Although this should not be expected in practice, in theory it is possible that the number of offenses could be large (up to $\onethird$ of validators as faults and up to three culprits for each bad verdict). In order not to over burden block creation, we specify practical limits to the number of verdicts and offenses which can be included in a single block as can be seen in equation \ref{eq:disputesextrinsics}.
 
 \subsection{Header}\label{sec:judgmentmarker}
 
