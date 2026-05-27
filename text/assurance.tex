@@ -1,8 +1,9 @@
 \section{Availability Assurance}\label{sec:assurance}
 
-Validators should issue a signed statement, called an \emph{assurance}, when they are in possession of all of their corresponding erasure-coded chunks for a given work-report which is currently pending availability. For any work-report to gain an assurance, there are two classes of data a validator must have:
+Every timeslot, each validator should issue a signed statement, called an \emph{assurance}, indicating which of the current availability assignments the validator has received its erasure-coded shards for. There are two classes of shard a validator must have for an availability assignment before claiming possession in an assurance:
 
-Firstly, their erasure-coded chunk for this report's bundle. The validity of this chunk can be trivially proven through the work-report's work-package erasure-root and a Merkle-proof of inclusion in the correct location. The proof should be included from the guarantor. This chunk is needed to verify the work-report's validity and completeness and need not be retained after the work-report is considered audited. Until then, it should be provided on request to validators.
+Firstly, their erasure-coded shard for the assigned report's bundle. This shard is needed to verify the work-report's validity and completeness and need not be retained after the work-report is considered audited. Until then, it should be provided on request to validators.
 
-Secondly, the validator should have in hand the corresponding erasure-coded chunk for each of the exported segments referenced by the \emph{segments root}. These should be retained for 28 days and provided to any validator on request.
+Secondly, the validator should have in hand the corresponding erasure-coded shard for each of the exported segments referenced by the assigned report's \emph{segments root}. These should be retained for 28 days and provided to any validator on request.
 
+The validity of a validator's shards for a work-report can be trivially proven through the work-report's work-package erasure-root and a Merkle-proof of inclusion in the correct location. Shards distributed by guarantors should be accompanied by such proofs, and a validator should not claim possession of shards in an assurance unless it has, and has verified, the corresponding proofs.

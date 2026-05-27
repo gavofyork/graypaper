@@ -22,21 +22,26 @@ $\fngetparent$ is thus defined as being the mapping from one block header to its
 
 We only require implementations to store headers of ancestors which were authored in the previous $\Cmaxlookupanchorage = 24$ hours of any block $\block$ they wish to validate.
 
-The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports to individually have their inclusion proven. Given any block $\block = \tup{\header, \extrinsic}$, then formally:
+The extrinsic hash is a Merkle commitment to the block's extrinsic data, taking care to allow for the possibility of reports and preimages to individually have their inclusion proven. Given any block $\block = \tup{\header, \extrinsic}$, then formally:
 \begin{align}
   \H_\¬extrinsichash &\in \hash \ ,\quad
   \H_\¬extrinsichash \equiv \blake{\encode{\blakemany{\mathbf{a}}}} \\
   \where \mathbf{a} &= \sq{
     \encodetickets{\xttickets},
-    \encodepreimages{\xtpreimages},
+    \mathbf{p},
     \mathbf{g},
     \encodeassurances{\xtassurances},
     \encodedisputes{\xtdisputes}
   } \\
-  \also \mathbf{g} &= \encode{\var{\sq{\build{
-    \tup{\blake{\xg¬workreport}, \encode[4]{\xg¬timeslot}, \var{\xg¬credential}}
+  \also \mathbf{p} &= \encode{\var{\sq{\build{
+    \tup{\encode[4]{\xp¬serviceindex}, \blake{\xp¬data}}
   }{
-    \tup{\xg¬workreport, \xg¬timeslot, \xg¬credential} \orderedin \xtguarantees
+    \tup{\xp¬serviceindex, \xp¬data} \orderedin \xtpreimages
+  }}}} \\
+  \also \mathbf{g} &= \encode{\var{\sq{\build{
+    \tup{\blake{\g¬workreport}, \encode[4]{\g¬timeslot}, \var{\g¬credential}}
+  }{
+    \tup{\g¬workreport, \g¬timeslot, \g¬credential} \orderedin \xtguarantees
   }}}}
 \end{align}
 

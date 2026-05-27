@@ -5,7 +5,7 @@ The Bandersnatch curve is defined by \cite{cryptoeprint:2021/1152}.
 The singly-contextualized Bandersnatch Schnorr-like signatures $\bssignature{k}{c}{m}$ are defined as a formulation under the \emph{IETF} \textsc{vrf} template specified by \cite{hosseini2024bandersnatch} (as IETF VRF) and further detailed by \cite{rfc9381}.
 
 \begin{align}
-  \bssignature{k \in \bskey}{c \in \hash}{m \in \blob} \subset \blob[96] &\equiv \set{\build{x}{x \in \blob[96], \text{verify}(k, c, m, x) = \top }}  \\
+  \bssignature{k \in \bskey}{c \in \blob}{m \in \blob} \subset \blob[96] &\equiv \set{\build{x}{x \in \blob[96], \text{verify}(k, c, m, x) = \top }}  \\
   \banderout{s \in \bssignature{k}{c}{m}} \in \hash &\equiv \text{output}(x \mid x \in \bssignature{k}{c}{m})\interval{}{32}
 \end{align}
 
@@ -13,7 +13,7 @@ The singly-contextualized Bandersnatch Ring\textsc{vrf} proofs $\bsringproof{r}{
 
 \begin{align}
   \getringroot{\sequence{\bskey}} \in \ringroot &\equiv \text{commit}(\sequence{\bskey})  \\
-  \bsringproof{r \in \ringroot}{c \in \hash}{m \in \blob} \subset \blob[784] &\equiv \set{\build{x}{x \in \blob[784], \text{verify}(r, c, m, x) = \top }}  \\
+  \bsringproof{r \in \ringroot}{c \in \blob}{m \in \blob} \subset \blob[784] &\equiv \set{\build{x}{x \in \blob[784], \text{verify}(r, c, m, x) = \top }}  \\
   \banderout{p \in \bsringproof{r}{c}{m}} \in \hash &\equiv \text{output}(x \mid x \in \bsringproof{r}{c}{m})\interval{}{32}
 \end{align}
 

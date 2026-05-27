@@ -122,12 +122,10 @@ Rather than passing whole work-digests into accumulate, we extract the salient i
     \isa{\dx¬amount}{\balance} ,
     \isa{\dx¬memo}{\memo} ,
     \isa{\dx¬gas}{\gas}
-  }\\
-  \label{eq:accinput}
-  \accinput &\equiv \operandtuple \cup \defxfer
+  }
 \end{align}
 
-Note that the union of the two is the \emph{accumulation input}, $\accinput$.
+Note that the union of the two characterizes inputs to the Accumulation invocation function $\Psi_A$ (defined in equation \ref{eq:accinvocation}).
 
 Our formalisms continue by defining $\partialstate$ as a characterization of (\ie values capable of representing) state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\accountspre$), the upcoming validator keys $\stagingset$, the queue of authorizers $\authqueue$ and the privileges state $\privileges$. Formally:
 \begin{equation}
@@ -161,11 +159,12 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
       \tup{i + j, \psX', \mathbf{b}^* \!\cup \mathbf{b}, \mathbf{u}^* \!\!\concat \mathbf{u}, \mathbf{t} \concat \mathbf{t}^\dagger}\!\!\!\! &
         \text{o/w}\!\!\!\!\!\!\!\! \\
     \end{cases} \\
-    &\quad\where i = \max(\Nmax{\len{\mathbf{r}} + 1}): \sum_{r \in \mathbf{r}\sub{\dots i}, d \in r_\wr¬digests}(d_\wd¬gaslimit) \le g \\
-    &\quad\also n = \len{\mathbf{t}} + i + \len{\mathbf{f}} \\
+    &\quad\where i = \max(\Nmax{\len{\mathbf{r}} + 1}): \\
+    &\qquad \sum_{r \in \mathbf{r}\sub{\dots i}, d \in r_\wr¬digests}\!\!\!\!\!\!\!\!(d_\wd¬gaslimit) + \sum_{t \in \mathbf{t}}(t_\dx¬gas) + \!\!\!\!\sum_{x \in \values{\mathbf{f}}}\!\!\!\!(x) \le g \\
+    &\quad\also n = i + \len{\mathbf{t}} + \len{\mathbf{f}} \\
     &\quad\also \tup{\psX^*\!\!, \mathbf{t}^*\!\!, \mathbf{b}^*\!\!, \mathbf{u}^*} = \accpar(\psX, \mathbf{t},\mathbf{r}\sub{\dots i}, \mathbf{f}) \\
-    &\quad\also \tup{j, \psX'\!, \mathbf{b}, \mathbf{u}, \mathbf{t}^\dagger} = \accseq(g^* - \!\!\!\!\!\!\sum_{\tup{s, u} \in \mathbf{u}^*}\!\!\!\!\!\!(u), \mathbf{t}^*\!\!, \mathbf{r}\sub{i\dots}, \psX^*\!\!, \emset)\\
-    &\quad\also g^* = g + \sum_{t \in \mathbf{t}}(t_\dx¬gas)
+    &\quad\also \tup{j, \psX'\!, \mathbf{b}, \mathbf{u}, \mathbf{t}^\dagger} = \accseq(g^*, \mathbf{t}^*\!\!, \mathbf{r}\sub{i\dots}, \psX^*\!\!, \emset)\\
+    &\quad\also g^* = g + \sum_{t \in \mathbf{t^*}}(t_\dx¬gas) - \!\!\!\!\!\!\sum_{\tup{s, u} \in \mathbf{u}^*}\!\!\!\!\!\!(u)
   }
 \end{equation}
 
