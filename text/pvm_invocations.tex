@@ -67,9 +67,9 @@ The historical-lookup host-call function, $\Omega_H$, is designed to give the sa
 \end{equation}
 
 
-The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\innerpvm$. It holds a \textsc{pvm} program blob, instruction counter, \textsc{ram} and a flag denoting whether gas was already charged for the currently executing basic block:
+The inner \textsc{pvm} invocation host-calls, meanwhile, depend on an integrated \textsc{pvm} type, which we shall denote $\pvm¬instance$. It holds a \textsc{pvm} program blob, instruction counter, \textsc{ram} and a flag denoting whether gas was already charged for the currently executing basic block:
 \begin{equation}\label{eq:innerpvm}
-  \innerpvm \equiv \tuple{\isa{\pg¬code}{\blob}, \isa{\pg¬ram}{\ram}, \isa{\pg¬pc}{\pvmreg}, \isa{\pg¬gaschargedflag}{\bool}}
+  \pvm¬instance \equiv \tuple{\isa{\pg¬code}{\blob}, \isa{\pg¬ram}{\ram}, \isa{\pg¬pc}{\pvmreg}, \isa{\pg¬gaschargedflag}{\bool}, \isa{\pg¬handle}{\N}}
 \end{equation}
 
 The Export host-call depends on two pieces of context; one sequence of segments (blobs of length $\Csegmentsize$) to which it may append, and the other an argument passed to the invocation function to dictate the number of segments prior which may assumed to have already been appended. The latter value ensures that an accurate segment index can be provided to the caller.
@@ -84,21 +84,24 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)} > \Cmaxservicecodesize \\
       &\otherwise: \\
       &\quad\using \mathbf{a} = \encode{c, i, w_\wi¬serviceindex, \var{w_\wi¬payload}, \blake{p}}\;,\ \encode{\var{\mathbf{z}}, \jam¬blob} = \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
-      &\quad\also \tup{u, \mathbf{o}, \tup{\mathbf{m}, \mathbf{e}}} = \Psi_M(\jam¬blob, 0, w_\wi¬refgaslimit, \mathbf{a}, F, \tup{\emptyset, \sq{}})\ \colon\\
+      &\quad\also \tup{u, \mathbf{o}, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}} = \Psi_M(\jam¬blob, 0, w_\wi¬refgaslimit, \mathbf{a}, F, \tup{\emptyset, \emptyset, \sq{}})\ \colon\\
       \tup{\mathbf{o}, \sq{}, u} &\quad\when \mathbf{o} \in \set{ \oog, \panic }  \\
       \tup{\mathbf{o}, \mathbf{e}, u} &\quad\otherwise \\
       \multicolumn{2}{l}{\where w = p_\wp¬workitems\subb{i}}
     \end{cases} \\
   } \\
   \label{eq:refinemutator}
-  &F \in \contextmutator{\tuple{\dictionary{\N}{\innerpvm}, \sequence{\segment}}} \colon
-    (n, \gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) \mapsto \begin{cases}
+  &F \in \contextmutator{\tuple{\dictionary{\N}{\pvm¬instance}, \dictionary{\N}{\pvm¬module}, \sequence{\segment}}} \colon
+    (n, \gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}) \mapsto \begin{cases}
       \Omega_G(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{gas} \\
       \Omega_\Gemini(\gascounter, \registers, \memory, \jam¬blob) &\when n = \mathtt{grow\_heap} \\
       \Omega_Y(\gascounter, \registers, \memory, p, \zerohash, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{fetch}\\
       \Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, w_\wi¬serviceindex, \accounts, (p_\wp¬context)_\wc¬lookupanchortime) &\when n = \mathtt{historical\_lookup}\\
       \Omega_E(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, \segoff) &\when n = \mathtt{export}\\
-      \Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{machine}\\
+      \Omega_{CB}(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map}) &\when n = \mathtt{compile\_from\_bytes}\\
+      \Omega_{CD}(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map}, w_\wi¬serviceindex, \accounts, (p_\wp¬context)_\wc¬lookupanchortime) &\when n = \mathtt{compile\_from\_db}\\
+      \Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map}) &\when n = \mathtt{machine}\\
+      \Omega_V(\gascounter, \registers, \memory, \pvm¬module¬map) &\when n = \mathtt{drop}\\
       \Omega_P(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{peek}\\
       \Omega_O(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{poke}\\
       \Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{pages}\\
@@ -519,7 +522,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
 
 \subsection{Refine Functions}\label{sec:refinefunctions}
 
-These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\dictionary{\N}{\innerpvm}, \sequence{\segment}}$, which are both initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
+These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}} \in \tuple{\dictionary{\N}{\pvm¬instance}, \dictionary{\N}{\pvm¬module}, \sequence{\segment}}$, which are all initially empty. Other than the gas-counter which is explicitly defined, elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
   \gascounter' &\equiv \gascounter - g\\
   \tup{\execst', \registers', \memory'} &\equiv \begin{cases}
@@ -578,28 +581,73 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{machine} = 9 \\
+  $\Omega_{CB}(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map})$ \\
+  \texttt{compile\_from\_bytes} = 9 \\
   $g = 10$} &
   $\begin{aligned}
-    \using \sq{p_O, p_Z, i} &= \registers\subrange{7}{3} \\
+    \using \sq{p_O, p_Z} &= \registers\subrange{7}{2} \\
     \using \mathbf{p} &= \begin{cases}
       \memory\subrange{p_O}{p_Z} &\when \Nrange{p_O}{p_Z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
+    \using \mathbf{H} &= \keys{\pvm¬module¬map} \cup \set{\mathbf{m}\subb{n}_\pg¬handle : n \in \keys{\mathbf{m}}} \\
+    \using k &= \min(n \in \N : n \not\in \mathbf{H}) \\
+    \tup{\execst', \registers'_7, \pvm¬module¬map'} &\equiv \begin{cases}
+      \tup{\continue, \mathtt{FULL}, \pvm¬module¬map} &\when \len{\mathbf{H}} \ge 128 \\
+      \tup{\panic, \registers_7, \pvm¬module¬map} &\otherwhen \mathbf{p} = \error \\
+      \tup{\continue, \mathtt{HUH}, \pvm¬module¬map} &\otherwhen \deblob(\mathbf{p}, 0) = \error \\
+      \tup{\continue, k, \pvm¬module¬map \cup \set{\kv{k}{\mathbf{p}}} } &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_{CD}(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map}, s, \mathbf{d}, t)$ \\
+  \texttt{compile\_from\_db} = 10 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{d}\subb{s} &\when \registers_7 = 2^{64} - 1 \wedge s \in \keys{\mathbf{d}} \\
+      \mathbf{d}[\registers_7] &\when \registers_7 \in \keys{\mathbf{d}} \\
+      \none &\otherwise
+    \end{cases} \\
+    \using \mathbf{v} &= \begin{cases}
+      \error &\when \Nrange{\registers_8}{32} \not\subseteq \readable{\memory} \\
+      \none &\otherwhen \mathbf{a} = \none \\
+      \histlookup(\mathbf{a}, t, \memory\subrange{\registers_8}{32}) &\otherwise \\
+    \end{cases} \\
+    \using f &= \min(\registers_9, \len{\mathbf{v}}) \\
+    \using l &= \min(\registers_{10}, \len{\mathbf{v}} - f) \\
+    \using \mathbf{p} &= \mathbf{v}\subrange{f}{l} \\
+    \using \mathbf{H} &= \keys{\pvm¬module¬map} \cup \set{\mathbf{m}\subb{n}_\pg¬handle : n \in \keys{\mathbf{m}}} \\
+    \using k &= \min(n \in \N : n \not\in \mathbf{H}) \\
+    \tup{\execst', \registers'_7, \pvm¬module¬map'} &\equiv \begin{cases}
+      \tup{\continue, \mathtt{FULL}, \pvm¬module¬map} &\when \len{\mathbf{H}} \ge 128 \\
+      \tup{\panic, \registers_7, \pvm¬module¬map} &\otherwhen \mathbf{v} = \error \\
+      \tup{\continue, \mathtt{NONE}, \pvm¬module¬map} &\otherwhen \mathbf{v} = \none \\
+      \tup{\continue, \mathtt{HUH}, \pvm¬module¬map} &\otherwhen \deblob(\mathbf{p}, 0) = \error \\
+      \tup{\continue, k, \pvm¬module¬map \cup \set{\kv{k}{\mathbf{p}}} } &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map})$ \\
+  \texttt{machine} = 11 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using \sq{h, i} &= \registers\subrange{7}{2} \\
     \using n &= \min(n \in \N : n \not\in \keys{\mathbf{m}}) \\
     \using \mathbf{u} &= \tup{\is{\ram¬value}{[0, 0, \dots]},\is{\ram¬access}{[\none, \none, \dots]}} \\
-    \tup{\execst', \registers'_7, \mathbf{m}} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \mathbf{m}'} &\equiv \begin{cases}
       \tup{\continue, \mathtt{FULL}, \mathbf{m}} &\when \len{\mathbf{m}} \ge 63 \\
-      \tup{\panic, \registers_7, \mathbf{m}} &\otherwhen \mathbf{p} = \error \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{m}} &\otherwhen \deblob(\mathbf{p}, i) = \error \\
-      \tup{\continue, n, \mathbf{m} \cup \set{\kv{n}{\tup{\mathbf{p}, \mathbf{u}, i, \bot}}} } &\otherwise \\
+      \tup{\continue, \mathtt{WHO}, \mathbf{m}} &\otherwhen h \not\in \keys{\pvm¬module¬map} \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{m}} &\otherwhen \deblob(\pvm¬module¬map\subb{h}, i) = \error \\
+      \tup{\continue, n, \mathbf{m} \cup \set{\kv{n}{\tup{\pvm¬module¬map\subb{h}, \mathbf{u}, i, \bot, h}}} } &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_P(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{peek} = 10 \\
+  \texttt{peek} = 12 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, o, s, z} &= \registers\subrange{7}{4} \\
@@ -614,7 +662,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_O(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{poke} = 11 \\
+  \texttt{poke} = 13 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, s, o, z} &= \registers\subrange{7}{4} \\
@@ -629,7 +677,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{pages} = 12 \\
+  \texttt{pages} = 14 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, p, c, r} &= \registers\subrange{7}{4} \\
@@ -658,7 +706,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_K(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{invoke} = 13 \\
+  \texttt{invoke} = 15 \\
   $g = 10$} &
   $\begin{aligned}
     \using \sq{n, o} &= \registers_{7, 8} \\
@@ -690,13 +738,25 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_X(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{expunge} = 14 \\
+  \texttt{expunge} = 16 \\
   $g = 10$} &
   $\begin{aligned}
     \using n &= \registers_7 \\
     \tup{\registers'_7, \mathbf{m}'} &\equiv \begin{cases}
       \tup{\mathtt{WHO}, \mathbf{m}} &\when n \not\in \keys{\mathbf{m}} \\
       \tup{\mathbf{m}\subb{n}_\pg¬pc, \mathbf{m} \setminus n} &\otherwise \\
+    \end{cases} \\
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_V(\gascounter, \registers, \memory, \pvm¬module¬map)$ \\
+  \texttt{drop} = 17 \\
+  $g = 10$} &
+  $\begin{aligned}
+    \using h &= \registers_7 \\
+    \tup{\execst', \registers'_7, \pvm¬module¬map'} &\equiv \begin{cases}
+      \tup{\continue, \mathtt{WHO}, \pvm¬module¬map} &\when h \not\in \keys{\pvm¬module¬map} \\
+      \tup{\continue, \mathtt{OK}, \pvm¬module¬map \setminus \set{h}} &\otherwise \\
     \end{cases} \\
   \end{aligned}$\\
   \bottomrule
