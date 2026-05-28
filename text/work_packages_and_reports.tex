@@ -58,7 +58,7 @@ The guarantor is able to use this proof to justify to themselves that they are n
 
 \subsection{Packages and Items}\label{sec:packagesanditems}
 
-We begin by defining a \emph{work-package}, of set $\workpackage$, and its constituent \emph{work-item}s, of set $\workitem$. A work-package includes a simple blob acting as an authorization token $\wp¬authtoken$, the index of the service which hosts the authorization code $\wp¬authcodehost$, an authorization code hash $\wp¬authcodehash$ and a configuration blob $\wp¬authconfig$, a context $\wp¬context$ and a sequence of work items $\wp¬workitems$:
+We begin by defining a \emph{work-package}, of set $\workpackage$, and its constituent \emph{work-item}s, of set $\workitem$. A work-package includes a simple blob acting as an authorization token $\wp¬authtoken$, the index of the service which hosts the authorization code $\wp¬authcodehost$, an authorization code hash $\wp¬authcodehash$ and a configuration blob $\wp¬authconfig$, a working-set size for execution of the authorization code $\wpX_\wp¬authworkingsetsize$, a context $\wp¬context$ and a sequence of work items $\wp¬workitems$:
 \begin{equation}
   \label{eq:workpackage}
   \workpackage \equiv \tuple{
@@ -66,18 +66,20 @@ We begin by defining a \emph{work-package}, of set $\workpackage$, and its const
     \isa{\wp¬authcodehost}{\serviceid},\
     \isa{\wp¬authcodehash}{\hash},\
     \isa{\wp¬authconfig}{\blob},\
+    \isa{\wp¬authworkingsetsize}{\workingsetsize},\
     \isa{\wp¬context}{\workcontext},\
     \isa{\wp¬workitems}{\sequence[1:\Cmaxpackageitems]{\workitem}}
   }
 \end{equation}
 
-A work item includes: $\wi¬serviceindex$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $\wi¬codehash$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\wi¬payload$, gas limits for Refinement and Accumulation $\wi¬refgaslimit$ \& $\wi¬accgaslimit$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of extrinsic data hashes and lengths and $\wi¬exportcount$ the number of data segments exported by this work item.
+A work item includes: $\wi¬serviceindex$ the identifier of the service to which it relates, the code hash of the service at the time of reporting $\wi¬codehash$ (whose preimage must be available from the perspective of the lookup anchor block), a payload blob $\wi¬payload$, gas limits for Refinement and Accumulation $\wi¬refgaslimit$ \& $\wi¬accgaslimit$, a working-set size for Refinement $\wi¬refworkingsetsize$, and the three elements of its manifest, a sequence of imported data segments $\wi¬importsegments$ which identify a prior exported segment through an index and the identity of an exporting work-package, $\wi¬extrinsics$, a sequence of extrinsic data hashes and lengths and $\wi¬exportcount$ the number of data segments exported by this work item.
 \begin{equation}\label{eq:workitem}
   \workitem \equiv \tuple{\begin{aligned}
     &\isa{\wi¬serviceindex}{\serviceid},
     \isa{\wi¬codehash}{\hash},
     \isa{\wi¬payload}{\blob},
     \isa{\wi¬refgaslimit}{\gas},
+    \isa{\wi¬refworkingsetsize}{\workingsetsize},
     \isa{\wi¬accgaslimit}{\gas},
     \isa{\wi¬exportcount}{\N}, \\
     &\isa{\wi¬importsegments}{\sequence{\tuple{\hash \cup (\hash^\boxplus),\N}}},
