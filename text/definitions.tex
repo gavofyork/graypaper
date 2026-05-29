@@ -295,10 +295,14 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cpvminitinputsize = 2^{24}$] The standard \textsc{pvm} program initialization input data size. See equation \ref{sec:standardprograminit}.
   \item[$\Cpvmpagesize = 2^{12}$] The \textsc{pvm} memory page size. See equation \ref{eq:pvmmemory}.
   \item[$\Cpvminitzonesize = 2^{16}$] The standard \textsc{pvm} program initialization zone size. See section \ref{sec:standardprograminit}.
+\end{description}
 
-  \medskip
-  \textbf{Host-function gas costs} (appendix \ref{sec:virtualmachineinvocations}). Memory-sized linear terms are given as the rate per 1024 octets; gas for $\ell$ octets at rate $L$ is $\fnmemgas(L, \ell)$ (see \ref{sec:gascostcalculation}). With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. Page terms are per \textsc{pvm} page. Subscripts match $\Omega$ in I.2. All values are in gas units.
-  \item[$\Cgaschunksize = 1024$] The octet denominator for memory-sized gas (used in $\fnmemgas$, see \ref{sec:gascostcalculation}).
+\subsubsection{Host-function gas costs}
+
+These constants are used in the host function gas cost equations in appendix \ref{sec:virtualmachineinvocations}. The constant term for the host function $\Omega_\square$ is denoted $\mathsf{M}_{\square,c}$, or simply $\mathsf{M}_\square$ if there are no other terms. The octet-linear term, if there is one, is denoted $\mathsf{M}_{\square,\ell}$ and specifies gas per 1024 octets. The page-linear term, again optional, is denoted $\mathsf{M}_{\square,p}$ and specifies gas per page. The gas for a host call with constant term $c$ and octet-linear term $L$ with $\ell$ octets is $c + \fnmemgas(L, \ell)$ (see section \ref{sec:gascostcalculation}).
+
+\begin{description}
+  \item[$\Cgaschunksize = 1024$] The octet denominator for memory-sized gas (used in $\fnmemgas$, see section \ref{sec:gascostcalculation}).
   \item[$\CgasA = 1818$] $\Omega_A$ (\texttt{assign}) base gas cost.
   \item[$\CgasBconst = 422$] $\Omega_B$ (\texttt{bless}) base gas cost.
   \item[$\CgasBlinear = 20$] $\Omega_B$ (\texttt{bless}) gas per item.
