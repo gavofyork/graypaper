@@ -314,7 +314,7 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
   \makecell*[l]{
   $\Omega_\Gemini(\gascounter, \registers, \memory, \jam¬blob)$ \\
   \texttt{grow\_heap} = 1 \\
-  $g = \CgasGeminiconst + \max(0, \registers_7 - h) \cdot \CgasGeminilinear$} &
+  $g = \CgasGeminiconst + (\registers_7 - h) \cdot \CgasGeminilinear$} &
   $\begin{aligned}
     % This hostcall can be used to expand the RW data region of memory, or to query its size.
     %
@@ -334,8 +334,6 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
     \using c &= |\set{\build{p \in \Nclamp{a}{b}}{\memory_\ram¬access\subb{p} = \mathrm{W}}}| \\
     % Current heap pointer.
     \using h &= a + c \\
-    % The total gas cost, based on the number of pages that will become writable after this call.
-    \using g &= \CgasGeminiconst + \max(0, \registers_7 - h) \cdot \CgasGeminilinear \\
     \tup{\execst', \gascounter', \registers'_7} &\equiv \begin{cases}
       % Do nothing if the heap is large enough already, or if the requested size was too large.
       \tup{\continue, \gascounter - \CgasGeminiconst, h} &\when \registers_7 \leq h \lor \registers_7 > b \\
