@@ -2,14 +2,6 @@
 
 We now define the three practical instances where we wish to invoke a \textsc{pvm} instance as part of the protocol. In general, we avoid introducing unbounded data as part of the basic invocation arguments in order to minimize the chance of an unexpectedly large \textsc{ram} allocation, which could lead to gas inflation and unavoidable underflow. This makes for a more cumbersome interface, but one which is more predictable and easier to reason about.
 
-\subsection{Gas Cost Calculation}\label{sec:gascostcalculation}
-
-Memory-sized gas for host-calls is given by a rate $L$ (gas per 1024 octets) and size $\ell$ (octets). The following defines the gas cost for such a size:
-\begin{equation}\label{eq:fnmemgas}
-  \fnmemgas(L, \ell) \equiv \ffrac{L \cdot \ell + 1024}{1024}.
-\end{equation}
-With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call tables in the following subsections use this formula for all memory-sized terms.
-
 \subsection{Host-Call Result Constants}
 
 \begin{description}
@@ -285,8 +277,6 @@ Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these
 
 Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 
-Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
-
 \begin{align}
   \gascounter' &\equiv \gascounter - g\text{ unless $\gascounter'$ is explicitly defined below}\\
   \tup{\execst', \registers', \memory', \mathbf{s}'} &\equiv \begin{cases}
@@ -294,6 +284,12 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
     \tup{\continue, \registers, \memory, \mathbf{s}} \text{ except as indicated below} &\otherwise
   \end{cases}
 \end{align}
+
+Memory-sized gas for host-calls is given by a rate $L$ (gas per 1024 octets) and size $\ell$ (octets). The following defines the gas cost for such a size:
+\begin{equation}\label{eq:fnmemgas}
+  \fnmemgas(L, \ell) \equiv \ffrac{L \cdot \ell + 1024}{1024}.
+\end{equation}
+With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table below uses this formula for all memory-sized terms.
 
 \aboverulesep = 1.5mm \belowrulesep = 2mm
 
