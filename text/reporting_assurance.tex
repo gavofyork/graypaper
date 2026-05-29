@@ -54,15 +54,17 @@ We limit the sum of the number of items in the segment-root lookup dictionary an
 
 \subsubsection{Refinement Context}
 
-A \emph{refinement context}, denoted by the set $\workcontext$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $\wc¬anchorhash$ along with its associated posterior state-root $\wc¬anchorpoststate$ and accumulation output log super-peak $\wc¬anchoraccoutlog$; and the \emph{lookup-anchor}, header hash $\wc¬lookupanchorhash$ and timeslot $\wc¬lookupanchortime$. Finally, it identifies the hash of any prerequisite work-packages $\wc¬prerequisites$. Formally:
+A \emph{refinement context}, denoted by the set $\workcontext$, describes the context of the chain at the point that the report's corresponding work-package was evaluated. It identifies two historical blocks, the \emph{anchor}, header hash $\wc¬anchorhash$, timeslot $\wc¬anchortime$, posterior state-root $\wc¬anchorpoststate$ and accumulation output log super-peak $\wc¬anchoraccoutlog$; and the \emph{lookup-anchor}, header hash $\wc¬lookupanchorhash$, timeslot $\wc¬lookupanchortime$ and posterior state-root $\wc¬lookupanchorpoststate$. Finally, it identifies the hash of any prerequisite work-packages $\wc¬prerequisites$. Formally:
 \begin{equation}
   \label{eq:workcontext}
   \workcontext \equiv \tuple{\,\begin{alignedat}{5}
     \isa{\wc¬anchorhash&}{\hash}\,,\;
+    \isa{&\wc¬anchortime&}{\timeslot}\,,\;
     \isa{&\wc¬anchorpoststate&}{\hash}\,,\;
     \isa{&\wc¬anchoraccoutlog&}{\hash}\,,\;\\
     \isa{\wc¬lookupanchorhash&}{\hash}\,,\;
     \isa{&\wc¬lookupanchortime&}{\timeslot}\,,\;
+    \isa{&\wc¬lookupanchorpoststate&}{\hash}\,,\;
     \isa{&\wc¬prerequisites&}{\protoset{\hash}}
   \end{alignedat}}
 \end{equation}
@@ -357,7 +359,7 @@ There must be no duplicate work-package hashes (\ie two work-reports of the same
 
 We require that the anchor block be within the last $\Crecenthistorylen$ blocks and that its details be correct by ensuring that it appears within our most recent blocks $\recenthistorypostparentstaterootupdate$:
 \begin{align}
-  \forall x \in \local¬incomingcontexts : \exists y \in \recenthistorypostparentstaterootupdate : x_\wc¬anchorhash = y_\rh¬headerhash \wedge x_\wc¬anchorpoststate = y_\rh¬stateroot \wedge x_\wc¬anchoraccoutlog = y_\rh¬accoutlogsuperpeak \!\!\!\!\!\!
+  \forall x \in \local¬incomingcontexts : \exists y \in \recenthistorypostparentstaterootupdate : x_\wc¬anchorhash = y_\rh¬headerhash \wedge x_\wc¬anchorpoststate = y_\rh¬stateroot \wedge x_\wc¬anchoraccoutlog = y_\rh¬accoutlogsuperpeak \wedge x_\wc¬anchortime = y_\rh¬timeslot \!\!\!\!\!\!
 \end{align}
 
 We require that each lookup-anchor block be within the last $\Cmaxlookupanchorage$ timeslots:
@@ -367,9 +369,14 @@ We require that each lookup-anchor block be within the last $\Cmaxlookupanchorag
 \end{align}
 
 We also require that we have a record of it; this is one of the few conditions which cannot be checked purely with on-chain state and must be checked by virtue of retaining the series of the last $\Cmaxlookupanchorage$ headers as the ancestor set $\ancestors$. Since it is determined through the header chain, it is still deterministic and calculable. Formally:
-\begin{align}
-  \forall x \in \local¬incomingcontexts :\ \exists h \in \ancestors: h_\¬timeslot = x_\wc¬lookupanchortime \wedge \blake{h} = x_\wc¬lookupanchorhash
-\end{align}
+\begin{equation}
+  \forall x \in \local¬incomingcontexts : \exists h, h' \in \ancestors : \bigwedge \abracegroup{
+    h_\¬timeslot &= x_\wc¬lookupanchortime \\
+    \blake{h} &= x_\wc¬lookupanchorhash \\
+    h'_\¬parent &= \blake{h} \\
+    h'_\¬priorstateroot &= x_\wc¬lookupanchorpoststate
+  }
+\end{equation}
 
 We require that the work-package of the report not be the work-package of some other report made in the past. We ensure that the work-package not appear anywhere within our pipeline. Formally:
 \begin{align}
