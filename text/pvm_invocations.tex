@@ -348,24 +348,12 @@ Memory-sized gas uses $\fnmemgas$ (see \ref{sec:gascostcalculation}).
   \makecell*[l]{
   $\Omega_Y(\gascounter, \registers, \memory, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{i}, \dots)$ \\
   \texttt{fetch} = 2 \\
-  $g = \begin{cases}
-    \CgasYprotoacc &\when \registers_{10} = 0 \\
-    \CgasYentropy &\when \registers_{10} = 1 \\
-    \CgasYauthtraceconst + \fnmemgas(\CgasYauthtracelinear, \len{\mathbf{v}}) &\when \registers_{10} = 2 \\
-    \CgasYworkpackconst + \fnmemgas(\CgasYworkpacklinear, \len{\mathbf{v}}) &\when \registers_{10} \in \set{3, 4, 7} \\
-    \CgasYanyimport &\when \registers_{10} = 5 \\
-    \CgasYourimport &\when \registers_{10} = 6 \\
-    \CgasYauthconfig &\when \registers_{10} = 8 \\
-    \CgasYauthtoken &\when \registers_{10} = 9 \\
-    \CgasYrefinectx &\when \registers_{10} = 10 \\
-    \CgasYitemssummary &\when \registers_{10} = 11 \\
-    \CgasYanyitemsummary &\when \registers_{10} = 12 \\
-    \CgasYanypayloadconst + \fnmemgas(\CgasYanypayloadlinear, \len{\mathbf{v}}) &\when \registers_{10} = 13 \\
-    \CgasYaccumitemsconst + \fnmemgas(\CgasYaccumitemslinear, \len{\mathbf{v}}) &\when \registers_{10} = 14 \\
-    \CgasYanyaccumconst + \fnmemgas(\CgasYanyaccumlinear, \len{\mathbf{v}}) &\when \registers_{10} = 15 \\
-    \CgasYprotoref &\otherwise
-  \end{cases}$} &
+  $g = \CgasYc{c} + \fnmemgas(\CgasYl{c}, \len{\mathbf{v}})$} &
   $\begin{aligned}
+    \using c &= \begin{cases}
+      \registers_{10} &\when \registers_{10} < 16 \\
+      \none &\otherwise
+    \end{cases} \\
     \using \mathbf{v} &= \begin{cases}
       \mathbf{c} &\when \registers_{10} = 0 \\
       \multicolumn{2}{l}{\where \mathbf{c} = \encode{
