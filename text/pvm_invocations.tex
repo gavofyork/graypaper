@@ -344,7 +344,7 @@ With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table b
   \makecell*[l]{
   $\Omega_Y(\gascounter, \registers, \memory, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{i}, \dots)$ \\
   \texttt{fetch} = 2 \\
-  $g = \CgasYc{c} + \fnmemgas(\CgasYl{c}, \len{\mathbf{v}})$} &
+  $g = \CgasYc{c} + \fnmemgas(\CgasYl{c}, z)$} &
   $\begin{aligned}
     \using c &= \begin{cases}
       \registers_{10} &\when \registers_{10} < 16 \\
@@ -403,9 +403,9 @@ With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table b
       \encode{\mathbf{i}[\registers_{11}]} &\when \mathbf{i} \ne \none \wedge \registers_{10} = 15 \wedge \registers_{11} < \len{\mathbf{i}} \\
       \none &\otherwise
     \end{cases} \\
-    \using o &= \registers_7 \\
-    \using f &= \min(\registers_8, \len{\mathbf{v}}) \\
-    \using l &= \min(\registers_9, \len{\mathbf{v}} - f) \\
+    \using \sq{o, f_0, z} &= \registers\subrange{7}{3} \\
+    \using f &= \min(f_0, \len{\mathbf{v}}) \\
+    \using l &= \min(z, \len{\mathbf{v}} - f) \\
     \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \Nrange{o}{l} \not\subseteq \writable{\memory} \\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
@@ -416,7 +416,7 @@ With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table b
   \makecell*[l]{
   $\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
   \texttt{lookup} = 3 \\
-  $g = \CgasLconst + \fnmemgas(\CgasLlinear, \len{\mathbf{v}}) $} &
+  $g = \CgasLconst + \fnmemgas(\CgasLlinear, z) $} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
       \mathbf{s} &\when \registers_7 \in \set{ s, 2^{64} - 1 } \\
@@ -424,13 +424,14 @@ With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table b
       \none &\otherwise
     \end{cases} \\
     \using \sq{h, o} &= \registers\subrange{8}{2} \\
+    \using z &= \registers_{11} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \Nrange{h}{32} \not\subseteq \readable{\memory} \\
       \none &\otherwhen \mathbf{a} = \none \vee \memory\subrange{h}{32} \not\in \keys{\mathbf{a}_\sa¬preimages} \\
       \mathbf{a}_\sa¬preimages[\memory\subrange{h}{32}] &\otherwise \\
     \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
-    \using l &= \min(\registers_{11}, \len{\mathbf{v}} - f) \\
+    \using l &= \min(z, \len{\mathbf{v}} - f) \\
     \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
@@ -441,7 +442,7 @@ With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table b
   \makecell*[l]{
   $\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
   \texttt{read} = 4 \\
-  $g = \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear, \len{\mathbf{v}}) $} &
+  $g = \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear, v_Z) $} &
   $\begin{aligned}
     \using s^* &= \begin{cases}
       s &\when \registers_7 = 2^{64} - 1 \\
@@ -453,13 +454,14 @@ With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table b
       \none &\otherwise
     \end{cases} \\
     \using \sq{k_O, k_Z, o} &= \registers\subrange{8}{3} \\
+    \using v_Z &= \registers_{12} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \Nrange{k_O}{k_Z} \not\subseteq \readable{\memory} \\
       \mathbf{a}_\sa¬storage\subb{\mathbf{k}} &\otherwhen \mathbf{a} \ne \none \wedge \mathbf{k} \in \keys{\mathbf{a}_\sa¬storage}\,,\ \where \mathbf{k} = \memory\subrange{k_O}{k_Z} \\
       \none &\otherwise
     \end{cases} \\
     \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
-    \using l &= \min(\registers_{12}, \len{\mathbf{v}} - f) \\
+    \using l &= \min(v_Z, \len{\mathbf{v}} - f) \\
     \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
@@ -544,7 +546,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \makecell*[l]{
   $\Omega_H(\gascounter, \registers, \memory, s, \mathbf{d}, t)$ \\
   \texttt{historical\_lookup} = 7 \\
-  $g = \CgasHconst + \fnmemgas(\CgasHlinear, \len{\mathbf{v}})$} &
+  $g = \CgasHconst + \fnmemgas(\CgasHlinear, z)$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
       \mathbf{d}\subb{s} &\when \registers_7 = 2^{64} - 1 \wedge s \in \keys{\mathbf{d}} \\
@@ -552,13 +554,14 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \none &\otherwise
     \end{cases} \\
     \using \sq{h, o} &= \registers\subrange{8}{2} \\
+    \using z &= \registers_{11} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \Nrange{h}{32} \not\subseteq \readable{\memory} \\
       \none &\otherwhen \mathbf{a} = \none \\
       \histlookup(\mathbf{a}, t, \memory\subrange{h}{32}) &\otherwise \\
     \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
-    \using l &= \min(\registers_{11}, \len{\mathbf{v}} - f) \\
+    \using l &= \min(z, \len{\mathbf{v}} - f) \\
     \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
@@ -587,7 +590,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \makecell*[l]{
   $\Omega_M(\gascounter, \registers, \memory, \mathbf{m})$ \\
   \texttt{machine} = 9 \\
-  $g = \CgasMconst + \fnmemgas(\CgasMlinear, \len{\mathbf{p}})$ }&
+  $g = \CgasMconst + \fnmemgas(\CgasMlinear, p_Z)$ }&
   $\begin{aligned}
     \using \sq{p_O, p_Z, i} &= \registers\subrange{7}{3} \\
     \using \mathbf{p} &= \begin{cases}
@@ -637,7 +640,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \makecell*[l]{
   $\Omega_Z(\gascounter, \registers, \memory, \mathbf{m})$ \\
   \texttt{pages} = 12 \\
-  $g =  \begin{cases} \CgasZfreeconst + c \cdot \CgasZfreelinear &\when r = 0 \\ \CgasZallocconst + c \cdot \CgasZalloclinear &\when r \in \set{1, 2} \\ \CgasZsetmodeconst + c \cdot \CgasZsetmodelinear &\when r \in \set{3, 4} \end{cases} $ }&
+  $g =  \begin{cases} \CgasZfreeconst + c \cdot \CgasZfreelinear &\when r = 0 \\ \CgasZallocconst + c \cdot \CgasZalloclinear &\when r \in \set{1, 2} \\ \CgasZsetmodeconst + c \cdot \CgasZsetmodelinear &\when r \in \set{3, 4} \\ \CgasZinvalid &\otherwise \end{cases} $ }&
   $\begin{aligned}
     \using \sq{n, p, c, r} &= \registers\subrange{7}{4} \\
     \using \mathbf{u} &= \begin{cases}
