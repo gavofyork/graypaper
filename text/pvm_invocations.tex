@@ -287,7 +287,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
 
 Memory-sized gas for host-calls is given by a rate $L$ (gas per 1024 octets) and size $\ell$ (octets). The following defines the gas cost for such a size:
 \begin{equation}\label{eq:fnmemgas}
-  \fnmemgas(L, \ell) \equiv \ffrac{L \cdot \ell + 1024}{1024}.
+  \fnmemgas(L, \ell) \equiv \ceil{\frac{L \cdot \ell}{1024}}}.
 \end{equation}
 With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table below uses this formula for all memory-sized terms.
 
