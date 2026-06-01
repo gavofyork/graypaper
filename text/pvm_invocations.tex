@@ -276,7 +276,6 @@ The general functions are all broadly of the form $\tup{\gascounter' \in \signed
 Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \serviceaccount$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
 Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
-
 \begin{align}
   \gascounter' &\equiv \gascounter - g\text{ unless $\gascounter'$ is explicitly defined below}\\
   \tup{\execst', \registers', \memory', \mathbf{s}'} &\equiv \begin{cases}
@@ -287,7 +286,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
 
 Memory-sized gas for host-calls is given by a rate $L$ (gas per 1024 octets) and size $\ell$ (octets). The following defines the gas cost for such a size:
 \begin{equation}\label{eq:fnmemgas}
-  \fnmemgas(L, \ell) \equiv \ceil{\frac{L \cdot \ell}{1024}}.
+  \fnmemgas(L, \ell) \equiv \ceil{\frac{L \cdot \ell}{1024}}
 \end{equation}
 With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table below uses this formula for all memory-sized terms.
 
