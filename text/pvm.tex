@@ -774,12 +774,12 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
       \tup{\varepsilon'', \imath', \gascounter'', \gaschargedflag', \registers'', \mem'', \mathbf{x}''} &\when  \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
         &\tup{\varepsilon'', \gascounter'', \registers'', \mem'', \mathbf{x}''} = f(h, \gascounter', \registers', \mem', \mathbf{x})\\[2pt]
-        &\varepsilon'' \in \set{\panic, \halt, \oog}
+        &\varepsilon'' \in \set{\panic, \oog}
       }\\[8pt]
     \end{cases} \\
     }\!\!\!\!\!\!\!\!\\
     &\Psi_H(\pvm¬blob, \imath, \gascounter, \registers, \mem, f, \mathbf{x}) \equiv \Psi_H^*(\pvm¬blob, \imath, \gascounter, \bot, \registers, \mem, f, \mathbf{x})\\
-    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, X}
+    &\contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, X} \to \tuple{\set{\continue, \panic, \oog}, \gas, \regs, \ram, X}
 \end{align}
 
 As with $\Phi$, on exit the instruction counter references the instruction \emph{which caused the exit} and the machine state is that prior to this instruction. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed on the proper (prior) machine state.
