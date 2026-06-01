@@ -623,15 +623,14 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   $g = \CgasLconst + \fnmemgas(\CgasLlinear, z) $} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \imX_\im¬self &\when \registers_7 \in \set{ \imX_\im¬id, 2^{64} - 1 } \\
-      (\imX_\im¬state)_\ps¬accounts[\registers_7] &\otherwhen \registers_7 \in \keys{(\imX_\im¬state)_\ps¬accounts} \\
-      \none &\otherwise
+      \imX_\im¬self &\when \registers_7 = 2^{64} - 1 \\
+      (\imX_\im¬state)_\ps¬accounts[\registers_7] &\otherwise
     \end{cases} \\
     \using \sq{h, o} &= \registers\subrange{8}{2} \\
     \using z &= \registers_{11} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \Nrange{h}{32} \not\subseteq \readable{\memory} \\
-      \none &\otherwhen \mathbf{a} = \none \vee \memory\subrange{h}{32} \not\in \keys{\mathbf{a}_\sa¬preimages} \\
+      \none &\otherwhen \mathbf{a} = \none \\
       \mathbf{a}_\sa¬preimages[\memory\subrange{h}{32}] &\otherwise \\
     \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
@@ -648,21 +647,16 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \texttt{read} = 4 \\
   $g = \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear, v_Z) $} &
   $\begin{aligned}
-    \using s &= \begin{cases}
-      \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
-      \registers_7 &\otherwise
-    \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      \imX_\im¬self &\when s = \imX_\im¬id \\
-      (\imX_\im¬state)_\ps¬accounts[s] &\otherwhen s \in \keys{(\imX_\im¬state)_\ps¬accounts} \\
-      \none &\otherwise
+      \imX_\im¬self &\when \registers_7 = 2^{64} - 1 \\
+      (\imX_\im¬state)_\ps¬accounts[\registers_7] &\otherwise
     \end{cases} \\
     \using \sq{k_O, k_Z, o} &= \registers\subrange{8}{3} \\
     \using v_Z &= \registers_{12} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \Nrange{k_O}{k_Z} \not\subseteq \readable{\memory} \\
-      \mathbf{a}_\sa¬storage\subb{\mathbf{k}} &\otherwhen \mathbf{a} \ne \none \wedge \mathbf{k} \in \keys{\mathbf{a}_\sa¬storage}\,,\ \where \mathbf{k} = \memory\subrange{k_O}{k_Z} \\
-      \none &\otherwise
+      \none &\otherwhen \mathbf{a} = \none \\
+      \mathbf{a}_\sa¬storage\subb{\memory\subrange{k_O}{k_Z}} &\otherwise
     \end{cases} \\
     \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
     \using l &= \min(v_Z, \len{\mathbf{v}} - f) \\
@@ -722,7 +716,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
     \using f &= \min(\registers_{9}, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_{10}, \len{\mathbf{v}} - f) \\
     \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
+      \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
     \end{cases}
