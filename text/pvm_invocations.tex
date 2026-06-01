@@ -273,7 +273,7 @@ We come now to defining the host functions which are utilized by the \textsc{pvm
 
 The general functions are all broadly of the form $\tup{\gascounter' \in \signedgas, \registers' \in \regs, \memory' \in \ram} = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram)$. Functions which have a result component which is equivalent to the corresponding argument may have said components elided in the description. Functions may also depend upon particular additional parameters.
 
-Unlike the Accumulate functions in appendix \ref{sec:accumulatefunctions}, these do not mutate an accumulation context. Some, such as $\mathtt{write}$ mutate a service account and both accept and return some $\mathbf{s} \in \serviceaccount$. Others are more general functions, such as $\mathtt{fetch}$ and do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
+The general functions do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
 Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 
@@ -412,117 +412,6 @@ With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table b
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
     \end{cases}
   \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
-  \texttt{lookup} = 3 \\
-  $g = \CgasLconst + \fnmemgas(\CgasLlinear, z) $} &
-  $\begin{aligned}
-    \using \mathbf{a} &= \begin{cases}
-      \mathbf{s} &\when \registers_7 \in \set{ s, 2^{64} - 1 } \\
-      \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \keys{\mathbf{d}} \\
-      \none &\otherwise
-    \end{cases} \\
-    \using \sq{h, o} &= \registers\subrange{8}{2} \\
-    \using z &= \registers_{11} \\
-    \using \mathbf{v} &= \begin{cases}
-      \error &\when \Nrange{h}{32} \not\subseteq \readable{\memory} \\
-      \none &\otherwhen \mathbf{a} = \none \vee \memory\subrange{h}{32} \not\in \keys{\mathbf{a}_\sa¬preimages} \\
-      \mathbf{a}_\sa¬preimages[\memory\subrange{h}{32}] &\otherwise \\
-    \end{cases} \\
-    \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
-    \using l &= \min(z, \len{\mathbf{v}} - f) \\
-    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
-      \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
-      \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
-    \end{cases}
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
-  \texttt{read} = 4 \\
-  $g = \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear, v_Z) $} &
-  $\begin{aligned}
-    \using s^* &= \begin{cases}
-      s &\when \registers_7 = 2^{64} - 1 \\
-      \registers_7 &\otherwise
-    \end{cases} \\
-    \using \mathbf{a} &= \begin{cases}
-      \mathbf{s} &\when s^* = s \\
-      \mathbf{d}[s^*] &\otherwhen s^* \in \keys{\mathbf{d}} \\
-      \none &\otherwise
-    \end{cases} \\
-    \using \sq{k_O, k_Z, o} &= \registers\subrange{8}{3} \\
-    \using v_Z &= \registers_{12} \\
-    \using \mathbf{v} &= \begin{cases}
-      \error &\when \Nrange{k_O}{k_Z} \not\subseteq \readable{\memory} \\
-      \mathbf{a}_\sa¬storage\subb{\mathbf{k}} &\otherwhen \mathbf{a} \ne \none \wedge \mathbf{k} \in \keys{\mathbf{a}_\sa¬storage}\,,\ \where \mathbf{k} = \memory\subrange{k_O}{k_Z} \\
-      \none &\otherwise
-    \end{cases} \\
-    \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
-    \using l &= \min(v_Z, \len{\mathbf{v}} - f) \\
-    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
-      \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
-      \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
-    \end{cases}
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s)$ \\
-  \texttt{write} = 5 \\
-  $g = \CgasWconst + \fnmemgas(\CgasWkeylinear, k_Z) + \fnmemgas(\CgasWvallinear, v_Z)$} &
-  $\begin{aligned}
-    \using \sq{k_O, k_Z, v_O, v_Z} &= \registers\subrange{7}{4} \\
-    \using \mathbf{k} &= \begin{cases}
-      \memory\subrange{k_O}{k_Z} &\when \Nrange{k_O}{k_Z} \subseteq \readable{\memory} \\
-      \error &\otherwise
-    \end{cases} \\
-    \using \mathbf{a} &= \begin{cases}
-      \mathbf{s}\,,\ \exc \keys{\mathbf{a}_\sa¬storage} = \keys{\mathbf{a}_\sa¬storage} \setminus \set{k} & \when v_Z = 0 \\
-      \mathbf{s}\,,\ \exc \mathbf{a}_\sa¬storage\subb{\mathbf{k}} = \memory\subrange{v_O}{v_Z} &\otherwhen \Nrange{v_O}{v_Z} \subseteq \readable{\memory} \\
-      \error &\otherwise
-    \end{cases} \\
-    \using l &= \begin{cases}
-      \len{\mathbf{s}_\sa¬storage\subb{k}} &\when \mathbf{k} \in \keys{\mathbf{s}_\sa¬storage} \\
-      \mathtt{NONE} &\otherwise
-    \end{cases} \\
-    \tup{\execst', \registers'_7, \mathbf{s}'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mathbf{s}} &\when \mathbf{k} = \error \vee \mathbf{a} = \error\\
-      \tup{\continue, \mathtt{FULL}, \mathbf{s}} &\otherwhen \mathbf{a}_\sa¬minbalance > \mathbf{a}_\sa¬balance \\
-      \tup{\continue, l, \mathbf{a}} &\otherwise\\
-    \end{cases}
-  \end{aligned}$\\
-  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
-  \makecell*[l]{
-  $\Omega_I(\gascounter, \registers, \memory, s, \mathbf{d})$ \\
-  \texttt{info} = 6 \\
-  $g = \CgasI$} &
-  $\begin{aligned}
-    \using \mathbf{a} &= \begin{cases}
-      \mathbf{d}\subb{s} &\when \registers_7 = 2^{64} - 1 \\
-      \mathbf{d}\subb{\registers_7} &\otherwise
-    \end{cases} \\
-    \using o &= \registers_8 \\
-    \using \mathbf{v} &= \begin{cases}
-      \encode{
-        \mathbf{a}_\sa¬codehash,
-        \encode[8]{\mathbf{a}_\sa¬balance, \mathbf{a}_\sa¬minbalance, \mathbf{a}_\sa¬minaccgas, \mathbf{a}_\sa¬minmemogas, \mathbf{a}_\sa¬octets},
-        \encode[4]{\mathbf{a}_\sa¬items},
-        \encode[8]{\mathbf{a}_\sa¬gratis},
-        \encode[4]{\mathbf{a}_\sa¬created, \mathbf{a}_\sa¬lastacc, \mathbf{a}_\sa¬parent}
-      } &\when \mathbf{a} \ne \none \\
-      \none &\otherwise
-    \end{cases} \\
-    \using f &= \min(\registers_{9}, \len{\mathbf{v}}) \\
-    \using l &= \min(\registers_{10}, \len{\mathbf{v}} - f) \\
-    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
-      \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
-      \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
-    \end{cases}
-  \end{aligned}$ \\
   \bottomrule
 \end{longtable}
 
@@ -733,6 +622,117 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \thead{\textbf{Mutations}} \\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
+  \makecell*[l]{
+  $\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
+  \texttt{lookup} = 3 \\
+  $g = \CgasLconst + \fnmemgas(\CgasLlinear, z) $} &
+  $\begin{aligned}
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{s} &\when \registers_7 \in \set{ s, 2^{64} - 1 } \\
+      \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \keys{\mathbf{d}} \\
+      \none &\otherwise
+    \end{cases} \\
+    \using \sq{h, o} &= \registers\subrange{8}{2} \\
+    \using z &= \registers_{11} \\
+    \using \mathbf{v} &= \begin{cases}
+      \error &\when \Nrange{h}{32} \not\subseteq \readable{\memory} \\
+      \none &\otherwhen \mathbf{a} = \none \vee \memory\subrange{h}{32} \not\in \keys{\mathbf{a}_\sa¬preimages} \\
+      \mathbf{a}_\sa¬preimages[\memory\subrange{h}{32}] &\otherwise \\
+    \end{cases} \\
+    \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
+    \using l &= \min(z, \len{\mathbf{v}} - f) \\
+    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
+      \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
+      \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
+  \texttt{read} = 4 \\
+  $g = \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear, v_Z) $} &
+  $\begin{aligned}
+    \using s^* &= \begin{cases}
+      s &\when \registers_7 = 2^{64} - 1 \\
+      \registers_7 &\otherwise
+    \end{cases} \\
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{s} &\when s^* = s \\
+      \mathbf{d}[s^*] &\otherwhen s^* \in \keys{\mathbf{d}} \\
+      \none &\otherwise
+    \end{cases} \\
+    \using \sq{k_O, k_Z, o} &= \registers\subrange{8}{3} \\
+    \using v_Z &= \registers_{12} \\
+    \using \mathbf{v} &= \begin{cases}
+      \error &\when \Nrange{k_O}{k_Z} \not\subseteq \readable{\memory} \\
+      \mathbf{a}_\sa¬storage\subb{\mathbf{k}} &\otherwhen \mathbf{a} \ne \none \wedge \mathbf{k} \in \keys{\mathbf{a}_\sa¬storage}\,,\ \where \mathbf{k} = \memory\subrange{k_O}{k_Z} \\
+      \none &\otherwise
+    \end{cases} \\
+    \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
+    \using l &= \min(v_Z, \len{\mathbf{v}} - f) \\
+    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
+      \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
+      \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s)$ \\
+  \texttt{write} = 5 \\
+  $g = \CgasWconst + \fnmemgas(\CgasWkeylinear, k_Z) + \fnmemgas(\CgasWvallinear, v_Z)$} &
+  $\begin{aligned}
+    \using \sq{k_O, k_Z, v_O, v_Z} &= \registers\subrange{7}{4} \\
+    \using \mathbf{k} &= \begin{cases}
+      \memory\subrange{k_O}{k_Z} &\when \Nrange{k_O}{k_Z} \subseteq \readable{\memory} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{s}\,,\ \exc \keys{\mathbf{a}_\sa¬storage} = \keys{\mathbf{a}_\sa¬storage} \setminus \set{k} & \when v_Z = 0 \\
+      \mathbf{s}\,,\ \exc \mathbf{a}_\sa¬storage\subb{\mathbf{k}} = \memory\subrange{v_O}{v_Z} &\otherwhen \Nrange{v_O}{v_Z} \subseteq \readable{\memory} \\
+      \error &\otherwise
+    \end{cases} \\
+    \using l &= \begin{cases}
+      \len{\mathbf{s}_\sa¬storage\subb{k}} &\when \mathbf{k} \in \keys{\mathbf{s}_\sa¬storage} \\
+      \mathtt{NONE} &\otherwise
+    \end{cases} \\
+    \tup{\execst', \registers'_7, \mathbf{s}'} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \mathbf{s}} &\when \mathbf{k} = \error \vee \mathbf{a} = \error\\
+      \tup{\continue, \mathtt{FULL}, \mathbf{s}} &\otherwhen \mathbf{a}_\sa¬minbalance > \mathbf{a}_\sa¬balance \\
+      \tup{\continue, l, \mathbf{a}} &\otherwise\\
+    \end{cases}
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_I(\gascounter, \registers, \memory, s, \mathbf{d})$ \\
+  \texttt{info} = 6 \\
+  $g = \CgasI$} &
+  $\begin{aligned}
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{d}\subb{s} &\when \registers_7 = 2^{64} - 1 \\
+      \mathbf{d}\subb{\registers_7} &\otherwise
+    \end{cases} \\
+    \using o &= \registers_8 \\
+    \using \mathbf{v} &= \begin{cases}
+      \encode{
+        \mathbf{a}_\sa¬codehash,
+        \encode[8]{\mathbf{a}_\sa¬balance, \mathbf{a}_\sa¬minbalance, \mathbf{a}_\sa¬minaccgas, \mathbf{a}_\sa¬minmemogas, \mathbf{a}_\sa¬octets},
+        \encode[4]{\mathbf{a}_\sa¬items},
+        \encode[8]{\mathbf{a}_\sa¬gratis},
+        \encode[4]{\mathbf{a}_\sa¬created, \mathbf{a}_\sa¬lastacc, \mathbf{a}_\sa¬parent}
+      } &\when \mathbf{a} \ne \none \\
+      \none &\otherwise
+    \end{cases} \\
+    \using f &= \min(\registers_{9}, \len{\mathbf{v}}) \\
+    \using l &= \min(\registers_{10}, \len{\mathbf{v}} - f) \\
+    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
+      \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
+      \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
+    \end{cases}
+  \end{aligned}$ \\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_B(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{bless} = 15 \\
