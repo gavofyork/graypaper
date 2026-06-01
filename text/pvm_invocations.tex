@@ -189,10 +189,10 @@ We define $\Psi_A$, the Accumulation invocation function as:
   \Omega_G(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{gas} \\
     \Omega_\Gemini(\gascounter, \registers, \memory, \jam¬blob) &\when n = \mathtt{grow\_heap} \\
     \Omega_Y(\gascounter, \registers, \memory, \none, \entropyaccumulator', \none, \none, \none, \none, \mathbf{i}, \imXY) &\when n = \mathtt{fetch}\\
-    G(\Omega_R(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id, (\imX_\im¬state)_\ps¬accounts), \imXY) &\when n = \mathtt{read} \\
-    G(\Omega_W(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id), \imXY) &\when n = \mathtt{write} \\
-    G(\Omega_L(\gascounter, \registers, \memory, \imX_\im¬self, \imX_\im¬id, (\imX_\im¬state)_\ps¬accounts), \imXY) &\when n = \mathtt{lookup} \\
-    G(\Omega_I(\gascounter, \registers, \memory, \imX_\im¬id, (\imX_\im¬state)_\ps¬accounts), \imXY) &\when n = \mathtt{info} \\
+    \Omega_R(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{read} \\
+    \Omega_W(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{write} \\
+    \Omega_L(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{lookup} \\
+    \Omega_I(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{info} \\
     \Omega_B(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{bless}\\
     \Omega_A(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{assign}\\
     \Omega_D(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{designate}\\
@@ -211,11 +211,6 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
     \multicolumn{2}{l}{\also \gascounter' = \gascounter - 10}
   \end{cases} \\
-  G&\colon\abracegroup{
-    \tuple{\tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, \serviceaccount}, \implicationspair} &\to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, \implicationspair} \\
-    \tup{\tup{\execst, \gascounter, \registers, \memory, \mathbf{s}}, \imXY} &\mapsto \tup{\execst, \gascounter, \registers, \memory, \tup{\imX^*, \imY}} \\
-    &\qquad \where \imX^* = \imX \exc \imX^*_\im¬self = \mathbf{s}
-  }\\
   C&\colon\abracegroup{
     \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \acconeout \\
     \tup{\ao¬gasused, \mathbf{o}, \imXY} &\mapsto \begin{cases}
@@ -623,13 +618,13 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
-  $\Omega_L(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
+  $\Omega_L(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{lookup} = 3 \\
   $g = \CgasLconst + \fnmemgas(\CgasLlinear, z) $} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s} &\when \registers_7 \in \set{ s, 2^{64} - 1 } \\
-      \mathbf{d}[\registers_7] &\otherwhen \registers_7 \in \keys{\mathbf{d}} \\
+      \imX_\im¬self &\when \registers_7 \in \set{ \imX_\im¬id, 2^{64} - 1 } \\
+      (\imX_\im¬state)_\ps¬accounts[\registers_7] &\otherwhen \registers_7 \in \keys{(\imX_\im¬state)_\ps¬accounts} \\
       \none &\otherwise
     \end{cases} \\
     \using \sq{h, o} &= \registers\subrange{8}{2} \\
@@ -649,17 +644,17 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_R(\gascounter, \registers, \memory, \mathbf{s}, s, \mathbf{d})$ \\
+  $\Omega_R(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{read} = 4 \\
   $g = \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear, v_Z) $} &
   $\begin{aligned}
-    \using s^* &= \begin{cases}
-      s &\when \registers_7 = 2^{64} - 1 \\
+    \using s &= \begin{cases}
+      \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
       \registers_7 &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s} &\when s^* = s \\
-      \mathbf{d}[s^*] &\otherwhen s^* \in \keys{\mathbf{d}} \\
+      \imX_\im¬self &\when s = \imX_\im¬id \\
+      (\imX_\im¬state)_\ps¬accounts[s] &\otherwhen s \in \keys{(\imX_\im¬state)_\ps¬accounts} \\
       \none &\otherwise
     \end{cases} \\
     \using \sq{k_O, k_Z, o} &= \registers\subrange{8}{3} \\
@@ -679,7 +674,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_W(\gascounter, \registers, \memory, \mathbf{s}, s)$ \\
+  $\Omega_W(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{write} = 5 \\
   $g = \CgasWconst + \fnmemgas(\CgasWkeylinear, k_Z) + \fnmemgas(\CgasWvallinear, v_Z)$} &
   $\begin{aligned}
@@ -689,29 +684,29 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{s}\,,\ \exc \keys{\mathbf{a}_\sa¬storage} = \keys{\mathbf{a}_\sa¬storage} \setminus \set{k} & \when v_Z = 0 \\
-      \mathbf{s}\,,\ \exc \mathbf{a}_\sa¬storage\subb{\mathbf{k}} = \memory\subrange{v_O}{v_Z} &\otherwhen \Nrange{v_O}{v_Z} \subseteq \readable{\memory} \\
+      \imX_\im¬self\,,\ \exc \mathbf{k} \not\in \keys{\mathbf{a}_\sa¬storage} & \when v_Z = 0 \\
+      \imX_\im¬self\,,\ \exc \mathbf{a}_\sa¬storage\subb{\mathbf{k}} = \memory\subrange{v_O}{v_Z} &\otherwhen \Nrange{v_O}{v_Z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using l &= \begin{cases}
-      \len{\mathbf{s}_\sa¬storage\subb{k}} &\when \mathbf{k} \in \keys{\mathbf{s}_\sa¬storage} \\
+      \len{(\imX_\im¬self)_\sa¬storage\subb{\mathbf{k}}} &\when \mathbf{k} \in \keys{(\imX_\im¬self)_\sa¬storage} \\
       \mathtt{NONE} &\otherwise
     \end{cases} \\
-    \tup{\execst', \registers'_7, \mathbf{s}'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mathbf{s}} &\when \mathbf{k} = \error \vee \mathbf{a} = \error\\
-      \tup{\continue, \mathtt{FULL}, \mathbf{s}} &\otherwhen \mathbf{a}_\sa¬minbalance > \mathbf{a}_\sa¬balance \\
+    \tup{\execst', \registers'_7, \imX_\im¬self'} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \imX_\im¬self} &\when \mathbf{k} = \error \vee \mathbf{a} = \error\\
+      \tup{\continue, \mathtt{FULL}, \imX_\im¬self} &\otherwhen \mathbf{a}_\sa¬minbalance > \mathbf{a}_\sa¬balance \\
       \tup{\continue, l, \mathbf{a}} &\otherwise\\
     \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_I(\gascounter, \registers, \memory, s, \mathbf{d})$ \\
+  $\Omega_I(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{info} = 6 \\
   $g = \CgasI$} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{d}\subb{s} &\when \registers_7 = 2^{64} - 1 \\
-      \mathbf{d}\subb{\registers_7} &\otherwise
+      \imX_\im¬self &\when \registers_7 = 2^{64} - 1 \\
+      (\imX_\im¬state)_\ps¬accounts\subb{\registers_7} &\otherwise
     \end{cases} \\
     \using o &= \registers_8 \\
     \using \mathbf{v} &= \begin{cases}
