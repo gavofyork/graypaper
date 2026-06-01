@@ -96,17 +96,17 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_G(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{gas} \\
       \Omega_\Gemini(\gascounter, \registers, \memory, \jam¬blob) &\when n = \mathtt{grow\_heap} \\
       \Omega_Y(\gascounter, \registers, \memory, p, \zerohash, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \none, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{fetch}\\
-      \Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, w_\wi¬serviceindex, \accounts, (p_\wp¬context)_\wc¬lookupanchortime) &\when n = \mathtt{historical\_lookup}\\
-      \Omega_E(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, \segoff) &\when n = \mathtt{export}\\
+      \Omega_H(\gascounter, \registers, \memory, w_\wi¬serviceindex, \accounts, (p_\wp¬context)_\wc¬lookupanchortime) &\when n = \mathtt{historical\_lookup}\\
+      \Omega_E(\gascounter, \registers, \memory, \mathbf{e}, \segoff) &\when n = \mathtt{export}\\
       \Omega_{CB}(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map}) &\when n = \mathtt{compile\_from\_bytes}\\
       \Omega_{CD}(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map}, w_\wi¬serviceindex, \accounts, (p_\wp¬context)_\wc¬lookupanchortime) &\when n = \mathtt{compile\_from\_db}\\
       \Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map}) &\when n = \mathtt{machine}\\
       \Omega_V(\gascounter, \registers, \memory, \pvm¬module¬map) &\when n = \mathtt{drop}\\
-      \Omega_P(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{peek}\\
-      \Omega_O(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{poke}\\
-      \Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{pages}\\
-      \Omega_K(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{invoke}\\
-      \Omega_X(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{expunge}\\
+      \Omega_P(\gascounter, \registers, \memory, \mathbf{m}) &\when n = \mathtt{peek}\\
+      \Omega_O(\gascounter, \registers, \memory, \mathbf{m}) &\when n = \mathtt{poke}\\
+      \Omega_Z(\gascounter, \registers, \memory, \mathbf{m}) &\when n = \mathtt{pages}\\
+      \Omega_K(\gascounter, \registers, \memory, \mathbf{m}) &\when n = \mathtt{invoke}\\
+      \Omega_X(\gascounter, \registers, \memory, \mathbf{m}) &\when n = \mathtt{expunge}\\
       \tup{\oog, \gascounter', \registers', \memory} &\otherwhen \gascounter' < 0\\
       \tup{\continue, \gascounter', \registers', \memory} &\otherwise\\
       \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
@@ -538,7 +538,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
-  $\Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, s, \mathbf{d}, t)$ \\
+  $\Omega_H(\gascounter, \registers, \memory, s, \mathbf{d}, t)$ \\
   \texttt{historical\_lookup} = 7 \\
   $g = 10$} &
   $\begin{aligned}
@@ -563,7 +563,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_E(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, \segoff)$ \\
+  $\Omega_E(\gascounter, \registers, \memory, \mathbf{e}, \segoff)$ \\
   \texttt{export} = 8 \\
   $g = 10$} &
   $\begin{aligned}
@@ -646,7 +646,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_P(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
+  $\Omega_P(\gascounter, \registers, \memory, \mathbf{m})$ \\
   \texttt{peek} = 12 \\
   $g = 10$} &
   $\begin{aligned}
@@ -661,7 +661,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_O(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
+  $\Omega_O(\gascounter, \registers, \memory, \mathbf{m})$ \\
   \texttt{poke} = 13 \\
   $g = 10$} &
   $\begin{aligned}
@@ -676,7 +676,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
+  $\Omega_Z(\gascounter, \registers, \memory, \mathbf{m})$ \\
   \texttt{pages} = 14 \\
   $g = 10$} &
   $\begin{aligned}
@@ -705,7 +705,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_K(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
+  $\Omega_K(\gascounter, \registers, \memory, \mathbf{m})$ \\
   \texttt{invoke} = 15 \\
   $g = 10$} &
   $\begin{aligned}
@@ -737,7 +737,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_X(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
+  $\Omega_X(\gascounter, \registers, \memory, \mathbf{m})$ \\
   \texttt{expunge} = 16 \\
   $g = 10$} &
   $\begin{aligned}
