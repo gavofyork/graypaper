@@ -132,6 +132,7 @@
   \item[$\fnecoriginalshards(\dots)$] The original-chunk-count function. See equation \ref{eq:ecoriginalshards}.
   \item[$\encode{\dots}$] The octet-sequence encode function. Superscripted ${}^{-1}$ to denote the inverse. See appendix \ref{sec:serialization}.
   \item[$\fnfyshuffle(\dots)$] The Fisher-Yates shuffle function. See equation \ref{eq:suffle}.
+  \item[$\fnmemgas(L, \ell)$] The memory-sized gas function. See equation \ref{eq:fnmemgas}.
   \item[$\blake{\dots}$] The Blake 2b 256-bit hash function. See section \ref{sec:cryptography}.
   \item[$\keccak{\dots}$] The Keccak 256-bit hash function. See section \ref{sec:cryptography}.
 
@@ -270,6 +271,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cmaxreportdeps = 8$] The maximum sum of dependency items in a work-report. See equation \ref{eq:limitreportdeps}.
   \item[$\Cmaxblocktickets = 16$] The maximum number of tickets which may be submitted in a single extrinsic. See equation \ref{eq:enforceticketlimit}.
   \item[$\Cmaxlookupanchorage = 14,400$] The maximum age in timeslots of the lookup anchor. See equation \ref{eq:limitlookupanchorage}.
+  \item[$\mathsf{M}$] Host-function gas costs, see below.
   \item[$\Cmaxextrinsicverdicts = 16$] The maximum number of verdicts which may be included in a single extrinsic. See equation \ref{eq:disputesextrinsics}.
   \item[$\Cmaxextrinsicoffenses = 16$] The maximum number each of culprits or faults which may be included in a single extrinsic. See equation \ref{eq:disputesextrinsics}.
   \item[$\Cauthpoolsize = 8$] The maximum number of items in the authorizations pool. See equation \ref{eq:authstatecomposition}.
@@ -294,6 +296,75 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cpvminitinputsize = 2^{24}$] The standard \textsc{pvm} program initialization input data size. See equation \ref{sec:standardprograminit}.
   \item[$\Cpvmpagesize = 2^{12}$] The \textsc{pvm} memory page size. See equation \ref{eq:pvmmemory}.
   \item[$\Cpvminitzonesize = 2^{16}$] The standard \textsc{pvm} program initialization zone size. See section \ref{sec:standardprograminit}.
+\end{description}
+
+\subsubsection{Host-function gas costs}
+
+These constants are used in the host function gas cost equations in appendix \ref{sec:virtualmachineinvocations}. The constant term for the host function $\Omega_\square$ is denoted $\mathsf{M}_{\square,c}$, or simply $\mathsf{M}_\square$ if there are no other terms. The octet-linear term, if there is one, is denoted $\mathsf{M}_{\square,\ell}$ and specifies gas per 1024 octets. The page-linear term, again optional, is denoted $\mathsf{M}_{\square,p}$ and specifies gas per page. The gas for a host call with constant term $c$ and octet-linear term $L$ with $\ell$ octets is $c + \fnmemgas(L, \ell)$ (see equation \ref{eq:fnmemgas}).
+
+\begin{description}
+  \item[$\CgasA = 1818$] $\Omega_A$ (\texttt{assign}) base gas cost.
+  \item[$\CgasBconst = 422$] $\Omega_B$ (\texttt{bless}) base gas cost.
+  \item[$\CgasBlinear = 20$] $\Omega_B$ (\texttt{bless}) gas per item.
+  \item[$\CgasC = 103$] $\Omega_C$ (\texttt{checkpoint}) base gas cost.
+  \item[$\CgasD = 308920$] $\Omega_D$ (\texttt{designate}) base gas cost.
+  \item[$\CgasE = 3521$] $\Omega_E$ (\texttt{export}) base gas cost.
+  \item[$\CgasF = 3250$] $\Omega_F$ (\texttt{forget}) base gas cost.
+  \item[$\CgasG = 48$] $\Omega_G$ (\texttt{gas}) base gas cost.
+  \item[$\CgasHconst = 1125$] $\Omega_H$ (\texttt{historical\_lookup}) base gas cost.
+  \item[$\CgasHlinear = 264$] $\Omega_H$ (\texttt{historical\_lookup}) gas per 1024 octets ($\fnmemgas(\CgasHlinear, \ell)$).
+  \item[$\CgasI = 703$] $\Omega_I$ (\texttt{info}) base gas cost.
+  \item[$\CgasJ = 458$] $\Omega_J$ (\texttt{eject}) base gas cost.
+  \item[$\CgasK = 968$] $\Omega_K$ (\texttt{invoke}) base gas cost.
+  \item[$\CgasLconst = 600$] $\Omega_L$ (\texttt{lookup}) base gas cost.
+  \item[$\CgasLlinear = 248$] $\Omega_L$ (\texttt{lookup}) gas per 1024 octets ($\fnmemgas(\CgasLlinear, \ell)$).
+  \item[$\CgasMconst = 1862$] $\Omega_M$ (\texttt{machine}) base gas cost.
+  \item[$\CgasMlinear = 112$] $\Omega_M$ (\texttt{machine}) gas per 1024 octets, program size ($\fnmemgas(\CgasMlinear, \ell)$).
+  \item[$\CgasN = 3855$] $\Omega_N$ (\texttt{new}) base gas cost.
+  \item[$\CgasOconst = 297$] $\Omega_O$ (\texttt{poke}) base gas cost.
+  \item[$\CgasOlinear = 224$] $\Omega_O$ (\texttt{poke}) gas per 1024 octets ($\fnmemgas(\CgasOlinear, \ell)$).
+  \item[$\CgasPconst = 377$] $\Omega_P$ (\texttt{peek}) base gas cost.
+  \item[$\CgasPlinear = 336$] $\Omega_P$ (\texttt{peek}) gas per 1024 octets ($\fnmemgas(\CgasPlinear, \ell)$).
+  \item[$\CgasQ = 643$] $\Omega_Q$ (\texttt{query}) base gas cost.
+  \item[$\CgasRconst = 2407$] $\Omega_R$ (\texttt{read}) base gas cost.
+  \item[$\CgasRkeylinear = 1736$] $\Omega_R$ (\texttt{read}) key gas per 1024 octets ($\fnmemgas(\CgasRkeylinear, \ell)$).
+  \item[$\CgasRvallinear = 248$] $\Omega_R$ (\texttt{read}) value gas per 1024 octets ($\fnmemgas(\CgasRvallinear, \ell)$).
+  \item[$\CgasS = 2193$] $\Omega_S$ (\texttt{solicit}) base gas cost.
+  \item[$\CgasT = 575$] $\Omega_T$ (\texttt{transfer}) base gas cost.
+  \item[$\CgasU = 1028$] $\Omega_U$ (\texttt{upgrade}) base gas cost.
+  \item[$\CgasWconst = 2442$] $\Omega_W$ (\texttt{write}) base gas cost.
+  \item[$\CgasWvallinear = 216$] $\Omega_W$ (\texttt{write}) gas per 1024 octets ($\fnmemgas(\CgasWvallinear, \ell)$).
+  \item[$\CgasWkeylinear = 3358$] $\Omega_W$ (\texttt{write}) key gas per 1024 octets ($\fnmemgas(\CgasWkeylinear, \ell)$).
+  \item[$\CgasX = 335$] $\Omega_X$ (\texttt{expunge}) base gas cost.
+  \item[$\CgasYc{0} = 390, \CgasYl{0} = 0$] $\Omega_Y$ (\texttt{fetch}) case 0: protocol parameters.
+  \item[$\CgasYc{1} = 103, \CgasYl{1} = 0$] $\Omega_Y$ (\texttt{fetch}) case 1: entropy.
+  \item[$\CgasYc{2} = 80, \CgasYl{2} = 96$] $\Omega_Y$ (\texttt{fetch}) case 2: auth trace.
+  \item[$\CgasYc{3} = 85, \CgasYl{3} = 96$] $\Omega_Y$ (\texttt{fetch}) case 3: any extrinsic, by index.
+  \item[$\CgasYc{4} = 85, \CgasYl{4} = 96$] $\Omega_Y$ (\texttt{fetch}) case 4: our extrinsic, by index.
+  \item[$\CgasYc{5} = 171, \CgasYl{5} = 0$] $\Omega_Y$ (\texttt{fetch}) case 5: any import, by index.
+  \item[$\CgasYc{6} = 171, \CgasYl{6} = 0$] $\Omega_Y$ (\texttt{fetch}) case 6: our import, by index.
+  \item[$\CgasYc{7} = 85, \CgasYl{7} = 96$] $\Omega_Y$ (\texttt{fetch}) case 7: encoded work-package.
+  \item[$\CgasYc{8} = 84, \CgasYl{8} = 0$] $\Omega_Y$ (\texttt{fetch}) case 8: auth config.
+  \item[$\CgasYc{9} = 88, \CgasYl{9} = 0$] $\Omega_Y$ (\texttt{fetch}) case 9: auth token.
+  \item[$\CgasYc{10} = 111, \CgasYl{10} = 0$] $\Omega_Y$ (\texttt{fetch}) case 10: refine context.
+  \item[$\CgasYc{11} = 317, \CgasYl{11} = 0$] $\Omega_Y$ (\texttt{fetch}) case 11: items summary.
+  \item[$\CgasYc{12} = 250, \CgasYl{12} = 0$] $\Omega_Y$ (\texttt{fetch}) case 12: any item summary.
+  \item[$\CgasYc{13} = 95, \CgasYl{13} = 96$] $\Omega_Y$ (\texttt{fetch}) case 13: any payload.
+  \item[$\CgasYc{14} = 287, \CgasYl{14} = 400$] $\Omega_Y$ (\texttt{fetch}) case 14: accumulate items.
+  \item[$\CgasYc{15} = 355, \CgasYl{15} = 344$] $\Omega_Y$ (\texttt{fetch}) case 15: any accumulate item.
+  \item[$\CgasYc{\none} = 80, \CgasYl{\none} = 0$] $\Omega_Y$ (\texttt{fetch}) otherwise: nothing.
+  \item[$\CgasZallocconst = 275$] $\Omega_Z$ (\texttt{pages}) alloc base gas cost.
+  \item[$\CgasZalloclinear = 121$] $\Omega_Z$ (\texttt{pages}) alloc gas per page.
+  \item[$\CgasZfreeconst = 212$] $\Omega_Z$ (\texttt{pages}) free base gas cost.
+  \item[$\CgasZfreelinear = 118$] $\Omega_Z$ (\texttt{pages}) free gas per page.
+  \item[$\CgasZsetmodeconst = 130$] $\Omega_Z$ (\texttt{pages}) setmode base gas cost.
+  \item[$\CgasZsetmodelinear = 29$] $\Omega_Z$ (\texttt{pages}) setmode gas per page.
+  \item[$\CgasZinvalid = 80$] $\Omega_Z$ (\texttt{pages}) invalid-$r$ base gas cost.
+  \item[$\CgasTaurus = 98$] $\Omega_\Taurus$ (\texttt{yield}) base gas cost.
+  \item[$\CgasAriesconst = 3980$] $\Omega_\Aries$ (\texttt{provide}) base gas cost.
+  \item[$\CgasArieslinear = 2264$] $\Omega_\Aries$ (\texttt{provide}) gas per 1024 octets ($\fnmemgas(\CgasArieslinear, \ell)$).
+  \item[$\CgasGeminiconst = 275$] $\Omega_\Gemini$ (\texttt{grow\_heap}) base gas cost.
+  \item[$\CgasGeminilinear = 121$] $\Omega_\Gemini$ (\texttt{grow\_heap}) gas per additional page.
 \end{description}
 
 \subsubsection{Signing Contexts}
