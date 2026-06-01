@@ -669,16 +669,20 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \makecell*[l]{
   $\Omega_K(\gascounter, \registers, \memory, \mathbf{m})$ \\
   \texttt{invoke} = 13 \\
-  $g = \CgasK$} &
+  $g = \CgasK + g_I - g_I'$} &
   $\begin{aligned}
     \using \sq{n, o} &= \registers_{7, 8} \\
-    \using \tup{g, \mathbf{w}} &= \begin{cases}
-      \tup{g, \mathbf{w}}: \encode[8]{g} \concat \encode[8]{\mathbf{w}} = \mem\subrange{o}{112} &\when \Nrange{o}{112} \subseteq \writable{\mem} \\
+    \using \tup{g_R, \mathbf{w}} &= \begin{cases}
+      \tup{g_R, \mathbf{w}}: \encode[8]{g_R} \concat \encode[8]{\mathbf{w}} = \mem\subrange{o}{112} &\when \Nrange{o}{112} \subseteq \writable{\mem} \\
       %\tup{\decode[8]{\memr\subrange{o}{8}}, \sq{\build{\decode[4]{\memr\subrange{o+8+8x}{8}}}{x \orderedin \Nmax{13}}}} &\when \Nrange{o}{60} \subset \writable_\mem} \\
       \tup{\error, \error} &\otherwise
     \end{cases} \\
-    \using \tup{c, i', g', \pg¬gaschargedflag', \mathbf{w}', \mathbf{u}'} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g, \mathbf{m}\subb{n}_{\pg¬gaschargedflag}, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram)\\
-    \using \mem^* &= \mem \exc \mem^*\subrange{o}{112} = \encode[8]{g'} \concat \encode[8]{\mathbf{w}'}\\
+    \using g_I &= \begin{cases}
+      0 &\when g_R = \error \vee n \not\in \mathbf{m} \\
+      \min(g_R, \gascounter - \CgasK) &\otherwise
+    \end{cases} \\
+    \using \tup{c, i', g_I', \pg¬gaschargedflag', \mathbf{w}', \mathbf{u}'} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g_I, \mathbf{m}\subb{n}_{\pg¬gaschargedflag}, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram)\\
+    \using \mem^* &= \mem \exc \mem^*\subrange{o}{112} = \encode[8]{g_I'} \concat \encode[8]{\mathbf{w}'}\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*\subb{n}_\pg¬ram = \mathbf{u}'\\
       \mathbf{m}^*\subb{n}_\pg¬pc = \begin{cases}
@@ -688,7 +692,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
     \end{cases}\\
     \tup{\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}} &\when g = \error \\
+      \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}} &\when g_R = \error \\
       \tup{\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}} &\otherwhen n \not\in \mathbf{m} \\
       \tup{\continue, \mathtt{HOST}, h, \mem^*, \mathbf{m}^*} &\otherwhen c = \host \times h \\
       \tup{\continue, \mathtt{FAULT}, x, \mem^*, \mathbf{m}^*} &\otherwhen c = \fault \times x \\
