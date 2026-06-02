@@ -47,7 +47,7 @@ The Is-Authorized invocation is the first and simplest of the three, being total
       \Omega_G(\gascounter, \registers, \memory, \none) &\when n = \mathtt{gas} \\
       \Omega_\Gemini(\gascounter, \registers, \memory, \none, \wpX_\wp¬authcode) &\when n = \mathtt{grow\_heap} \\
       \Omega_Y(\gascounter, \registers, \memory, \none, \wpX, \none, \none, \none, \none, \none, \none, \none) &\when n = \mathtt{fetch} \\
-      \tup{\oog, \gascounter', \registers', \memory, \none} &\otherwhen \gascounter' < 0 \\
+      \tup{\oog, 0, \registers', \memory, \none} &\otherwhen \gascounter' < 0 \\
       \tup{\continue, \gascounter', \registers', \memory, \none} &\otherwise \\
       \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
       \multicolumn{2}{l}{\also \gascounter' = \gascounter - \Cgasunknown}
@@ -101,7 +101,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{pages}\\
       \Omega_K(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{invoke}\\
       \Omega_X(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{expunge}\\
-      \tup{\oog, \gascounter', \registers', \memory, \tup{\mathbf{m}, \mathbf{e}}} &\otherwhen \gascounter' < 0\\
+      \tup{\oog, 0, \registers', \memory, \tup{\mathbf{m}, \mathbf{e}}} &\otherwhen \gascounter' < 0\\
       \tup{\continue, \gascounter', \registers', \memory, \tup{\mathbf{m}, \mathbf{e}}} &\otherwise\\
       \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
       \multicolumn{2}{l}{\also \gascounter' = \gascounter - \Cgasunknown} \\
@@ -204,7 +204,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_F(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{forget} \\
     \Omega_\Taurus(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{yield} \\
     \Omega_\Aries(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{provide} \\
-    \tup{\oog, \gascounter', \registers', \memory, \imXY} &\otherwhen \gascounter' < 0\\
+    \tup{\oog, 0, \registers', \memory, \imXY} &\otherwhen \gascounter' < 0\\
     \tup{\continue, \gascounter', \registers', \memory, \imXY} &\otherwise\\
     \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
     \multicolumn{2}{l}{\also \gascounter' = \gascounter - \Cgasunknown}
@@ -266,9 +266,9 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 
 We come now to defining the host functions which are utilized by the \textsc{pvm} invocations. These map some \textsc{pvm} state, including invocation context $\context$, possibly together with some additional parameters, to a new \textsc{pvm} state.
 
-All host functions are of the form $\tup{\execst \in \set{\continue, \panic, \oog}, \gascounter' \in \signedgas, \registers' \in \regs, \memory' \in \ram, \context'} = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram, \context, \dots)$. Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
+All host functions are of the form $\tup{\execst \in \set{\continue, \panic, \oog}, \gascounter' \in \gas, \registers' \in \regs, \memory' \in \ram, \context'} = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram, \context, \dots)$. Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
 \begin{align}
-  \gascounter' &\equiv \gascounter - g\text{ unless $\gascounter'$ is explicitly defined below}\\
+  \gascounter' &\equiv \max(\gascounter - g, 0)\text{ unless $\gascounter'$ is explicitly defined below}\\
   \tup{\execst, \registers', \memory', \context'} &\equiv \begin{cases}
     \tup{\oog, \registers, \memory, \context} &\when \gascounter < g\\
     \tup{\continue, \registers, \memory, \context} \text{ except as indicated below} &\otherwise
@@ -326,7 +326,7 @@ These make no assumptions about the context $\context$; it is always passed thro
     \using h &= a + c \\
     \tup{\execst, \gascounter', \registers'_7} &\equiv \begin{cases}
       % Do nothing if the heap is large enough already, or if the requested size was too large.
-      \tup{\continue, \gascounter - \CgasGeminiconst, h} &\when \registers_7 \leq h \lor \registers_7 > b \\
+      \tup{\continue, \max(\gascounter - \CgasGeminiconst, 0), h} &\when \registers_7 \leq h \lor \registers_7 > b \\
       % Only enlarge the heap if we have enough gas; otherwise abort with OOG.
       \tup{\oog, \gascounter, h} &\otherwhen \gascounter < g \\
       % Charge gas and expand the accessible RW data region.
@@ -567,8 +567,8 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
     \end{cases}\\
     \gascounter' &\equiv \begin{cases}
-      \gascounter - \CgasK &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \\
-      \gascounter - g + g_R' &\otherwise
+      \max(\gascounter - \CgasK, 0) &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \\
+      \max(\gascounter - g + g_R', 0) &\otherwise
     \end{cases}\\
     \tup{\execst, \registers'_7, \registers'_8, \mem', \mathbf{m}'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}} &\when \mathbf{w} = \error \\

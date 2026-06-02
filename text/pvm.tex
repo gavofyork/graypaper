@@ -759,7 +759,7 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     \end{aligned}
     }
     &\to
-    \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \pvmreg, \signedgas, \bool, \regs, \ram, X}\\
+    \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \pvmreg, \gas, \bool, \regs, \ram, X}\\
     \tup{\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem, f, \mathbf{x}} &\mapsto \begin{cases}
       \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem') = \Psi(\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem):} \\[8pt]
       \tup{\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem', \mathbf{x}} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
@@ -871,7 +871,7 @@ The three instances where the \textsc{pvm} is utilized each expect to be able to
           \tup{u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \subseteq \readable{\mem'} \\
           \tup{u, \sq{}, \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \not\subseteq \readable{\mem'} \\
           \tup{u, \panic, \mathbf{x}'} &\otherwise \\
-          \multicolumn{2}{l}{\quad \where u = \gascounter - \max(\gascounter', 0)}
+          \multicolumn{2}{l}{\quad \where u = \gascounter - \gascounter'}
         \end{cases}
       }\!\!\!\!\!\!\!\!
     \end{cases}
