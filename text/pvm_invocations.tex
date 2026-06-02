@@ -50,7 +50,7 @@ The Is-Authorized invocation is the first and simplest of the three, being total
       \tup{\oog, \gascounter', \registers', \memory} &\otherwhen \gascounter' < 0 \\
       \tup{\continue, \gascounter', \registers', \memory} &\otherwise \\
       \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
-      \multicolumn{2}{l}{\also \gascounter' = \gascounter - 10}
+      \multicolumn{2}{l}{\also \gascounter' = \gascounter - \Cgasunknown}
     \end{cases}
 \end{align}
 
@@ -106,7 +106,7 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \tup{\oog, \gascounter', \registers', \memory} &\otherwhen \gascounter' < 0\\
       \tup{\continue, \gascounter', \registers', \memory} &\otherwise\\
       \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
-      \multicolumn{2}{l}{\also \gascounter' = \gascounter - 10} \\
+      \multicolumn{2}{l}{\also \gascounter' = \gascounter - \Cgasunknown} \\
       \multicolumn{2}{l}{\also \overline{\mathbf{x}} = \sq{\build{
         \sq{\build{
           \mathbf{x}
@@ -209,7 +209,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \tup{\oog, \gascounter', \registers', \memory, \imXY} &\otherwhen \gascounter' < 0\\
     \tup{\continue, \gascounter', \registers', \memory, \imXY} &\otherwise\\
     \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
-    \multicolumn{2}{l}{\also \gascounter' = \gascounter - 10}
+    \multicolumn{2}{l}{\also \gascounter' = \gascounter - \Cgasunknown}
   \end{cases} \\
   C&\colon\abracegroup{
     \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \acconeout \\
@@ -271,7 +271,6 @@ The general functions are all broadly of the form $\tup{\gascounter' \in \signed
 The general functions do not assume any context but have a parameter list suffixed with an ellipsis to denote that the context parameter may be taken and is provided transparently into its result. This allows it to be easily utilized in multiple \textsc{pvm} invocations.
 
 Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
-
 \begin{align}
   \gascounter' &\equiv \gascounter - g\text{ unless $\gascounter'$ is explicitly defined below}\\
   \tup{\execst', \registers', \memory', \mathbf{s}'} &\equiv \begin{cases}
@@ -282,7 +281,7 @@ Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-
 
 Memory-sized gas for host-calls is given by a rate $L$ (gas per 1024 octets) and size $\ell$ (octets). The following defines the gas cost for such a size:
 \begin{equation}\label{eq:fnmemgas}
-  \fnmemgas(L, \ell) \equiv \ceil{\frac{L \cdot \ell}{1024}}.
+  \fnmemgas(L, \ell) \equiv \ceil{\frac{L \cdot \ell}{1024}}
 \end{equation}
 With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call table below uses this formula for all memory-sized terms.
 
@@ -553,16 +552,16 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \makecell*[l]{
   $\Omega_K(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
   \texttt{invoke} = 13 \\
-  $g = \CgasK$} &
+  $g = \CgasK + g_R$} &
   $\begin{aligned}
     \using \sq{n, o} &= \registers_{7, 8} \\
-    \using \tup{g, \mathbf{w}} &= \begin{cases}
-      \tup{g, \mathbf{w}}: \encode[8]{g} \concat \encode[8]{\mathbf{w}} = \mem\subrange{o}{112} &\when \Nrange{o}{112} \subseteq \writable{\mem} \\
+    \using \tup{g_R, \mathbf{w}} &= \begin{cases}
+      \tup{g_R, \mathbf{w}}: \encode[8]{g_R} \concat \encode[8]{\mathbf{w}} = \mem\subrange{o}{112} &\when \Nrange{o}{112} \subseteq \writable{\mem} \\
       %\tup{\decode[8]{\memr\subrange{o}{8}}, \sq{\build{\decode[4]{\memr\subrange{o+8+8x}{8}}}{x \orderedin \Nmax{13}}}} &\when \Nrange{o}{60} \subset \writable_\mem} \\
-      \tup{\error, \error} &\otherwise
+      \tup{0, \error} &\otherwise
     \end{cases} \\
-    \using \tup{c, i', g', \pg¬gaschargedflag', \mathbf{w}', \mathbf{u}'} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g, \mathbf{m}\subb{n}_{\pg¬gaschargedflag}, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram)\\
-    \using \mem^* &= \mem \exc \mem^*\subrange{o}{112} = \encode[8]{g'} \concat \encode[8]{\mathbf{w}'}\\
+    \using \tup{c, i', g_R', \pg¬gaschargedflag', \mathbf{w}', \mathbf{u}'} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g_R, \mathbf{m}\subb{n}_{\pg¬gaschargedflag}, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram)\\
+    \using \mem^* &= \mem \exc \mem^*\subrange{o}{112} = \encode[8]{g_R'} \concat \encode[8]{\mathbf{w}'}\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*\subb{n}_\pg¬ram = \mathbf{u}'\\
       \mathbf{m}^*\subb{n}_\pg¬pc = \begin{cases}
@@ -571,8 +570,12 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \end{cases}\\
       \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
     \end{cases}\\
+    \gascounter' &\equiv \begin{cases}
+      \gascounter - \CgasK &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \\
+      \gascounter - g + g_R' &\otherwise
+    \end{cases}\\
     \tup{\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}} &\when g = \error \\
+      \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}} &\when \mathbf{w} = \error \\
       \tup{\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}} &\otherwhen n \not\in \mathbf{m} \\
       \tup{\continue, \mathtt{HOST}, h, \mem^*, \mathbf{m}^*} &\otherwhen c = \host \times h \\
       \tup{\continue, \mathtt{FAULT}, x, \mem^*, \mathbf{m}^*} &\otherwhen c = \fault \times x \\
@@ -766,7 +769,7 @@ Other than the gas-counter which is explicitly defined, elements of \textsc{pvm}
   \makecell*[l]{
   $\Omega_D(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{designate} = 17 \\
-  $g = \CgasD$} &
+  $g = \CgasDconst + z \cdot \CgasDlinear$} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers\subrange{7}{2} \\
     \using \mathbf{v} &= \begin{cases}
