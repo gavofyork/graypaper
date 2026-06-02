@@ -266,12 +266,12 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 
 We come now to defining the host functions which are utilized by the \textsc{pvm} invocations. These map some \textsc{pvm} state, including invocation context $\context$, possibly together with some additional parameters, to a new \textsc{pvm} state.
 
-All host functions are of the form $\tup{\execst \in \set{\continue, \panic, \oog}, \gascounter' \in \gas, \registers' \in \regs, \memory' \in \ram, \context'} = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram, \context, \dots)$. Elements of \textsc{pvm} state are each assumed to remain unchanged by the host-call unless explicitly specified.
+All host functions are of the form $\tup{\execst^* \in \set{\continue, \panic, \oog}, \gascounter^* \in \gas, \registers^* \in \regs, \memory^* \in \ram, \context^*} = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram, \context, \dots)$. The gas cost of a host-call is given by $g$, defined in the tables below; $\execst^* = \oog$ is returned and \textsc{pvm} state is unchanged if there is insufficient gas to cover this cost. Formally:
 \begin{align}
-  \gascounter' &\equiv \max(\gascounter - g, 0)\text{ unless $\gascounter'$ is explicitly defined below}\\
-  \tup{\execst, \registers', \memory', \context'} &\equiv \begin{cases}
-    \tup{\oog, \registers, \memory, \context} &\when \gascounter < g\\
-    \tup{\continue, \registers, \memory, \context} \text{ except as indicated below} &\otherwise
+  \gascounter^* &\equiv \max(\gascounter - g, 0)\quad\text{unless $\gascounter^*$ is explicitly defined below} \\
+  \tup{\execst^*, \registers^*, \memory^*, \context^*} &\equiv \begin{cases}
+    \tup{\oog, \registers, \memory, \context} &\when \gascounter < g \\
+    \tup{\execst, \registers', \memory', \context'} &\otherwise
   \end{cases}
 \end{align}
 
@@ -280,6 +280,11 @@ Memory-sized gas for host-calls is given by a rate $L$ (gas per 1024 octets) and
   \fnmemgas(L, \ell) \equiv \ceil{\frac{L \cdot \ell}{1024}}
 \end{equation}
 With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call tables below uses this formula for all memory-sized terms.
+
+When transitioning \textsc{pvm} state for a host-call, a number of conditions typically hold true and host functions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, and \textsc{ram}, registers and context are unchanged. Formally:
+\begin{equation}
+  \execst \equiv \continue,\quad \registers' \equiv \registers,\quad \memory' \equiv \memory,\quad \context' \equiv \context\qquad\text{except as indicated below}
+\end{equation}
 
 \subsubsection{General Functions}\label{sec:generalfunctions}
 
@@ -297,7 +302,7 @@ These make no assumptions about the context $\context$; it is always passed thro
   $\Omega_G(\gascounter, \registers, \memory, \context)$ \\
   \texttt{gas} = 0} &
   $\begin{aligned}
-    \registers'_7 &\equiv \gascounter' \\
+    \registers'_7 &\equiv \gascounter^* \\
     g &\equiv \CgasG
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -577,7 +582,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \tup{\continue, \mathtt{HALT}, \registers_8, \mem^*, \mathbf{m}^*} &\otherwhen c = \halt \\
     \end{cases} \\
     g &\equiv \CgasK + g_R \\
-    \gascounter' &\equiv \max(\gascounter - g, 0) + \begin{cases}
+    \gascounter^* &\equiv \max(\gascounter - g, 0) + \begin{cases}
       0 &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \vee \gascounter < g \\
       g_R' &\otherwise
     \end{cases}
@@ -780,7 +785,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \texttt{checkpoint} = 18} &
   $\begin{aligned}
     \imY' &\equiv \imX \\
-    \registers'_7 &\equiv \gascounter' \\
+    \registers'_7 &\equiv \gascounter^* \\
     g &\equiv \CgasC
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
