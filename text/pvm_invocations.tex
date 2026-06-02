@@ -287,24 +287,23 @@ These make no assumptions about the context $\context$; it is always passed thro
 
 \aboverulesep = 1.5mm \belowrulesep = 2mm
 
-\begin{longtable}{p{5cm} p{11cm}}
+\begin{longtable}{p{4cm} p{12cm}}
   \toprule
-  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage (}$g$\textbf{)}} &
-  \thead{\textbf{Mutations}} \\
+  \thead*{\textbf{Function} \\ \textbf{Identifier}} &
+  \thead{\textbf{Mutations} \\ \textbf{Gas usage (}$g$\textbf{)}} \\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
   $\Omega_G(\gascounter, \registers, \memory, \context)$ \\
-  \texttt{gas} = 0 \\
-  $g = \CgasG$} &
+  \texttt{gas} = 0} &
   $\begin{aligned}
-    \registers'_7 &\equiv \gascounter'
+    \registers'_7 &\equiv \gascounter' \\
+    g &\equiv \CgasG
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_\Gemini(\gascounter, \registers, \memory, \context, \jam¬blob)$ \\
-  \texttt{grow\_heap} = 1 \\
-  $g = \CgasGeminiconst + (\registers_7 - h) \cdot \CgasGeminilinear$} &
+  \texttt{grow\_heap} = 1} &
   $\begin{aligned}
     % This hostcall can be used to expand the RW data region of memory, or to query its size.
     %
@@ -324,26 +323,20 @@ These make no assumptions about the context $\context$; it is always passed thro
     \using c &= |\set{\build{p \in \Nclamp{a}{b}}{\memory_\ram¬access\subb{p} = \mathrm{W}}}| \\
     % Current heap pointer.
     \using h &= a + c \\
-    \tup{\execst, \gascounter', \registers'_7} &\equiv \begin{cases}
+    \registers'_7 &\equiv \begin{cases}
       % Do nothing if the heap is large enough already, or if the requested size was too large.
-      \tup{\continue, \max(\gascounter - \CgasGeminiconst, 0), h} &\when \registers_7 \leq h \lor \registers_7 > b \\
-      % Only enlarge the heap if we have enough gas; otherwise abort with OOG.
-      \tup{\oog, \gascounter, h} &\otherwhen \gascounter < g \\
-      % Charge gas and expand the accessible RW data region.
-      \tup{\continue, \gascounter - g, \registers_7} &\otherwise \\
+      h &\when \registers_7 \leq h \lor \registers_7 > b \\
+      % Expand the accessible RW data region.
+      \registers_7 &\otherwise
     \end{cases}\\
-    (\memory'_\ram¬access)\interval{a}{\registers_7'} &\equiv \sq{\mathrm{W}, \dots, \mathrm{W}}
+    (\memory'_\ram¬access)\interval{a}{\registers_7'} &\equiv \sq{\mathrm{W}, \dots, \mathrm{W}} \\
+    g &\equiv \CgasGeminiconst + (\registers_7' - h) \cdot \CgasGeminilinear
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Y(\gascounter, \registers, \memory, \context, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{i})$ \\
-  \texttt{fetch} = 2 \\
-  $g = \CgasYc{c} + \fnmemgas(\CgasYl{c}, z)$} &
+  \texttt{fetch} = 2} &
   $\begin{aligned}
-    \using c &= \begin{cases}
-      \registers_{10} &\when \registers_{10} < 16 \\
-      \none &\otherwise
-    \end{cases} \\
     \using \mathbf{v} &= \begin{cases}
       \mathbf{c} &\when \registers_{10} = 0 \\
       \multicolumn{2}{l}{\where \mathbf{c} = \encode{
@@ -404,6 +397,10 @@ These make no assumptions about the context $\context$; it is always passed thro
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \Nrange{o}{l} \not\subseteq \writable{\memory} \\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
+    \end{cases} \\
+    g &\equiv \begin{cases}
+      \CgasYc{\registers_{10}} + \fnmemgas(\CgasYl{\registers_{10}}, z) &\when \registers_{10} < 16 \\
+      \CgasYunknown &\otherwise
     \end{cases}
   \end{aligned}$\\
   \bottomrule
@@ -416,16 +413,15 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \context \equiv \tup{\mathbf{m}, \mathbf{e}}\ ,\qquad \context' \equiv \tup{\mathbf{m}', \mathbf{e}'}
 \end{equation}
 
-\begin{longtable}{p{5cm} p{11cm}}
+\begin{longtable}{p{4cm} p{12cm}}
   \toprule
-  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage (}$g$\textbf{)}} &
-  \thead{\textbf{Mutations}} \\
+  \thead*{\textbf{Function} \\ \textbf{Identifier}} &
+  \thead{\textbf{Mutations} \\ \textbf{Gas usage (}$g$\textbf{)}} \\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
   $\Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, s, \mathbf{d}, t)$ \\
-  \texttt{historical\_lookup} = 7 \\
-  $g = \CgasHconst + \fnmemgas(\CgasHlinear, z)$} &
+  \texttt{historical\_lookup} = 7} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
       \mathbf{d}\subb{s} &\when \registers_7 = 2^{64} - 1 \wedge s \in \keys{\mathbf{d}} \\
@@ -445,13 +441,13 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
-    \end{cases}
+    \end{cases} \\
+    g &\equiv \CgasHconst + \fnmemgas(\CgasHlinear, z)
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_E(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}, \segoff)$ \\
-  \texttt{export} = 8 \\
-  $g = \CgasE$} &
+  \texttt{export} = 8} &
   $\begin{aligned}
     \using p &= \registers_7 \\
     \using z &= \min(\registers_8, \Csegmentsize) \\
@@ -463,13 +459,13 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \tup{\panic, \registers_7, \mathbf{e}} &\when \mathbf{x} = \error \\
       \tup{\continue, \mathtt{FULL}, \mathbf{e}} &\otherwhen \segoff+\len{\mathbf{e}} \ge \Cmaxpackageexports \\
       \tup{\continue, \segoff + \len{\mathbf{e}}, \mathbf{e} \append \mathbf{x}} &\otherwise
-    \end{cases}
+    \end{cases} \\
+    g &\equiv \CgasE
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{machine} = 9 \\
-  $g = \CgasMconst + \fnmemgas(\CgasMlinear, p_Z)$ }&
+  \texttt{machine} = 9} &
   $\begin{aligned}
     \using \sq{p_O, p_Z, i} &= \registers\subrange{7}{3} \\
     \using \mathbf{p} &= \begin{cases}
@@ -484,12 +480,12 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \tup{\continue, \mathtt{HUH}, \mathbf{m}} &\otherwhen \deblob(\mathbf{p}, i) = \error \\
       \tup{\continue, n, \mathbf{m} \cup \set{\kv{n}{\tup{\mathbf{p}, \mathbf{u}, i, \bot}}} } &\otherwise \\
     \end{cases} \\
+    g &\equiv \CgasMconst + \fnmemgas(\CgasMlinear, p_Z)
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_P(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{peek} = 10 \\
-  $g = \CgasPconst + \fnmemgas(\CgasPlinear, z)$ }&
+  \texttt{peek} = 10} &
   $\begin{aligned}
     \using \sq{n, o, s, z} &= \registers\subrange{7}{4} \\
     \tup{\execst, \registers'_7, \mem'} &\equiv \begin{cases}
@@ -499,12 +495,12 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \tup{\continue, \mathtt{OK}, \mem'} &\otherwise \\
       \multicolumn{2}{l}{\where \mem' = \mem \exc \mem\subrange{o}{z} = (\mathbf{m}\subb{n}_\pg¬ram)\subrange{s}{z}}
     \end{cases} \\
+    g &\equiv \CgasPconst + \fnmemgas(\CgasPlinear, z)
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_O(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{poke} = 11 \\
-  $g = \CgasOconst + \fnmemgas(\CgasOlinear, z)$ }&
+  \texttt{poke} = 11} &
   $\begin{aligned}
     \using \sq{n, s, o, z} &= \registers\subrange{7}{4} \\
     \tup{\execst, \registers'_7, \mathbf{m}'} &\equiv \begin{cases}
@@ -514,12 +510,12 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \tup{\continue, \mathtt{OK}, \mathbf{m}'}  &\otherwise \\
       \multicolumn{2}{l}{\where \mathbf{m}' = \mathbf{m} \exc (\mathbf{m}'\subb{n}_\pg¬ram)\subrange{o}{z} = \mem\subrange{s}{z}}
     \end{cases} \\
+    g &\equiv \CgasOconst + \fnmemgas(\CgasOlinear, z)
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{pages} = 12 \\
-  $g =  \begin{cases} \CgasZfreeconst + c \cdot \CgasZfreelinear &\when r = 0 \\ \CgasZallocconst + c \cdot \CgasZalloclinear &\when r \in \set{1, 2} \\ \CgasZsetmodeconst + c \cdot \CgasZsetmodelinear &\when r \in \set{3, 4} \\ \CgasZinvalid &\otherwise \end{cases} $ }&
+  \texttt{pages} = 12} &
   $\begin{aligned}
     \using \sq{n, p, c, r} &= \registers\subrange{7}{4} \\
     \using \mathbf{u} &= \begin{cases}
@@ -532,9 +528,9 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
         (\mathbf{u}_\ram¬value)_{p\Cpvmpagesize\dots+c\Cpvmpagesize} &\otherwise
       \end{cases} \\
       (\mathbf{u}'_\ram¬access)\subrange{p}{c} = \begin{cases}
-       \sq{\none, \none, \dots} &\when r = 0 \\
-       \sq{\mathrm{R}, \mathrm{R}, \dots} &\when r = 1 \vee r = 3 \\
-       \sq{\mathrm{W}, \mathrm{W}, \dots} &\when r = 2 \vee r = 4 \\
+        \sq{\none, \none, \dots} &\when r = 0 \\
+        \sq{\mathrm{R}, \mathrm{R}, \dots} &\when r \in \set{1, 3} \\
+        \sq{\mathrm{W}, \mathrm{W}, \dots} &\when r \in \set{2, 4} \\
       \end{cases}
     \end{cases}\\
     \tup{\registers'_7, \mathbf{m}'} &\equiv \begin{cases}
@@ -543,12 +539,17 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \tup{\mathtt{HUH}, \mathbf{m}} &\otherwhen r > 2 \wedge (\mathbf{u}_\ram¬access)\subrange{p}{c} \ni \none \\
       \tup{\mathtt{OK}, \mathbf{m}'} &\otherwise\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'\subb{n}_\pg¬ram = \mathbf{u}' \\
     \end{cases} \\
+    g &\equiv \begin{cases}
+      \CgasZfreeconst + c \cdot \CgasZfreelinear &\when r = 0 \\
+      \CgasZallocconst + c \cdot \CgasZalloclinear &\when r \in \set{1, 2} \\
+      \CgasZsetmodeconst + c \cdot \CgasZsetmodelinear &\when r \in \set{3, 4} \\
+      \CgasZinvalid &\otherwise
+    \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_K(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{invoke} = 13 \\
-  $g = \CgasK + g_R$} &
+  \texttt{invoke} = 13} &
   $\begin{aligned}
     \using \sq{n, o} &= \registers_{7, 8} \\
     \using \tup{g_R, \mathbf{w}} &= \begin{cases}
@@ -566,31 +567,32 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \end{cases}\\
       \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
     \end{cases}\\
-    \gascounter' &\equiv \begin{cases}
-      \max(\gascounter - \CgasK, 0) &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \\
-      \max(\gascounter - g + g_R', 0) &\otherwise
-    \end{cases}\\
     \tup{\execst, \registers'_7, \registers'_8, \mem', \mathbf{m}'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}} &\when \mathbf{w} = \error \\
-      \tup{\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}} &\otherwhen n \not\in \mathbf{m} \\
+      \tup{\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}} &\otherwhen n \not\in \keys{\mathbf{m}} \\
       \tup{\continue, \mathtt{HOST}, h, \mem^*, \mathbf{m}^*} &\otherwhen c = \host \times h \\
       \tup{\continue, \mathtt{FAULT}, x, \mem^*, \mathbf{m}^*} &\otherwhen c = \fault \times x \\
       \tup{\continue, \mathtt{OOG}, \registers_8, \mem^*, \mathbf{m}^*} &\otherwhen c = \oog \\
       \tup{\continue, \mathtt{PANIC}, \registers_8, \mem^*, \mathbf{m}^*} &\otherwhen c = \panic \\
       \tup{\continue, \mathtt{HALT}, \registers_8, \mem^*, \mathbf{m}^*} &\otherwhen c = \halt \\
     \end{cases} \\
+    g &\equiv \CgasK + g_R \\
+    \gascounter' &\equiv \max(\gascounter - g, 0) + \begin{cases}
+      0 &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \vee \gascounter < g \\
+      g_R' &\otherwise
+    \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_X(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}})$ \\
-  \texttt{expunge} = 14 \\
-  $g = \CgasX$} &
+  \texttt{expunge} = 14} &
   $\begin{aligned}
     \using n &= \registers_7 \\
     \tup{\registers'_7, \mathbf{m}'} &\equiv \begin{cases}
       \tup{\mathtt{WHO}, \mathbf{m}} &\when n \not\in \keys{\mathbf{m}} \\
       \tup{\mathbf{m}\subb{n}_\pg¬pc, \mathbf{m} \setminus n} &\otherwise \\
     \end{cases} \\
+    g &\equiv \CgasX
   \end{aligned}$\\
   \bottomrule
 \end{longtable}
@@ -604,16 +606,15 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
 
 \newcommand*{\local¬desiredid}{i}
 
-\begin{longtable}{p{3.5cm} p{12.5cm}}
+\begin{longtable}{p{3cm} p{13cm}}
   \toprule
-  \thead*{\textbf{Function} \\ \textbf{Identifier} \\ \textbf{Gas usage (}$g$\textbf{)}} &
-  \thead{\textbf{Mutations}} \\
+  \thead*{\textbf{Function} \\ \textbf{Identifier}} &
+  \thead{\textbf{Mutations} \\ \textbf{Gas usage (}$g$\textbf{)}} \\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
   $\Omega_L(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{lookup} = 3 \\
-  $g = \CgasLconst + \fnmemgas(\CgasLlinear, z) $} &
+  \texttt{lookup} = 3} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
       \imX_\im¬self &\when \registers_7 = 2^{64} - 1 \\
@@ -632,13 +633,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
-    \end{cases}
+    \end{cases} \\
+    g &\equiv \CgasLconst + \fnmemgas(\CgasLlinear, z)
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_R(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{read} = 4 \\
-  $g = \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear, v_Z) $} &
+  \texttt{read} = 4} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
       \imX_\im¬self &\when \registers_7 = 2^{64} - 1 \\
@@ -657,13 +658,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
-    \end{cases}
+    \end{cases} \\
+    g &\equiv \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear, v_Z)
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_W(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{write} = 5 \\
-  $g = \CgasWconst + \fnmemgas(\CgasWkeylinear, k_Z) + \fnmemgas(\CgasWvallinear, v_Z)$} &
+  \texttt{write} = 5} &
   $\begin{aligned}
     \using \sq{k_O, k_Z, v_O, v_Z} &= \registers\subrange{7}{4} \\
     \using \mathbf{k} &= \begin{cases}
@@ -683,13 +684,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\panic, \registers_7, \imX_\im¬self} &\when \mathbf{k} = \error \vee \mathbf{a} = \error\\
       \tup{\continue, \mathtt{FULL}, \imX_\im¬self} &\otherwhen \mathbf{a}_\sa¬minbalance > \mathbf{a}_\sa¬balance \\
       \tup{\continue, l, \mathbf{a}} &\otherwise\\
-    \end{cases}
+    \end{cases} \\
+    g &\equiv \CgasWconst + \fnmemgas(\CgasWkeylinear, k_Z) + \fnmemgas(\CgasWvallinear, v_Z)
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_I(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{info} = 6 \\
-  $g = \CgasI$} &
+  \texttt{info} = 6} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
       \imX_\im¬self &\when \registers_7 = 2^{64} - 1 \\
@@ -712,13 +713,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
-    \end{cases}
+    \end{cases} \\
+    g &\equiv \CgasI
   \end{aligned}$ \\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_B(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{bless} = 15 \\
-  $g = \CgasBconst + n \cdot \CgasBlinear $ }&
+  \texttt{bless} = 15} &
   $\begin{aligned}
     \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
     \using \mathbf{a} &= \begin{cases}
@@ -729,63 +730,63 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \set{\build{\kv{s}{g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\when \Nrange{o}{12n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &= \begin{cases}
+    \tup{\execst, \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager \\
       \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \tup{m, v, r} \not\in \serviceid^3 \\
       \tup{\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwise \\
-    \end{cases}
+    \end{cases} \\
+    g &\equiv \CgasBconst + n \cdot \CgasBlinear
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_A(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{assign} = 16 \\
-  $g = \CgasA$} &
+  \texttt{assign} = 16} &
   $\begin{aligned}
     \using \sq{c, o, a} &= \registers\subrange{7}{3} \\
     \using \mathbf{q} &= \begin{cases}
       \sq{\build{\memory\subrange{o + 32i}{32}}{i \orderedin \N_\Cauthqueuesize}} &\when \Nrange{o}{32\Cauthqueuesize} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, (\imX'_\im¬state)_\ps¬authqueue\subb{c}, (\imX'_\im¬state)_\ps¬assigners\subb{c}} &= \begin{cases}
+    \tup{\execst, \registers'_7, (\imX'_\im¬state)_\ps¬authqueue\subb{c}, (\imX'_\im¬state)_\ps¬assigners\subb{c}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\when \mathbf{q} = \error \\
       \tup{\continue, \mathtt{CORE}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen c \ge \Ccorecount \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬assigners\subb{c}\\
       \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen a \not\in \serviceid \\
       \tup{\continue, \mathtt{OK}, \mathbf{q}, a} &\otherwise \\
     \end{cases} \\
+    g &\equiv \CgasA
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_D(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{designate} = 17 \\
-  $g = \CgasDconst + z \cdot \CgasDlinear$} &
+  \texttt{designate} = 17} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers\subrange{7}{2} \\
     \using \mathbf{v} &= \begin{cases}
       \sq{\build{\memory\subrange{o + 336i}{336}}{i \orderedin \N_z}} &\when \Nrange{o}{336z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, (\imX'_\im¬state)_\ps¬stagingset} &= \begin{cases}
+    \tup{\execst, \registers'_7, (\imX'_\im¬state)_\ps¬stagingset} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬stagingset} &\when \mathbf{v} = \error\\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬stagingset} &\otherwhen z \not\in \valcount \vee \imX_\im¬id \ne (\imX_\im¬state)_\ps¬delegator\\
       \tup{\continue, \mathtt{OK}, \mathbf{v}} &\otherwise \\
     \end{cases} \\
+    g &\equiv \CgasDconst + z \cdot \CgasDlinear
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_C(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{checkpoint} = 18 \\
-  $g = \CgasC$} &
+  \texttt{checkpoint} = 18} &
   $\begin{aligned}
     \imY' &\equiv \imX \\
-    \registers'_7 &\equiv \gascounter'
+    \registers'_7 &\equiv \gascounter' \\
+    g &\equiv \CgasC
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_N(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{new} = 19 \\
-  $g = \CgasN$} &
+  \texttt{new} = 19} &
   $\begin{aligned}
     \using \sq{o, l, \sa¬minaccgas, \sa¬minmemogas, \sa¬gratis, \local¬desiredid} &= \registers\subrange{7}{6} \\
     \using \sa¬codehash &= \begin{cases}
@@ -820,29 +821,28 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \multicolumn{2}{l}{\quad \where i^* = \text{check}(\Cminpublicindex + (\imX_\im¬nextfreeid - \Cminpublicindex + 42) \bmod (2^{32} - \Cminpublicindex - 2^8))}\\
       \multicolumn{2}{l}{\quad \also \mathbf{d} = \set{ \kv{\imX_\im¬nextfreeid}{\mathbf{a}}, \kv{\imX_\im¬id}{\mathbf{s}} }}\\
     \end{cases} \\
+    g &\equiv \CgasN
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
     $\Omega_U(\gascounter, \registers, \memory, \imXY)$ \\
-    \texttt{upgrade} = 20 \\
-    $g = \CgasU$
-  } &
+    \texttt{upgrade} = 20} &
   $\begin{aligned}
-    \using \sq{o, g, m} &= \registers\subrange{7}{3} \\
+    \using \sq{o, a, m} &= \registers\subrange{7}{3} \\
     \using c &= \begin{cases}
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \tup{\execst, \registers'_7, (\imX'_\im¬self)_\sa¬codehash, (\imX'_\im¬self)_\sa¬minaccgas, (\imX'_\im¬self)_\sa¬minmemogas} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬self)_\sa¬codehash, (\imX_\im¬self)_\sa¬minaccgas, (\imX_\im¬self)_\sa¬minmemogas} &\when c = \error \\
-      \tup{\continue, \mathtt{OK}, c, g, m} &\otherwise \\
-    \end{cases}
+      \tup{\continue, \mathtt{OK}, c, a, m} &\otherwise \\
+    \end{cases} \\
+    g &\equiv \CgasU
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_T(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{transfer} = 21 \\
-  $g = \CgasT + t$} &
+  \texttt{transfer} = 21} &
   $\begin{aligned}
     \using \sq{\dx¬dest, \dx¬amount, l, o} &= \registers\subrange{7}{4},  \\
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts\\
@@ -869,12 +869,12 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\continue, c, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\otherwhen c \ne \mathtt{OK} \\
       \tup{\continue, \mathtt{OK}, \imX_\im¬xfers \append \mathbf{t}, b} &\otherwise
     \end{cases} \\
+    g &\equiv \CgasT + t
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_J(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{eject} = 22 \\
-  $g = \CgasJ$} &
+  \texttt{eject} = 22} &
   $\begin{aligned}
     \using \sq{d, o} &= \registers_{7, 8} \\
     \using h &= \begin{cases}
@@ -894,12 +894,12 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\continue, \mathtt{OK}, (\imX_\im¬state)_\ps¬accounts \setminus \set{d} \cup \set{ \kv{\imX_\im¬id}{\mathbf{s}'} }} &\otherwhen \mathbf{d}_\sa¬requests\subb{h, l} = \sq{x, y}, y < t - \Cexpungeperiod \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts} &\otherwise \\
     \end{cases} \\
+    g &\equiv \CgasJ
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_Q(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{query} = 23 \\
-  $g = \CgasQ$} &
+  \texttt{query} = 23} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{7, 8} \\
     \using h &= \begin{cases}
@@ -919,12 +919,12 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\continue, 2 + 2^{32}x, y} &\otherwhen \mathbf{a} = \sq{x, y} \\
       \tup{\continue, 3 + 2^{32}x, y + 2^{32}z} &\otherwhen \mathbf{a} = \sq{x, y, z} \\
     \end{cases} \\
+    g &\equiv \CgasQ
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_S(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{solicit} = 24 \\
-  $g = \CgasS$} &
+  \texttt{solicit} = 24} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{7, 8} \\
     \using h &= \begin{cases}
@@ -944,12 +944,12 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\continue, \mathtt{FULL}, \imX_\im¬self} &\otherwhen \mathbf{a}_\sa¬balance < \mathbf{a}_\sa¬minbalance \\
       \tup{\continue, \mathtt{OK}, \mathbf{a}} &\otherwise \\
     \end{cases} \\
+    g &\equiv \CgasS
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_F(\gascounter, \registers, \memory, \imXY, t)$ \\
-  \texttt{forget} = 25 \\
-  $g = \CgasF$} &
+  \texttt{forget} = 25} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{7, 8} \\
     \using h &= \begin{cases}
@@ -974,12 +974,12 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\otherwhen \mathbf{a} = \error \\
       \tup{\continue, \mathtt{OK}, \mathbf{a}} &\otherwise \\
     \end{cases} \\
+    g &\equiv \CgasF
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_\Taurus(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{yield} = 26 \\
-  $g = \CgasTaurus$} &
+  \texttt{yield} = 26} &
   $\begin{aligned}
     \using o &= \registers_7 \\
     \using h &= \begin{cases}
@@ -990,12 +990,12 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\panic, \registers_7, \imX_\im¬yield} &\when h = \error \\
       \tup{\continue, \mathtt{OK}, h} &\otherwise \\
     \end{cases} \\
+    g &\equiv \CgasTaurus
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_\Aries(\gascounter, \registers, \memory, \imXY)$ \\
-  \texttt{provide} = 27 \\
-  $g = \CgasAriesconst + \fnmemgas(\CgasArieslinear, z)$} &
+  \texttt{provide} = 27} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{8, 9} \\
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts\\
@@ -1019,6 +1019,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \tup{s, \mathbf{i}} \in \imX_\im¬provisions \\
       \tup{\continue, \mathtt{OK}, \imX_\im¬provisions \cup \set{\tup{s, \mathbf{i}}}} &\otherwise \\
     \end{cases} \\
+    g &\equiv \CgasAriesconst + \fnmemgas(\CgasArieslinear, z)
   \end{aligned}$\\
   \bottomrule
 \end{longtable}
