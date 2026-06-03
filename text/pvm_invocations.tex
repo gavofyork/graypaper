@@ -687,8 +687,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
     \end{cases}\\
     \gascounter' &\equiv \begin{cases}
-      \gascounter - g &\when \gascounter < g \\
-      \gascounter - \CgasK &\otherwhen \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \\
+      \gascounter - g &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \vee \gascounter < g \\
       \gascounter - g + g_R' &\otherwise
     \end{cases}\\
     \tup{\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}'} &\equiv \begin{cases}
