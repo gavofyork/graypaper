@@ -262,8 +262,6 @@ Concretely, we create the identifier from the Blake2 hash of the identifier of t
 
 \subsection{Host Functions}
 
-\newcommand*{\context}{\mathfrak{x}}
-
 We come now to defining the host functions which are utilized by the \textsc{pvm} invocations. These map some \textsc{pvm} state, including invocation context $\context$, possibly together with some additional parameters, to a new \textsc{pvm} state.
 
 All host functions are of the form $\tup{\execst^* \in \set{\continue, \panic, \oog}, \gascounter^* \in \gas, \registers^* \in \regs, \memory^* \in \ram, \context^*} = \Omega_\square(\gascounter \in \gas, \registers \in \regs, \memory \in \ram, \context, \dots)$. The gas cost of a host-call is given by $g$, defined in the tables below; $\execst^* = \oog$ is returned and \textsc{pvm} state is unchanged if there is insufficient gas to cover this cost. Formally:
