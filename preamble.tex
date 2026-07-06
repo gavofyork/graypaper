@@ -264,6 +264,8 @@
 \newcommand*{\Cmaxreportdeps}{\mathsf{J}}
 \newcommand*{\Cmaxblocktickets}{\mathsf{K}}
 \newcommand*{\Cmaxlookupanchorage}{\mathsf{L}}
+\newcommand*{\Cmaxextrinsicverdicts}{\mathsf{N}_V}
+\newcommand*{\Cmaxextrinsicoffenses}{\mathsf{N}_O}
 \newcommand*{\Cauthpoolsize}{\mathsf{O}}
 \newcommand*{\Cslotseconds}{\mathsf{P}}
 \newcommand*{\Cauthqueuesize}{\mathsf{Q}}
@@ -285,6 +287,55 @@
 \newcommand*{\Cpvminitinputsize}{\mathsf{Z}_I}
 \newcommand*{\Cpvmpagesize}{\mathsf{Z}_P}
 \newcommand*{\Cpvminitzonesize}{\mathsf{Z}_Z}
+\newcommand*{\Cgasunknown}{\mathsf{M}_\none}
+\newcommand*{\CgasG}{\mathsf{M}_G}
+\newcommand*{\CgasGeminiconst}{\mathsf{M}_{\Gemini,c}}
+\newcommand*{\CgasGeminilinear}{\mathsf{M}_{\Gemini,p}}
+\newcommand*{\CgasYc}[1]{\mathsf{M}_{Y,#1,c}}
+\newcommand*{\CgasYl}[1]{\mathsf{M}_{Y,#1,\ell}}
+\newcommand*{\CgasLconst}{\mathsf{M}_{L,c}}
+\newcommand*{\CgasLlinear}{\mathsf{M}_{L,\ell}}
+\newcommand*{\CgasRconst}{\mathsf{M}_{R,c}}
+\newcommand*{\CgasRkeylinear}{\mathsf{M}_{R,\mathrm{k},\ell}}
+\newcommand*{\CgasRvallinear}{\mathsf{M}_{R,\mathrm{v},\ell}}
+\newcommand*{\CgasWkeylinear}{\mathsf{M}_{W,\mathrm{k},\ell}}
+\newcommand*{\CgasWconst}{\mathsf{M}_{W,c}}
+\newcommand*{\CgasWvallinear}{\mathsf{M}_{W,\mathrm{v},\ell}}
+\newcommand*{\CgasI}{\mathsf{M}_I}
+\newcommand*{\CgasHconst}{\mathsf{M}_{H,c}}
+\newcommand*{\CgasHlinear}{\mathsf{M}_{H,\ell}}
+\newcommand*{\CgasE}{\mathsf{M}_E}
+\newcommand*{\CgasMconst}{\mathsf{M}_{M,c}}
+\newcommand*{\CgasMlinear}{\mathsf{M}_{M,\ell}}
+\newcommand*{\CgasPconst}{\mathsf{M}_{P,c}}
+\newcommand*{\CgasPlinear}{\mathsf{M}_{P,\ell}}
+\newcommand*{\CgasOconst}{\mathsf{M}_{O,c}}
+\newcommand*{\CgasOlinear}{\mathsf{M}_{O,\ell}}
+\newcommand*{\CgasZallocconst}{\mathsf{M}_{Z,a,c}}
+\newcommand*{\CgasZalloclinear}{\mathsf{M}_{Z,a,p}}
+\newcommand*{\CgasZfreeconst}{\mathsf{M}_{Z,f,c}}
+\newcommand*{\CgasZfreelinear}{\mathsf{M}_{Z,f,p}}
+\newcommand*{\CgasZsetmodeconst}{\mathsf{M}_{Z,s,c}}
+\newcommand*{\CgasZsetmodelinear}{\mathsf{M}_{Z,s,p}}
+\newcommand*{\CgasZinvalid}{\mathsf{M}_{Z,i}}
+\newcommand*{\CgasK}{\mathsf{M}_K}
+\newcommand*{\CgasX}{\mathsf{M}_X}
+\newcommand*{\CgasBconst}{\mathsf{M}_{B,c}}
+\newcommand*{\CgasBlinear}{\mathsf{M}_{B,\ell}}
+\newcommand*{\CgasA}{\mathsf{M}_A}
+\newcommand*{\CgasDconst}{\mathsf{M}_{D,c}}
+\newcommand*{\CgasDlinear}{\mathsf{M}_{D,\ell}}
+\newcommand*{\CgasC}{\mathsf{M}_C}
+\newcommand*{\CgasN}{\mathsf{M}_N}
+\newcommand*{\CgasU}{\mathsf{M}_U}
+\newcommand*{\CgasT}{\mathsf{M}_T}
+\newcommand*{\CgasJ}{\mathsf{M}_J}
+\newcommand*{\CgasQ}{\mathsf{M}_Q}
+\newcommand*{\CgasS}{\mathsf{M}_S}
+\newcommand*{\CgasF}{\mathsf{M}_F}
+\newcommand*{\CgasTaurus}{\mathsf{M}_{\Taurus}}
+\newcommand*{\CgasAriesconst}{\mathsf{M}_{\Aries,c}}
+\newcommand*{\CgasArieslinear}{\mathsf{M}_{\Aries,\ell}}
 
 % String
 \newcommand*{\Xavailable}{\mathsf{X}_A}
@@ -514,8 +565,10 @@
 \newcommand*{\wc¬anchorhash}{a}
 \newcommand*{\wc¬anchorpoststate}{s}
 \newcommand*{\wc¬anchoraccoutlog}{b}
+\newcommand*{\wc¬anchortime}{n}
 \newcommand*{\wc¬lookupanchorhash}{l}
 \newcommand*{\wc¬lookupanchortime}{t}
+\newcommand*{\wc¬lookupanchorpoststate}{r}
 \newcommand*{\wc¬prerequisites}{\mathbf{p}}
 
 \newcommand*{\serviceaccount}{\mathbb{A}}
@@ -609,6 +662,7 @@
 \newcommand*{\rh¬headerhash}{h}
 \newcommand*{\rh¬accoutlogsuperpeak}{b}
 \newcommand*{\rh¬stateroot}{s}
+\newcommand*{\rh¬timeslot}{t}
 \newcommand*{\rh¬reportedpackagehashes}{\mathbf{p}}
 
 
@@ -807,6 +861,7 @@
 \newcommand*{\rnp}[1]{P(#1)}
 \newcommand*{\rnq}[1]{Z(#1)}
 \newcommand*{\contextmutator}[1]{\Omega\ang{#1}}
+\newcommand*{\fnmemgas}{\mathcal{G}}
 
 %%%%%%%%%%%%
 % Other stuff

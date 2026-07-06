@@ -9,6 +9,7 @@ We retain in state information on the most recent $\Crecenthistorylen$ blocks. T
     \isa{\rh¬headerhash}{\hash},
     \isa{\rh¬stateroot}{\hash},
     \isa{\rh¬accoutlogsuperpeak}{\hash},
+    \isa{\rh¬timeslot}{\timeslot},
     \isa{\rh¬reportedpackagehashes}{\dictionary{\hash}{\hash}}
   }}\\
   \label{eq:accoutbeltspec}
@@ -36,10 +37,11 @@ The final state transition for $\recenthistory$ appends a new item including the
   \label{eq:recenthistorydef}
   \begin{aligned}
     \recenthistory' &\equiv {\overleftarrow{\recenthistorypostparentstaterootupdate \append \tup{
-      \rh¬reportedpackagehashes,
       \is{\rh¬headerhash}{\blake{\theheader}},
       \is{\rh¬stateroot}{\zerohash},
-      \is{\rh¬accoutlogsuperpeak}{\mmrsuperpeak{\accoutbelt'}}
+      \is{\rh¬accoutlogsuperpeak}{\mmrsuperpeak{\accoutbelt'}},
+      \is{\rh¬timeslot}{\H_\¬timeslot},
+      \rh¬reportedpackagehashes
       }}}^\Crecenthistorylen \\
     \where \rh¬reportedpackagehashes &= \set{\build{
         \kv{
