@@ -25,20 +25,38 @@
 \renewcommand*{\S}{\token{S}}
 \newcommand*{\A}{\token{A}}
 \newcommand*{\basicblocks}{\varpi}
+\newcommand*{\phase¬gas}{\mathrm{G}}
+\newcommand*{\phase¬fetch}{\mathrm{F}}
+\newcommand*{\phase¬djump}{\mathrm{J}}
+\newcommand*{\phase¬mem}{\mathrm{M}}
 \newcommand*{\instructions}{\zeta}
 \newcommand*{\immed}{\nu}
 \newcommand*{\deblob}{\text{deblob}}
 \newcommand*{\smod}{\text{smod}}
 \newcommand*{\rtz}{\text{rtz}}
 \newcommand*{\gascostforblock}{\gascounter^{\Delta}}
-\newcommand*{\codepage}[1]{{#1}^\diamond}
-\newcommand*{\pageforinstruction}{\codepage{P}}
+\newcommand*{\datatag}{\text{\textsc{d}}}
+\newcommand*{\codetag}{\text{\textsc{c}}}
+\newcommand*{\jumptag}{\text{\textsc{j}}}
+\newcommand*{\datapage}[1]{{\datatag \times #1}}
+\newcommand*{\codepage}[1]{{\codetag \times #1}}
+\newcommand*{\jumppage}[1]{{\jumptag \times #1}}
+\newcommand*{\codefam}[1]{{#1}^\diamond}
+\newcommand*{\pageforinstruction}{\codefam{P}}
+\newcommand*{\preamblepages}{\codefam{Q}}
+\newcommand*{\codeoffset}{\codefam{o}}
+\newcommand*{\codepages}{\codefam{S}}
+\newcommand*{\bbpreamblesize}{\codefam{B}}
+\newcommand*{\codepagecharge}{\codefam{C}}
+\newcommand*{\branchsize}{\codefam{J}}
 \newcommand*{\gascostforpageaccess}{\gascounter^\workingset}
+\newcommand*{\pagefaultcost}{\mathfrak{c}}
+\newcommand*{\spannedpages}{\Pi}
 \newcommand*{\startofbasicblock}{\mathfrak{L}}
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a \textsc{pvm} program blob, validates its structure, and verifies whether the given $\imath$ is a valid instruction counter location within the program:
 \begin{align}
   \Psi&\colon \abracegroup{
-    \tuple{\blob, \pvmreg, \gas, \bool, \regs, \ram, \optional{N}, \sequence{\optional{\pageid}}} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \gas, \bool, \regs, \ram, \sequence{\optional{\pageid}}}\\
+    \tuple{\blob, \pvmreg, \gas, \bool, \regs, \ram, \optional{\N}, \sequence{\optional{\pageid}}} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \gas, \bool, \regs, \ram, \sequence{\optional{\pageid}}}\\
     \tup{\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem, \pid¬machine, \workingset} &\mapsto \begin{cases}
       \Psi(\pvm¬blob, \imath', \gascounter', \gaschargedflag', \registers', \mem', \pid¬machine, \workingset') &\when \varepsilon = \continue\\
       \tup{\varepsilon, 0, \gascounter', \gaschargedflag', \registers', \mem', \workingset'} &\when \varepsilon \in \set{ \panic, \halt }\\
@@ -158,65 +176,89 @@ We must now define the single-step \textsc{pvm} state-transition function $\Psi_
   }
 \end{equation}
 
-Before execution, the instruction must first be fetched from memory. This may require a change to the working-set and thus incur a gas charge. If there is insufficient gas to cover this charge, execution is interrupted. Working-set changes are discussed further and the functions $\gascostforpageaccess$ and $\pageforinstruction$ defined in section \ref{sec:workingsetchanges}.
+Before execution, the instruction must be fetched from memory. This is done lazily, using the machine's paging hardware: each fetch of a code page not resident in the working-set is a page fault which charges gas according to $\gascostforpageaccess$ and inserts the page. We define $\codepagecharge$, which charges in order for a sequence of pages, each inserted at the base fault cost $\Cpvmgaspagefault$, halting if the gas runs out:
 \begin{equation}
-    \begin{aligned}
-        \tup{\codepage{\varepsilon}, \codepage{\gascounter}, \codepage{\workingset}} &= \begin{cases}
-        \tup{\continue, \gascounter - g, w} &\when \gascounter \ge g \\
-        \tup{\oog, \gascounter, \workingset} &\otherwise
+  \begin{aligned}
+    \codepagecharge(g, w, \mathbf{p}) &= \begin{cases}
+      \tup{\continue, g, w} &\when \mathbf{p} = \sq{} \\
+      \tup{\oog, g, w} &\otherwhen g < g^\delta \\
+      \codepagecharge(g - g^\delta, w', \mathbf{p}\sub{1\dots}) &\otherwise
     \end{cases} \\
-        \where (g, w) &= \gascostforpageaccess(\workingset, \tup{\pid¬machine, \is{\pid¬index}{\pageforinstruction(\mathbf{c}, \mathbf{k}, \imath)}})
-    \end{aligned}
+    \where (g^\delta, w') &= \gascostforpageaccess(w, \tup{\pid¬machine, \is{\pid¬index}{\mathbf{p}_0}}, \Cpvmgaspagefault)
+  \end{aligned}
 \end{equation}
 
-On the very first step of execution, and every time the execution enters a new basic block or jumps back to the beginning of the current basic block, the gas counter of the machine is updated according to the gas cost function $\gascostforblock$~(\ref{eq:gascostforblock}) of the target basic block. No instruction is allowed to execute within a basic block unless the gas cost for the entire basic block has been charged in advance. In case there's not enough gas remaining to cover the full gas cost, the execution is interrupted and the gas counter remains unchanged. Formally:
+On the very first step of execution, and every time execution enters a new basic block or jumps back to the beginning of the current one, the block's gas-metering preamble is fetched (charging for its code pages) and then the gas cost of the entire block~(\ref{eq:gascostforblock}) is charged in advance; no instruction may execute until both are paid. If at any point there is insufficient gas, execution is interrupted and the gas counter is left at its last value. Formally:
 \begin{equation}
-  \tup{\varepsilon^\basicblocks, \gascounter^\basicblocks} = \begin{cases}
-    \tup{\continue, \codepage{\gascounter}} &\when \gaschargedflag = \top \\
-    \tup{\continue, \codepage{\gascounter} - \gascostforblock(\mathbf{c}, \mathbf{k}, \len{\workingset}, \startofbasicblock(\imath))} &\otherwhen \codepage{\gascounter} \ge \gascostforblock(\mathbf{c}, \mathbf{k}, \len{\workingset}, \startofbasicblock(\imath)) \\
-    \tup{\oog, \codepage{\gascounter}} &\otherwise
-  \end{cases}
+  \begin{aligned}
+    \tup{\varepsilon^\phase¬gas, \gascounter^\phase¬gas, \workingset^\phase¬gas} &= \begin{cases}
+      \tup{\continue, \gascounter, \workingset} &\when \gaschargedflag = \top \\
+      \tup{\varepsilon', \gascounter', \workingset'} &\otherwhen \varepsilon' \ne \continue \\
+      \tup{\continue, \gascounter' - g^\phase¬gas, \workingset'} &\otherwhen \gascounter' \ge g^\phase¬gas \\
+      \tup{\oog, \gascounter', \workingset'} &\otherwise
+    \end{cases} \\
+    \where \tup{\varepsilon', \gascounter', \workingset'} &= \codepagecharge(\gascounter, \workingset, \preamblepages(\mathbf{c}, \mathbf{k}, \startofbasicblock(\imath))) \\
+    \also g^\phase¬gas &= \gascostforblock(\mathbf{c}, \mathbf{k}, \len{\workingset}, \startofbasicblock(\imath))
+  \end{aligned}
 \end{equation}
+
+The instruction's own native code is then fetched, charging for the code pages it spans:
+\begin{equation}
+  \tup{\varepsilon^\phase¬fetch, \gascounter^\phase¬fetch, \workingset^\phase¬fetch} = \codepagecharge(\gascounter^\phase¬gas, \workingset^\phase¬gas, \pageforinstruction(\mathbf{c}, \mathbf{k}, \imath))
+\end{equation}
+
+An instruction that resolves its target through the jump-table reads an 8-octet entry from a native jump-table, laid out at a stride of eight octets per dynamic address unit; the entry for a target address $a$ thus lies on the jump-table page $\jumppage{\floor{\nicefrac{8a}{\Cpvmpagesize}}}$, where jump-table pages $\jumptag \times \N$ form their own class of page index, distinct from the \textsc{ram} and code pages of the same machine. This read is charged like any other access. No charge arises for the special halt address (its vector is permanently resident), nor where the entry's page lies wholly beyond the table (execution panics without any table access being made), however a charge \emph{is} made for a misaligned, zero or invalid-entry target whose page is within reach of the table, as the entry must be read before it can be found invalid. Formally:
+\begin{equation}
+  \begin{aligned}
+    \tup{\varepsilon^\phase¬djump, \gascounter^\phase¬djump, \workingset^\phase¬djump} &= \codepagecharge(\gascounter^\phase¬fetch, \workingset^\phase¬fetch, \mathbf{p}^\phase¬djump) \\
+    \where \mathbf{p}^\phase¬djump &= \begin{cases}
+      \sq{} &\when a^\circ = \none \vee a^\circ = 2^{32} - 2^{16} \vee \floor{\nicefrac{8a^\circ}{\Cpvmpagesize}} > \floor{\nicefrac{8\Cpvmdynaddralign\len{\mathbf{j}}}{\Cpvmpagesize}} \\
+      \sq{\jumppage{\floor{\nicefrac{8a^\circ}{\Cpvmpagesize}}}} &\otherwise
+    \end{cases}
+  \end{aligned}
+\end{equation}
+where $a^\circ \in \optional{\N}$ is the dynamic-jump target address which the instruction at $\imath$ resolves through the jump-table --- that is, the argument passed to its $\token{djump}$ (section \ref{sec:instructiontables}) --- or $\none$ where the instruction performs no dynamic jump.
 
 During the course of executing instructions \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
 
-In addition to these accessibility checks, as with instruction fetches, \textsc{ram} reads and writes implicitly pull accessed pages into the working-set. If the gas cost of a working-set change cannot be covered by the available gas, execution halts immediately. Note that working-set changes are interleaved with accessibility checks; this can affect observed behaviour in cases of gas exhaustion.
+In addition to these accessibility checks, as with instruction fetches, \textsc{ram} reads and writes implicitly pull accessed pages into the working-set, allocating a frame for the page (recorded in $\mem_\ram¬frames$) where none yet exists. If the gas cost of a working-set change cannot be covered by the available gas, execution is interrupted. Charges made (and frames allocated) for the earlier pages of a step persist even where a later access of the same step faults or exhausts gas.
 
-Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\mu$, posterior gas balance $\gascounter^\mu$, and posterior working-set $\workingset^\mu$ as following:
+Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\phase¬mem$, posterior gas balance $\gascounter^\phase¬mem$, posterior working-set $\workingset^\phase¬mem$, and posterior \textsc{ram} $\mem^\phase¬mem$ (which may differ from $\mem$ in its frames component only) as following:
 \begin{equation}
   \begin{aligned}
-    (\varepsilon^{\mu}, \gascounter^{\mu}, \workingset^{\mu}) &= A(\gascounter^\basicblocks, \codepage{\workingset},
-      \sqorderby{a_x}{\set{\build{(x, \is{r}{\top})}{x \in \mathbf{r}}} \cup \set{\build{(x, \is{r}{\bot})}{x \in \mathbf{w}}}}) \\
-    A(g, w, \sq{}) &= (\continue, g, w) \\
-    A(g, w, \sq{\tup{x, r}} \concat \mathbf{r}) &= \begin{aligned}
-      &\begin{cases}
-        (\panic, g, w) &\when y < 2^{16} \\
-        (\fault \times \pid¬index \Cpvmpagesize, g, w) &\otherwhen y \not\in
-          \set{\kv{\top}{\readable\mem}, \kv{\bot}{\writable\mem}}\subb{r} \\
-        (\oog, g, w) &\otherwhen g < g^\delta \\
-        A(g - g^\delta, w', \mathbf{r}) &\otherwise
-      \end{cases} \\
-      &\where y = x \bmod 2^{32} \\
-      &\also \pid¬index = \floor{\frac{y}{\Cpvmpagesize}} \\
-      &\also (g^\delta, w') = \gascostforpageaccess(w, \tup{\pid¬machine, \pid¬index})
-    \end{aligned}
+    (\varepsilon^\phase¬mem, \gascounter^\phase¬mem, \workingset^\phase¬mem, \mem^\phase¬mem) &= A(\gascounter^\phase¬djump, \workingset^\phase¬djump, \mem,
+      \sqorderby{x}{\set{\build{(x, \is{r}{\top})}{x \in \mathbf{r}}} \cup \set{\build{(x, \is{r}{\bot})}{x \in \mathbf{w}}}}) \\
+    A(g, w, \mem, \mathbf{p}) &= \begin{cases}
+      (\continue, g, w, \mem) &\when \mathbf{p} = \sq{} \\
+      (\panic, g, w, \mem) &\otherwhen y < 2^{16} \\
+      (\fault \times i \cdot \Cpvmpagesize, g, w, \mem) &\otherwhen y \not\in
+        \set{\kv{\top}{\readable\mem}, \kv{\bot}{\writable\mem}}\subb{r} \\
+      (\oog, g, w, \mem) &\otherwhen g < g^\delta \\
+      A(g - g^\delta, w', \mem', \mathbf{p}\sub{1\dots}) &\otherwise
+    \end{cases} \\
+    \where \tup{x, r} &= \mathbf{p}_0 \\
+    \also y &= x \bmod 2^{32} \\
+    \also i &= \floor{\frac{y}{\Cpvmpagesize}} \\
+    \also (g^\delta, w') &= \gascostforpageaccess(w, \tup{\pid¬machine, \datapage{i}}, \pagefaultcost(\mem, i)) \\
+    \also \mem' &= \mem \exc \mem'_\ram¬frames\subb{i} = \frame¬present
   \end{aligned}
 \end{equation}
 
 We define the final execution state, the value of the instruction counter, the gas counter, the gas-charged flag, the values of the registers and the memory, and the working-set as follows:
 \begin{equation}
   \tup{\varepsilon^*, \imath^*, \gascounter^*, \gaschargedflag^*, \registers^*, \mem^*, \workingset^*} = \begin{cases}
-    \tup{\codepage{\varepsilon}, \imath, \codepage{\gascounter}, \gaschargedflag, \registers, \mem, \codepage{\workingset}} &\when \codepage{\varepsilon} \ne \continue \\
-    \tup{\varepsilon^\basicblocks, \imath, \gascounter^\basicblocks, \bot, \registers, \mem, \codepage{\workingset}} &\otherwhen \varepsilon^\basicblocks \ne \continue \\
-    \tup{\varepsilon^\mu, \imath, \gascounter^\mu, \top, \registers, \mem, \workingset^\mu} &\otherwhen \varepsilon^\mu \ne \continue \\
-    \tup{\varepsilon, \imath', \gascounter^\mu, \top, \registers', \mem', \workingset^\mu} &\otherwhen \varepsilon \not\in \set{\continue} \cup \set{\host} \times \pvmreg \\
-    \tup{\varepsilon, \imath', \gascounter^\mu, \mathbf{c}_\imath \not\in T, \registers', \mem', \workingset^\mu} &\otherwise
+    \tup{\varepsilon^\phase¬gas, \imath, \gascounter^\phase¬gas, \bot, \registers, \mem, \workingset^\phase¬gas} &\when \varepsilon^\phase¬gas \ne \continue \\
+    \tup{\varepsilon^\phase¬fetch, \imath, \gascounter^\phase¬fetch, \top, \registers, \mem, \workingset^\phase¬fetch} &\otherwhen \varepsilon^\phase¬fetch \ne \continue \\
+    \tup{\varepsilon^\phase¬djump, \imath, \gascounter^\phase¬djump, \top, \registers, \mem, \workingset^\phase¬djump} &\otherwhen \varepsilon^\phase¬djump \ne \continue \\
+    \tup{\varepsilon^\phase¬mem, \imath, \gascounter^\phase¬mem, \top, \registers, \mem^\phase¬mem, \workingset^\phase¬mem} &\otherwhen \varepsilon^\phase¬mem \ne \continue \\
+    \tup{\varepsilon, \imath', \gascounter^\phase¬mem, \top, \registers', \mem', \workingset^\phase¬mem} &\otherwhen \varepsilon \not\in \set{\continue} \cup \set{\host} \times \pvmreg \\
+    \tup{\varepsilon, \imath', \gascounter^\phase¬mem, \mathbf{c}_\imath \not\in T, \registers', \mem', \workingset^\phase¬mem} &\otherwise
   \end{cases}
 \end{equation}
 
 We define $\varepsilon$ together with the posterior values of regular execution (denoted as prime) of each of the items of the machine state as being in accordance with the table below. When transitioning machine state for an instruction, a number of conditions typically hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one and \textsc{ram} \& registers are unchanged. Formally:
 \begin{equation}
-  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \registers' = \registers,\quad\mem' = \mem \text{ except as indicated }
+  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \registers' = \registers,\quad\mem' = \mem^\phase¬mem \text{ except as indicated }
 \end{equation}
 
 We define signed/unsigned transitions for various octet widths:
@@ -872,6 +914,14 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
     \end{cases}
 \end{equation}
 
+No page begins with an allocated frame. The cost of provisioning each page's frame falls on whichever access first touches it (see appendix \ref{sec:workingsetchanges}), and depends on whether that page's initial content must be copied from the program image or is merely zeroed:
+\begin{equation}
+  \forall j \in \Nmax{\nicefrac{2^{32}}{\Cpvmpagesize}} : \mem_\ram¬frames\subb{j} = \begin{cases}
+    \frame¬missing¬copy &\when \Nrange{j\Cpvmpagesize}{\Cpvmpagesize} \cap \mathcal{I} \ne \emptyset \\
+    \frame¬missing¬zero &\otherwise
+  \end{cases}\ ,\quad \mathcal{I} = \Nrange{\Cpvminitzonesize}{\len{\mathbf{o}}} \cup \Nrange{2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}}}{\len{\mathbf{w}}} \cup \Nrange{2^{32} - \Cpvminitzonesize - \Cpvminitinputsize}{\len{\mathbf{a}}}
+\end{equation}
+
 \subsection{Argument Invocation Definition}
 
 The three instances where the \textsc{pvm} is utilized each expect to be able to pass argument data in and receive some return data back. We thus define the common \textsc{pvm} program-argument invocation function $\Psi_M$:
@@ -1156,47 +1206,76 @@ The state transition function $\gas¬sim'''$ which simulates the rest of the vir
 
 \subsection{Working-Set Changes}\label{sec:workingsetchanges}
 
-In addition to the static gas cost of each basic block as calculated by $\gascostforblock$, gas is charged dynamically whenever a memory page outside of the current working-set is accessed. Such an access implicitly adds the accessed page to the working-set, pushing another page out if necessary. The function $\gascostforpageaccess$ determines the working-set change, if any, required to access a page $p \in \pageid$, and the corresponding gas cost.
+In addition to the static gas cost of each basic block as calculated by $\gascostforblock$, gas is charged dynamically whenever a memory page outside of the current working-set is accessed. Such an access implicitly adds the accessed page to the working-set, pushing another page out if necessary. The working-set is a first-in first-out buffer of fixed length, and each insertion drops the oldest entry. A dropped page ceases to be resident, and re-accessing it later incurs a further working-set charge. This affects only gas, never the contents or accessibility of the page, so (given enough gas) the working-set has no effect on execution semantics. The function $\gascostforpageaccess$ determines the working-set change, if any, required to access a page $p \in \pageid$ whose insertion cost is $c$, and the corresponding gas cost.
 \begin{equation}
   \gascostforpageaccess\colon \abracegroup{
-    \tuple{\sequence{\optional{\pageid}}, \pageid} &\to \tuple{\gas, \sequence{\optional{\pageid}}} \\
-    \tup{\workingset, p} &\mapsto \begin{cases}
+    \tuple{\sequence{\optional{\pageid}}, \pageid, \N} &\to \tuple{\gas, \sequence{\optional{\pageid}}} \\
+    \tup{\workingset, p, c} &\mapsto \begin{cases}
       (0, \workingset) &\when p \in \workingset \\
-      (\text{TODO}, \workingset\sub{1\dots} \append p) &\otherwise
+      (c, \workingset\sub{1\dots} \append p) &\otherwise
     \end{cases}
   }
 \end{equation}
 
-This mechanism applies to explicit data accesses, via instructions such as \token{load\_u8}, as well as to the implicit reading of instructions by the machine. The instructions for a machine are not present in its \textsc{ram} $\memory$, and so instruction addresses cannot be mapped to regular page indices. For the sole purpose of this mechanism, we define a function $\pageforinstruction$ which maps instruction addresses to special page indices $\codepage{\N} \equiv \set{\build{\codepage{n}}{n \in \N}}$:
+The insertion cost of a code or a jump-table page is always the base page-fault cost $\Cpvmgaspagefault$, covering the fault itself together with the mapping and unmapping work implied by insertion and eviction. The insertion cost of \textsc{ram} pages additionally depend on whether a physical frame has previously been allocated for them, as recorded by the frames component $\ram¬frames$ of the \textsc{ram} (\ref{eq:pvmmemory}). Upon a page's first-ever access a frame must be provisioned, paying $\Cpvmgaspagealloc$ (which accounts both for its allocation and for its eventual deallocation when the machine is destroyed), as well as the cost of populating the page: $\Cpvmgaspagezero$ where the page is zero-sourced (the frame has to be merely cleared), and $\Cpvmgaspagecopy$ where it is copy-sourced (its content must be copied from the program's initial image). Which applies is a fixed property of the page's provenance, recorded as $\frame¬missing¬zero$ or $\frame¬missing¬copy$ in $\ram¬frames$ when the machine is laid out (\ref{eq:memlayout}), and does \emph{not} depend on the page's current contents. Once allocated, a frame persists regardless of eviction from the working-set, and re-insertion pays only the base cost. Formally, the insertion cost of the \textsc{ram} page with index $i$ of a machine with \textsc{ram} $\mu$ is given by $\pagefaultcost$:
+\begin{equation}\label{eq:pagefaultcost}
+  \pagefaultcost\colon \abracegroup{
+    \tuple{\ram, \N} &\to \N \\
+    \tup{\mu, i} &\mapsto \begin{cases}
+      \Cpvmgaspagefault &\when \mu_\ram¬frames\subb{i} = \frame¬present \\
+      \Cpvmgaspagefault + \Cpvmgaspagealloc + \Cpvmgaspagezero &\otherwhen \mu_\ram¬frames\subb{i} = \frame¬missing¬zero \\
+      \Cpvmgaspagefault + \Cpvmgaspagealloc + \Cpvmgaspagecopy &\otherwise
+    \end{cases}
+  }
+\end{equation}
+
+A successful charge for a \textsc{ram} page always sets the page's entry in $\ram¬frames$ to $\frame¬present$. In case the charge cannot be met, machine state is left unchanged. This mechanism applies to explicit data accesses (via load/store instructions), as well as to the implicit reading of instructions by the machine. The instructions for a machine are not present in its \textsc{ram} $\memory$, and so instruction addresses cannot be mapped to regular page indices; instead they are mapped to special code-page indices $\codetag \times \N$. Assuming the native code is laid out contiguously from offset zero, we first define $\bbpreamblesize(\imath)$, the size of the gas-metering stub emitted before an instruction which begins a basic block (to charge that block's gas according to $\gascostforblock$):
 \begin{equation}
-  \pageforinstruction\colon \abracegroup{
-    &\tuple{\blob, \bitstring, \pvmreg} \to \codepage{\N} \\
-    &\tup{\mathbf{c}, \mathbf{k}, \imath} \mapsto \codepage{\floor{\frac{A(0, 0)}{\Cpvmpagesize}}} \\
-    &\quad\where A(i, s) \equiv \begin{cases}
-      s - 1 &\when i > \imath \\
-      A(i + 1 + \text{skip}(i), B(s, N(i))) &\otherwise
-    \end{cases} \\
-    % Maximum compiled size of the instruction at address i, including any immediately
-    % preceding basic block preamble
-    &\quad\also N(i) \equiv \inst¬compiledsize(\mathbf{c}, \mathbf{k}, i) + \begin{cases}
-      \text{TODO} &\when i \in \basicblocks \\
-      0 &\otherwise
-    \end{cases} \\
-    % Bump s by n bytes, jumping to the next page boundary first if the n bytes would otherwise
-    % straddle it
-    &\quad\also B(s, n) \equiv \begin{cases}
-      s + n &\when n \le \Cpvmpagesize - (s \rem \Cpvmpagesize) \\
-      \Cpvmpagesize \floor{\frac{s}{\Cpvmpagesize}} + \Cpvmpagesize + n &\otherwise
+  \bbpreamblesize(\imath) \equiv \begin{cases}
+    10 &\when \imath \in \basicblocks \\
+    0 &\otherwise
+  \end{cases}
+\end{equation}
+
+From this, $\codeoffset$ gives the byte offset at which the native code of the instruction at address $\imath$ begins, including any preceding basic-block preamble:
+\begin{equation}
+  \codeoffset\colon \abracegroup{
+    \tuple{\blob, \bitstring, \pvmreg} &\to \N \\
+    \tup{\mathbf{c}, \mathbf{k}, \imath} &\mapsto L(\mathbf{c}, \mathbf{k}, \imath, 0) \\
+    \where L(\mathbf{c}, \mathbf{k}, \imath, p) &\equiv \begin{cases}
+      0 &\when p = \imath \\
+      \inst¬compiledsize(\mathbf{c}, \mathbf{k}, p) + \bbpreamblesize(p) + L(\mathbf{c}, \mathbf{k}, \imath, p + 1 + \Fskip(p)) &\otherwise
     \end{cases}
   }
 \end{equation}
 
-$\pageforinstruction$ is defined under the assumption that \textsc{pvm} program code is translated into native code for execution. It utilises the function $\inst¬compiledsize(\mathbf{c}, \mathbf{k}, \imath)$, which returns the size of the native code translation of the \textsc{pvm} instruction at address $\imath$. The values returned by $\inst¬compiledsize$ are specified in section \ref{sec:gascosttables}. Allowance is also made by $\pageforinstruction$ for a small section of native code at the start of each basic block, to charge gas according to $\gascostforblock$.
+The instruction's own native code occupies the byte range after its block's preamble (if any), and the preamble, where present, the range before it. $\spannedpages(o, z)$ gives the ascending pages spanned by the $z$-byte range at $o$, $\codepages$ tags them as code pages, and $\pageforinstruction$ and $\preamblepages$ apply this to the instruction's own range and to its preamble's:
+\begin{align}
+  \spannedpages(o, z) &\equiv\label{eq:pagespan} \begin{cases}
+    \sq{} &\when z = 0 \\
+    \sqorderby{p}{\set{\build{p}{\floor{\frac{o}{\Cpvmpagesize}} \le p \le \floor{\frac{o + z - 1}{\Cpvmpagesize}}}}} &\otherwise
+  \end{cases} \\
+  \codepages(o, z) &\equiv \sq{\build{\codepage{p}}{p \orderedin \spannedpages(o, z)}} \\
+  \pageforinstruction(\mathbf{c}, \mathbf{k}, \imath) &\equiv \codepages(\codeoffset(\mathbf{c}, \mathbf{k}, \imath) + \bbpreamblesize(\imath),\ \inst¬compiledsize(\mathbf{c}, \mathbf{k}, \imath)) \\
+  \preamblepages(\mathbf{c}, \mathbf{k}, \imath) &\equiv \codepages(\codeoffset(\mathbf{c}, \mathbf{k}, \imath),\ \bbpreamblesize(\imath))
+\end{align}
 
-The working-set is shared with inner \textsc{pvm} instances. For this reason, page identifiers characterized by the set $\pageid$ consist of a machine identifier $\pid¬machine$ in addition to a page index $\pid¬index$. $\none$ is used to identify the top-level \textsc{pvm} instance.
+These are defined under the assumption that \textsc{pvm} program code is translated into native code for execution. The function $\inst¬compiledsize(\mathbf{c}, \mathbf{k}, \imath)$ (defined in \ref{sec:compiledsizes}) returns the size of the native code translation of the \textsc{pvm} instruction at address $\imath$.
+
+The working-set is shared with inner \textsc{pvm} instances. For this reason, page identifiers characterized by the set $\pageid$ consist of a machine identifier $\pid¬machine$ in addition to a page index $\pid¬index$, the latter a page number paired with one of the disjoint class tags $\datatag$, $\codetag$ or $\jumptag$, for \textsc{ram}, code and jump-table pages respectively. $\none$ is used to identify the top-level \textsc{pvm} instance.
 \begin{equation}
   \label{eq:pageid}
-  \pageid \equiv \tuple{\isa{\pid¬machine}{\optional{\N}}, \isa{\pid¬index}{\N \cup \codepage{\N}}}
+  \pageid \equiv \tuple{\isa{\pid¬machine}{\optional{\N}}, \isa{\pid¬index}{\set{\datatag, \codetag, \jumptag} \times \N}}
+\end{equation}
+
+The working-set size is fixed for the duration of an invocation, drawn from the valid sizes $\workingsetsize$~(\ref{eq:workingsetsize}). The lower bound $\Cpvmminworkingset$ guarantees forward progress: it exceeds the most pages any single step can need resident at once, so a step is never forced to evict a page it still requires. The upper bound $\Cpvmmaxworkingset$ keeps the resident set within the last-level cache of reference hardware, which is what justifies the pricing of resident accesses set out later in the gas cost tables~(\ref{eq:loadcost}).
+
+An entry is removed when the page it identifies ceases to exist: on expunging an inner machine, or deallocating or resetting \textsc{ram} pages through the $\mathtt{pages}$ host-call (appendix \ref{sec:refinefunctions}). The removed pages are replaced by $\none$ in-place. We write the removal of a page set $\mathbf{s} \subseteq \pageid$ as set-subtraction:
+\begin{equation}
+  \workingset \setminus \mathbf{s} \equiv \sq{\build{\begin{cases}
+    \none &\when e \in \mathbf{s} \\
+    e &\otherwise
+  \end{cases}}{e \orderedin \workingset}}
 \end{equation}
 
 \subsection{Gas Cost Tables}\label{sec:gascosttables}
@@ -1228,16 +1307,19 @@ For non-immediate shift and rotate instructions only the first source register m
   }
 \end{equation}
 
-The cost of memory accesses depends on the size of the working-set $w$ and is defined as follows:
+The cost of memory loads depends on the size of the working-set $w$: the resident set always fits within the last-level cache, but a larger one exceeds the reach of the address-translation caches, making the worst-case resident access dearer. It is defined as follows:\footnote{These values are provisional, pending calibration; see appendix \ref{sec:workingsetchanges}.}
 
-\begin{equation}
+\begin{equation}\label{eq:loadcost}
   \mathfrak{m}\colon \abracegroup{
       \workingsetsize &\to \N \\
-      w &\mapsto \text{TODO}
+      w &\mapsto \begin{cases}
+        25 &\when w \le 2^9 \\
+        37 &\when w \le 2^{12} \\
+        48 &\otherwise
+      \end{cases}
   }
 \end{equation}
 
-% TODO: Should the cost of a branch also depend on the working-set size?
 The cost of a branch depends on whether any of its targets (either the jump target or the implicit fallthrough) point to an instruction byte which is equal to the opcode for the \token{unlikely} or the \token{trap} instruction; formally:
 
 \begin{equation}
@@ -1255,46 +1337,47 @@ The cost of a branch depends on whether any of its targets (either the jump targ
 \end{equation}
 
 \newcommand*{\ifdstandsrcoverlap}[2]{$\mathfrak{P}(#1, #2)$}
+\newcommand*{\srcdsteq}[1]{\mathfrak{D}_{#1}}
 \newcommand*{\ifdstandsrcoverlapshift}[2]{$\mathfrak{P}_{S}(#1, #2)$}
 \newcommand*{\loadcost}{$\mathfrak{m}$}
 \newcommand*{\storecost}{25}
 \newcommand*{\branchcost}{$\mathfrak{b}$}
 
-\newcommand*{\simplealuthreeop}{1&\ifdstandsrcoverlap{1}{2}&1&0&0&0&0&?}
-\newcommand*{\simplealuthreeopthirtytwo}{2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0&?}
-\newcommand*{\simplealutwoop}{1&\ifdstandsrcoverlap{1}{2}&1&0&0&0&0&?}
-\newcommand*{\simplealutwoopthirtytwo}{2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0&?}
-\newcommand*{\trivialtwooponecycle}{1&1&1&0&0&0&0&?}
-\newcommand*{\trivialtwooptwocycles}{2&1&2&0&0&0&0&?}
-\newcommand*{\shiftsandrotates}{1&\ifdstandsrcoverlapshift{2}{3}&1&0&0&0&0&?}
-\newcommand*{\shiftsandrotatesthirtytwo}{2&\ifdstandsrcoverlapshift{3}{4}&1&0&0&0&0&?}
-\newcommand*{\shiftsandrotatesalt}{1&3&1&0&0&0&0&?}
-\newcommand*{\shiftsandrotatesaltthirtytwo}{2&4&1&0&0&0&0&?}
-\newcommand*{\regcomp}{3&3&1&0&0&0&0&?}
-\newcommand*{\regcompimm}{3&3&1&0&0&0&0&?}
-\newcommand*{\cmov}{2&2&1&0&0&0&0&?}
-\newcommand*{\cmovimm}{2&3&1&0&0&0&0&?}
-\newcommand*{\minmax}{3&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0&?}
-\newcommand*{\indirectload}{\loadcost&1&1&1&0&0&0&?}
-\newcommand*{\directload}{\loadcost&1&1&1&0&0&0&?}
-\newcommand*{\indirectstoreimm}{\storecost&1&1&0&1&0&0&?}
-\newcommand*{\indirectstore}{\storecost&1&1&0&1&0&0&?}
-\newcommand*{\storeimm}{\storecost&1&1&0&1&0&0&?}
-\newcommand*{\directstore}{\storecost&1&1&0&1&0&0&?}
-\newcommand*{\branch}{\branchcost&1&1&0&0&0&0&?}
-\newcommand*{\branchimm}{\branchcost&1&1&0&0&0&0&?}
-\newcommand*{\divrem}{60&4&1&0&0&0&1&?}
-\newcommand*{\finish}[1]{#1&1&0&0&0&0&0&?}
+\newcommand*{\simplealuthreeop}{1&\ifdstandsrcoverlap{1}{2}&1&0&0&0&0}
+\newcommand*{\simplealuthreeopthirtytwo}{2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0}
+\newcommand*{\simplealutwoop}{1&\ifdstandsrcoverlap{1}{2}&1&0&0&0&0}
+\newcommand*{\simplealutwoopthirtytwo}{2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0}
+\newcommand*{\trivialtwooponecycle}{1&1&1&0&0&0&0}
+\newcommand*{\trivialtwooptwocycles}{2&1&2&0&0&0&0}
+\newcommand*{\shiftsandrotates}{1&\ifdstandsrcoverlapshift{2}{3}&1&0&0&0&0}
+\newcommand*{\shiftsandrotatesthirtytwo}{2&\ifdstandsrcoverlapshift{3}{4}&1&0&0&0&0}
+\newcommand*{\shiftsandrotatesalt}{1&3&1&0&0&0&0}
+\newcommand*{\shiftsandrotatesaltthirtytwo}{2&4&1&0&0&0&0}
+\newcommand*{\regcomp}{3&3&1&0&0&0&0}
+\newcommand*{\regcompimm}{3&3&1&0&0&0&0}
+\newcommand*{\cmov}{2&2&1&0&0&0&0}
+\newcommand*{\cmovimm}{2&3&1&0&0&0&0}
+\newcommand*{\minmax}{3&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0}
+\newcommand*{\indirectload}{\loadcost&1&1&1&0&0&0}
+\newcommand*{\directload}{\loadcost&1&1&1&0&0&0}
+\newcommand*{\indirectstoreimm}{\storecost&1&1&0&1&0&0}
+\newcommand*{\indirectstore}{\storecost&1&1&0&1&0&0}
+\newcommand*{\storeimm}{\storecost&1&1&0&1&0&0}
+\newcommand*{\directstore}{\storecost&1&1&0&1&0&0}
+\newcommand*{\branch}{\branchcost&1&1&0&0&0&0}
+\newcommand*{\branchimm}{\branchcost&1&1&0&0&0&0}
+\newcommand*{\divrem}{60&4&1&0&0&0&1}
+\newcommand*{\finish}[1]{#1&1&0&0&0&0&0}
 
 In the following table the $\mathbf{c}$, $\mathbf{k}$, $w$, and $\imath$ arguments are omitted for clarity.
 
-\renewcommand*{\mrule}{\cmidrule(lr){1-9}}
-\begin{longtable}[t]{p{30mm} p{12mm} p{12mm} p{4mm} p{4mm} p{4mm} p{4mm} p{4mm} p{4mm}}
+\renewcommand*{\mrule}{\cmidrule(lr){1-8}}
+\begin{longtable}[t]{p{30mm} p{12mm} p{12mm} p{4mm} p{4mm} p{4mm} p{4mm} p{4mm}}
   \toprule
-  \thead{\textbf{Instruction}} & \thead{$\cost¬cycles$} & \thead{$\cost¬decodeslots$} & \thead{$\cost¬execunits_{\ALU}$} & \thead{$\cost¬execunits_{\LOAD}$} & \thead{$\cost¬execunits_{\STORE}$} & \thead{$\cost¬execunits_{\MUL}$} & \thead{$\cost¬execunits_{\DIV}$} & \thead{$\inst¬compiledsize$} \\
+  \thead{\textbf{Instruction}} & \thead{$\cost¬cycles$} & \thead{$\cost¬decodeslots$} & \thead{$\cost¬execunits_{\ALU}$} & \thead{$\cost¬execunits_{\LOAD}$} & \thead{$\cost¬execunits_{\STORE}$} & \thead{$\cost¬execunits_{\MUL}$} & \thead{$\cost¬execunits_{\DIV}$} \\
   \midrule
   \endhead
-  \token{move\_reg}&0&1&0&0&0&0&0&? \\ \mrule
+  \token{move\_reg}&0&1&0&0&0&0&0 \\ \mrule
 
   \token{and}&\simplealuthreeop \\ \mrule
   \token{xor}&\simplealuthreeop \\ \mrule
@@ -1435,30 +1518,265 @@ In the following table the $\mathbf{c}$, $\mathbf{k}$, $w$, and $\imath$ argumen
   \token{rem\_u\_64}&\divrem \\ \mrule
   \token{rem\_s\_64}&\divrem \\ \mrule
 
-  \token{and\_inv}&2&3&1&0&0&0&0&?\\ \mrule
-  \token{or\_inv}&2&3&1&0&0&0&0&?\\ \mrule
-  \token{xnor}&2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0&?\\ \mrule
-  \token{neg\_add\_imm\_64}&2&3&1&0&0&0&0&?\\ \mrule
-  \token{neg\_add\_imm\_32}&3&4&1&0&0&0&0&?\\ \mrule
-  \token{load\_imm}&1&1&0&0&0&0&0&?\\ \mrule
-  \token{load\_imm\_64}&1&2&0&0&0&0&0&?\\ \mrule
+  \token{and\_inv}&2&3&1&0&0&0&0\\ \mrule
+  \token{or\_inv}&2&3&1&0&0&0&0\\ \mrule
+  \token{xnor}&2&\ifdstandsrcoverlap{2}{3}&1&0&0&0&0\\ \mrule
+  \token{neg\_add\_imm\_64}&2&3&1&0&0&0&0\\ \mrule
+  \token{neg\_add\_imm\_32}&3&4&1&0&0&0&0\\ \mrule
+  \token{load\_imm}&1&1&0&0&0&0&0\\ \mrule
+  \token{load\_imm\_64}&1&2&0&0&0&0&0\\ \mrule
 
-  \token{mul\_64}&3&\ifdstandsrcoverlap{1}{2}&1&0&0&1&0&?\\ \mrule
-  \token{mul\_32}&4&\ifdstandsrcoverlap{2}{3}&1&0&0&1&0&?\\ \mrule
-  \token{mul\_imm\_64}&3&\ifdstandsrcoverlap{1}{2}&1&0&0&1&0&?\\ \mrule
-  \token{mul\_imm\_32}&4&\ifdstandsrcoverlap{2}{3}&1&0&0&1&0&?\\ \mrule
-  \token{mul\_upper\_s\_s}&4&4&1&0&0&1&0&?\\ \mrule
-  \token{mul\_upper\_u\_u}&4&4&1&0&0&1&0&?\\ \mrule
-  \token{mul\_upper\_s\_u}&6&4&1&0&0&1&0&?\\ \mrule
+  \token{mul\_64}&3&\ifdstandsrcoverlap{1}{2}&1&0&0&1&0\\ \mrule
+  \token{mul\_32}&4&\ifdstandsrcoverlap{2}{3}&1&0&0&1&0\\ \mrule
+  \token{mul\_imm\_64}&3&\ifdstandsrcoverlap{1}{2}&1&0&0&1&0\\ \mrule
+  \token{mul\_imm\_32}&4&\ifdstandsrcoverlap{2}{3}&1&0&0&1&0\\ \mrule
+  \token{mul\_upper\_s\_s}&4&4&1&0&0&1&0\\ \mrule
+  \token{mul\_upper\_u\_u}&4&4&1&0&0&1&0\\ \mrule
+  \token{mul\_upper\_s\_u}&6&4&1&0&0&1&0\\ \mrule
 
   \token{trap}&\finish{2} \\ \mrule
   \token{fallthrough}&\finish{2}\\ \mrule
-  \token{unlikely}&40&1&0&0&0&0&0&?\\ \mrule
+  \token{unlikely}&40&1&0&0&0&0&0\\ \mrule
   \token{jump}&\finish{15}\\ \mrule
   \token{load\_imm\_jump}&\finish{15}\\ \mrule
-  \token{jump\_ind}&22&1&0&0&0&0&0&?\\ \mrule
-  \token{load\_imm\_jump\_ind}&22&1&0&0&0&0&0&?\\ \mrule
+  \token{jump\_ind}&22&1&0&0&0&0&0\\ \mrule
+  \token{load\_imm\_jump\_ind}&22&1&0&0&0&0&0\\ \mrule
 
-  \token{ecalli}&100&4&1&0&0&0&0&?\\
+  \token{ecalli}&100&4&1&0&0&0&0\\
 \bottomrule
 \end{longtable}
+
+\subsection{Compiled Sizes}\label{sec:compiledsizes}
+
+$\inst¬compiledsize$ is given by the following table. $\srcdsteq{i}$ holds when the destination register coincides with the $i$-th source register; $\reg_b$ is the base register used by a load or store for address computation; and $t_1 = 3$ and $t_2 = 4$ are the two guest registers (\textsc{pvm}'s $\mathtt{T1}$ and $\mathtt{T2}$) whose underlying native registers force, respectively, a displacement byte and an index byte in native addressing. The decoded immediates $\immed_X, \immed_Y$ are as defined in section \ref{sec:instructiontables}. The direct branch and jump instructions are an exception: each consists of a fixed prefix (a register comparison or an immediate load) followed by a relative jump to its target basic block, and the translator encodes that jump in a compact 2-byte form precisely when the target has \emph{already} been translated (it lies at or before $\imath$, a backward branch) and is within a signed byte's reach; otherwise a longer form is used. Their size is therefore layout-dependent, given by $\branchsize(t, p, r, R)$ for a branch whose target is basic block $t$, whose fixed prefix is $p$ bytes, and whose trailing jump occupies $r$ bytes when short and $R$ when long:
+\begin{equation}
+  \branchsize(t, p, r, R) \equiv p + \begin{cases}
+    r &\when t \le \imath \;\wedge\; -128 \le \Delta \le 127 \\
+    R &\otherwise
+  \end{cases}
+  \quad\where \Delta = \codeoffset(\mathbf{c}, \mathbf{k}, t) - \left(\codeoffset(\mathbf{c}, \mathbf{k}, \imath) + \bbpreamblesize(\imath) + p + r\right)
+\end{equation}
+For the register-immediate branches the comparison prefix $q$ is smaller when the immediate fits in a signed byte:
+\begin{equation}
+  q = \begin{cases} 4 &\when -128 \le \signed{\immed_X} \le 127 \\ 7 &\otherwise \end{cases}
+\end{equation}
+
+\renewcommand*{\mrule}{\cmidrule(lr){1-2}}
+\newcommand*{\csbranch}{$\branchsize(\immed_X, 3, 2, 6)$}
+\newcommand*{\csbranchimm}{$\branchsize(\immed_Y, q, 2, 6)$}
+\newcommand*{\srcone}[2]{$\begin{cases}
+    #1 &\when \srcdsteq{1} \\
+    #2 &\otherwise
+  \end{cases}$}
+\newcommand*{\srctwo}[2]{$\begin{cases}
+    #1 &\when \srcdsteq{1} \lor \srcdsteq{2} \\
+    #2 &\otherwise
+  \end{cases}$}
+\newcommand*{\srcimm}[3]{$\begin{cases}
+    #1 &\when \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
+    #2 &\when \srcdsteq{1} \lor {-}128 \le \signed{\immed_X} \le 127 \\
+    #3 &\otherwise
+  \end{cases}$}
+\newcommand*{\setltimm}{$\begin{cases}
+    12 &\when \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
+    15 &\when \srcdsteq{1} \\
+    11 &\when \lnot \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
+    14 &\otherwise
+  \end{cases}$}
+\newcommand*{\indbase}[5]{$\begin{cases}
+    #1 &\when \reg_b \notin \set{t_1, t_2} \land \immed_X = 0 \\
+    #2 &\when (\reg_b \ne t_2 \land {-}128 \le \signed{\immed_X} \le 127) \lor (\reg_b = t_2 \land \immed_X = 0) \\
+    #3 &\when \reg_b \ne t_2 \\
+    #4 &\when \reg_b = t_2 \land {-}128 \le \signed{\immed_X} \le 127 \\
+    #5 &\otherwise
+  \end{cases}$}
+\newcommand*{\loadsx}[2]{$\begin{cases}
+    #1 &\when \signed{\immed_X} < 0 \\
+    #2 &\otherwise
+  \end{cases}$}
+{\footnotesize
+\begin{longtable}{p{30mm} l}
+  \toprule
+  \thead{\textbf{Instruction}} & \thead{$\inst¬compiledsize$} \\
+  \midrule
+  \endhead
+  \token{move\_reg}&3 \\ \mrule
+  \token{and}&\srctwo{3}{6} \\ \mrule
+  \token{xor}&\srctwo{3}{6} \\ \mrule
+  \token{or}&\srctwo{3}{6} \\ \mrule
+  \token{add\_64}&\srctwo{3}{6} \\ \mrule
+  \token{sub\_64}&\srcone{3}{6} \\ \mrule
+  \token{add\_32}&\srctwo{6}{9} \\ \mrule
+  \token{sub\_32}&\srcone{6}{9} \\ \mrule
+  \token{and\_imm}&\srcimm{4}{7}{10} \\ \mrule
+  \token{xor\_imm}&\srcimm{4}{7}{10} \\ \mrule
+  \token{or\_imm}&\srcimm{4}{7}{10} \\ \mrule
+  \token{add\_imm\_64}&\srcimm{4}{7}{10} \\ \mrule
+  \token{shlo\_r\_imm\_64}&\srcone{4}{7} \\ \mrule
+  \token{shar\_r\_imm\_64}&\srcone{4}{7} \\ \mrule
+  \token{shlo\_l\_imm\_64}&\srcone{4}{7} \\ \mrule
+  \token{rot\_r\_64\_imm}&\srcone{4}{7} \\ \mrule
+  \token{reverse\_bytes}&\srcone{3}{6} \\ \mrule
+  \token{add\_imm\_32}&\srcimm{7}{10}{13} \\ \mrule
+  \token{shlo\_r\_imm\_32}&\srcone{7}{10} \\ \mrule
+  \token{shar\_r\_imm\_32}&\srcone{7}{10} \\ \mrule
+  \token{shlo\_l\_imm\_32}&\srcone{7}{10} \\ \mrule
+  \token{rot\_r\_32\_imm}&\srcone{7}{10} \\ \mrule
+  \token{count\_set\_bits\_64}&5 \\ \mrule
+  \token{count\_set\_bits\_32}&5 \\ \mrule
+  \token{leading\_zero\_bits\_64}&5 \\ \mrule
+  \token{leading\_zero\_bits\_32}&5 \\ \mrule
+  \token{sign\_extend\_8}&4 \\ \mrule
+  \token{sign\_extend\_16}&4 \\ \mrule
+  \token{zero\_extend\_16}&4 \\ \mrule
+  \token{trailing\_zero\_bits\_64}&5 \\ \mrule
+  \token{trailing\_zero\_bits\_32}&5 \\ \mrule
+  \token{shlo\_l\_64}&\srcone{6}{9} \\ \mrule
+  \token{shlo\_r\_64}&\srcone{6}{9} \\ \mrule
+  \token{shar\_r\_64}&\srcone{6}{9} \\ \mrule
+  \token{rot\_l\_64}&\srcone{6}{9} \\ \mrule
+  \token{rot\_r\_64}&\srcone{6}{9} \\ \mrule
+  \token{shlo\_l\_32}&\srcone{9}{12} \\ \mrule
+  \token{shlo\_r\_32}&\srcone{9}{12} \\ \mrule
+  \token{shar\_r\_32}&\srcone{9}{12} \\ \mrule
+  \token{rot\_l\_32}&\srcone{9}{12} \\ \mrule
+  \token{rot\_r\_32}&\srcone{9}{12} \\ \mrule
+  \token{shlo\_l\_imm\_alt\_64}&13 \\ \mrule
+  \token{shlo\_r\_imm\_alt\_64}&13 \\ \mrule
+  \token{shar\_r\_imm\_alt\_64}&13 \\ \mrule
+  \token{rot\_r\_64\_imm\_alt}&13 \\ \mrule
+  \token{shlo\_l\_imm\_alt\_32}&15 \\ \mrule
+  \token{shlo\_r\_imm\_alt\_32}&15 \\ \mrule
+  \token{shar\_r\_imm\_alt\_32}&15 \\ \mrule
+  \token{rot\_r\_32\_imm\_alt}&15 \\ \mrule
+  \token{set\_lt\_u}&\srctwo{11}{10} \\ \mrule
+  \token{set\_lt\_s}&\srctwo{11}{10} \\ \mrule
+  \token{set\_lt\_u\_imm}&\setltimm \\ \mrule
+  \token{set\_lt\_s\_imm}&\setltimm \\ \mrule
+  \token{set\_gt\_u\_imm}&\setltimm \\ \mrule
+  \token{set\_gt\_s\_imm}&\setltimm \\ \mrule
+  \token{cmov\_iz}&\srcone{0}{7} \\ \mrule
+  \token{cmov\_nz}&\srcone{0}{7} \\ \mrule
+  \token{cmov\_iz\_imm}&14 \\ \mrule
+  \token{cmov\_nz\_imm}&14 \\ \mrule
+  \token{max}&\srctwo{7}{10} \\ \mrule
+  \token{max\_u}&\srctwo{7}{10} \\ \mrule
+  \token{min}&\srctwo{7}{10} \\ \mrule
+  \token{min\_u}&\srctwo{7}{10} \\ \mrule
+  \token{load\_ind\_u8}&\indbase{5}{6}{9}{7}{10} \\ \mrule
+  \token{load\_ind\_i8}&\indbase{5}{6}{9}{7}{10} \\ \mrule
+  \token{load\_ind\_u16}&\indbase{5}{6}{9}{7}{10} \\ \mrule
+  \token{load\_ind\_i16}&\indbase{5}{6}{9}{7}{10} \\ \mrule
+  \token{load\_ind\_u32}&\indbase{4}{5}{8}{6}{9} \\ \mrule
+  \token{load\_ind\_i32}&\indbase{4}{5}{8}{6}{9} \\ \mrule
+  \token{load\_ind\_u64}&\indbase{4}{5}{8}{6}{9} \\ \mrule
+  \token{load\_u8}&\loadsx{10}{9} \\ \mrule
+  \token{load\_i8}&\loadsx{10}{9} \\ \mrule
+  \token{load\_u16}&\loadsx{10}{9} \\ \mrule
+  \token{load\_i16}&\loadsx{10}{9} \\ \mrule
+  \token{load\_u32}&\loadsx{9}{8} \\ \mrule
+  \token{load\_i32}&\loadsx{9}{8} \\ \mrule
+  \token{load\_u64}&\loadsx{9}{8} \\ \mrule
+  \token{store\_imm\_ind\_u8}&\indbase{5}{6}{9}{7}{10} \\ \mrule
+  \token{store\_imm\_ind\_u16}&\indbase{7}{8}{11}{9}{12} \\ \mrule
+  \token{store\_imm\_ind\_u32}&\indbase{8}{9}{12}{10}{13} \\ \mrule
+  \token{store\_imm\_ind\_u64}&\indbase{8}{9}{12}{10}{13} \\ \mrule
+  \token{store\_ind\_u8}&\indbase{4}{5}{8}{6}{9} \\ \mrule
+  \token{store\_ind\_u16}&\indbase{5}{6}{9}{7}{10} \\ \mrule
+  \token{store\_ind\_u32}&\indbase{4}{5}{8}{6}{9} \\ \mrule
+  \token{store\_ind\_u64}&\indbase{4}{5}{8}{6}{9} \\ \mrule
+  \token{store\_imm\_u8}&\loadsx{10}{9} \\ \mrule
+  \token{store\_imm\_u16}&\loadsx{12}{11} \\ \mrule
+  \token{store\_imm\_u32}&\loadsx{13}{12} \\ \mrule
+  \token{store\_imm\_u64}&\loadsx{13}{12} \\ \mrule
+  \token{store\_u8}&\loadsx{9}{8} \\ \mrule
+  \token{store\_u16}&\loadsx{10}{9} \\ \mrule
+  \token{store\_u32}&\loadsx{9}{8} \\ \mrule
+  \token{store\_u64}&\loadsx{9}{8} \\ \mrule
+  \token{div\_u\_32}&15 \\ \mrule
+  \token{div\_s\_32}&15 \\ \mrule
+  \token{rem\_u\_32}&15 \\ \mrule
+  \token{rem\_s\_32}&15 \\ \mrule
+  \token{div\_u\_64}&15 \\ \mrule
+  \token{div\_s\_64}&15 \\ \mrule
+  \token{rem\_u\_64}&15 \\ \mrule
+  \token{rem\_s\_64}&15 \\ \mrule
+  \token{and\_inv}&5 \\ \mrule
+  \token{or\_inv}&$\begin{cases}
+    6 &\when \srcdsteq{2} \land \lnot \srcdsteq{1} \\
+    9 &\otherwise
+  \end{cases}$ \\ \mrule
+  \token{xnor}&\srctwo{6}{9} \\ \mrule
+  \token{neg\_add\_imm\_64}&$\begin{cases}
+    3 &\when \srcdsteq{1} \land \immed_X = 0 \\
+    7 &\when \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
+    6 &\when \lnot \srcdsteq{1} \land \immed_X = 0 \\
+    10 &\otherwise
+  \end{cases}$ \\ \mrule
+  \token{neg\_add\_imm\_32}&$\begin{cases}
+    6 &\when \srcdsteq{1} \land \immed_X = 0 \\
+    10 &\when \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
+    13 &\when \srcdsteq{1} \\
+    9 &\when \lnot \srcdsteq{1} \land \immed_X = 0 \\
+    12 &\otherwise
+  \end{cases}$ \\ \mrule
+  \token{load\_imm}&$\begin{cases}
+    7 &\when \signed{\immed_X} \le 0 \\
+    6 &\otherwise
+  \end{cases}$ \\ \mrule
+  \token{load\_imm\_64}&$\begin{cases}
+    6 &\when \immed_X < 2^{32} \\
+    10 &\otherwise
+  \end{cases}$ \\ \mrule
+  \token{mul\_64}&\srctwo{4}{7} \\ \mrule
+  \token{mul\_32}&\srctwo{7}{10} \\ \mrule
+  \token{mul\_imm\_64}&$\begin{cases}
+    4 &\when {-}128 \le \signed{\immed_X} \le 127 \\
+    7 &\otherwise
+  \end{cases}$ \\ \mrule
+  \token{mul\_imm\_32}&$\begin{cases}
+    7 &\when {-}128 \le \signed{\immed_X} \le 127 \\
+    10 &\otherwise
+  \end{cases}$ \\ \mrule
+  \token{mul\_upper\_s\_s}&16 \\ \mrule
+  \token{mul\_upper\_u\_u}&13 \\ \mrule
+  \token{mul\_upper\_s\_u}&29 \\ \mrule
+  \token{trap}&13 \\ \mrule
+  \token{fallthrough}&0 \\ \mrule
+  \token{unlikely}&0 \\ \mrule
+  \token{branch\_eq}&\csbranch \\ \mrule
+  \token{branch\_ne}&\csbranch \\ \mrule
+  \token{branch\_lt\_u}&\csbranch \\ \mrule
+  \token{branch\_lt\_s}&\csbranch \\ \mrule
+  \token{branch\_ge\_u}&\csbranch \\ \mrule
+  \token{branch\_ge\_s}&\csbranch \\ \mrule
+  \token{branch\_eq\_imm}&\csbranchimm \\ \mrule
+  \token{branch\_ne\_imm}&\csbranchimm \\ \mrule
+  \token{branch\_lt\_u\_imm}&\csbranchimm \\ \mrule
+  \token{branch\_le\_u\_imm}&\csbranchimm \\ \mrule
+  \token{branch\_ge\_u\_imm}&\csbranchimm \\ \mrule
+  \token{branch\_gt\_u\_imm}&\csbranchimm \\ \mrule
+  \token{branch\_lt\_s\_imm}&\csbranchimm \\ \mrule
+  \token{branch\_le\_s\_imm}&\csbranchimm \\ \mrule
+  \token{branch\_ge\_s\_imm}&\csbranchimm \\ \mrule
+  \token{branch\_gt\_s\_imm}&\csbranchimm \\ \mrule
+  \token{jump}&$\branchsize(\immed_X, 0, 2, 5)$ \\ \mrule
+  \token{load\_imm\_jump}&$\branchsize(\immed_Y, 7, 2, 5)$ \\ \mrule
+  \token{jump\_ind}&$\begin{cases}
+    11 &\when \immed_X = 0 \\
+    13 &\when \reg_b \ne t_2 \land {-}128 \le \signed{\immed_X} \le 127 \\
+    16 &\when \reg_b \ne t_2 \\
+    14 &\when \reg_b = t_2 \land {-}128 \le \signed{\immed_X} \le 127 \\
+    17 &\otherwise
+  \end{cases}$ \\ \mrule
+  \token{load\_imm\_jump\_ind}&$\begin{cases}
+    18 &\when \immed_Y = 0 \\
+    20 &\when \reg_b \ne t_2 \land {-}128 \le \signed{\immed_Y} \le 127 \\
+    23 &\when \reg_b \ne t_2 \\
+    21 &\when \reg_b = t_2 \land {-}128 \le \signed{\immed_Y} \le 127 \\
+    24 &\otherwise
+  \end{cases}$ \\ \mrule
+  \token{ecalli}&29 \\
+  \bottomrule
+\end{longtable}
+}

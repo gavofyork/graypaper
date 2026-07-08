@@ -248,6 +248,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\memory$] The memory sequence; a member of the set $\ram$.
   \item[$\gascounter$] The gas counter.
   \item[$\registers$] The registers.
+  \item[$\workingset$] The working-set of resident page identifiers. See appendix \ref{sec:workingsetchanges}.
   \item[$\zeta$] The instruction sequence.
   \item[$\varpi$] The sequence of basic blocks of the program.
   \item[$\imath$] The instruction counter.
@@ -294,6 +295,13 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cmaxpackageexports = 3,072$] The maximum number of exports in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
   \item[$\mathsf{X}$] Context strings, see below.
   \item[$\Cepochtailstart = 500$] The number of slots into an epoch at which ticket-submission ends. See sections \ref{sec:slotkeysequence}, \ref{sec:epochmarker} and \ref{sec:safrolextandtickets}.
+  \item[$\Cpvmgaspagealloc = 300$] The gas cost of provisioning (and eventually deallocating) a physical frame for a \textsc{pvm} \textsc{ram} page. See appendix \ref{sec:workingsetchanges}.
+  \item[$\Cpvmgaspagecopy = 300$] The gas cost of populating a freshly provisioned \textsc{pvm} \textsc{ram} page from its initial image. See appendix \ref{sec:workingsetchanges}.
+  \item[$\Cpvmgasdeliver = 500$] The gas cost, per 1024 octets, of the eventual read-back, from the node's state or context, of data that a host-call writes into a machine's \textsc{ram}. See appendix \ref{sec:generalfunctions}.
+  \item[$\Cpvmgaspagefault = 1000$] The base gas cost of inserting a page into the \textsc{pvm} working-set. See appendix \ref{sec:workingsetchanges}.
+  \item[$\Cpvmgaspagezero = 200$] The gas cost of zero-filling a freshly provisioned \textsc{pvm} \textsc{ram} page. See appendix \ref{sec:workingsetchanges}.
+  \item[$\Cpvmmaxworkingset = 7168$] The maximum \textsc{pvm} working-set size, in pages. See equation \ref{eq:workingsetsize}.
+  \item[$\Cpvmminworkingset = 16$] The minimum \textsc{pvm} working-set size, in pages. See equation \ref{eq:workingsetsize}.
   \item[$\Cpvmdynaddralign = 2$] The \textsc{pvm} dynamic address alignment factor. See equation \ref{eq:jumptablealignment}.
   \item[$\Cpvminitinputsize = 2^{24}$] The standard \textsc{pvm} program initialization input data size. See equation \ref{sec:standardprograminit}.
   \item[$\Cpvmpagesize = 2^{12}$] The \textsc{pvm} memory page size. See equation \ref{eq:pvmmemory}.
