@@ -47,10 +47,9 @@ The Is-Authorized invocation is the first and simplest of the three, being total
       \Omega_G(\gascounter, \registers, \memory, \none) &\when n = \mathtt{gas} \\
       \Omega_\Gemini(\gascounter, \registers, \memory, \none, \wpX_\wp¬authcode) &\when n = \mathtt{grow\_heap} \\
       \Omega_Y(\gascounter, \registers, \memory, \none, \wpX, \none, \none, \none, \none, \none, \none, \none) &\when n = \mathtt{fetch} \\
-      \tup{\oog, 0, \registers', \memory, \none} &\otherwhen \gascounter' < 0 \\
-      \tup{\continue, \gascounter', \registers', \memory, \none} &\otherwise \\
-      \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
-      \multicolumn{2}{l}{\also \gascounter' = \gascounter - \Cgasunknown}
+      \tup{\oog, 0, \registers', \memory, \none} &\otherwhen \gascounter < \Cgasunknown \\
+      \tup{\continue, \gascounter - \Cgasunknown, \registers', \memory, \none} &\otherwise \\
+      \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}}
     \end{cases}
 \end{align}
 
@@ -101,10 +100,9 @@ Unlike the other invocation functions, the Refine invocation function implicitly
       \Omega_Z(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{pages}\\
       \Omega_K(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{invoke}\\
       \Omega_X(\gascounter, \registers, \memory, \tup{\mathbf{m}, \mathbf{e}}) &\when n = \mathtt{expunge}\\
-      \tup{\oog, 0, \registers', \memory, \tup{\mathbf{m}, \mathbf{e}}} &\otherwhen \gascounter' < 0\\
-      \tup{\continue, \gascounter', \registers', \memory, \tup{\mathbf{m}, \mathbf{e}}} &\otherwise\\
+      \tup{\oog, 0, \registers', \memory, \tup{\mathbf{m}, \mathbf{e}}} &\otherwhen \gascounter < \Cgasunknown\\
+      \tup{\continue, \gascounter - \Cgasunknown', \registers', \memory, \tup{\mathbf{m}, \mathbf{e}}} &\otherwise\\
       \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
-      \multicolumn{2}{l}{\also \gascounter' = \gascounter - \Cgasunknown} \\
       \multicolumn{2}{l}{\also \overline{\mathbf{x}} = \sq{\build{
         \sq{\build{
           \mathbf{x}
@@ -204,10 +202,9 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_F(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{forget} \\
     \Omega_\Taurus(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{yield} \\
     \Omega_\Aries(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{provide} \\
-    \tup{\oog, 0, \registers', \memory, \imXY} &\otherwhen \gascounter' < 0\\
-    \tup{\continue, \gascounter', \registers', \memory, \imXY} &\otherwise\\
-    \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}} \\
-    \multicolumn{2}{l}{\also \gascounter' = \gascounter - \Cgasunknown}
+    \tup{\oog, 0, \registers', \memory, \imXY} &\otherwhen \gascounter < \Cgasunknown\\
+    \tup{\continue, \gascounter - \Cgasunknown, \registers', \memory, \imXY} &\otherwise\\
+    \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}}
   \end{cases} \\
   C&\colon\abracegroup{
     \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \acconeout \\
