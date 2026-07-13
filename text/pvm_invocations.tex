@@ -269,7 +269,7 @@ All host functions are of the form $\tup{\execst^* \in \set{\continue, \panic, \
   \gascounter^* &\equiv \max(\gascounter - g, 0)\quad\text{unless $\gascounter^*$ is explicitly defined below} \\
   \tup{\execst^*, \registers^*, \memory^*, \context^*} &\equiv \begin{cases}
     \tup{\oog, \registers, \memory, \context} &\when \gascounter < g \\
-    \tup{\execst, \registers', \memory', \context'} &\otherwise
+    \tup{\execst', \registers', \memory', \context'} &\otherwise
   \end{cases}
 \end{align}
 
@@ -281,7 +281,7 @@ With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call tables 
 
 When transitioning \textsc{pvm} state for a host-call, a number of conditions typically hold true and host functions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, and \textsc{ram}, registers and context are unchanged. Formally:
 \begin{equation}
-  \execst \equiv \continue,\quad \registers' \equiv \registers,\quad \memory' \equiv \memory,\quad \context' \equiv \context\qquad\text{except as indicated below}
+  \execst' \equiv \continue,\quad \registers' \equiv \registers,\quad \memory' \equiv \memory,\quad \context' \equiv \context\qquad\text{except as indicated below}
 \end{equation}
 
 \subsubsection{General Functions}\label{sec:generalfunctions}
@@ -396,7 +396,7 @@ These make no assumptions about the context $\context$; it is always passed thro
     \using \sq{o, f_0, z} &= \registers\subrange{7}{3} \\
     \using f &= \min(f_0, \len{\mathbf{v}}) \\
     \using l &= \min(z, \len{\mathbf{v}} - f) \\
-    \tup{\execst, \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \Nrange{o}{l} \not\subseteq \writable{\memory} \\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
@@ -439,7 +439,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
     \using l &= \min(z, \len{\mathbf{v}} - f) \\
-    \tup{\execst, \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
@@ -457,7 +457,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \zeropad{\Csegmentsize}{\mem\subrange{p}{z}} &\when \Nrange{p}{z} \subseteq \readable{\memory}\\
       \error &\otherwise
     \end{cases}\\
-    \tup{\execst, \registers'_7, \mathbf{e}'} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \mathbf{e}'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{e}} &\when \mathbf{x} = \error \\
       \tup{\continue, \mathtt{FULL}, \mathbf{e}} &\otherwhen \segoff+\len{\mathbf{e}} \ge \Cmaxpackageexports \\
       \tup{\continue, \segoff + \len{\mathbf{e}}, \mathbf{e} \append \mathbf{x}} &\otherwise
@@ -476,7 +476,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
     \end{cases} \\
     \using n &= \min(n \in \N : n \not\in \keys{\mathbf{m}}) \\
     \using \mathbf{u} &= \tup{\is{\ram¬value}{[0, 0, \dots]},\is{\ram¬access}{[\none, \none, \dots]}} \\
-    \tup{\execst, \registers'_7, \mathbf{m}} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \mathbf{m}} &\equiv \begin{cases}
       \tup{\continue, \mathtt{FULL}, \mathbf{m}} &\when \len{\mathbf{m}} \ge 63 \\
       \tup{\panic, \registers_7, \mathbf{m}} &\otherwhen \mathbf{p} = \error \\
       \tup{\continue, \mathtt{HUH}, \mathbf{m}} &\otherwhen \deblob(\mathbf{p}, i) = \error \\
@@ -490,7 +490,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \texttt{peek} = 10} &
   $\begin{aligned}
     \using \sq{n, o, s, z} &= \registers\subrange{7}{4} \\
-    \tup{\execst, \registers'_7, \mem'} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \mem'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mem} &\when \Nrange{o}{z} \not\subseteq \writable{\memory} \\
       \tup{\continue, \mathtt{WHO}, \mem} &\otherwhen n \not\in \keys{\mathbf{m}} \\
       \tup{\continue, \mathtt{OOB}, \mem} &\otherwhen \Nrange{s}{z} \not\subseteq \readable{\mathbf{m}\subb{n}_\pg¬ram} \\
@@ -505,7 +505,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
   \texttt{poke} = 11} &
   $\begin{aligned}
     \using \sq{n, s, o, z} &= \registers\subrange{7}{4} \\
-    \tup{\execst, \registers'_7, \mathbf{m}'} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \mathbf{m}'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{m}} &\when \Nrange{s}{z} \not\subseteq \readable{\memory} \\
       \tup{\continue, \mathtt{WHO}, \mathbf{m}} &\otherwhen n \not\in \keys{\mathbf{m}} \\
       \tup{\continue, \mathtt{OOB}, \mathbf{m}} &\otherwhen \Nrange{o}{z} \not\subseteq \writable{\mathbf{m}\subb{n}_\pg¬ram} \\
@@ -569,7 +569,7 @@ These assume some refine context pair $\tup{\mathbf{m}, \mathbf{e}} \in \tuple{\
       \end{cases}\\
       \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
     \end{cases}\\
-    \tup{\execst, \registers'_7, \registers'_8, \mem', \mathbf{m}'} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}} &\when \mathbf{w} = \error \\
       \tup{\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}} &\otherwhen n \not\in \keys{\mathbf{m}} \\
       \tup{\continue, \mathtt{HOST}, h, \mem^*, \mathbf{m}^*} &\otherwhen c = \host \times h \\
@@ -631,7 +631,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
     \using l &= \min(z, \len{\mathbf{v}} - f) \\
-    \tup{\execst, \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
@@ -656,7 +656,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
     \using l &= \min(v_Z, \len{\mathbf{v}} - f) \\
-    \tup{\execst, \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
@@ -682,7 +682,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \len{(\imX_\im¬self)_\sa¬storage\subb{\mathbf{k}}} &\when \mathbf{k} \in \keys{(\imX_\im¬self)_\sa¬storage} \\
       \mathtt{NONE} &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, \imX_\im¬self'} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \imX_\im¬self'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \imX_\im¬self} &\when \mathbf{k} = \error \vee \mathbf{a} = \error\\
       \tup{\continue, \mathtt{FULL}, \imX_\im¬self} &\otherwhen \mathbf{a}_\sa¬minbalance > \mathbf{a}_\sa¬balance \\
       \tup{\continue, l, \mathbf{a}} &\otherwise\\
@@ -711,7 +711,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using f &= \min(\registers_{9}, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_{10}, \len{\mathbf{v}} - f) \\
-    \tup{\execst, \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \memory'\subrange{o}{l}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \memory\subrange{o}{l}} &\when \Nrange{o}{l} \not\subseteq \writable{\memory}\\
       \tup{\continue, \mathtt{NONE}, \memory\subrange{o}{l}} &\otherwhen \mathbf{v} = \none \\
       \tup{\continue, \len{\mathbf{v}}, \mathbf{v}\subrange{f}{l}} &\otherwise \\
@@ -732,7 +732,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \set{\build{\kv{s}{g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\when \Nrange{o}{12n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager \\
       \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \tup{m, v, r} \not\in \serviceid^3 \\
@@ -750,7 +750,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \sq{\build{\memory\subrange{o + 32i}{32}}{i \orderedin \N_\Cauthqueuesize}} &\when \Nrange{o}{32\Cauthqueuesize} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, (\imX'_\im¬state)_\ps¬authqueue\subb{c}, (\imX'_\im¬state)_\ps¬assigners\subb{c}} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬authqueue\subb{c}, (\imX'_\im¬state)_\ps¬assigners\subb{c}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\when \mathbf{q} = \error \\
       \tup{\continue, \mathtt{CORE}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen c \ge \Ccorecount \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬assigners\subb{c}\\
@@ -769,7 +769,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \sq{\build{\memory\subrange{o + 336i}{336}}{i \orderedin \N_z}} &\when \Nrange{o}{336z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, (\imX'_\im¬state)_\ps¬stagingset} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬stagingset} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬stagingset} &\when \mathbf{v} = \error\\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬stagingset} &\otherwhen z \not\in \valcount \vee \imX_\im¬id \ne (\imX_\im¬state)_\ps¬delegator\\
       \tup{\continue, \mathtt{OK}, \mathbf{v}} &\otherwise \\
@@ -812,7 +812,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{s} &= \imX_\im¬self \exc \mathbf{s}_\sa¬balance = (\imX_\im¬self)_\sa¬balance - \mathbf{a}_\sa¬minbalance \\
-    \tup{\execst, \registers'_7, \imX'_\im¬nextfreeid, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \imX'_\im¬nextfreeid, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\when c = \error \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\otherwhen f \ne 0 \wedge \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager \\
       \tup{\continue, \mathtt{CASH}, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \mathbf{s}_\sa¬balance < (\imX_\im¬self)_\sa¬minbalance \\
@@ -835,7 +835,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, (\imX'_\im¬self)_\sa¬codehash, (\imX'_\im¬self)_\sa¬minaccgas, (\imX'_\im¬self)_\sa¬minmemogas} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, (\imX'_\im¬self)_\sa¬codehash, (\imX'_\im¬self)_\sa¬minaccgas, (\imX'_\im¬self)_\sa¬minmemogas} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬self)_\sa¬codehash, (\imX_\im¬self)_\sa¬minaccgas, (\imX_\im¬self)_\sa¬minmemogas} &\when c = \error \\
       \tup{\continue, \mathtt{OK}, c, a, m} &\otherwise \\
     \end{cases} \\
@@ -866,7 +866,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\mathtt{CASH}, 0} &\otherwhen b < (\imX_\im¬self)_\sa¬minbalance \\
       \tup{\mathtt{OK}, l} &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, \imX'_\im¬xfers, (\imX'_\im¬self)_\sa¬balance} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \imX'_\im¬xfers, (\imX'_\im¬self)_\sa¬balance} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\when c = \panic \\
       \tup{\continue, c, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\otherwhen c \ne \mathtt{OK} \\
       \tup{\continue, \mathtt{OK}, \imX_\im¬xfers \append \mathbf{t}, b} &\otherwise
@@ -889,7 +889,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using l &= \max(81, \mathbf{d}_\sa¬octets) - 81 \\
     \using \mathbf{s}' &= \imX_\im¬self \exc \mathbf{s}'_\sa¬balance = (\imX_\im¬self)_\sa¬balance + \mathbf{d}_\sa¬balance \\
-    \tup{\execst, \registers'_7, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬accounts} &\when h = \error \\
       \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \mathbf{d} = \error \vee \mathbf{d}_\sa¬codehash \ne \encode[32]{\imX_\im¬id} \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \mathbf{d}_\sa¬items \ne 2 \vee \tup{h, l} \not\in \mathbf{d}_\sa¬requests \\
@@ -912,7 +912,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       (\imX_\im¬self)_\sa¬requests\subb{h, z} &\when \tup{h, z} \in \keys{(\imX_\im¬self)_\sa¬requests}\\
       \error &\otherwise\\
     \end{cases} \\
-    \tup{\execst, \registers'_7, \registers'_8} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \registers'_8} &\equiv \begin{cases}
       \tup{\continue, \mathtt{HUH}, \registers_8} &\when z \not\in \bloblength \\
       \tup{\panic, \registers_7, \registers_8} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{NONE}, 0} &\otherwhen \mathbf{a} = \error \\
@@ -939,7 +939,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \quad \mathbf{a}_\sa¬requests\subb{\tup{h, z}} = (\imX_\im¬self)_\sa¬requests\subb{\tup{h, z}} \append t &\when (\imX_\im¬self)_\sa¬requests\subb{\tup{h, z}} = \sq{x, y} \\
       \error &\otherwise\\
     \end{cases} \\
-    \tup{\execst, \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\when z \not \in \bloblength \\
       \tup{\panic, \registers_7, \imX_\im¬self} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\otherwhen \mathbf{a} = \error \\
@@ -970,7 +970,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \quad \mathbf{a}_\sa¬requests\subb{h, z} = \sq{w, t} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} = \sq{x, y, w},\ y < t - \Cexpungeperiod \\
       \error &\otherwise\\
     \end{cases} \\
-    \tup{\execst, \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\when z \not \in \bloblength \\
       \tup{\panic, \registers_7, \imX_\im¬self} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\otherwhen \mathbf{a} = \error \\
@@ -988,7 +988,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, \imX'_\im¬yield} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \imX'_\im¬yield} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \imX_\im¬yield} &\when h = \error \\
       \tup{\continue, \mathtt{OK}, h} &\otherwise \\
     \end{cases} \\
@@ -1013,7 +1013,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \mathbf{d}[s] &\when s \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
-    \tup{\execst, \registers'_7, \imX'_\im¬provisions} &\equiv \begin{cases}
+    \tup{\execst', \registers'_7, \imX'_\im¬provisions} &\equiv \begin{cases}
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\when z \not \in \bloblength \\
       \tup{\panic, \registers_7, \imX_\im¬provisions} &\otherwhen \mathbf{i} = \error \\
       \tup{\continue, \mathtt{WHO}, \imX_\im¬provisions} &\otherwhen \mathbf{a} = \none \\
