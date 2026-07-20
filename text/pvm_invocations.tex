@@ -124,6 +124,8 @@ Formally, we define our result context to be $\implications$, and our invocation
   \implications &\equiv \tuple{
     \isa{\im¬id}{\serviceid},
     \isa{\im¬state}{\partialstate},
+    \isa{\im¬writtenkeys}{\protoset{\tuple{\serviceid, \blob}}},
+    \isa{\im¬modifiedreqs}{\protoset{\tuple{\serviceid, \hash, \bloblength}}},
     \isa{\im¬nextfreeid}{\serviceid},
     \isa{\im¬xfers}{\defxfers},
     \isa{\im¬yield}{\optional{\hash}},
@@ -140,9 +142,9 @@ We track both regular and exceptional dimensions within our context mutator, but
 We define $\Psi_A$, the Accumulation invocation function as:
 \newcommand*{\local¬basestate}{\ao¬poststate}
 \newcommand*{\local¬postxferstate}{\mathbf{s}}
-\begin{align}
+\begin{gather}
   \label{eq:accinvocation}
-  \Psi_A& \colon\abracegroup{
+  \Psi_A \colon\abracegroup{
     \tuple{
       \partialstate, \timeslot, \serviceid, \gas, \sequence{\operandtuple \cup \defxfer}
     }
@@ -151,17 +153,22 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \tup{\local¬basestate, t, s, g, \mathbf{i}} &\mapsto \begin{cases}
       \tup{
         \is{\ao¬poststate}{\local¬postxferstate},
+        \is{\ao¬writtenkeys}{\emset},
+        \is{\ao¬modifiedreqs}{\emset},
         \is{\ao¬defxfers}{\sq{}},
         \is{\ao¬yield}{\none},
         \is{\ao¬gasused}{0},
         \is{\ao¬provisions}{\sq{}}
       }
-        &\when \jam¬blob = \none \vee \len{\jam¬blob} > \Cmaxservicecodesize \\
+        &\when s \not\in \local¬basestate_\ps¬accounts \vee \jam¬blob = \none \vee \len{\jam¬blob} > \Cmaxservicecodesize \\
       C(\Psi_M(\jam¬blob, 5, g, \encode{t, s, \len{\mathbf{i}}}, F, I(\local¬postxferstate, s)^2))
         &\otherwise \\
       \begin{aligned}
         &\quad\where \jam¬blob = \local¬basestate_\ps¬accounts\subb{s}_\sa¬code\\
-        &\quad\also \local¬postxferstate = \local¬basestate \exc \local¬postxferstate_\ps¬accounts\subb{s}_\sa¬balance = \local¬basestate_\ps¬accounts\subb{s}_\sa¬balance + \sum_{r \in \mathbf{x}}r_\dx¬amount\\
+        &\quad\also \local¬postxferstate = \local¬basestate \exc \abracegroup{
+          \local¬postxferstate_\ps¬accounts\subb{s}_\sa¬balance &= \local¬basestate_\ps¬accounts\subb{s}_\sa¬balance + \!\!\!\!\!\sum_{r \in \mathbf{x}, r_\dx¬destauth = \bot}\!\!\!\!\!r_\dx¬amount \\
+          \local¬postxferstate_\ps¬accounts\subb{s}_\sa¬authbalance &= \local¬basestate_\ps¬accounts\subb{s}_\sa¬authbalance + \!\!\!\!\!\sum_{r \in \mathbf{x}, r_\dx¬destauth = \top}\!\!\!\!\!r_\dx¬amount
+        }\\
         &\quad\also \mathbf{x} = \sq{\build{i}{
           i \orderedin \mathbf{i} ,
           i \in \defxfer
@@ -169,11 +176,13 @@ We define $\Psi_A$, the Accumulation invocation function as:
       \end{aligned}\\
     \end{cases} \\
   }\\
-  I&\colon\abracegroup{
+  I\colon\abracegroup{
     \tuple{\partialstate, \serviceid} &\to \implications\\
     \tup{\im¬state, \im¬id} &\mapsto \tup{
       \im¬id,
       \im¬state,
+      \is{\im¬writtenkeys}{\emset},
+      \is{\im¬modifiedreqs}{\emset},
       \im¬nextfreeid,
       \is{\im¬xfers}{\sq{}},
       \is{\im¬yield}{\none},
@@ -181,7 +190,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     }\\
     &\qquad\where \im¬nextfreeid = \text{check}((\decode[4]{\blake{\encode{\im¬id, \entropyaccumulator', \H_\¬timeslot}}} \bmod (2^{32}-\Cminpublicindex-2^8)) + \Cminpublicindex) \\
   }\\
-  F \in \contextmutator{\implicationspair} &\colon \tup{n, \gascounter, \registers, \memory, \imXY} \mapsto \begin{cases}
+  F \in \contextmutator{\implicationspair} \colon \tup{n, \gascounter, \registers, \memory, \imXY} \mapsto \begin{cases}
     \Omega_G(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{gas} \\
     \Omega_\Gemini(\gascounter, \registers, \memory, \imXY, \jam¬blob) &\when n = \mathtt{grow\_heap} \\
     \Omega_Y(\gascounter, \registers, \memory, \imXY, \none, \entropyaccumulator', \none, \none, \none, \none, \mathbf{i}) &\when n = \mathtt{fetch}\\
@@ -194,9 +203,10 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_D(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{designate}\\
     \Omega_C(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{checkpoint} \\
     \Omega_N(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{new} \\
+    \Omega_V(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{authority} \\
     \Omega_U(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{upgrade} \\
     \Omega_T(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{transfer} \\
-    \Omega_J(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{eject} \\
+    \Omega_J(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{eject} \\
     \Omega_Q(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{query} \\
     \Omega_S(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{solicit} \\
     \Omega_F(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{forget} \\
@@ -206,11 +216,13 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \tup{\continue, \gascounter - \Cgasunknown, \registers', \memory, \imXY} &\otherwise\\
     \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}}
   \end{cases} \\
-  C&\colon\abracegroup{
+  C\colon\abracegroup{
     \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \acconeout \\
     \tup{\ao¬gasused, \mathbf{o}, \imXY} &\mapsto \begin{cases}
       \tup{
         \is{\ao¬poststate}{\imY_\im¬state},
+        \is{\ao¬writtenkeys}{\imY_\im¬writtenkeys},
+        \is{\ao¬modifiedreqs}{\imY_\im¬modifiedreqs},
         \is{\ao¬defxfers}{\imY_\im¬xfers},
         \is{\ao¬yield}{\imY_\im¬yield},
         \ao¬gasused,
@@ -218,6 +230,8 @@ We define $\Psi_A$, the Accumulation invocation function as:
       } & \when \mathbf{o} \in \set{\oog, \panic} \\
       \tup{
         \is{\ao¬poststate}{\imX_\im¬state},
+        \is{\ao¬writtenkeys}{\imX_\im¬writtenkeys},
+        \is{\ao¬modifiedreqs}{\imX_\im¬modifiedreqs},
         \is{\ao¬defxfers}{\imX_\im¬xfers},
         \is{\ao¬yield}{\mathbf{o}},
         \ao¬gasused,
@@ -225,6 +239,8 @@ We define $\Psi_A$, the Accumulation invocation function as:
       } & \otherwhen \mathbf{o} \in \hash \\
       \tup{
         \is{\ao¬poststate}{\imX_\im¬state},
+        \is{\ao¬writtenkeys}{\imX_\im¬writtenkeys},
+        \is{\ao¬modifiedreqs}{\imX_\im¬modifiedreqs},
         \is{\ao¬defxfers}{\imX_\im¬xfers},
         \is{\ao¬yield}{\imX_\im¬yield},
         \ao¬gasused,
@@ -232,7 +248,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
       } & \otherwise \\
     \end{cases}
   }
-\end{align}
+\end{gather}
 
 The mutator $F$ governs how this context will alter for any given parameterization, and the collapse function $C$ selects one of the two dimensions of context depending on whether the virtual machine's halt was regular or exceptional.
 
@@ -665,24 +681,34 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_W(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{write} = 5} &
   $\begin{aligned}
-    \using \sq{k_O, k_Z, v_O, v_Z} &= \registers\subrange{7}{4} \\
+    \using d &= \begin{cases}
+      \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
+      \registers_7 &\otherwise
+    \end{cases} \\
+    \using \sq{k_O, k_Z, v_O, v_Z} &= \registers\subrange{8}{4} \\
     \using \mathbf{k} &= \begin{cases}
       \memory\subrange{k_O}{k_Z} &\when \Nrange{k_O}{k_Z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using \mathbf{a} &= \begin{cases}
-      \imX_\im¬self\,,\ \exc \mathbf{k} \not\in \keys{\mathbf{a}_\sa¬storage} & \when v_Z = 0 \\
-      \imX_\im¬self\,,\ \exc \mathbf{a}_\sa¬storage\subb{\mathbf{k}} = \memory\subrange{v_O}{v_Z} &\otherwhen \Nrange{v_O}{v_Z} \subseteq \readable{\memory} \\
+    \using \mathbf{v} &= \begin{cases}
+      \memory\subrange{v_O}{v_Z} &\when \Nrange{v_O}{v_Z} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
+    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
+    \using \mathbf{d}' &= \mathbf{d} \exc \begin{cases}
+      \mathbf{k} \not\in \keys{\mathbf{d}'\subb{d}_\sa¬storage} & \when \len{\mathbf{v}} = 0 \\
+      \mathbf{d}'\subb{d}_\sa¬storage\subb{\mathbf{k}} = \mathbf{v} &\otherwise
+    \end{cases} \\
     \using l &= \begin{cases}
-      \len{(\imX_\im¬self)_\sa¬storage\subb{\mathbf{k}}} &\when \mathbf{k} \in \keys{(\imX_\im¬self)_\sa¬storage} \\
+      \len{\mathbf{d}\subb{d}_\sa¬storage\subb{\mathbf{k}}} &\when \mathbf{k} \in \keys{\mathbf{d}\subb{d}_\sa¬storage} \\
       \mathtt{NONE} &\otherwise
     \end{cases} \\
-    \tup{\execst', \registers'_7, \imX_\im¬self'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \imX_\im¬self} &\when \mathbf{k} = \error \vee \mathbf{a} = \error\\
-      \tup{\continue, \mathtt{FULL}, \imX_\im¬self} &\otherwhen \mathbf{a}_\sa¬minbalance > \mathbf{a}_\sa¬balance \\
-      \tup{\continue, l, \mathbf{a}} &\otherwise\\
+    \tup{\execst', \registers'_7, (\imX_\im¬state')_\ps¬accounts, \imX_\im¬writtenkeys'} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬writtenkeys} &\when \mathbf{k} = \error \vee \mathbf{v} = \error\\
+      \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬writtenkeys} &\when d \not\in \keys{\mathbf{d}} \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬writtenkeys} &\when \imX_\im¬id \not\in \set{d, \mathbf{d}\subb{d}_\sa¬authority} \\
+      \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬writtenkeys} &\otherwhen \mathbf{d}'\subb{d}_\sa¬minbalance > \mathbf{d}'\subb{d}_\sa¬balance + \mathbf{d}'\subb{d}_\sa¬authbalance \\
+      \tup{\continue, l, \mathbf{d}', \imX_\im¬writtenkeys \cup \set{\tup{d, \mathbf{k}}}} &\otherwise\\
     \end{cases} \\
     g &\equiv \CgasWconst + \fnmemgas(\CgasWkeylinear, k_Z) + \fnmemgas(\CgasWvallinear, v_Z)
   \end{aligned}$\\
@@ -697,13 +723,16 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using o &= \registers_8 \\
     \using \mathbf{v} &= \begin{cases}
-      \encode{
-        \mathbf{a}_\sa¬codehash,
-        \encode[8]{\mathbf{a}_\sa¬balance, \mathbf{a}_\sa¬minbalance, \mathbf{a}_\sa¬minaccgas, \mathbf{a}_\sa¬minmemogas, \mathbf{a}_\sa¬octets},
-        \encode[4]{\mathbf{a}_\sa¬items},
-        \encode[8]{\mathbf{a}_\sa¬gratis},
-        \encode[4]{\mathbf{a}_\sa¬created, \mathbf{a}_\sa¬lastacc, \mathbf{a}_\sa¬parent}
-      } &\when \mathbf{a} \ne \none \\
+      \begin{aligned}
+        &\fnencode(
+          \mathbf{a}_\sa¬codehash,
+          \encode[4]{\mathbf{a}_\sa¬authority},
+          \encode[8]{\mathbf{a}_\sa¬balance, \mathbf{a}_\sa¬authbalance, \mathbf{a}_\sa¬minbalance, \mathbf{a}_\sa¬minaccgas, \mathbf{a}_\sa¬minmemogas, \mathbf{a}_\sa¬octets}, \\
+        &\phantom{\fnencode(}
+          \encode[4]{\mathbf{a}_\sa¬items},
+          \encode[8]{\mathbf{a}_\sa¬gratis},
+          \encode[4]{\mathbf{a}_\sa¬created, \mathbf{a}_\sa¬lastacc, \mathbf{a}_\sa¬parent})
+      \end{aligned} &\when \mathbf{a} \ne \none \\
       \none &\otherwise
     \end{cases} \\
     \using f &= \min(\registers_{9}, \len{\mathbf{v}}) \\
@@ -787,54 +816,98 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_N(\gascounter, \registers, \memory, \imXY, t)$ \\
   \texttt{new} = 19} &
   $\begin{aligned}
-    \using \sq{o, l, \sa¬minaccgas, \sa¬minmemogas, \sa¬gratis, \local¬desiredid} &= \registers\subrange{7}{6} \\
-    \using \sa¬codehash &= \begin{cases}
-      \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \wedge l \in \Nbits{32} \\
-      \error &\otherwise
-    \end{cases}\\
-    \using \mathbf{a} \in \serviceaccount \cup \set{\error} &= \begin{cases}
-      \tup{
-        \sa¬codehash,
-        \is{\mathbf{\sa¬storage}}{\emset},
-        \is{\mathbf{\sa¬requests}}{\set{\kv{\tup{c, l}}{\sq{}}}},
-        \is{\sa¬balance}{\mathbf{a}_\sa¬minbalance},
-        \sa¬minaccgas,
-        \sa¬minmemogas,
-        \is{\mathbf{\sa¬preimages}}{\emset},
-        \is{\sa¬created}{t},
-        \sa¬gratis,
-        \is{\sa¬lastacc}{0},
-        \is{\sa¬parent}{\imX_\im¬id}
-      } &\when c \ne \error \\
-      \error &\otherwise
+    \using s &= \begin{cases}
+      \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
+      \registers_7 &\otherwise
     \end{cases} \\
-    \using \mathbf{s} &= \imX_\im¬self \exc \mathbf{s}_\sa¬balance = (\imX_\im¬self)_\sa¬balance - \mathbf{a}_\sa¬minbalance \\
+    \using \sq{\local¬desiredid, x, a, o} &= \registers\subrange{8}{4} \\
+    \using &\encode{\sa¬codehash, \encode[4]{l}, \encode[8]{\sa¬minaccgas, \sa¬minmemogas, \sa¬gratis}} = \memory\subrange{o}{60} \\
+    \using \tup{i', i^*} &= \begin{cases}
+      \tup{\local¬desiredid, \imX_\im¬nextfreeid} &\when \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \\
+      \tup{\imX_\im¬nextfreeid, \text{check}(\Cminpublicindex + (\imX_\im¬nextfreeid - \Cminpublicindex + 42) \bmod (2^{32} - \Cminpublicindex - 2^8))} &\otherwise
+    \end{cases}\\
+    \using \mathbf{a} \in \serviceaccount &= \tup{\begin{aligned}
+      &\sa¬codehash,
+      \is{\mathbf{\sa¬storage}}{\emset},
+      \is{\mathbf{\sa¬requests}}{\set{\kv{\tup{\sa¬codehash, l}}{\sq{}}}},
+      \sa¬balance,
+      \is{\sa¬authority}{\imX_\im¬id},
+      \sa¬authbalance, \\
+      &\sa¬minaccgas,
+      \sa¬minmemogas,
+      \is{\mathbf{\sa¬preimages}}{\emset},
+      \is{\sa¬created}{t},
+      \sa¬gratis,
+      \is{\sa¬lastacc}{0},
+      \is{\sa¬parent}{\imX_\im¬id}
+    \end{aligned}} \\
+    &\phantom{{}={}} \where \tup{\sa¬balance, \sa¬authbalance} = \begin{cases}
+      \tup{a, 0} &\when x \in \set{0, 1} \\
+      \tup{0, a} &\otherwise
+    \end{cases} \\
+    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
+    \using \mathbf{d}' &= \mathbf{d} \exc \begin{cases}
+      \mathbf{d}'\subb{i'} = \mathbf{a} &\text{always} \\
+      \mathbf{d}'\subb{s}_\sa¬balance = \mathbf{d}\subb{s}_\sa¬balance - a &\when x \in \set{0, 2} \\
+      \mathbf{d}'\subb{s}_\sa¬authbalance = \mathbf{d}\subb{s}_\sa¬authbalance - a &\otherwise
+    \end{cases} \\
+    \using p &= \begin{cases}
+      s &\when x \in \set{0, 2} \\
+      \mathbf{d}\subb{s}_\sa¬authority &\otherwise
+    \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬nextfreeid, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\when c = \error \\
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\otherwhen f \ne 0 \wedge \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager \\
-      \tup{\continue, \mathtt{CASH}, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \mathbf{s}_\sa¬balance < (\imX_\im¬self)_\sa¬minbalance \\
-      \tup{\continue, \mathtt{FULL}, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \wedge \local¬desiredid \in \keys{(\imX_\im¬state)_\ps¬accounts} \\
-      \tup{\continue, \local¬desiredid, \imX_\im¬nextfreeid, (\imX_\im¬state)_\ps¬accounts \cup \mathbf{d}} &\otherwhen \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \\
-      \multicolumn{2}{l}{\quad \where \mathbf{d} = \set{ \kv{\local¬desiredid}{\mathbf{a}}, \kv{\imX_\im¬id}{\mathbf{s}} }}\\
-      \tup{\continue, \imX_\im¬nextfreeid, i^*, (\imX_\im¬state)_\ps¬accounts \cup \mathbf{d}} &\otherwise \\
-      \multicolumn{2}{l}{\quad \where i^* = \text{check}(\Cminpublicindex + (\imX_\im¬nextfreeid - \Cminpublicindex + 42) \bmod (2^{32} - \Cminpublicindex - 2^8))}\\
-      \multicolumn{2}{l}{\quad \also \mathbf{d} = \set{ \kv{\imX_\im¬nextfreeid}{\mathbf{a}}, \kv{\imX_\im¬id}{\mathbf{s}} }}\\
+      \tup{\panic, \registers_7, \imX_\im¬nextfreeid, \mathbf{d}} &\when \Nrange{o}{60} \not\subseteq \readable{\memory} \\
+      \tup{\continue, \mathtt{WHO}, \imX_\im¬nextfreeid, \mathbf{d}} &\otherwhen s \not\in \mathbf{d} \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, \mathbf{d}} &\otherwhen x > 3 \lor \imX_\im¬id \ne p \lor a < \mathbf{a}_\sa¬minbalance \lor (\sa¬gratis \ne 0 \wedge \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager) \\
+      \tup{\continue, \mathtt{CASH}, \imX_\im¬nextfreeid, \mathbf{d}} &\otherwhen \mathbf{d}'\subb{s}_\sa¬balance < 0 \lor \mathbf{d}'\subb{s}_\sa¬authbalance < 0 \lor {} \\
+      &\phantom{\otherwhen{}} \mathbf{d}'\subb{s}_\sa¬balance + \mathbf{d}'\subb{s}_\sa¬authbalance < \mathbf{d}'\subb{s}_\sa¬minbalance \\
+      \tup{\continue, \mathtt{FULL}, \imX_\im¬nextfreeid, \mathbf{d}} &\otherwhen \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \wedge \local¬desiredid \in \keys{\mathbf{d}} \\
+      \tup{\continue, i', i^*, \mathbf{d}'} &\otherwise
     \end{cases} \\
     g &\equiv \CgasN
+  \end{aligned}$\\
+  \cmidrule(lr){1-1}\cmidrule(lr){2-2}
+  \makecell*[l]{
+  $\Omega_V(\gascounter, \registers, \memory, \imXY)$ \\
+  \texttt{authority} = 28} &
+  $\begin{aligned}
+    \using d &= \begin{cases}
+      \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
+      \registers_7 &\otherwise
+    \end{cases} \\
+    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \exc \mathbf{d}\subb{d}_\sa¬authority = \registers_8 \\
+    \tup{\registers'_7, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
+      \tup{\mathtt{WHO}, (\imX_\im¬state)_\ps¬accounts} &\when d \not\in \keys{(\imX_\im¬state)_\ps¬accounts} \\
+      \tup{\mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬accounts\subb{d}_\sa¬authority \\
+      \tup{\mathtt{OK}, \mathbf{d}} &\otherwise
+    \end{cases} \\
+    g &\equiv \CgasV
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
   $\Omega_U(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{upgrade} = 20} &
   $\begin{aligned}
-    \using \sq{o, a, m} &= \registers\subrange{7}{3} \\
+    \using d &= \begin{cases}
+      \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
+      \registers_7 &\otherwise
+    \end{cases} \\
+    \using \sq{o, a, m} &= \registers\subrange{8}{3} \\
     \using c &= \begin{cases}
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst', \registers'_7, (\imX'_\im¬self)_\sa¬codehash, (\imX'_\im¬self)_\sa¬minaccgas, (\imX'_\im¬self)_\sa¬minmemogas} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, (\imX_\im¬self)_\sa¬codehash, (\imX_\im¬self)_\sa¬minaccgas, (\imX_\im¬self)_\sa¬minmemogas} &\when c = \error \\
-      \tup{\continue, \mathtt{OK}, c, a, m} &\otherwise \\
+    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
+    \using \mathbf{d}' &= \mathbf{d} \exc \abracegroup{
+      \mathbf{d}'\subb{d}_\sa¬codehash &= c \\
+      \mathbf{d}'\subb{d}_\sa¬minaccgas &= a \\
+      \mathbf{d}'\subb{d}_\sa¬minmemogas &= m
+    } \\
+    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \mathbf{d}} &\when c = \error \\
+      \tup{\continue, \mathtt{WHO}, \mathbf{d}} &\when d \not\in \keys{\mathbf{d}} \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}} &\when \imX_\im¬id \not\in \set{d, \mathbf{d}\subb{d}_\sa¬authority} \\
+      \tup{\continue, \mathtt{OK}, \mathbf{d}'} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasU
   \end{aligned}$\\
@@ -843,55 +916,71 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_T(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{transfer} = 21} &
   $\begin{aligned}
-    \using \sq{\dx¬dest, \dx¬amount, l, o} &= \registers\subrange{7}{4},  \\
-    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts\\
-    \using \mathbf{t} \in \defxfer \cup \set{\error} &= \begin{cases}
-      \tup{
-        \is{\dx¬source}{\imX_\im¬id},
+    \using \dx¬source &= \begin{cases}
+      \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
+      \registers_7 &\otherwise
+    \end{cases} \\
+    \using \dx¬dest &= \begin{cases}
+      \imX_\im¬id &\when \registers_8 = 2^{64} - 1 \\
+      \registers_8 &\otherwise
+    \end{cases} \\
+    \using \sq{x, \dx¬amount, l, o} &= \registers\subrange{9}{4} \\
+    \using \mathbf{t} \in \sequence{\defxfer} \cup \set{\error} &= \begin{cases}
+      \sq{} &\when o = 0 \\
+      \sq{\tup{
+        \dx¬source,
         \dx¬dest,
+        \is{\dx¬destauth}{x \in \set{2, 3}},
         \dx¬amount,
         \is{\dx¬memo}{\memory\subrange{o}{\Cmemosize}},
         \is{\dx¬gas}{l}
-      } &\when \Nrange{o}{\Cmemosize} \subseteq \readable{\memory} \\
+      }} &\otherwhen \Nrange{o}{\Cmemosize} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using b &= (\imX_\im¬self)_\sa¬balance - \dx¬amount \\
+    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
+    \using \mathbf{d}' &= \mathbf{d} \exc \begin{cases}
+      \mathbf{d}'\subb{\dx¬source}_\sa¬balance = \mathbf{d}\subb{\dx¬source}_\sa¬balance - \dx¬amount &\when x \in \set{0, 2} \\
+      \mathbf{d}'\subb{\dx¬source}_\sa¬authbalance = \mathbf{d}\subb{\dx¬source}_\sa¬authbalance - \dx¬amount &\when x \in \set{1, 3} \\
+      \mathbf{d}'\subb{\dx¬dest}_\sa¬balance = \mathbf{d}\subb{\dx¬dest}_\sa¬balance + \dx¬amount &\when o = 0 \land x = 1 \\
+      \mathbf{d}'\subb{\dx¬dest}_\sa¬authbalance = \mathbf{d}\subb{\dx¬dest}_\sa¬authbalance + \dx¬amount &\when o = 0 \land x \in \set{2, 3}
+    \end{cases} \\
+    \using p_s &= \begin{cases}
+      \dx¬source &\when x \in \set{0, 2} \\
+      \mathbf{d}\subb{\dx¬source}_\sa¬authority &\otherwise
+    \end{cases} \\
+    \using p_d &= \begin{cases}
+      \dx¬dest &\when x = 1 \\
+      \mathbf{d}\subb{\dx¬dest}_\sa¬authority &\when x = 2 \lor (x = 3 \land \dx¬source \ne \dx¬dest) \\
+      \none &\otherwise
+    \end{cases} \\
     \using \tup{c, t} &= \begin{cases}
       \tup{\panic, 0} &\when \mathbf{t} = \error \\
-      \tup{\mathtt{WHO}, 0} &\otherwhen \dx¬dest \not \in \keys{\mathbf{d}} \\
-      \tup{\mathtt{LOW}, 0} &\otherwhen l < \mathbf{d}[\dx¬dest]_\sa¬minmemogas \\
-      \tup{\mathtt{CASH}, 0} &\otherwhen b < (\imX_\im¬self)_\sa¬minbalance \\
+      \tup{\mathtt{WHO}, 0} &\otherwhen \dx¬source \not\in \keys{\mathbf{d}} \lor \dx¬dest \not\in \keys{\mathbf{d}} \\
+      \tup{\mathtt{HUH}, 0} &\otherwhen x > 3 \lor \imX_\im¬id \ne p_s \lor (o = 0 \land \imX_\im¬id \ne p_d) \\
+      \tup{\mathtt{LOW}, 0} &\otherwhen o \ne 0 \land l < \mathbf{d}\subb{\dx¬dest}_\sa¬minmemogas \\
+      \tup{\mathtt{CASH}, 0} &\otherwhen \mathbf{d}'\subb{\dx¬source}_\sa¬balance < 0 \lor \mathbf{d}'\subb{\dx¬source}_\sa¬authbalance < 0 \lor \mathbf{d}'\subb{\dx¬source}_\sa¬balance + \mathbf{d}'\subb{\dx¬source}_\sa¬authbalance < \mathbf{d}'\subb{\dx¬source}_\sa¬minbalance \\
+      \tup{\mathtt{OK}, 0} &\otherwhen o = 0 \\
       \tup{\mathtt{OK}, l} &\otherwise
     \end{cases} \\
-    \tup{\execst', \registers'_7, \imX'_\im¬xfers, (\imX'_\im¬self)_\sa¬balance} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\when c = \panic \\
-      \tup{\continue, c, \imX_\im¬xfers, (\imX_\im¬self)_\sa¬balance} &\otherwhen c \ne \mathtt{OK} \\
-      \tup{\continue, \mathtt{OK}, \imX_\im¬xfers \append \mathbf{t}, b} &\otherwise
+    \tup{\execst', \registers'_7, \imX'_\im¬xfers, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \imX_\im¬xfers, \mathbf{d}} &\when c = \panic \\
+      \tup{\continue, c, \imX_\im¬xfers, \mathbf{d}} &\otherwhen c \ne \mathtt{OK} \\
+      \tup{\continue, \mathtt{OK}, \imX_\im¬xfers \concat \mathbf{t}, \mathbf{d}'} &\otherwise
     \end{cases} \\
     g &\equiv \CgasT + t
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_J(\gascounter, \registers, \memory, \imXY, t)$ \\
+  $\Omega_J(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{eject} = 22} &
   $\begin{aligned}
-    \using \sq{d, o} &= \registers_{7, 8} \\
-    \using h &= \begin{cases}
-      \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \\
-      \error &\otherwise
-    \end{cases} \\
-    \using \mathbf{d} &= \begin{cases}
-      (\imX_\im¬state)_\ps¬accounts\subb{d} &\when d \ne \imX_\im¬id \wedge d \in \keys{(\imX_\im¬state)_\ps¬accounts} \\
-      \error &\otherwise \\
-    \end{cases} \\
-    \using l &= \max(81, \mathbf{d}_\sa¬octets) - 81 \\
-    \using \mathbf{s}' &= \imX_\im¬self \exc \mathbf{s}'_\sa¬balance = (\imX_\im¬self)_\sa¬balance + \mathbf{d}_\sa¬balance \\
-    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬accounts} &\when h = \error \\
-      \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \mathbf{d} = \error \vee \mathbf{d}_\sa¬codehash \ne \encode[32]{\imX_\im¬id} \\
-      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \mathbf{d}_\sa¬items \ne 2 \vee \tup{h, l} \not\in \mathbf{d}_\sa¬requests \\
-      \tup{\continue, \mathtt{OK}, (\imX_\im¬state)_\ps¬accounts \setminus \set{d} \cup \set{ \kv{\imX_\im¬id}{\mathbf{s}'} }} &\otherwhen \mathbf{d}_\sa¬requests\subb{h, l} = \sq{x, y}, y < t - \Cexpungeperiod \\
-      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts} &\otherwise \\
+    \using d &= \registers_7 \\
+    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts\subb{d} \\
+    \using \mathbf{s}' &= \imX_\im¬self \exc \mathbf{s}'_\sa¬balance = (\imX_\im¬self)_\sa¬balance + \mathbf{d}_\sa¬balance + \mathbf{d}_\sa¬authbalance \\
+    \tup{\registers'_7, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
+      \tup{\mathtt{WHO}, (\imX_\im¬state)_\ps¬accounts} &\when \mathbf{d} = \none \\
+      \tup{\mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \imX_\im¬id \ne \mathbf{d}_\sa¬authority \vee \mathbf{d}_\sa¬items \ne 0 \\
+      \tup{\mathtt{OK}, (\imX_\im¬state)_\ps¬accounts \setminus \set{d} \cup \set{ \kv{\imX_\im¬id}{\mathbf{s}'} }} &\otherwise
     \end{cases} \\
     g &\equiv \CgasJ
   \end{aligned}$\\
@@ -900,19 +989,21 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_Q(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{query} = 23} &
   $\begin{aligned}
-    \using \sq{o, z} &= \registers_{7, 8} \\
+    \using \mathbf{s} &= \begin{cases}
+      \imX_\im¬self &\when \registers_7 = 2^{64} - 1 \\
+      (\imX_\im¬state)_\ps¬accounts\subb{\registers_7} &\otherwise
+    \end{cases} \\
+    \using \sq{o, z} &= \registers_{8, 9} \\
     \using h &= \begin{cases}
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using \mathbf{a} &= \begin{cases}
-      (\imX_\im¬self)_\sa¬requests\subb{h, z} &\when \tup{h, z} \in \keys{(\imX_\im¬self)_\sa¬requests}\\
-      \error &\otherwise\\
-    \end{cases} \\
+    \using \mathbf{a} &= \mathbf{s}_\sa¬requests\subb{\tup{h, z}} \\
     \tup{\execst', \registers'_7, \registers'_8} &\equiv \begin{cases}
       \tup{\continue, \mathtt{HUH}, \registers_8} &\when z \not\in \bloblength \\
       \tup{\panic, \registers_7, \registers_8} &\otherwhen h = \error \\
-      \tup{\continue, \mathtt{NONE}, 0} &\otherwhen \mathbf{a} = \error \\
+      \tup{\continue, \mathtt{WHO}, \registers_8} &\otherwhen \mathbf{s} = \none \\
+      \tup{\continue, \mathtt{NONE}, 0} &\otherwhen \mathbf{a} = \none \\
       \tup{\continue, 0, 0} &\otherwhen \mathbf{a} = \sq{} \\
       \tup{\continue, 1 + 2^{32}x, 0} &\otherwhen \mathbf{a} = \sq{x} \\
       \tup{\continue, 2 + 2^{32}x, y} &\otherwhen \mathbf{a} = \sq{x, y} \\
@@ -925,23 +1016,29 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_S(\gascounter, \registers, \memory, \imXY, t)$ \\
   \texttt{solicit} = 24} &
   $\begin{aligned}
-    \using \sq{o, z} &= \registers_{7, 8} \\
+    \using d &= \begin{cases}
+      \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
+      \registers_7 &\otherwise
+    \end{cases} \\
+    \using \sq{o, z} &= \registers_{8, 9} \\
     \using h &= \begin{cases}
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using \mathbf{a} &= \begin{cases}
-      \imX_\im¬self \text{ except: } &\\
-      \quad \mathbf{a}_\sa¬requests\subb{\tup{h, z}} = \sq{} &\when h \ne \error \wedge \tup{h, z} \not\in \keys{(\imX_\im¬self)_\sa¬requests} \\
-      \quad \mathbf{a}_\sa¬requests\subb{\tup{h, z}} = (\imX_\im¬self)_\sa¬requests\subb{\tup{h, z}} \append t &\when (\imX_\im¬self)_\sa¬requests\subb{\tup{h, z}} = \sq{x, y} \\
+    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
+    \using \mathbf{d}' &= \begin{cases}
+      \mathbf{d} \text{ except: } &\\
+      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{} &\when \tup{h, z} \not\in \keys{\mathbf{d}\subb{d}_\sa¬requests} \\
+      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, y, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, y} \\
       \error &\otherwise\\
     \end{cases} \\
-    \tup{\execst', \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\when z \not \in \bloblength \\
-      \tup{\panic, \registers_7, \imX_\im¬self} &\otherwhen h = \error \\
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\otherwhen \mathbf{a} = \error \\
-      \tup{\continue, \mathtt{FULL}, \imX_\im¬self} &\otherwhen \mathbf{a}_\sa¬balance < \mathbf{a}_\sa¬minbalance \\
-      \tup{\continue, \mathtt{OK}, \mathbf{a}} &\otherwise \\
+    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedreqs} &\equiv \begin{cases}
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedreqs} &\when z \not \in \bloblength \\
+      \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedreqs} &\otherwhen h = \error \\
+      \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedreqs} &\otherwhen d \not\in \keys{\mathbf{d}} \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedreqs} &\otherwhen \imX_\im¬id \not\in \set{d, \mathbf{d}\subb{d}_\sa¬authority} \lor \mathbf{d}' = \error \\
+      \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬modifiedreqs} &\otherwhen \mathbf{d}'\subb{d}_\sa¬balance + \mathbf{d}'\subb{d}_\sa¬authbalance < \mathbf{d}'\subb{d}_\sa¬minbalance \\
+      \tup{\continue, \mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedreqs \cup \set{\tup{d, h, z}}} &\otherwise
     \end{cases} \\
     g &\equiv \CgasS
   \end{aligned}$\\
@@ -950,28 +1047,34 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_F(\gascounter, \registers, \memory, \imXY, t)$ \\
   \texttt{forget} = 25} &
   $\begin{aligned}
-    \using \sq{o, z} &= \registers_{7, 8} \\
+    \using d &= \begin{cases}
+      \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
+      \registers_7 &\otherwise
+    \end{cases} \\
+    \using \sq{o, z} &= \registers_{8, 9} \\
     \using h &= \begin{cases}
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using \mathbf{a} &= \begin{cases}
-      \imX_\im¬self \text{ except:} &\\
+    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
+    \using \mathbf{d}' &= \begin{cases}
+      \mathbf{d} \text{ except:} &\\
       \quad \left.
         \begin{aligned}
-          \keys{\mathbf{a}_\sa¬requests} &= \keys{(\imX_\im¬self)_\sa¬requests} \setminus \set{\tup{h, z}}\ ,\\[2pt]
-          \keys{\mathbf{a}_\sa¬preimages} &= \keys{(\imX_\im¬self)_\sa¬preimages} \setminus \set{h}
+          \tup{h, z} &\not\in \keys{\mathbf{d}'\subb{d}_\sa¬requests}\ ,\\[2pt]
+          h &\not\in \keys{\mathbf{d}'\subb{d}_\sa¬preimages}
         \end{aligned}
-      \ \right\} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} \in \set{\sq{}, \sq{x, y}},\ y < t - \Cexpungeperiod \\
-      \quad \mathbf{a}_\sa¬requests\subb{h, z} = \sq{x, t} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} = \sq{x} \\
-      \quad \mathbf{a}_\sa¬requests\subb{h, z} = \sq{w, t} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} = \sq{x, y, w},\ y < t - \Cexpungeperiod \\
+      \ \right\} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} \in \set{\sq{}, \sq{x, y}},\ y < t - \Cexpungeperiod \\
+      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x} \\
+      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{w, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, y, w},\ y < t - \Cexpungeperiod \\
       \error &\otherwise\\
     \end{cases} \\
-    \tup{\execst', \registers'_7, \imX'_\im¬self} &\equiv \begin{cases}
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\when z \not \in \bloblength \\
-      \tup{\panic, \registers_7, \imX_\im¬self} &\otherwhen h = \error \\
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬self} &\otherwhen \mathbf{a} = \error \\
-      \tup{\continue, \mathtt{OK}, \mathbf{a}} &\otherwise \\
+    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedreqs} &\equiv \begin{cases}
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedreqs} &\when z \not \in \bloblength \\
+      \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedreqs} &\otherwhen h = \error \\
+      \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedreqs} &\otherwhen d \not\in \keys{\mathbf{d}} \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedreqs} &\otherwhen \imX_\im¬id \not\in \set{d, \mathbf{d}\subb{d}_\sa¬authority} \lor \mathbf{d}' = \error \\
+      \tup{\continue, \mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedreqs \cup \set{\tup{d, h, z}}} &\otherwise
     \end{cases} \\
     g &\equiv \CgasF
   \end{aligned}$\\

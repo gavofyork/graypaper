@@ -8,7 +8,7 @@ Service accounts are held in state under $\accounts$, a partial mapping from a s
   \accounts &\in \dictionary{\serviceid}{\serviceaccount}
 \end{align}
 
-The service account is defined as the tuple of storage dictionary $\sa¬storage$, preimage lookup dictionaries $\sa¬preimages$ and $\sa¬requests$, code hash $\sa¬codehash$, balance $\sa¬balance$ and gratis storage offset $\sa¬gratis$, as well as the two code gas limits $\sa¬minaccgas$ \& $\sa¬minmemogas$. We also record certain usage characteristics concerning the account: the time slot at creation $\sa¬created$, the time slot at the most recent accumulation $\sa¬lastacc$ and the parent service $\sa¬parent$. Formally:
+The service account is defined as the tuple of storage dictionary $\sa¬storage$, preimage lookup dictionaries $\sa¬preimages$ and $\sa¬requests$, code hash $\sa¬codehash$, balance $\sa¬balance$ and gratis storage offset $\sa¬gratis$, the authority service $\sa¬authority$ and its protected balance $\sa¬authbalance$, as well as the two code gas limits $\sa¬minaccgas$ \& $\sa¬minmemogas$. We also record certain usage characteristics concerning the account: the time slot at creation $\sa¬created$, the time slot at the most recent accumulation $\sa¬lastacc$ and the parent service $\sa¬parent$. Formally:
 \begin{align}\label{eq:serviceaccount}
   \serviceaccount \equiv \tuple{\ \begin{aligned}
     \sa¬storage &\in \dictionary{\blob}{\blob}\,,\
@@ -17,8 +17,10 @@ The service account is defined as the tuple of storage dictionary $\sa¬storage$
     \sa¬gratis &\in \balance\,,\
     \sa¬codehash \in \hash\,,\
     \sa¬balance \in \balance\,,\
-    \sa¬minaccgas \in \gas\,,\\
-    \sa¬minmemogas &\in \gas\,,\
+    \sa¬authority \in \serviceid\,,\
+    \sa¬authbalance \in \balance\,,\\
+    \sa¬minaccgas &\in \gas\,,\
+    \sa¬minmemogas \in \gas\,,\
     \sa¬created \in \timeslot\,,\
     \sa¬lastacc \in \timeslot\,,\
     \sa¬parent \in \serviceid\\
@@ -179,3 +181,8 @@ Finally, $\alwaysaccers$ is a small dictionary containing the indices of service
   \assigners &\in \sequence[\Ccorecount]{\serviceid} \ ,\qquad
   \alwaysaccers \in \dictionary{\serviceid}{\gas}
 \end{align}
+
+\subsection{Service Authorities}
+In addition to the globally privileged services discussed above, each service has a designated \emph{authority} service $\sa¬authority$; all non-privileged mutating operations are permitted to be done on a service by its authority service. Only the authority service may designate a new authority service. A service's authority service may be itself.
+
+In addition to the regular balance of a service $\sa¬balance$, there is an additional authority balance $\sa¬authbalance$, by default zero and aggregated with the regular balance when determining data footprint limits for the service. This can only be transferred by the authority service.

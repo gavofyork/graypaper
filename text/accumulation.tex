@@ -101,11 +101,11 @@ Secondly, since \textsc{pvm} setup cannot be expected to be zero-cost, we wish t
 
 We resolve this by defining a function $\accseq$ which accumulates work-reports sequentially, and which itself utilizes a function $\accpar$ which accumulates work-reports in a non-sequential, service-aggregated manner. In all but the first invocation of $\accseq$, we also integrate the effects of any \emph{deferred-transfers} implied by the previous round of accumulation, thus the accumulation function must accept both the information contained in work-digests and that of deferred-transfers.
 
-Rather than passing whole work-digests into accumulate, we extract the salient information from them and combine with information implied by their work-reports. We call this kind of combined value an \emph{operand tuple}, $\operandtuple$. Likewise, we denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $\dx¬memo$ of $\Cmemosize = 128$ octets, together with the service index of the sender $\dx¬source$, the service index of the receiver $\dx¬dest$, the balance to be transferred $\dx¬amount$ and the gas limit $\dx¬gas$ for the transfer. Formally:
+Rather than passing whole work-digests into accumulate, we extract the salient information from them and combine with information implied by their work-reports. We call this kind of combined value an \emph{operand tuple}, $\operandtuple$. Likewise, we denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $\dx¬memo$ of $\Cmemosize = 128$ octets, together with the service index of the sender $\dx¬source$, the service index of the receiver $\dx¬dest$, whether to credit the receiver's regular balance ($\dx¬destauth = \bot$) or its authority balance ($\dx¬destauth = \top$), the balance to be transferred $\dx¬amount$ and the gas limit $\dx¬gas$ for the transfer. Formally:
 \begin{align}
   \label{eq:operandtuple}
   \operandtuple &\equiv \tuple{
-    \begin{alignedat}{5}
+    \begin{alignedat}{3}
       \isa{\ot¬packagehash&}{\hash},\;
       \isa{&\ot¬segroot&}{\hash},\;
       \isa{&\ot¬authorizer&}{\hash},\;
@@ -117,11 +117,14 @@ Rather than passing whole work-digests into accumulate, we extract the salient i
   }\\
   \label{eq:defxfer}
   \defxfer &\equiv \tuple{
-    \isa{\dx¬source}{\serviceid} ,
-    \isa{\dx¬dest}{\serviceid} ,
-    \isa{\dx¬amount}{\balance} ,
-    \isa{\dx¬memo}{\memo} ,
-    \isa{\dx¬gas}{\gas}
+    \begin{alignedat}{3}
+      \isa{\dx¬source&}{\serviceid},\;
+      \isa{&\dx¬dest&}{\serviceid},\;
+      \isa{&\dx¬destauth&}{\bool},\;\\
+      \isa{\dx¬amount&}{\balance},\;
+      \isa{&\dx¬memo&}{\memo},\;
+      \isa{&\dx¬gas&}{\gas}
+    \end{alignedat}
   }
 \end{align}
 
@@ -173,9 +176,8 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
 \newcommand*{\local¬authqueue}{\mathbf{q}}
 \newcommand*{\local¬acc}{\accumulate}
 \newcommand*{\local¬manpost}{\mathbf{e}^*}
-\newcommand*{\local¬fnreplaceifchanged}{R}
 
-We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of deferred transfers, a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the posterior state-context, the resultant deferred-transfers and accumulation-output pairings, and the service-indexed gas usage. Note that for the privileges we employ a function $R$ which selects the service to which the manager service changed, or if no change was made, then that which the service itself changed to. This allows privileges to be `owned` and facilitates the removal of the manager service which we see as a helpful possibility. Formally:
+We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of deferred transfers, a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the posterior state-context, the resultant deferred-transfers and accumulation-output pairings, and the service-indexed gas usage. Formally:
 \begin{equation}
   \label{eq:accpar}
   \accpar\colon\abracegroup[\;]{\begin{aligned}
@@ -211,7 +213,7 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
           s \orderedin \mathbf{s}
         }} \\
       \ps¬accounts' &= \local¬fnprovide(
-        (\ps¬accounts \cup \mathbf{n}) \setminus \mathbf{m},
+        \mathbf{m} \cup \mathbf{n},
         \bigcup_{s \in \mathbf{s}} \local¬acc(s)_\ao¬provisions
       ) \\
       &\tup{
@@ -243,29 +245,57 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         \ps¬authqueue'\sub{c} &= ((
           \local¬acc(\ps¬assigners\sub{c})_\ao¬poststate
         )_\ps¬authqueue)\sub{c} \\
+      M(s) &\equiv R_A(s, \ps¬accounts, \local¬acc(\ps¬accounts\subb{s}_\sa¬authority), (\local¬acc(s)_\ao¬poststate)_\ps¬accounts) \\
+      \mathbf{m} &= \set{\build{\kv{s}{M(s)}}{s \in \keys{\ps¬accounts}, M(s) \ne \none}} \\
       \mathbf{n} &= \bigcup_{s \in \mathbf{s}}(
         (\local¬acc(s)_\ao¬poststate)_\ps¬accounts
           \setminus
-        \keys{\ps¬accounts \setminus \set{s}}
-      ) \\
-      \mathbf{m} &= \bigcup_{s \in \mathbf{s}}(
         \keys{\ps¬accounts}
-          \setminus
-        \keys{(\local¬acc(s)_\ao¬poststate)_\ps¬accounts}
       )
     \end{aligned}
   \end{aligned}}
 \end{equation}
+\undef{\local¬acc}
+
+Note that for the privileges we employ a function $R$ which selects the service to which the manager service changed, or if no change was made, then that which the service itself changed to. This allows privileges to be `owned' and facilitates the removal of the manager service which we see as a helpful possibility.
 \begin{equation}
   R(o, a, b) \equiv \begin{cases}
     b &\when a = o \\
     a &\otherwise
   \end{cases}
 \end{equation}
-\undef{\local¬acc}
-\undef{\local¬fnreplaceifchanged}
 
-And $\local¬fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/blob pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
+A service's state can be modified by both itself and its authority service. The $R_A$ function resolves conflicting modifications of a service $s$, in favour of those made by the authority service ($\mathbf{a}$). Note that a service may only be removed by its authority service, and only when the service's storage is empty. As a service's code must be present in its preimage storage in order to be executed, and preimage removal must be staged over at least $\Cexpungeperiod$ slots, it is not possible for a service to execute in the same block in which it is removed. There is therefore never a conflict between service removal and service state modification for $R_A$ to resolve.
+\begin{gather}
+  R_D(\mathbf{a}, \mathbf{w}, \mathbf{b}) \equiv \set{\build{\kv{\mathbf{k}}{\mathbf{v}}}{\kv{\mathbf{k}}{\mathbf{v}} \in \mathbf{a}, \mathbf{k} \in \mathbf{w}}} \cup (\mathbf{b} \setminus \mathbf{w}) \\
+  R_P(\mathbf{p}, \mathbf{l}) \equiv \set{\build{\kv{h}{\mathbf{p}\subb{h}}}{\kv{\tup{h, z}}{\mathbf{r}} \in \mathbf{l}, \mathbf{r} \ne \sq{}}} \\
+  R_A^\dagger(\mathbf{o}, \mathbf{a}, \mathbf{w}, \mathbf{r}, \mathbf{b}) \equiv \tup{\begin{aligned}
+    &\is{\sa¬codehash}{R(\mathbf{o}_\sa¬codehash, \mathbf{a}_\sa¬codehash, \mathbf{b}_\sa¬codehash)},
+      \is{\sa¬storage}{R_D(\mathbf{a}_\sa¬storage, \mathbf{w}, \mathbf{b}_\sa¬storage)}, \\
+    &\is{\sa¬requests}{R_D(\mathbf{a}_\sa¬requests, \mathbf{r}, \mathbf{b}_\sa¬requests)},
+      \is{\sa¬balance}{\mathbf{b}_\sa¬balance},
+      \is{\sa¬authority}{\mathbf{a}_\sa¬authority},
+      \is{\sa¬authbalance}{\mathbf{a}_\sa¬authbalance}, \\
+    &\is{\sa¬minaccgas}{R(\mathbf{o}_\sa¬minaccgas, \mathbf{a}_\sa¬minaccgas, \mathbf{b}_\sa¬minaccgas)},
+      \is{\sa¬minmemogas}{R(\mathbf{o}_\sa¬minmemogas, \mathbf{a}_\sa¬minmemogas, \mathbf{b}_\sa¬minmemogas)}, \\
+    &\is{\sa¬preimages}{R_P(\mathbf{o}_\sa¬preimages, R_D(\mathbf{a}_\sa¬requests, \mathbf{r}, \mathbf{b}_\sa¬requests))}, \\
+    &\is{\sa¬created}{\mathbf{o}_\sa¬created},
+      \is{\sa¬gratis}{\mathbf{o}_\sa¬gratis},
+      \is{\sa¬lastacc}{\mathbf{o}_\sa¬lastacc},
+      \is{\sa¬parent}{\mathbf{o}_\sa¬parent}
+  \end{aligned}} \\
+  \begin{aligned}
+    R_A(s, \mathbf{o}, \mathbf{a}, \mathbf{b}) &\equiv \begin{cases}
+      \none &\when \mathbf{a}^\dagger = \none \\
+      R_A^\dagger(\mathbf{o}\subb{s}, \mathbf{a}^\dagger, \mathbf{w}, \mathbf{r}, \mathbf{b}\subb{s}) &\otherwise
+    \end{cases} \\
+    &\phantom{{}\equiv{}} \where \mathbf{a}^\dagger = (\mathbf{a}_\ao¬poststate)_\ps¬accounts\subb{s} \\
+    &\phantom{{}\equiv{}} \also \mathbf{w} = \set{\build{\mathbf{k}}{\tup{d, \mathbf{k}} \in \mathbf{a}_\ao¬writtenkeys, d = s}} \\
+    &\phantom{{}\equiv{}} \also \mathbf{r} = \set{\build{\tup{h, z}}{\tup{d, h, z} \in \mathbf{a}_\ao¬modifiedreqs, d = s}}
+  \end{aligned}
+\end{gather}
+
+$\local¬fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/blob pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
 \begin{align}
   \local¬fnprovide &\colon\abracegroup{
     &\tuple{\dictionary{\serviceid}{\serviceaccount}, \protoset{\tuple{\serviceid, \blob}}} \to \dictionary{\serviceid}{\serviceaccount} \\
@@ -284,18 +314,20 @@ And $\local¬fnprovide$ is the preimage integration function, which transforms a
   }
 \end{align}
 
-We note that while forming the union of all altered, newly added service and newly removed indices, defined in the above context as $\keys{\mathbf{n}} \cup \mathbf{m}$, different services may not each contribute the same index for a new, altered or removed service. This cannot happen for the set of removed and altered services since the code hash of removable services has no known preimage and thus cannot execute itself to make an alteration. For new services this should also never happen since new indices are explicitly selected to avoid such conflicts. In the unlikely event it does happen, the block must be considered invalid.
+We note that while forming the union of newly added services, defined in the above context as $\mathbf{n}$, different services may not each contribute the same index for a new service. New indices are explicitly selected to avoid such conflicts. In the unlikely event of a conflict, the block must be considered invalid.
 
-The single-service accumulation function, $\accone$, transforms an initial state-context, a sequence of deferred-transfers, a sequence of work-reports, a dictionary of services enjoying free accumulation (with the values indicating the amount of free gas) and a service index into an alterations state-context, a sequence of \emph{transfers}, a possible accumulation-output, the actual \textsc{pvm} gas used and a set of preimage provisions. This function wrangles the work-digests of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
+The single-service accumulation function, $\accone$, transforms an initial state-context, a sequence of deferred-transfers, a sequence of work-reports, a dictionary of services enjoying free accumulation (with the values indicating the amount of free gas) and a service index into an alterations state-context, a set of modified service storage keys, a set of modified preimage requests, a sequence of \emph{transfers}, a possible accumulation-output, the actual \textsc{pvm} gas used and a set of preimage provisions. This function wrangles the work-digests of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
 \begin{equation}
   \label{eq:acconeout}
   \acconeout \equiv \tuple{
-    \begin{alignedat}{3}
-      \isa{\ao¬poststate&}{\partialstate},\;
-      \isa{&\ao¬defxfers&}{\defxfers},\;
-      \isa{\ao¬yield}{\optional{\hash}},\;\\
-      \isa{\ao¬gasused&}{\gas},\;
-      \isa{&\ao¬provisions&}{\protoset{\tuple{\serviceid, \blob}}}
+    \begin{alignedat}{1}
+      \isa{&\ao¬poststate}{\partialstate},\;
+      \isa{\ao¬writtenkeys}{\protoset{\tuple{\serviceid, \blob}}},\;
+      \isa{\ao¬modifiedreqs}{\protoset{\tuple{\serviceid, \hash, \bloblength}}},\;\\
+      \isa{&\ao¬defxfers}{\defxfers},\;
+      \isa{\ao¬yield}{\optional{\hash}},\;
+      \isa{\ao¬gasused}{\gas},\;
+      \isa{\ao¬provisions}{\protoset{\tuple{\serviceid, \blob}}}
     \end{alignedat}
   }
 \end{equation}
