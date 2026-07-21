@@ -875,9 +875,10 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
       \registers_7 &\otherwise
     \end{cases} \\
-    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \exc \mathbf{d}\subb{d}_\sa¬authority = \registers_8 \\
+    \using \sa¬authority &= \registers_8 \\
+    \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \exc \mathbf{d}\subb{d}_\sa¬authority = \sa¬authority \\
     \tup{\registers'_7, (\imX'_\im¬state)_\ps¬accounts} &\equiv \begin{cases}
-      \tup{\mathtt{WHO}, (\imX_\im¬state)_\ps¬accounts} &\when d \not\in \keys{(\imX_\im¬state)_\ps¬accounts} \\
+      \tup{\mathtt{WHO}, (\imX_\im¬state)_\ps¬accounts} &\when d \not\in \keys{(\imX_\im¬state)_\ps¬accounts} \lor \sa¬authority \not\in \serviceid \\
       \tup{\mathtt{HUH}, (\imX_\im¬state)_\ps¬accounts} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬accounts\subb{d}_\sa¬authority \\
       \tup{\mathtt{OK}, \mathbf{d}} &\otherwise
     \end{cases} \\
