@@ -274,10 +274,10 @@ A service's state can be modified by both itself and its authority service. The 
       \is{\sa¬storage}{R_D(\mathbf{a}_\sa¬storage, \mathbf{w}, \mathbf{b}_\sa¬storage)}, \\
     &\is{\sa¬requests}{R_D(\mathbf{a}_\sa¬requests, \mathbf{r}, \mathbf{b}_\sa¬requests)},
       \is{\sa¬balance}{\mathbf{b}_\sa¬balance},
-      \is{\sa¬authority}{\mathbf{a}_\sa¬authority},
-      \is{\sa¬authbalance}{\mathbf{a}_\sa¬authbalance}, \\
-    &\is{\sa¬minaccgas}{R(\mathbf{o}_\sa¬minaccgas, \mathbf{a}_\sa¬minaccgas, \mathbf{b}_\sa¬minaccgas)},
-      \is{\sa¬minmemogas}{R(\mathbf{o}_\sa¬minmemogas, \mathbf{a}_\sa¬minmemogas, \mathbf{b}_\sa¬minmemogas)}, \\
+      \is{\sa¬authority}{\mathbf{a}_\sa¬authority}, \\
+    &\is{\sa¬authbalance}{\mathbf{a}_\sa¬authbalance + \mathbf{b}_\sa¬authbalance - \mathbf{o}_\sa¬authbalance},
+      \is{\sa¬minaccgas}{R(\mathbf{o}_\sa¬minaccgas, \mathbf{a}_\sa¬minaccgas, \mathbf{b}_\sa¬minaccgas)}, \\
+    &\is{\sa¬minmemogas}{R(\mathbf{o}_\sa¬minmemogas, \mathbf{a}_\sa¬minmemogas, \mathbf{b}_\sa¬minmemogas)}, \\
     &\is{\sa¬preimages}{R_P(\mathbf{o}_\sa¬preimages, R_D(\mathbf{a}_\sa¬requests, \mathbf{r}, \mathbf{b}_\sa¬requests))}, \\
     &\is{\sa¬created}{\mathbf{o}_\sa¬created},
       \is{\sa¬gratis}{\mathbf{o}_\sa¬gratis},
@@ -286,7 +286,7 @@ A service's state can be modified by both itself and its authority service. The 
   \end{aligned}} \\
   \begin{aligned}
     R_A(s, \mathbf{o}, \mathbf{a}, \mathbf{b}) &\equiv \begin{cases}
-      \none &\when \mathbf{a}^\dagger = \none \\
+      \mathbf{a}^\dagger &\when \mathbf{a}^\dagger = \none \lor \mathbf{o}\subb{s}_\sa¬authority = s \\
       R_A^\dagger(\mathbf{o}\subb{s}, \mathbf{a}^\dagger, \mathbf{w}, \mathbf{r}, \mathbf{b}\subb{s}) &\otherwise
     \end{cases} \\
     &\phantom{{}\equiv{}} \where \mathbf{a}^\dagger = (\mathbf{a}_\ao¬poststate)_\ps¬accounts\subb{s} \\
