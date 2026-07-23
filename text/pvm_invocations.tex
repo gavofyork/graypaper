@@ -163,7 +163,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
         &\when s \not\in \local¬basestate_\ps¬accounts \vee \jam¬blob = \none \vee \len{\jam¬blob} > \Cmaxservicecodesize \\
       C(\Psi_M(\jam¬blob, 5, g, \encode{t, s, \len{\mathbf{i}}}, F, I(\local¬postxferstate, s)^2))
         &\otherwise \\
-      \begin{aligned}
+      \multicolumn{2}{l}{\begin{aligned}
         &\quad\where \jam¬blob = \local¬basestate_\ps¬accounts\subb{s}_\sa¬code\\
         &\quad\also \local¬postxferstate = \local¬basestate \exc \abracegroup{
           \local¬postxferstate_\ps¬accounts\subb{s}_\sa¬balance &= \local¬basestate_\ps¬accounts\subb{s}_\sa¬balance + \!\!\!\!\!\sum_{r \in \mathbf{x}, r_\dx¬destauth = \bot}\!\!\!\!\!r_\dx¬amount \\
@@ -173,7 +173,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
           i \orderedin \mathbf{i} ,
           i \in \defxfer
         }}
-      \end{aligned}\\
+      \end{aligned}}\\
     \end{cases} \\
   }\\
   I\colon\abracegroup{
@@ -860,7 +860,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\continue, \mathtt{WHO}, \imX_\im¬nextfreeid, \mathbf{d}} &\otherwhen s \not\in \mathbf{d} \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, \mathbf{d}} &\otherwhen x > 3 \lor \imX_\im¬id \ne p \lor a < \mathbf{a}_\sa¬minbalance \lor (\sa¬gratis \ne 0 \wedge \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager) \\
       \tup{\continue, \mathtt{CASH}, \imX_\im¬nextfreeid, \mathbf{d}} &\otherwhen \mathbf{d}'\subb{s}_\sa¬balance < 0 \lor \mathbf{d}'\subb{s}_\sa¬authbalance < 0 \lor {} \\
-      &\phantom{\otherwhen{}} \mathbf{d}'\subb{s}_\sa¬balance + \mathbf{d}'\subb{s}_\sa¬authbalance < \mathbf{d}'\subb{s}_\sa¬minbalance \\
+      &\phantom{\otherwhen} \mathbf{d}'\subb{s}_\sa¬balance + \mathbf{d}'\subb{s}_\sa¬authbalance < \mathbf{d}'\subb{s}_\sa¬minbalance \\
       \tup{\continue, \mathtt{FULL}, \imX_\im¬nextfreeid, \mathbf{d}} &\otherwhen \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \wedge \local¬desiredid \in \keys{\mathbf{d}} \\
       \tup{\continue, i', i^*, \mathbf{d}'} &\otherwise
     \end{cases} \\
