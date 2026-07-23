@@ -468,16 +468,15 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \texttt{compile} = 9} &
   $\begin{aligned}
     \using \sq{m, p, l, f, i} &= \registers\subrange{7}{5} \\
+    \using \mathbf{a} &= \begin{cases}
+      \mathbf{d}\subb{s} &\when i = 2^{64} - 1 \\
+      \mathbf{d}\subb{i} &\otherwise
+    \end{cases} \\
     \using \mathbf{p} &= \begin{cases}
       \memory\subrange{p}{l} &\when m = 0 \wedge \Nrange{p}{l} \subseteq \readable{\memory} \\
       \error &\otherwhen m = 0 \vee (m = 1 \wedge \Nrange{p}{32} \not\subseteq \readable{\memory}) \\
       \mathbf{h}\subrange{f^*}{l^*} &\otherwhen m = 1 \wedge \mathbf{a} \ne \none \wedge \mathbf{h} \ne \none \\
       \multicolumn{2}{l}{\where \mathbf{h} = \histlookup(\mathbf{a}, t, \memory\subrange{p}{32}),\ f^* = \min(f, \len{\mathbf{h}}),\ l^* = \min(l, \len{\mathbf{h}} - f^*)} \\
-      \none &\otherwise
-    \end{cases} \\
-    \using \mathbf{a} &= \begin{cases}
-      \mathbf{d}\subb{s} &\when i = 2^{64} - 1 \wedge s \in \keys{\mathbf{d}} \\
-      \mathbf{d}[i] &\when i \in \keys{\mathbf{d}} \\
       \none &\otherwise
     \end{cases} \\
     \using \mathbf{H} &= \keys{\pvm¬module¬map} \cup \set{\mathbf{m}\subb{n}_\pg¬handle : n \in \keys{\mathbf{m}}} \\
