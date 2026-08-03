@@ -115,7 +115,13 @@ The set of validator keys itself is equivalent to the set of 336-octet sequences
 We also define $\nullvalkey$, the \emph{null} validator key, used in place of the key of a validator which must be prevented from taking part in the protocol. Formally:
 \begin{equation}
   \label{eq:nullvalkey}
-  \nullvalkey \equiv \sq{0}_{32} \concat \sq{2} \concat \sq{0}_{303}
+  \begin{aligned}
+    \nullvalkey &\in \valkey \\
+    (\nullvalkey)_\vk¬bs &= \sq{0, 0, \dots} \\
+    (\nullvalkey)_\vk¬ed &= \sq{2, 0, 0, \dots} \\
+    (\nullvalkey)_\vk¬bls &= \sq{0, 0, \dots} \\
+    (\nullvalkey)_\vk¬metadata &= \sq{0, 0, \dots}
+  \end{aligned}
 \end{equation}
 
 No valid signature exists under $\nullvalkey$ since none of its cryptographic components is a valid public key. Note that this is the reason its Ed25519 component is $\sq{2, 0, 0, \dots}$ rather than zero: unlike the Bandersnatch and \textsc{bls} cases, the all-zero Ed25519 sequence does encode a curve point, of order four, under which a signature may be forged for any message without knowledge of any secret. The value $2$ instead encodes a $y$-coordinate admitting no corresponding curve point.
