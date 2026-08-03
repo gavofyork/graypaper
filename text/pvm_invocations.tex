@@ -957,12 +957,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using \mathbf{a} &= \begin{cases}
       \imX_\im¬self \text{ except:} &\\
+      \quad \keys{\mathbf{a}_\sa¬requests} = \keys{(\imX_\im¬self)_\sa¬requests} \setminus \set{\tup{h, z}} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} = \sq{} \\
       \quad \left.
         \begin{aligned}
           \keys{\mathbf{a}_\sa¬requests} &= \keys{(\imX_\im¬self)_\sa¬requests} \setminus \set{\tup{h, z}}\ ,\\[2pt]
           \keys{\mathbf{a}_\sa¬preimages} &= \keys{(\imX_\im¬self)_\sa¬preimages} \setminus \set{h}
         \end{aligned}
-      \ \right\} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} \in \set{\sq{}, \sq{x, y}},\ y < t - \Cexpungeperiod \\
+      \ \right\} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} = \sq{x, y},\ y < t - \Cexpungeperiod \\
       \quad \mathbf{a}_\sa¬requests\subb{h, z} = \sq{x, t} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} = \sq{x} \\
       \quad \mathbf{a}_\sa¬requests\subb{h, z} = \sq{w, t} &\when (\imX_\im¬self)_\sa¬requests\subb{h, z} = \sq{x, y, w},\ y < t - \Cexpungeperiod \\
       \error &\otherwise\\
