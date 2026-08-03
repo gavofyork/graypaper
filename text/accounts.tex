@@ -2,9 +2,10 @@
 
 As we already noted, a service in \Jam is somewhat analogous to a smart contract in Ethereum in that it includes amongst other items, a code component, a storage component and a balance. Unlike Ethereum, the code is split over two isolated entry-points each with their own environmental conditions; one, \emph{Refinement}, is essentially stateless and happens in-core, and the other, \emph{Accumulation}, which is stateful and happens on-chain. It is the latter which we will concern ourselves with now.
 
-Service accounts are held in state under $\accounts$, a partial mapping from a service identifier $\serviceid$ into a tuple of named elements which specify the attributes of the service relevant to the \Jam protocol. Formally:
+Service accounts are held in state under $\accounts$, a partial mapping from a service identifier $\serviceid$ into a tuple of named elements which specify the attributes of the service relevant to the \Jam protocol. We further name $\preimagelen$, the set of lengths under which a preimage may be solicited; this is the subset of $\bloblength$ omitting its two greatest values, since these are reserved as the discriminators of storage and preimage items respectively in the state-key derivation of section \ref{sec:statemerklization}. Formally:
 \begin{align}\label{eq:serviceaccounts}
   \serviceid &\equiv \Nbits{32} \\
+  \preimagelen &\equiv \Nmax{2^{32} - 2} \\
   \accounts &\in \dictionary{\serviceid}{\serviceaccount}
 \end{align}
 
@@ -13,7 +14,7 @@ The service account is defined as the tuple of storage dictionary $\sa¬storage$
   \serviceaccount \equiv \tuple{\ \begin{aligned}
     \sa¬storage &\in \dictionary{\blob}{\blob}\,,\
     \sa¬preimages \in \dictionary{\hash}{\blob}\,,\\
-    \sa¬requests &\in \dictionary{\tuple{\hash,\Nmax{2^{32} - 2}}}{\sequence[:3]{\timeslot}}\,,\\
+    \sa¬requests &\in \dictionary{\tuple{\hash,\preimagelen}}{\sequence[:3]{\timeslot}}\,,\\
     \sa¬gratis &\in \balance\,,\
     \sa¬codehash \in \hash\,,\
     \sa¬balance \in \balance\,,\
