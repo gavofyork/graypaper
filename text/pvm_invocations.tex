@@ -727,7 +727,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \begin{aligned}
         &\fnencode(
           \mathbf{a}_\sa¬codehash,
-          \encode[4]{\mathbf{a}_\sa¬supervisor},
+          \encode[4]{\mathbf{a}_\sa¬supervisor, \mathbf{a}_\sa¬supervisorcreated},
           \encode[8]{\mathbf{a}_\sa¬balance, \mathbf{a}_\sa¬supervisorbalance, \mathbf{a}_\sa¬minbalance, \mathbf{a}_\sa¬minaccgas, \mathbf{a}_\sa¬minmemogas, \mathbf{a}_\sa¬octets}, \\
         &\phantom{\fnencode(}
           \encode[4]{\mathbf{a}_\sa¬items},
@@ -832,7 +832,8 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \is{\mathbf{\sa¬storage}}{\emset},
       \is{\mathbf{\sa¬requests}}{\set{\kv{\tup{\sa¬codehash, l}}{\sq{}}}},
       \sa¬balance,
-      \is{\sa¬supervisor}{\tup{\imX_\im¬id, (\imX_\im¬self)_\sa¬created}},
+      \is{\sa¬supervisor}{\imX_\im¬id},
+      \is{\sa¬supervisorcreated}{(\imX_\im¬self)_\sa¬created},
       \sa¬supervisorbalance, \\
       &\sa¬minaccgas,
       \sa¬minmemogas,
@@ -881,7 +882,10 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \registers_8 &\otherwise
     \end{cases} \\
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
-    \using \mathbf{d}' &= \mathbf{d} \exc \mathbf{d}'\subb{d}_\sa¬supervisor = \tup{u, \mathbf{d}\subb{u}_\sa¬created} \\
+    \using \mathbf{d}' &= \mathbf{d} \exc \abracegroup{
+      \mathbf{d}'\subb{d}_\sa¬supervisor &= u \\
+      \mathbf{d}'\subb{d}_\sa¬supervisorcreated &= \mathbf{d}\subb{u}_\sa¬created
+    } \\
     \tup{\registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \keys{\mathbf{d}} \lor u \not\in \keys{\mathbf{d}} \\
       \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \ne \effectivesupervisor{\mathbf{d}}{d} \\
