@@ -163,7 +163,7 @@ As the result of accumulating a transfer cannot reasonably be discarded (this wo
       \tup{\mathbf{t}^!, \sq{t} \concat \mathbf{t}^Q} &\when d = \top \\
       \tup{\sq{t} \concat \mathbf{t}^!, \mathbf{t}^Q} &\otherwise
     \end{cases} \\
-    &\quad\where d = t_\dx¬dest \in \mathbf{d} \land \fneffectivesupervisor(\mathbf{d}, t_\dx¬dest) \in \mathbf{s} \setminus \set{t_\dx¬dest} \\
+    &\quad\where d = t_\dx¬dest \in \mathbf{d} \land \effectivesupervisor{\mathbf{d}}{t_\dx¬dest} \in \mathbf{s} \setminus \set{t_\dx¬dest} \\
     &\quad\also \mathbf{s}' = \begin{cases}
       \mathbf{s} &\when d = \top \\
       \mathbf{s} \cup \set{t_\dx¬dest} &\otherwise
@@ -229,11 +229,11 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         \is{\ao¬provisions}{\mathbf{o}_\ao¬provisions}
       } \\
       \local¬acc(s) &\equiv \begin{cases}
-        N(\mathbf{o}) &\when s \in \mathbf{o}_\ao¬modifiedaccounts \land s \in \mathbf{y}_\ao¬modifiedaccounts \setminus \set{\fneffectivesupervisor(\ps¬accounts, s)} \\
+        N(\mathbf{o}) &\when s \in \mathbf{o}_\ao¬modifiedaccounts \land s \in \mathbf{y}_\ao¬modifiedaccounts \setminus \set{\effectivesupervisor{\ps¬accounts}{s}} \\
         \mathbf{o} &\otherwise
       \end{cases} \\
       &\phantom{{}\equiv{}} \where \mathbf{o} = \accone(\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}, s) \\
-      &\phantom{{}\equiv{}} \also \mathbf{y} = \accone(\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}, \fneffectivesupervisor(\ps¬accounts, s)) \\
+      &\phantom{{}\equiv{}} \also \mathbf{y} = \accone(\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}, \effectivesupervisor{\ps¬accounts}{s}) \\
       \mathbf{u} &= \sq{\build{
           \tup{s, \local¬acc(s)_\ao¬gasused}
         }{
@@ -283,7 +283,7 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         )_\ps¬authqueue)\sub{c} \\
       M(s) &\equiv \begin{cases}
         (\local¬acc(s)_\ao¬poststate)_\ps¬accounts\subb{s} &\when s \in \local¬acc(s)_\ao¬modifiedaccounts \\
-        (\local¬acc(\fneffectivesupervisor(\ps¬accounts, s))_\ao¬poststate)_\ps¬accounts\subb{s} &\otherwise
+        (\local¬acc(\effectivesupervisor{\ps¬accounts}{s})_\ao¬poststate)_\ps¬accounts\subb{s} &\otherwise
       \end{cases} \\
       \mathbf{m} &= \set{\build{\kv{s}{M(s)}}{s \in \keys{\ps¬accounts}, M(s) \ne \none}} \\
       \mathbf{n} &= \bigcup_{s \in \mathbf{s}}(

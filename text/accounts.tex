@@ -187,14 +187,13 @@ Each service has a designated \emph{supervisor} $\sa¬supervisor$; all non-privi
 
 In addition to the regular balance of a service $\sa¬balance$, there is an additional supervisor balance $\sa¬supervisorbalance$. This balance is aggregated with the regular balance when determining data footprint limits for the service, but may only be transferred by the supervisor.
 
-A service's supervisor designation $\sa¬supervisor$ is a tuple of the supervisor's identifier and the time slot in which the supervisor was created. The creation time slot is included to prevent unintentional transfer of authority in the case that the supervisor is ejected and a new service is created with the same identifier. Following ejection of a service's supervisor, the supervisor designation effectively reverts to the service itself. This behaviour is encoded by the function $\fneffectivesupervisor$, which returns a service's effective supervisor.
+A service's supervisor designation $\sa¬supervisor$ is a tuple of the supervisor's identifier and the time slot in which the supervisor was created. The creation time slot is included to prevent unintentional transfer of authority in the case that the supervisor is ejected and a new service is created with the same identifier. We define the \emph{effective supervisor} of a service to be the designated supervisor if this service exists and has the expected creation slot, or the service itself otherwise. For convenience, given a service accounts dictionary $\mathbf{d}$ and a service identifier $s$, we express the effective supervisor of $s$ as $\effectivesupervisor{\mathbf{d}}{s}$. Formally:
 \begin{equation}\label{eq:effectivesupervisor}
-  \fneffectivesupervisor\colon\abracegroup{
-    \tuple{\dictionary{\serviceid}{\serviceaccount}, \serviceid} &\to \serviceid \\
-    \tup{\mathbf{d}, s} &\mapsto \begin{cases}
+  \begin{aligned}
+    \forall \mathbf{d} \in \dictionary{\serviceid}{\serviceaccount}, s \in \serviceid : \effectivesupervisor{\mathbf{d}}{s} &\equiv \begin{cases}
       u &\when u \in \mathbf{d} \land \mathbf{d}\subb{u}_\sa¬created = r \\
       s &\otherwise
     \end{cases} \\
-    &\phantom{{}\mapsto{}} \where \tup{u, r} = \mathbf{d}\subb{s}_\sa¬supervisor
-  }
+    &\phantom{{}\equiv{}} \where \tup{u, r} = \mathbf{d}\subb{s}_\sa¬supervisor
+  \end{aligned}
 \end{equation}

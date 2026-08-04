@@ -707,7 +707,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \tup{\execst', \registers'_7, (\imX_\im¬state')_\ps¬accounts, \imX_\im¬modifiedaccounts'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \mathbf{k} = \error \vee \mathbf{v} = \error\\
       \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \keys{\mathbf{d}} \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \imX_\im¬id \not\in \set{d, \fneffectivesupervisor(\mathbf{d}, d)} \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \\
       \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{d}_\sa¬minbalance > \mathbf{d}'\subb{d}_\sa¬balance + \mathbf{d}'\subb{d}_\sa¬supervisorbalance \\
       \tup{\continue, l, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d}} &\otherwise\\
     \end{cases} \\
@@ -853,8 +853,8 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \mathbf{d}'\subb{s}_\sa¬supervisorbalance = \mathbf{d}\subb{s}_\sa¬supervisorbalance - \mathbf{a}_\sa¬minbalance &\otherwise
     \end{cases} \\
     \using p &= \begin{cases}
-      \imX_\im¬id \in \set{s, \fneffectivesupervisor(\mathbf{d}, s)} &\when x \in \set{0, 2} \\
-      \imX_\im¬id = \fneffectivesupervisor(\mathbf{d}, s) &\otherwise
+      \imX_\im¬id \in \set{s, \effectivesupervisor{\mathbf{d}}{s}} &\when x \in \set{0, 2} \\
+      \imX_\im¬id = \effectivesupervisor{\mathbf{d}}{s} &\otherwise
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬nextfreeid, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \Nrange{o}{60} \not\subseteq \readable{\memory} \\
@@ -884,7 +884,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \mathbf{d}' &= \mathbf{d} \exc \mathbf{d}'\subb{d}_\sa¬supervisor = \tup{u, \mathbf{d}\subb{u}_\sa¬created} \\
     \tup{\registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \keys{\mathbf{d}} \lor u \not\in \keys{\mathbf{d}} \\
-      \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \ne \fneffectivesupervisor(\mathbf{d}, d) \\
+      \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \ne \effectivesupervisor{\mathbf{d}}{d} \\
       \tup{\mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d}} &\otherwise
     \end{cases} \\
     g &\equiv \CgasV
@@ -912,7 +912,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when c = \error \\
       \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \keys{\mathbf{d}} \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \imX_\im¬id \not\in \set{d, \fneffectivesupervisor(\mathbf{d}, d)} \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \\
       \tup{\continue, \mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d}} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasU
@@ -955,10 +955,10 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \set{s} &\otherwise
     \end{cases} \\
     \using p_s &= \begin{cases}
-      \imX_\im¬id \in \set{\dx¬source, \fneffectivesupervisor(\mathbf{d}, \dx¬source)} &\when x \in \set{0, 2} \\
-      \imX_\im¬id = \fneffectivesupervisor(\mathbf{d}, \dx¬source) &\otherwise
+      \imX_\im¬id \in \set{\dx¬source, \effectivesupervisor{\mathbf{d}}{\dx¬source}} &\when x \in \set{0, 2} \\
+      \imX_\im¬id = \effectivesupervisor{\mathbf{d}}{\dx¬source} &\otherwise
     \end{cases} \\
-    \using p_d &= o \ne 0 \lor (\imX_\im¬id \in \set{\dx¬dest, \fneffectivesupervisor(\mathbf{d}, \dx¬dest)} \land (x \in \set{1, 2} \lor s \ne d)) \\
+    \using p_d &= o \ne 0 \lor (\imX_\im¬id \in \set{\dx¬dest, \effectivesupervisor{\mathbf{d}}{\dx¬dest}} \land (x \in \set{1, 2} \lor s \ne d)) \\
     \using \tup{c, t} &= \begin{cases}
       \tup{\panic, 0} &\when \mathbf{t} = \error \\
       \tup{\mathtt{WHO}, 0} &\otherwhen \dx¬source \not\in \keys{\mathbf{d}} \lor \dx¬dest \not\in \keys{\mathbf{d}} \\
@@ -988,7 +988,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     } \\
     \tup{\registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \mathbf{d} \\
-      \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d = \imX_\im¬id \vee \imX_\im¬id \ne \fneffectivesupervisor(\mathbf{d}, d) \vee \mathbf{d}\subb{d}_\sa¬items \ne 0 \\
+      \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d = \imX_\im¬id \vee \imX_\im¬id \ne \effectivesupervisor{\mathbf{d}}{d} \vee \mathbf{d}\subb{d}_\sa¬items \ne 0 \\
       \tup{\mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d, \imX_\im¬id}} &\otherwise
     \end{cases} \\
     g &\equiv \CgasJ
@@ -1045,7 +1045,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when z \not \in \bloblength \\
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d \not\in \keys{\mathbf{d}} \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \fneffectivesupervisor(\mathbf{d}, d)} \lor \mathbf{d}' = \error \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \lor \mathbf{d}' = \error \\
       \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{d}_\sa¬balance + \mathbf{d}'\subb{d}_\sa¬supervisorbalance < \mathbf{d}'\subb{d}_\sa¬minbalance \\
       \tup{\continue, \mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d}} &\otherwise
     \end{cases} \\
@@ -1082,7 +1082,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when z \not \in \bloblength \\
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d \not\in \keys{\mathbf{d}} \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \fneffectivesupervisor(\mathbf{d}, d)} \lor \mathbf{d}' = \error \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \lor \mathbf{d}' = \error \\
       \tup{\continue, \mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d}} &\otherwise
     \end{cases} \\
     g &\equiv \CgasF
