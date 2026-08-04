@@ -98,12 +98,15 @@ We further define $J_\top$ and $J_\bot$ to be the validator indices who we know 
 
 We are able to define $\local¬tranche\sub{n}$ for tranches beyond the first on the basis of the number of validators who we know are required to conduct an audit yet from whom we have not yet seen a judgment. It is possible that the late arrival of information alters $\local¬tranche\sub{n}$ and nodes should reevaluate and act accordingly should this happen.
 
-We can thus define $\local¬tranche\sub{n}$ beyond the initial tranche through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
+We can thus define $\local¬tranche\sub{n}$ beyond the initial tranche: a work-report for which we have seen any negative judgment is always included, as stated above; otherwise its inclusion is determined through a new \textsc{vrf} which acts upon the set of \emph{no-show} validators.
 \begin{align}
   \nonumber\forall n > 0:&\\
   \label{eq:latertranches}
   \ \local¬seed\sub{n}(\wrX) &\in \bssignature{\activeset\subb{v}_\vk¬bs}{\Xaudit \concat \banderout{\H_\¬vrfsig}\concat\blake{\wrX}\append n}{\sq{}} \\
-  \ a_n(\wrX) &\equiv \textstyle\frac{\len{\activeset}}{65536\Cauditbiasfactor}\decode[2]{\banderout{\local¬seed\sub{n}(\wrX)}\subrange{0}{2}} < \len{A_{n - 1}(\wrX) \setminus J_\top(\wrX)} \\
+  \ a_n(\wrX) &\equiv \bigvee\abracegroup{
+    &J_\bot(\wrX) \neq \emptyset \\
+    &\textstyle\frac{\len{\activeset}}{65536\Cauditbiasfactor}\decode[2]{\banderout{\local¬seed\sub{n}(\wrX)}\subrange{0}{2}} < \len{A_{n - 1}(\wrX) \setminus J_\top(\wrX)}
+  } \\
   \ \local¬tranche\sub{n} &\equiv \set{\build{\wrX}{\wrX \in \local¬reports, \wrX \ne \none, a_n(\wrX)}}
 \end{align}
 
