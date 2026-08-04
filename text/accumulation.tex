@@ -102,7 +102,7 @@ Secondly, since \textsc{pvm} setup cannot be expected to be zero-cost, we wish t
 
 We resolve this by defining a function $\accseq$ which accumulates work-reports sequentially, and which itself utilizes a function $\accpar$ which accumulates work-reports in a non-sequential, service-aggregated manner. In all but the first invocation of $\accseq$, we also integrate the effects of any \emph{deferred-transfers} implied by the previous round of accumulation, thus the accumulation function must accept both the information contained in work-digests and that of deferred-transfers.
 
-Rather than passing whole work-digests into accumulate, we extract the salient information from them and combine with information implied by their work-reports. We call this kind of combined value an \emph{operand tuple}, $\operandtuple$. Likewise, we denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $\dx¬memo$ of $\Cmemosize = 128$ octets, together with the service index of the sender $\dx¬source$, the service index of the receiver $\dx¬dest$, whether to credit the receiver's regular balance ($\dx¬destauth = \bot$) or its authority balance ($\dx¬destauth = \top$), the balance to be transferred $\dx¬amount$ and the gas limit $\dx¬gas$ for the transfer. Formally:
+Rather than passing whole work-digests into accumulate, we extract the salient information from them and combine with information implied by their work-reports. We call this kind of combined value an \emph{operand tuple}, $\operandtuple$. Likewise, we denote the set characterizing a \emph{deferred transfer} as $\defxfer$, noting that a transfer includes a memo component $\dx¬memo$ of $\Cmemosize = 128$ octets, together with the service index of the sender $\dx¬source$, the service index of the receiver $\dx¬dest$, whether to credit the receiver's regular balance ($\dx¬destsupervisor = \bot$) or its supervisor balance ($\dx¬destsupervisor = \top$), the balance to be transferred $\dx¬amount$ and the gas limit $\dx¬gas$ for the transfer. Formally:
 \begin{align}
   \label{eq:operandtuple}
   \operandtuple &\equiv \tuple{
@@ -121,7 +121,7 @@ Rather than passing whole work-digests into accumulate, we extract the salient i
     \begin{alignedat}{3}
       \isa{\dx¬source&}{\serviceid},\;
       \isa{&\dx¬dest&}{\serviceid},\;
-      \isa{&\dx¬destauth&}{\bool},\;\\
+      \isa{&\dx¬destsupervisor&}{\bool},\;\\
       \isa{\dx¬amount&}{\balance},\;
       \isa{&\dx¬memo&}{\memo},\;
       \isa{&\dx¬gas&}{\gas}
@@ -152,9 +152,9 @@ Finally, we define $\local¬fnservouts$ and $\local¬fngasused$, the sets charac
   \local¬fngasused \equiv \sequence{\tuple{\serviceid, \gas}}
 \end{equation}
 
-It is possible for a service's state to be modified by both the service's Accumulate logic and its authority service's Accumulate logic. We wish to avoid inconsistent state resulting from concurrent modification while not unnecessarily restricting parallel accumulation. To this end, we optimistically permit execution of a service's Accumulate logic and its authority service's Accumulate logic in the same round, but discard all results\footnote{With one exception: provided preimages are not discarded} of the service's execution if both modify the service's state. Note that ejection of a service is considered a modification of its state.
+It is possible for a service's state to be modified by both the service's Accumulate logic and its supervisor's Accumulate logic. We wish to avoid inconsistent state resulting from concurrent modification while not unnecessarily restricting parallel accumulation. To this end, we optimistically permit execution of a service's Accumulate logic and its supervisor's Accumulate logic in the same round, but discard all results\footnote{With one exception: provided preimages are not discarded} of the service's execution if both modify the service's state. Note that ejection of a service is considered a modification of its state.
 
-As the result of accumulating a transfer cannot reasonably be discarded (this would cause funds to be lost), deferred transfers to a service are \emph{never} accumulated in parallel with execution of the Accumulate logic of the authority service. We define the function $T$ which partitions a sequence of deferred transfers into those which may be accumulated in parallel with the Accumulate logic of the services $\mathbf{s}$ and those which must be accumulated in a later round.
+As the result of accumulating a transfer cannot reasonably be discarded (this would cause funds to be lost), deferred transfers to a service are \emph{never} accumulated in parallel with execution of the Accumulate logic of the supervisor. We define the function $T$ which partitions a sequence of deferred transfers into those which may be accumulated in parallel with the Accumulate logic of the services $\mathbf{s}$ and those which must be accumulated in a later round.
 \begin{equation}
   \local¬fnpartitionxfers\colon\abracegroup{
     &\tuple{\sequence{\defxfer}, \protoset{\serviceid}, \dictionary{\serviceid}{\serviceaccount}} \to \tuple{\sequence{\defxfer}, \sequence{\defxfer}} \\
@@ -163,7 +163,7 @@ As the result of accumulating a transfer cannot reasonably be discarded (this wo
       \tup{\mathbf{t}^!, \sq{t} \concat \mathbf{t}^Q} &\when d = \top \\
       \tup{\sq{t} \concat \mathbf{t}^!, \mathbf{t}^Q} &\otherwise
     \end{cases} \\
-    &\quad\where d = t_\dx¬dest \in \mathbf{d} \land \fneffectiveauthority(\mathbf{d}, t_\dx¬dest) \in \mathbf{s} \setminus \set{t_\dx¬dest} \\
+    &\quad\where d = t_\dx¬dest \in \mathbf{d} \land \fneffectivesupervisor(\mathbf{d}, t_\dx¬dest) \in \mathbf{s} \setminus \set{t_\dx¬dest} \\
     &\quad\also \mathbf{s}' = \begin{cases}
       \mathbf{s} &\when d = \top \\
       \mathbf{s} \cup \set{t_\dx¬dest} &\otherwise
@@ -229,11 +229,11 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         \is{\ao¬provisions}{\mathbf{o}_\ao¬provisions}
       } \\
       \local¬acc(s) &\equiv \begin{cases}
-        N(\mathbf{o}) &\when s \in \mathbf{o}_\ao¬modifiedaccounts \land s \in \mathbf{y}_\ao¬modifiedaccounts \setminus \set{\fneffectiveauthority(\ps¬accounts, s)} \\
+        N(\mathbf{o}) &\when s \in \mathbf{o}_\ao¬modifiedaccounts \land s \in \mathbf{y}_\ao¬modifiedaccounts \setminus \set{\fneffectivesupervisor(\ps¬accounts, s)} \\
         \mathbf{o} &\otherwise
       \end{cases} \\
       &\phantom{{}\equiv{}} \where \mathbf{o} = \accone(\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}, s) \\
-      &\phantom{{}\equiv{}} \also \mathbf{y} = \accone(\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}, \fneffectiveauthority(\ps¬accounts, s)) \\
+      &\phantom{{}\equiv{}} \also \mathbf{y} = \accone(\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}, \fneffectivesupervisor(\ps¬accounts, s)) \\
       \mathbf{u} &= \sq{\build{
           \tup{s, \local¬acc(s)_\ao¬gasused}
         }{
@@ -283,7 +283,7 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         )_\ps¬authqueue)\sub{c} \\
       M(s) &\equiv \begin{cases}
         (\local¬acc(s)_\ao¬poststate)_\ps¬accounts\subb{s} &\when s \in \local¬acc(s)_\ao¬modifiedaccounts \\
-        (\local¬acc(\fneffectiveauthority(\ps¬accounts, s))_\ao¬poststate)_\ps¬accounts\subb{s} &\otherwise
+        (\local¬acc(\fneffectivesupervisor(\ps¬accounts, s))_\ao¬poststate)_\ps¬accounts\subb{s} &\otherwise
       \end{cases} \\
       \mathbf{m} &= \set{\build{\kv{s}{M(s)}}{s \in \keys{\ps¬accounts}, M(s) \ne \none}} \\
       \mathbf{n} &= \bigcup_{s \in \mathbf{s}}(
