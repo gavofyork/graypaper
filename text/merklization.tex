@@ -17,7 +17,7 @@ We define the state-key constructor functions $C$ as:
 \end{equation}
 
 The state serialization is then defined as the dictionary built from the amalgamation of each of the components. Cryptographic hashing ensures that there will be no duplicate state-keys given that there are no duplicate inputs to $C$. Formally, we define $T$ which transforms some state $\thestate$ into its serialized form:
-\begin{equation}
+\begin{equation}\label{eq:stateserialization}
   T(\thestate) \equiv \abracegroup{
     &&C(1) &\mapsto \encode{\sq{\build{\var{x}}{x \orderedin \authpool}}} \;, \\
     &&C(2) &\mapsto \encode{\authqueue} \;, \\
