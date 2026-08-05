@@ -156,20 +156,24 @@ It is possible for a service's state to be modified by both the service's Accumu
 
 As the result of accumulating a transfer cannot reasonably be discarded (this would cause funds to be lost), deferred transfers to a service are \emph{never} accumulated in parallel with execution of the Accumulate logic of the supervisor. We define the function $T$ which partitions a sequence of deferred transfers into those which may be accumulated in parallel with the Accumulate logic of the services $\mathbf{s}$ and those which must be accumulated in a later round.
 \begin{equation}
-  \local¬fnpartitionxfers\colon\abracegroup{
-    &\tuple{\sequence{\defxfer}, \protoset{\serviceid}, \dictionary{\serviceid}{\serviceaccount}} \to \tuple{\sequence{\defxfer}, \sequence{\defxfer}} \\
-    &\tup{\sq{}, \mathbf{s}, \mathbf{d}} \mapsto \tup{\sq{}, \sq{}} \\
-    &\tup{\sq{t} \concat \mathbf{t}, \mathbf{s}, \mathbf{d}} \mapsto \begin{cases}
-      \tup{\mathbf{t}^!, \sq{t} \concat \mathbf{t}^Q} &\when d = \top \\
-      \tup{\sq{t} \concat \mathbf{t}^!, \mathbf{t}^Q} &\otherwise
-    \end{cases} \\
-    &\quad\where d = t_\dx¬dest \in \mathbf{d} \land \effectivesupervisor{\mathbf{d}}{t_\dx¬dest} \in \mathbf{s} \setminus \set{t_\dx¬dest} \\
-    &\quad\also \mathbf{s}' = \begin{cases}
-      \mathbf{s} &\when d = \top \\
-      \mathbf{s} \cup \set{t_\dx¬dest} &\otherwise
-    \end{cases} \\
-    &\quad\also \tup{\mathbf{t}^!, \mathbf{t}^Q} = \local¬fnpartitionxfers(\mathbf{t}, \mathbf{s}', \mathbf{d})
-  }
+  \begin{gathered}
+    \local¬fnpartitionxfers(\mathbf{t}, \mathbf{s}, \mathbf{d}) \equiv \local¬fnpartitionxfers^*(\mathbf{t}, \mathbf{s}, \emptyset, \mathbf{d}) \\
+    \local¬fnpartitionxfers^*\colon\abracegroup{
+      &\tuple{\sequence{\defxfer}, \protoset{\serviceid}, \protoset{\serviceid}, \dictionary{\serviceid}{\serviceaccount}} \to \tuple{\sequence{\defxfer}, \sequence{\defxfer}} \\
+      &\tup{\sq{}, \mathbf{s}, \mathbf{i}, \mathbf{d}} \mapsto \tup{\sq{}, \sq{}} \\
+      &\tup{\sq{t} \concat \mathbf{t}, \mathbf{s}, \mathbf{i}, \mathbf{d}} \equiv \begin{cases}
+        \tup{\mathbf{t}^!, \sq{t} \concat \mathbf{t}^Q} &\when q = \top \\
+        \tup{\sq{t} \concat \mathbf{t}^!, \mathbf{t}^Q} &\otherwise
+      \end{cases} \\
+      &\quad\where q = (t_\dx¬dest \in \mathbf{d} \land \effectivesupervisor{\mathbf{d}}{t_\dx¬dest} \in (\mathbf{s} \cup \mathbf{i}) \setminus \set{t_\dx¬dest}) \lor {} \\
+      &\quad\phantom{\where q = {}} \exists s \in \mathbf{i} \setminus \set{t_\dx¬dest} : \effectivesupervisor{\mathbf{d}}{s} = t_\dx¬dest \\
+      &\quad\also \mathbf{i}' = \begin{cases}
+        \mathbf{i} &\when q = \top \lor t_\dx¬dest \not\in \mathbf{d} \\
+        \mathbf{i} \cup \set{t_\dx¬dest} &\otherwise
+      \end{cases} \\
+      &\quad\also \tup{\mathbf{t}^!, \mathbf{t}^Q} = \local¬fnpartitionxfers^*(\mathbf{t}, \mathbf{s}, \mathbf{i}', \mathbf{d})
+    }
+  \end{gathered}
 \end{equation}
 
 We define the outer accumulation function $\accseq$ which transforms a gas-limit, a sequence of deferred transfers, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the number of work-reports accumulated, a posterior state-context, the resultant accumulation-output pairings, the service-indexed gas usage and the sequence of processed transfers:
