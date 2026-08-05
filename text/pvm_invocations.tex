@@ -210,7 +210,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_V(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{supervisor} \\
     \Omega_U(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{upgrade} \\
     \Omega_T(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{transfer} \\
-    \Omega_J(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{eject} \\
+    \Omega_J(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{eject} \\
     \Omega_Q(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{query} \\
     \Omega_S(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{solicit} \\
     \Omega_F(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{forget} \\
@@ -981,7 +981,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_J(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_J(\gascounter, \registers, \memory, \imXY, t)$ \\
   \texttt{eject} = 22} &
   $\begin{aligned}
     \using d &= \registers_7 \\
@@ -992,7 +992,8 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     } \\
     \tup{\registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \mathbf{d} \\
-      \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d = \imX_\im¬id \vee \imX_\im¬id \ne \effectivesupervisor{\mathbf{d}}{d} \vee \mathbf{d}\subb{d}_\sa¬items \ne 0 \\
+      \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d = \imX_\im¬id \vee \imX_\im¬id \ne \effectivesupervisor{\mathbf{d}}{d} \vee {} \\
+      &\phantom{\otherwhen} \mathbf{d}\subb{d}_\sa¬created = t \vee \mathbf{d}\subb{d}_\sa¬items \ne 0 \\
       \tup{\mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d, \imX_\im¬id}} &\otherwise
     \end{cases} \\
     g &\equiv \CgasJ
