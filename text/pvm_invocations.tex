@@ -706,8 +706,8 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX_\im¬state')_\ps¬accounts, \imX_\im¬modifiedaccounts'} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \mathbf{k} = \error \vee \mathbf{v} = \error\\
-      \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \keys{\mathbf{d}} \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \\
+      \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d \not\in \keys{\mathbf{d}} \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \\
       \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{d}_\sa¬minbalance > \mathbf{d}'\subb{d}_\sa¬balance + \mathbf{d}'\subb{d}_\sa¬supervisorbalance \\
       \tup{\continue, l, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d}} &\otherwise\\
     \end{cases} \\
@@ -915,8 +915,8 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     } \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when c = \error \\
-      \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \keys{\mathbf{d}} \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \\
+      \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d \not\in \keys{\mathbf{d}} \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \\
       \tup{\continue, \mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d}} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasU
