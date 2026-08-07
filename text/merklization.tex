@@ -173,21 +173,36 @@ The Merkle tree is a cryptographic data structure yielding a hash commitment to 
 The underlying function for our Merkle trees is the \emph{node} function $N$, which accepts some sequence of blobs of some length $n$ and provides either such a blob back or a hash:
 \begin{equation}
   N\colon\abracegroup{
-    \tuple{\sequence{\blob[n]}, \blob \to \hash} &\to \blob[n] \cup \hash \\
+    \tuple{\sequence{\blob[n]}, \blob \to \hash} &\to \blob[n]^\diamond \cup \hash \\
     \tup{\mathbf{v}, H} &\mapsto \begin{cases}
       \zerohash &\when \len{\mathbf{v}} = 0 \\
-      \mathbf{v}_0 &\when \len{\mathbf{v}} = 1 \\
-      H(\token{\$node} \concat N(\mathbf{v}_{\dots\ceil{\nicefrac{\len{\mathbf{v}}}{2}}}, H) \concat N(\mathbf{v}_{\ceil{\nicefrac{\len{\mathbf{v}}}{2}}\dots}, H)) &\otherwise
+      \mathbf{v}_0^\diamond &\when \len{\mathbf{v}} = 1 \\
+      H(\token{\$pair} \concat \mathbf{a} \concat \mathbf{b}) &\otherwhen \exists \tup{\mathbf{a}, \mathbf{b}} \in \blob^2 : \mathbf{l} = \mathbf{a}^\diamond \land \mathbf{r} = \mathbf{b}^\diamond \\
+      H(\token{\$trip} \concat \mathbf{l} \concat \mathbf{b}) &\otherwhen \exists \mathbf{b} \in \blob : \mathbf{r} = \mathbf{b}^\diamond \\
+      H(\token{\$node} \concat \mathbf{l} \concat \mathbf{r}) &\otherwise \\
+      \multicolumn{2}{l}{
+        \begin{aligned}
+          \quad \where \mathbf{l} &= N(\mathbf{v}_{\dots\ceil{\nicefrac{\len{\mathbf{v}}}{2}}}, H) \\
+          \quad \also \mathbf{r} &= N(\mathbf{v}_{\ceil{\nicefrac{\len{\mathbf{v}}}{2}}\dots}, H)
+        \end{aligned}
+      }
     \end{cases}
   }\label{eq:merklenode}
 \end{equation}
 
-The astute reader will realize that if our $\blob[n]$ happens to be equivalent $\hash$ then this function will always evaluate into $\hash$. That said, for it to be secure care must be taken to ensure there is no possibility of preimage collision. For this purpose we include the hash prefix $\token{\$node}$ to minimize the chance of this; simply ensure any items are hashed with a different prefix and the system can be considered secure.
+Raw blobs returned by $N$ are tagged so that they can be distinguished from hashes. $\blob[n]^\diamond$ denotes the set of tagged blobs of length $n$. For convenience we define the function $U$ which removes the tag, if any, from a blob. Formally:
+\begin{align}
+  \blob[n]^\diamond &\equiv \set{\build{\mathbf{v}^\diamond}{\mathbf{v} \in \blob[n]}} \\
+  U(\mathbf{v} \in \blob[n] \cup \blob[n]^\diamond) \in \blob[n] &\equiv \begin{cases}
+    \mathbf{u} &\when \exists \mathbf{u} \in \blob : \mathbf{v} = \mathbf{u}^\diamond \\
+    \mathbf{v} &\otherwise
+  \end{cases}
+\end{align}
 
 We also define the \emph{trace} function $T$, which returns each opposite node from top to bottom as the tree is navigated to arrive at some leaf corresponding to the item of a given index into the sequence. It is useful in creating justifications of data inclusion.
 \begin{equation}
   T\colon\abracegroup{
-    \tuple{\sequence{\blob[n]}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash}\ &\to \sequence{\blob[n] \cup \hash}\\
+    \tuple{\sequence[m]{\blob[n]}, \Nmax{m}, \blob \to \hash}\ &\to \sequence{\blob[n]^\diamond \cup \hash}\\
     \tup{\mathbf{v}, i, H} &\mapsto \begin{cases}
      \sq{N(P^\bot(\mathbf{v}, i), H)} \concat T(P^\top(\mathbf{v}, i), i - P_I(\mathbf{v}, i), H) &\when \len{\mathbf{v}} > 1\\
       \sq{} &\otherwise\\
@@ -207,7 +222,9 @@ We also define the \emph{trace} function $T$, which returns each opposite node f
   }
 \end{equation}
 
-From this we define our other Merklization functions.
+Note that the Merkle trees constructed by $N$ are well-balanced but left-biased: a node never has more leaves under its right branch than its left. As such, it is not possible for a node to have a single leaf on the left and a subtree on the right. A justification which implies such a node must be considered invalid.
+
+From $N$ and $T$ we define our other Merklization functions.
 
 \subsubsection{Well-Balanced Tree}
 We define the well-balanced binary Merkle function as $\fnmerklizewb$:
@@ -216,7 +233,7 @@ We define the well-balanced binary Merkle function as $\fnmerklizewb$:
       \label{eq:simplemerkleroot}
       \tuple{\sequence{\blob}, \blob \to \hash} &\to \hash \\
       \tup{\mathbf{v}, H} &\mapsto \begin{cases}
-        H(\mathbf{v}_0) &\when \len{\mathbf{v}} = 1 \\
+        H(\token{\$sing} \concat \mathbf{v}_0) &\when \len{\mathbf{v}} = 1 \\
         N(\mathbf{v}, H) &\otherwise
       \end{cases} \\
     }
@@ -227,30 +244,30 @@ This is suitable for creating proofs on data which is not much greater than 32 o
 Note: In the case that no hash function argument $H$ is supplied, we may assume Blake 2b.
 
 \subsubsection{Constant-Depth Tree}
-We define the constant-depth binary Merkle function as $\fnmerklizecd$. We define two corresponding functions for working with subtree pages, $\fnmerklejustsubpath{x}$ and $\fnmerklesubtreepage{x}$. The latter provides a single page of leaves, themselves hashed, prefixed data. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices.
+We define the constant-depth binary Merkle function as $\fnmerklizecd$. We define two corresponding functions for working with subtree pages, $\fnmerklejustsubpath{x}$ and $\fnmerklesubtreepage{x}$. The latter provides a single page of hashed leaves. The former provides the Merkle path to a single page. Both assume size-aligned pages of size $2^x$ and accept page indices. Note that leaves are hashed with the prefix ``leaf'' in order that hashed leaves are distinct from all hashes produced by $N$; without this, the $U$ applications below could introduce ambiguity.
 \begin{align}
   \label{eq:constantdepthmerkleroot}
   \fnmerklizecd&\colon \abracegroup{
     \tuple{\sequence{\blob}, \blob \to \hash} &\to \hash\\
-    \tup{\mathbf{v}, H} &\mapsto N(C(\mathbf{v}, H), H)
+    \tup{\mathbf{v}, H} &\mapsto U(N(C(\mathbf{v}, H), H))
   }\\
   \label{eq:constantdepthsubtreemerklejust}
   \fnmerklejustsubpath{x}&\colon \abracegroup{
-    \tuple{\sequence{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash} &\to \sequence{\hash}\\
-    \tup{\mathbf{v}, i, H} &\mapsto T(C(\mathbf{v}, H), 2^xi, H)_{\dots\max(0, \ceil{\log_2(\max(1, \len{\mathbf{v}})) - x})}
+    \tuple{\sequence[n]{\blob}, \Nmax{\ceil{\nicefrac{n}{2^x}}}, \blob \to \hash} &\to \sequence{\hash}\\
+    \tup{\mathbf{v}, i, H} &\mapsto U^\#(T(C(\mathbf{v}, H), 2^xi, H))_{\dots\max(0, \ceil{\log_2(\max(1, \len{\mathbf{v}})) - x})}
   }\\
   \label{eq:constantdepthsubtreemerkleleafpage}
   \fnmerklesubtreepage{x}&\colon \abracegroup{
-    \tuple{\sequence{\blob}, \Nmax{\len{\mathbf{v}}}, \blob \to \hash} &\to \sequence{\hash}\\
+    \tuple{\sequence[n]{\blob}, \Nmax{\ceil{\nicefrac{n}{2^x}}}, \blob \to \hash} &\to \sequence{\hash}\\
     \tup{\mathbf{v}, i, H} &\mapsto \sq{\build{H(\token{\$leaf} \concat l)}{l \orderedin \mathbf{v}_{2^xi \dots \min(2^xi+2^x, \len{\mathbf{v}})}}}
   }
 \end{align}
 
-For the latter justification $\fnmerklejustsubpath{x}$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\fnmerklesubtreepage{x}$.
+For the justification $\fnmerklejustsubpath{x}$ to be acceptable, we must assume the target observer also knows not merely the value of the item at the given index, but also all other leaves within its $2^x$ size subtree, given by $\fnmerklesubtreepage{x}$.
 
 As above, we may assume a default value for $H$ of Blake 2b.
 
-For justifications and Merkle root calculations, a constancy preprocessor function $C$ is applied which hashes all data items with a fixed prefix ``leaf'' and then pads the overall size to the next power of two with the zero hash $\zerohash$:
+For justifications and Merkle root calculations, a constancy preprocessor function $C$ is applied which hashes all data items with the fixed prefix ``leaf'' and then pads the overall size to the next power of two with the zero hash $\zerohash$:
 \begin{equation}
   C\colon\abracegroup{
     \tuple{\sequence{\blob}, \blob \to \hash} &\to \sequence{\hash}\\
@@ -277,15 +294,15 @@ We define the \textsc{mmb} append function $\fnmmrappend$ as:
   \begin{aligned}
     \label{eq:mmrappend}
     \fnmmrappend&\colon\deffunc{
-      \tuple{\sequence{\optional{\hash}}, \hash, \blob\to\hash} &\to \sequence{\optional{\hash}}\\
-      \tup{\mathbf{r}, l, H} &\mapsto P(\mathbf{r}, l, 0, H)
+      \tuple{\sequence{\optional{\hash}}, \sequence{\blob}, \blob\to\hash} &\to \sequence{\optional{\hash}}\\
+      \tup{\mathbf{r}, \mathbf{v}, H} &\mapsto P(\mathbf{r}, \fnmerklizewb(\mathbf{v}), 0, H)
     }\\
     \where P&\colon\deffunc{
       \tuple{\sequence{\optional{\hash}}, \hash, \N, \blob\to\hash} &\to \sequence{\optional{\hash}}\\
       \tup{\mathbf{r}, l, n, H} &\mapsto \begin{cases}
         \mathbf{r} \append l &\when n \ge \len{\mathbf{r}}\\
         R(\mathbf{r}, n, l) &\when n < \len{\mathbf{r}} \wedge \mathbf{r}\sub{n} = \none\\
-        P(R(\mathbf{r}, n, \none), H(\mathbf{r}\sub{n} \concat l), n + 1, H) &\otherwise
+        P(R(\mathbf{r}, n, \none), H(\token{\$fork} \concat \mathbf{r}\sub{n} \concat l), n + 1, H) &\otherwise
       \end{cases}
     }\\
     \also R&\colon\deffunc{
@@ -294,6 +311,7 @@ We define the \textsc{mmb} append function $\fnmmrappend$ as:
     }
   \end{aligned}
 \end{equation}
+Note that the appended item is the root of the well-balanced Merkle tree containing the blobs $\mathbf{v}$.
 
 We define the \textsc{mmr} encoding function as $\fnmmrencode$:
 \begin{equation}
@@ -308,7 +326,7 @@ We define the \textsc{mmr} super-peak function as $\fnmmrsuperpeak$:
   \fnmmrsuperpeak\colon\deffunc{
     \sequence{\optional{\hash}} &\to \hash \\
     \mathbf{b} &\mapsto \begin{cases}
-      \zerohash &\when \len{\mathbf{h}} = 0\\
+      \keccak{\token{\$none}} &\when \len{\mathbf{h}} = 0\\
       \mathbf{h}_0 &\when \len{\mathbf{h}} = 1\\
       \keccak{\token{\$peak} \concat \mmrsuperpeak{\mathbf{h}_{\dots\len{\mathbf{h}}-1}} \concat \mathbf{h}_{\len{\mathbf{h}}-1}} &\otherwise \\
       \multicolumn{2}{l}{\where \mathbf{h} = \sq{\build{h}{h \orderedin \mathbf{b}, h \ne \none}}}
