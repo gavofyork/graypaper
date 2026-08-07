@@ -231,7 +231,7 @@ We define the well-balanced binary Merkle function as $\fnmerklizewb$:
 \begin{equation}
     \fnmerklizewb\colon \abracegroup{
       \label{eq:simplemerkleroot}
-      \tuple{\sequence{\blob}, \blob \to \hash} &\to \hash \\
+      \tuple{\sequence{\blob[n]}, \blob \to \hash} &\to \hash \\
       \tup{\mathbf{v}, H} &\mapsto \begin{cases}
         H(\token{\$sing} \concat \mathbf{v}_0) &\when \len{\mathbf{v}} = 1 \\
         N(\mathbf{v}, H) &\otherwise
@@ -294,7 +294,7 @@ We define the \textsc{mmb} append function $\fnmmrappend$ as:
   \begin{aligned}
     \label{eq:mmrappend}
     \fnmmrappend&\colon\deffunc{
-      \tuple{\sequence{\optional{\hash}}, \sequence{\blob}, \blob\to\hash} &\to \sequence{\optional{\hash}}\\
+      \tuple{\sequence{\optional{\hash}}, \sequence{\blob[n]}, \blob\to\hash} &\to \sequence{\optional{\hash}}\\
       \tup{\mathbf{r}, \mathbf{v}, H} &\mapsto P(\mathbf{r}, \fnmerklizewb(\mathbf{v}), 0, H)
     }\\
     \where P&\colon\deffunc{
