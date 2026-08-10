@@ -1073,12 +1073,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
     \using \mathbf{d}' &= \begin{cases}
       \mathbf{d} \text{ except:} &\\
+      \quad \tup{h, z} \not\in \keys{\mathbf{d}'\subb{d}_\sa¬requests} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{} \\
       \quad \left.
         \begin{aligned}
           \tup{h, z} &\not\in \keys{\mathbf{d}'\subb{d}_\sa¬requests}\ ,\\[2pt]
           h &\not\in \keys{\mathbf{d}'\subb{d}_\sa¬preimages}
         \end{aligned}
-      \ \right\} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} \in \set{\sq{}, \sq{x, y}},\ y < t - \Cexpungeperiod \\
+      \ \right\} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, y},\ y < t - \Cexpungeperiod \\
       \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x} \\
       \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{w, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, y, w},\ y < t - \Cexpungeperiod \\
       \error &\otherwise\\
