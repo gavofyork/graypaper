@@ -165,10 +165,10 @@ As the result of accumulating a transfer cannot reasonably be discarded (this wo
         \tup{\mathbf{t}^!, \sq{t} \concat \mathbf{t}^Q} &\when q = \top \\
         \tup{\sq{t} \concat \mathbf{t}^!, \mathbf{t}^Q} &\otherwise
       \end{cases} \\
-      &\quad\where q = (t_\dx¬dest \in \mathbf{d} \land \effectivesupervisor{\mathbf{d}}{t_\dx¬dest} \in (\mathbf{s} \cup \mathbf{i}) \setminus \set{t_\dx¬dest}) \lor {} \\
+      &\quad\where q = (t_\dx¬dest \in \keys{\mathbf{d}} \land \effectivesupervisor{\mathbf{d}}{t_\dx¬dest} \in (\mathbf{s} \cup \mathbf{i}) \setminus \set{t_\dx¬dest}) \lor {} \\
       &\quad\phantom{\where q = {}} \exists s \in \mathbf{i} \setminus \set{t_\dx¬dest} : \effectivesupervisor{\mathbf{d}}{s} = t_\dx¬dest \\
       &\quad\also \mathbf{i}' = \begin{cases}
-        \mathbf{i} &\when q = \top \lor t_\dx¬dest \not\in \mathbf{d} \\
+        \mathbf{i} &\when q = \top \lor t_\dx¬dest \not\in \keys{\mathbf{d}} \\
         \mathbf{i} \cup \set{t_\dx¬dest} &\otherwise
       \end{cases} \\
       &\quad\also \tup{\mathbf{t}^!, \mathbf{t}^Q} = \local¬fnpartitionxfers^*(\mathbf{t}, \mathbf{s}, \mathbf{i}', \mathbf{d})

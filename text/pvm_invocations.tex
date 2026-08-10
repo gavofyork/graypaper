@@ -157,7 +157,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
         \is{\ao¬gasused}{0},
         \is{\ao¬provisions}{\sq{}}
       }
-        &\when s \not\in \local¬basestate_\ps¬accounts \\
+        &\when s \not\in \keys{\local¬basestate_\ps¬accounts} \\
       \tup{
         \is{\ao¬poststate}{\local¬postxferstate},
         \ao¬modifiedaccounts,
@@ -859,7 +859,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬nextfreeid, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \Nrange{o}{60} \not\subseteq \readable{\memory} \\
-      \tup{\continue, \mathtt{WHO}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen s \not\in \mathbf{d} \\
+      \tup{\continue, \mathtt{WHO}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen s \not\in \keys{\mathbf{d}} \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen x > 3 \lor \neg p \lor (\sa¬gratis \ne 0 \wedge \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager) \\
       \tup{\continue, \mathtt{CASH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{s}_\sa¬balance < 0 \lor \mathbf{d}'\subb{s}_\sa¬supervisorbalance < 0 \lor {} \\
       &\phantom{\otherwhen} \mathbf{d}'\subb{s}_\sa¬balance + \mathbf{d}'\subb{s}_\sa¬supervisorbalance < \mathbf{d}'\subb{s}_\sa¬minbalance \\
@@ -991,7 +991,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       &\mathbf{d}'\subb{\imX_\im¬id}_\sa¬balance = (\imX_\im¬self)_\sa¬balance + \mathbf{d}\subb{d}_\sa¬balance + \mathbf{d}\subb{d}_\sa¬supervisorbalance \\
     } \\
     \tup{\registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
-      \tup{\mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \mathbf{d} \\
+      \tup{\mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \keys{\mathbf{d}} \\
       \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d = \imX_\im¬id \vee \imX_\im¬id \ne \effectivesupervisor{\mathbf{d}}{d} \vee {} \\
       &\phantom{\otherwhen} \mathbf{d}\subb{d}_\sa¬created = t \vee \mathbf{d}\subb{d}_\sa¬items \ne 0 \\
       \tup{\mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d, \imX_\im¬id}} &\otherwise
