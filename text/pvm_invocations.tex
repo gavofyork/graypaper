@@ -955,14 +955,14 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \mathbf{d}'\subb{\dx¬dest}_\sa¬supervisorbalance = \mathbf{d}\subb{\dx¬dest}_\sa¬supervisorbalance + \dx¬amount &\when o = 0 \land x \in \set{2, 3}
     \end{cases} \\
     \using \mathbf{w} &= \begin{cases}
-      \set{s, d} &\when o = 0 \\
-      \set{s} &\otherwise
+      \set{\dx¬source, \dx¬dest} &\when o = 0 \\
+      \set{\dx¬source} &\otherwise
     \end{cases} \\
     \using p_s &= \begin{cases}
       \imX_\im¬id \in \set{\dx¬source, \effectivesupervisor{\mathbf{d}}{\dx¬source}} &\when x \in \set{0, 2} \\
       \imX_\im¬id = \effectivesupervisor{\mathbf{d}}{\dx¬source} &\otherwise
     \end{cases} \\
-    \using p_d &= o \ne 0 \lor (\imX_\im¬id \in \set{\dx¬dest, \effectivesupervisor{\mathbf{d}}{\dx¬dest}} \land (x \in \set{1, 2} \lor s \ne d)) \\
+    \using p_d &= o \ne 0 \lor (\imX_\im¬id \in \set{\dx¬dest, \effectivesupervisor{\mathbf{d}}{\dx¬dest}} \land (x \in \set{1, 2} \lor \dx¬source \ne \dx¬dest)) \\
     \using \tup{c, t} &= \begin{cases}
       \tup{\panic, 0} &\when \mathbf{t} = \error \\
       \tup{\mathtt{WHO}, 0} &\otherwhen \dx¬source \not\in \keys{\mathbf{d}} \lor \dx¬dest \not\in \keys{\mathbf{d}} \\
