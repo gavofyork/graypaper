@@ -110,6 +110,7 @@
     \item[$\Omega_S$] Solicit-preimage host-call.
     \item[$\Omega_T$] Transfer host-call.
     \item[$\Omega_U$] Upgrade-service host-call.
+    \item[$\Omega_V$] Set-supervisor host-call.
     \item[$\Omega_W$] Write-storage host-call.
     \item[$\Omega_X$] Expunge-\textsc{pvm} host-call.
     \item[$\Omega_Y$] Fetch data host-call.
@@ -132,7 +133,6 @@
   \item[$\fnmemgas(L, \ell)$] The memory-sized gas function. See equation \ref{eq:fnmemgas}.
   \item[$\blake{\dots}$] The Blake 2b 256-bit hash function. See section \ref{sec:cryptography}.
   \item[$\keccak{\dots}$] The Keccak 256-bit hash function. See section \ref{sec:cryptography}.
-
 
   \item[$\fnmerklejustsubpath{x}(\dots)$] The justification path to a specific $2^x$ size page of a constant-depth Merkle tree. See equation \ref{eq:constantdepthsubtreemerklejust}.
   \item[$\keys{\dots}$] The domain, or set of keys, of a dictionary. See section \ref{sec:dictionaries}.
@@ -256,7 +256,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cbytedeposit = 1$] The additional minimum balance required per octet of elective service state. See equation \ref{eq:deposits}.
   \item[$\Cbasedeposit = 100$] The basic minimum balance which all services require. See equation \ref{eq:deposits}.
   \item[$\Ccorecount = 341$] The total number of cores.
-  \item[$\Cexpungeperiod = 19,200$] The period in timeslots after which an unreferenced preimage may be expunged. See \texttt{eject} definition in section \ref{sec:accumulatefunctions}.
+  \item[$\Cexpungeperiod = 19,200$] The period in timeslots after which an unreferenced preimage may be expunged. See \texttt{forget} definition in section \ref{sec:accumulatefunctions}.
   \item[$\Cepochlen = 600$] The length of an epoch in timeslots. See section \ref{sec:epochsandslots}.
   \item[$\Cauditbiasfactor = 2$] The audit bias factor, the expected number of additional validators who will audit a work-report in the following tranche for each no-show in the previous. See equation \ref{eq:latertranches}.
   \item[$\Creportaccgas = 10,000,000$] The gas allocated to invoke a work-report's Accumulation logic.
@@ -280,7 +280,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cassurancetimeoutperiod = 5$] The period in timeslots after which reported but unavailable work is cleared. See equation \ref{eq:availassignmentspostassurancesdef}.
   \item[$\Cmaxauthcodesize = 64,000$] The maximum size of is-authorized code in octets. See equation \ref{eq:isauthinvocation}.
   \item[$\Cmaxbundlesize = 13,791,360$] The maximum size of the concatenated variable-size blobs, extrinsics and imported segments of a work-package, in octets. See equation \ref{eq:checkextractsize}.
-  \item[$\Cmaxservicecodesize = 4,000,000$] The maximum size of service code in octets. See equations \ref{eq:refinvocation}, \ref{eq:accinvocation} \& \ref{eq:onxferinvocation}.
+  \item[$\Cmaxservicecodesize = 4,000,000$] The maximum size of service code in octets. See equations \ref{eq:refinvocation} \& \ref{eq:accinvocation}.
   \item[$\Csegmentsize = 4104$] The size of a segment in octets. See section \ref{sec:segments}.
   \item[$\Csegmentfootprint = \Csegmentsize + 32\ceil{\log_2(\Cmaxpackageexports)} = 4488$] The additional footprint in the Audits DA of a single imported segment. See equation \ref{eq:segmentfootprint}.
   \item[$\Cmaxpackageimports = 3,072$] The maximum number of imports in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
@@ -331,6 +331,7 @@ These constants are used in the host function gas cost equations in appendix \re
   \item[$\CgasS = 2193$] $\Omega_S$ (\texttt{solicit}) base gas cost.
   \item[$\CgasT = 575$] $\Omega_T$ (\texttt{transfer}) base gas cost.
   \item[$\CgasU = 1028$] $\Omega_U$ (\texttt{upgrade}) base gas cost.
+  \item[$\CgasV = 1000$] $\Omega_V$ (\texttt{supervisor}) base gas cost.
   \item[$\CgasWconst = 2442$] $\Omega_W$ (\texttt{write}) base gas cost.
   \item[$\CgasWvallinear = 216$] $\Omega_W$ (\texttt{write}) gas per 1024 octets ($\fnmemgas(\CgasWvallinear, \ell)$).
   \item[$\CgasWkeylinear = 3358$] $\Omega_W$ (\texttt{write}) key gas per 1024 octets ($\fnmemgas(\CgasWkeylinear, \ell)$).

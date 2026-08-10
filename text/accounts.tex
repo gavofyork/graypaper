@@ -8,17 +8,20 @@ Service accounts are held in state under $\accounts$, a partial mapping from a s
   \accounts &\in \dictionary{\serviceid}{\serviceaccount}
 \end{align}
 
-The service account is defined as the tuple of storage dictionary $\sa¬storage$, preimage lookup dictionaries $\sa¬preimages$ and $\sa¬requests$, code hash $\sa¬codehash$, balance $\sa¬balance$ and gratis storage offset $\sa¬gratis$, as well as the two code gas limits $\sa¬minaccgas$ \& $\sa¬minmemogas$. We also record certain usage characteristics concerning the account: the time slot at creation $\sa¬created$, the time slot at the most recent accumulation $\sa¬lastacc$ and the parent service $\sa¬parent$. Formally:
+The service account is defined as the tuple of storage dictionary $\sa¬storage$, preimage lookup dictionaries $\sa¬preimages$ and $\sa¬requests$, code hash $\sa¬codehash$, balance $\sa¬balance$ and gratis storage offset $\sa¬gratis$, supervisor $\sa¬supervisor$ and its creation slot $\sa¬supervisorcreated$ and protected balance $\sa¬supervisorbalance$, as well as the two code gas limits $\sa¬minaccgas$ \& $\sa¬minmemogas$. We also record certain usage characteristics concerning the account: the time slot at creation $\sa¬created$, the time slot at the most recent accumulation $\sa¬lastacc$ and the parent service $\sa¬parent$. Formally:
 \begin{align}\label{eq:serviceaccount}
   \serviceaccount \equiv \tuple{\ \begin{aligned}
     \sa¬storage &\in \dictionary{\blob}{\blob}\,,\
     \sa¬preimages \in \dictionary{\hash}{\blob}\,,\\
-    \sa¬requests &\in \dictionary{\tuple{\hash,\bloblength}}{\sequence[:3]{\timeslot}}\,,\\
-    \sa¬gratis &\in \balance\,,\
-    \sa¬codehash \in \hash\,,\
-    \sa¬balance \in \balance\,,\
-    \sa¬minaccgas \in \gas\,,\\
-    \sa¬minmemogas &\in \gas\,,\
+    \sa¬requests &\in \dictionary{\tuple{\hash,\bloblength}}{\sequence[:3]{\timeslot}}\,,\
+    \sa¬gratis \in \balance\,,\
+    \sa¬codehash \in \hash\,,\\
+    \sa¬balance &\in \balance\,,\
+    \sa¬supervisor \in \serviceid\,,\
+    \sa¬supervisorcreated \in \timeslot\,,\
+    \sa¬supervisorbalance \in \balance\,,\\
+    \sa¬minaccgas &\in \gas\,,\
+    \sa¬minmemogas \in \gas\,,\
     \sa¬created \in \timeslot\,,\
     \sa¬lastacc \in \timeslot\,,\
     \sa¬parent \in \serviceid\\
@@ -179,3 +182,23 @@ Finally, $\alwaysaccers$ is a small dictionary containing the indices of service
   \assigners &\in \sequence[\Ccorecount]{\serviceid} \ ,\qquad
   \alwaysaccers \in \dictionary{\serviceid}{\gas}
 \end{align}
+
+\subsection{Supervisors}
+Each service has a designated \emph{supervisor} $\sa¬supervisor$; all non-privileged mutating operations are permitted to be done on a service by its supervisor. Only the supervisor may designate a new supervisor (using the \texttt{supervisor} host-call). A service's supervisor may be itself.
+
+In addition to the regular balance of a service $\sa¬balance$, there is an additional supervisor balance $\sa¬supervisorbalance$. This balance is aggregated with the regular balance when determining data footprint limits for the service, but may only be transferred by the supervisor.
+
+Alongside a service's supervisor $\sa¬supervisor$, we record the time slot in which the supervisor was created $\sa¬supervisorcreated$. We define the \emph{effective supervisor} of a service to be the designated supervisor $\sa¬supervisor$ if this service exists and has the expected creation slot, or the service itself otherwise. The purpose of the creation slot check is to prevent unintentional transfer of power in the case that the supervisor is ejected and a new service is created with the same identifier: the new service will \emph{not} be considered the supervisor despite having the correct identifier, as it will have a newer creation slot. For convenience, given a service accounts dictionary $\mathbf{d}$ and a service identifier $s$, we express the effective supervisor of $s$ as $\effectivesupervisor{\mathbf{d}}{s}$. Formally:
+\begin{equation}\label{eq:effectivesupervisor}
+  \begin{aligned}
+    &\forall \mathbf{d} \in \dictionary{\serviceid}{\serviceaccount}, s \in \keys{\mathbf{d}} : \\
+    &\quad\begin{aligned}
+      \effectivesupervisor{\mathbf{d}}{s} &\equiv \begin{cases}
+        u &\when u \in \keys{\mathbf{d}} \land \mathbf{d}\subb{u}_\sa¬created = d \\
+        s &\otherwise
+      \end{cases} \\
+      &\phantom{{}\equiv{}} \where u = \mathbf{d}\subb{s}_\sa¬supervisor \\
+      &\phantom{{}\equiv{}} \also d = \mathbf{d}\subb{s}_\sa¬supervisorcreated
+    \end{aligned}
+  \end{aligned}
+\end{equation}
