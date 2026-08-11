@@ -15,6 +15,11 @@ We also define the serialization of an octet-sequence as itself:
   \encode{x \in \blob} \equiv x
 \end{equation}
 
+We define the serialization of $\bot$ and $\top$ as a single 0 and 1 octet respectively:
+\begin{equation}
+  \encode{\bot} \equiv \sq{0},\qquad\encode{\top} \equiv \sq{1}
+\end{equation}
+
 We define anonymous tuples to be encoded as the concatenation of their encoded elements:
 \begin{equation}
   \encode{\tup{a, b, \dots}} \equiv \encode{a} \concat \encode{b} \concat \dots
@@ -279,6 +284,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     1,
     \encode[4]{\dxX_\dx¬source},
     \encode[4]{\dxX_\dx¬dest},
+    \dxX_\dx¬destsupervisor,
     \encode[8]{\dxX_\dx¬amount},
     \dxX_\dx¬memo,
     \encode[8]{\dxX_\dx¬gas}

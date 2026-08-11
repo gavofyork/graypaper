@@ -87,19 +87,21 @@ The state serialization is then defined as the dictionary built from the amalgam
     \forall \kv{s}{\saX} \in \accounts: &&C(255, s) &\mapsto \encode{
       0,
       \saX_\sa¬codehash,
+      \encode[4]{\saX_\sa¬supervisor, \saX_\sa¬supervisorcreated},
       \encode[8]{
         \saX_\sa¬balance,
+        \saX_\sa¬supervisorbalance,
         \saX_\sa¬minaccgas,
         \saX_\sa¬minmemogas,
         \saX_\sa¬octets,
         \saX_\sa¬gratis
-      },
-      \encode[4]{
-        \saX_\sa¬items,
-        \saX_\sa¬created,
-        \saX_\sa¬lastacc,
-        \saX_\sa¬parent
       }
+    } \concat \\
+    &&&\phantom{{}\mapsto{}} \encode[4]{
+      \saX_\sa¬items,
+      \saX_\sa¬created,
+      \saX_\sa¬lastacc,
+      \saX_\sa¬parent
     } \;, \\
     \forall \kv{s}{\saX} \in \accounts, \kv{\mathbf{k}}{\mathbf{v}} \in \saX_\sa¬storage:
       &&C(s, \encode[4]{2^{32}-1} \concat \mathbf{k}) &\mapsto \mathbf{v} \;, \\
