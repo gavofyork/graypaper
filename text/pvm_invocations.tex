@@ -501,6 +501,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
     \tup{\execst', \registers'_7, \pvm¬module¬map'} &\equiv \begin{cases}
       \tup{\continue, \mathtt{FULL}, \pvm¬module¬map} &\when \len{\mathbf{H}} \ge 128 \\
       \tup{\panic, \registers_7, \pvm¬module¬map} &\otherwhen \mathbf{p} = \error \\
+      \tup{\continue, \mathtt{NONE}, \pvm¬module¬map} &\otherwhen m = 1 \wedge \mathbf{p} = \none \\
       \tup{\continue, \mathtt{HUH}, \pvm¬module¬map} &\otherwhen \mathbf{p} = \none \vee \deblob(\mathbf{p}, 0) = \error \\
       \tup{\continue, k, \pvm¬module¬map \cup \set{\kv{k}{\mathbf{p}}} } &\otherwise \\
     \end{cases} \\
