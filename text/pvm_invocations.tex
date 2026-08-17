@@ -772,13 +772,14 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_A(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{assign} = 16} &
   $\begin{aligned}
-    \using \sq{c, o, a} &= \registers\subrange{7}{3} \\
+    \using \sq{c, o, n, a} &= \registers\subrange{7}{4} \\
     \using \mathbf{q} &= \begin{cases}
-      \sq{\build{\memory\subrange{o + 32i}{32}}{i \orderedin \N_\Cauthqueuesize}} &\when \Nrange{o}{32\Cauthqueuesize} \subseteq \readable{\memory} \\
+      \sq{\build{\memory\subrange{o + 32i}{32}}{i \orderedin \N_n}} &\when \Nrange{o}{32n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬authqueue\subb{c}, (\imX'_\im¬state)_\ps¬assigners\subb{c}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\when \mathbf{q} = \error \\
+      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen n > \Cauthqueuesize \\
       \tup{\continue, \mathtt{CORE}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen c \ge \Ccorecount \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬assigners\subb{c}\\
       \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen a \not\in \serviceid \\
