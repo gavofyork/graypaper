@@ -38,7 +38,7 @@
     \item[$\edkey$] The set of Ed25519 public keys. A subset of $\blob[32]$. See section \ref{sec:signing}.
     \item[$\bskey$] The set of Bandersnatch public keys. A subset of $\blob[32]$. See section \ref{sec:cryptography} and appendix \ref{sec:bandersnatch}.
   \end{description}
-  \item[$\innerpvm$] The set representing the state of an $\mathbb{I}$nner \textsc{pvm} instance. See equation \ref{eq:innerpvm}.
+  \item[$\pvm¬instance$] The set representing the state of an $\mathbb{I}$nner \textsc{pvm} instance. See equation \ref{eq:innerpvm}.
   \item[$\segment$] The set of data segments, equivalent to $\blob[\Csegmentsize]$. See equation \ref{eq:segment}.
   \item[$\valkey$] The set of validator $\mathbb{K}$ey-sets. See equation \ref{eq:validatorkeys}.
   \item[$\implications$] The set representing implications of accumulation. See equation \ref{eq:implications}.
@@ -112,12 +112,13 @@
     \item[$\Omega_U$] Upgrade-service host-call.
     \item[$\Omega_V$] Set-supervisor host-call.
     \item[$\Omega_W$] Write-storage host-call.
-    \item[$\Omega_X$] Expunge-\textsc{pvm} host-call.
+    \item[$\Omega_X$] Expunge an inner-\textsc{pvm} instance or a compiled program module host-call.
     \item[$\Omega_Y$] Fetch data host-call.
     \item[$\Omega_Z$] Pages inner-\textsc{pvm} memory host-call.
     \item[$\Omega_\Taurus$] Yield accumulation trie result host-call.
     \item[$\Omega_\Aries$] Provide preimage host-call.
     \item[$\Omega_\Gemini$] Grow heap host-call.
+    \item[$\Omega_\Gamma$] Compile host-call.
   \end{description}
 \end{description}
 
@@ -317,8 +318,7 @@ These constants are used in the host function gas cost equations in appendix \re
   \item[$\CgasK = 968$] $\Omega_K$ (\texttt{invoke}) base gas cost.
   \item[$\CgasLconst = 600$] $\Omega_L$ (\texttt{lookup}) base gas cost.
   \item[$\CgasLlinear = 248$] $\Omega_L$ (\texttt{lookup}) gas per 1024 octets ($\fnmemgas(\CgasLlinear, \ell)$).
-  \item[$\CgasMconst = 1862$] $\Omega_M$ (\texttt{machine}) base gas cost.
-  \item[$\CgasMlinear = 112$] $\Omega_M$ (\texttt{machine}) gas per 1024 octets, program size ($\fnmemgas(\CgasMlinear, \ell)$).
+  \item[$\CgasM = 1862$] $\Omega_M$ (\texttt{machine}) gas cost.
   \item[$\CgasN = 3855$] $\Omega_N$ (\texttt{new}) base gas cost.
   \item[$\CgasOconst = 297$] $\Omega_O$ (\texttt{poke}) base gas cost.
   \item[$\CgasOlinear = 224$] $\Omega_O$ (\texttt{poke}) gas per 1024 octets ($\fnmemgas(\CgasOlinear, \ell)$).
@@ -365,6 +365,10 @@ These constants are used in the host function gas cost equations in appendix \re
   \item[$\CgasArieslinear = 2264$] $\Omega_\Aries$ (\texttt{provide}) gas per 1024 octets ($\fnmemgas(\CgasArieslinear, \ell)$).
   \item[$\CgasGeminiconst = 275$] $\Omega_\Gemini$ (\texttt{grow\_heap}) base gas cost.
   \item[$\CgasGeminilinear = 121$] $\Omega_\Gemini$ (\texttt{grow\_heap}) gas per additional page.
+  \item[$\CgasGammamemconst = 1862$] $\Omega_\Gamma$ (\texttt{compile}) base gas cost when compiling from memory.
+  \item[$\CgasGammadbconst = 1862$] $\Omega_\Gamma$ (\texttt{compile}) base gas cost when compiling from the database.
+  \item[$\CgasGammamemlinear = 264$] $\Omega_\Gamma$ (\texttt{compile}) in-memory read gas per 1024 octets ($\fnmemgas(\CgasGammamemlinear, \ell)$).
+  \item[$\CgasGammadblinear = 366$] $\Omega_\Gamma$ (\texttt{compile}) database lookup read gas per 1024 octets ($\fnmemgas(\CgasGammadblinear, \ell)$).
 \end{description}
 
 \subsubsection{Signing Contexts}
