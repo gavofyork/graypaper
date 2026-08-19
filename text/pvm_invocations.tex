@@ -890,6 +890,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬nextfreeid, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \Nrange{o}{60} \not\subseteq \readable{\memory} \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen l \not\in \preimagelen \\
       \tup{\continue, \mathtt{WHO}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen s \not\in \keys{\mathbf{d}} \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen x > 3 \lor \neg p \lor (\sa¬gratis \ne 0 \wedge \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager) \\
       \tup{\continue, \mathtt{CASH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{s}_\sa¬balance < 0 \lor \mathbf{d}'\subb{s}_\sa¬supervisorbalance < 0 \lor {} \\
@@ -1045,7 +1046,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using \mathbf{a} &= \mathbf{s}_\sa¬requests\subb{\tup{h, z}} \\
     \tup{\execst', \registers'_7, \registers'_8} &\equiv \begin{cases}
-      \tup{\continue, \mathtt{HUH}, \registers_8} &\when z \not\in \bloblength \\
+      \tup{\continue, \mathtt{HUH}, \registers_8} &\when z \not\in \preimagelen \\
       \tup{\panic, \registers_7, \registers_8} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{WHO}, \registers_8} &\otherwhen \mathbf{s} = \none \\
       \tup{\continue, \mathtt{NONE}, 0} &\otherwhen \mathbf{a} = \none \\
@@ -1078,7 +1079,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \error &\otherwise\\
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
-      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when z \not \in \bloblength \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when z \not \in \preimagelen \\
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d \not\in \keys{\mathbf{d}} \\
       \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \lor \mathbf{d}' = \error \\
@@ -1116,7 +1117,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \error &\otherwise\\
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
-      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when z \not \in \bloblength \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when z \not \in \preimagelen \\
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d \not\in \keys{\mathbf{d}} \\
       \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \lor \mathbf{d}' = \error \\
@@ -1160,7 +1161,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \none &\otherwise
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬provisions} &\equiv \begin{cases}
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\when z \not \in \bloblength \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\when z \not \in \preimagelen \\
       \tup{\panic, \registers_7, \imX_\im¬provisions} &\otherwhen \mathbf{i} = \error \\
       \tup{\continue, \mathtt{WHO}, \imX_\im¬provisions} &\otherwhen \mathbf{a} = \none \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \mathbf{a}_\sa¬requests[\tup{\blake{\mathbf{i}}, z}] \ne \sq{} \\
