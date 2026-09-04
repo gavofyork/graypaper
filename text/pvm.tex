@@ -38,9 +38,9 @@
 \newcommand*{\datatag}{\text{\textsc{d}}}
 \newcommand*{\codetag}{\text{\textsc{c}}}
 \newcommand*{\jumptag}{\text{\textsc{j}}}
-\newcommand*{\datapage}[1]{{\datatag \times #1}}
-\newcommand*{\codepage}[1]{{\codetag \times #1}}
-\newcommand*{\jumppage}[1]{{\jumptag \times #1}}
+\newcommand*{\datapage}[1]{{\tup{\datatag, #1}}}
+\newcommand*{\codepage}[1]{{\tup{\codetag, #1}}}
+\newcommand*{\jumppage}[1]{{\tup{\jumptag, #1}}}
 \newcommand*{\codefam}[1]{{#1}^\diamond}
 \newcommand*{\pageforinstruction}{\codefam{P}}
 \newcommand*{\preamblepages}{\codefam{Q}}
@@ -207,7 +207,7 @@ The instruction's own native code is then fetched, charging for the code pages i
   \tup{\varepsilon^\phase¬fetch, \gascounter^\phase¬fetch, \workingset^\phase¬fetch} = \codepagecharge(\gascounter^\phase¬gas, \workingset^\phase¬gas, \pageforinstruction(\mathbf{c}, \mathbf{k}, \imath))
 \end{equation}
 
-An instruction that resolves its target through the jump-table reads an 8-octet entry from a native jump-table, laid out at a stride of eight octets per dynamic address unit; the entry for a target address $a$ thus lies on the jump-table page $\jumppage{\floor{\nicefrac{8a}{\Cpvmpagesize}}}$, where jump-table pages $\jumptag \times \N$ form their own class of page index, distinct from the \textsc{ram} and code pages of the same machine. This read is charged like any other access. No charge arises for the special halt address (its vector is permanently resident), nor where the entry's page lies wholly beyond the table (execution panics without any table access being made), however a charge \emph{is} made for a misaligned, zero or invalid-entry target whose page is within reach of the table, as the entry must be read before it can be found invalid. Formally:
+An instruction that resolves its target through the jump-table reads an 8-octet entry from a native jump-table, laid out at a stride of eight octets per dynamic address unit; the entry for a target address $a$ thus lies on the jump-table page $\jumppage{\floor{\nicefrac{8a}{\Cpvmpagesize}}}$, where jump-table pages $\set{\jumptag} \times \N$ form their own class of page index, distinct from the \textsc{ram} and code pages of the same machine. This read is charged like any other access. No charge arises for the special halt address (its vector is permanently resident), nor where the entry's page lies wholly beyond the table (execution panics without any table access being made), however a charge \emph{is} made for a misaligned, zero or invalid-entry target whose page is within reach of the table, as the entry must be read before it can be found invalid. Formally:
 \begin{equation}
   \begin{aligned}
     \tup{\varepsilon^\phase¬djump, \gascounter^\phase¬djump, \workingset^\phase¬djump} &= \codepagecharge(\gascounter^\phase¬fetch, \workingset^\phase¬fetch, \mathbf{p}^\phase¬djump) \\
@@ -227,7 +227,7 @@ Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the set of indices by which $\mem
 \begin{equation}
   \begin{aligned}
     (\varepsilon^\phase¬mem, \gascounter^\phase¬mem, \workingset^\phase¬mem, \mem^\phase¬mem) &= A(\gascounter^\phase¬djump, \workingset^\phase¬djump, \mem,
-      \sqorderby{x}{\set{\build{(x, \is{r}{\top})}{x \in \mathbf{r}}} \cup \set{\build{(x, \is{r}{\bot})}{x \in \mathbf{w}}}}) \\
+      \sqorderby{x}{(x, r) \in \set{\build{(x, \is{r}{\top})}{x \in \mathbf{r}}} \cup \set{\build{(x, \is{r}{\bot})}{x \in \mathbf{w}}}}) \\
     A(g, w, \mem, \mathbf{p}) &= \begin{cases}
       (\continue, g, w, \mem) &\when \mathbf{p} = \sq{} \\
       (\panic, g, w, \mem) &\otherwhen y < 2^{16} \\
@@ -1217,7 +1217,7 @@ In addition to the static gas cost of each basic block as calculated by $\gascos
   }
 \end{equation}
 
-The insertion cost of a code or a jump-table page is always the base page-fault cost $\Cpvmgaspagefault$, covering the fault itself together with the mapping and unmapping work implied by insertion and eviction. The insertion cost of \textsc{ram} pages additionally depend on whether a physical frame has previously been allocated for them, as recorded by the frames component $\ram¬frames$ of the \textsc{ram} (\ref{eq:pvmmemory}). Upon a page's first-ever access a frame must be provisioned, paying $\Cpvmgaspagealloc$ (which accounts both for its allocation and for its eventual deallocation when the machine is destroyed), as well as the cost of populating the page: $\Cpvmgaspagezero$ where the page is zero-sourced (the frame has to be merely cleared), and $\Cpvmgaspagecopy$ where it is copy-sourced (its content must be copied from the program's initial image). Which applies is a fixed property of the page's provenance, recorded as $\frame¬missing¬zero$ or $\frame¬missing¬copy$ in $\ram¬frames$ when the machine is laid out (\ref{eq:memlayout}), and does \emph{not} depend on the page's current contents. Once allocated, a frame persists regardless of eviction from the working-set, and re-insertion pays only the base cost. Formally, the insertion cost of the \textsc{ram} page with index $i$ of a machine with \textsc{ram} $\mu$ is given by $\pagefaultcost$:
+The insertion cost of a code or a jump-table page is always the base page-fault cost $\Cpvmgaspagefault$, covering the fault itself together with the mapping and unmapping work implied by insertion and eviction. The insertion cost of \textsc{ram} pages additionally depends on whether a physical frame has previously been allocated for them, as recorded by the frames component $\ram¬frames$ of the \textsc{ram} (\ref{eq:pvmmemory}). Upon a page's first-ever access a frame must be provisioned, paying $\Cpvmgaspagealloc$ (which accounts both for its allocation and for its eventual deallocation when the machine is destroyed), as well as the cost of populating the page: $\Cpvmgaspagezero$ where the page is zero-sourced (the frame has to be merely cleared), and $\Cpvmgaspagecopy$ where it is copy-sourced (its content must be copied from the program's initial image). Which applies is a fixed property of the page's provenance, recorded as $\frame¬missing¬zero$ or $\frame¬missing¬copy$ in $\ram¬frames$ when the machine is laid out (\ref{eq:memlayout}), and does \emph{not} depend on the page's current contents. Once allocated, a frame persists regardless of eviction from the working-set, and re-insertion pays only the base cost. Formally, the insertion cost of the \textsc{ram} page with index $i$ of a machine with \textsc{ram} $\mu$ is given by $\pagefaultcost$:
 \begin{equation}\label{eq:pagefaultcost}
   \pagefaultcost\colon \abracegroup{
     \tuple{\ram, \N} &\to \N \\
@@ -1229,7 +1229,7 @@ The insertion cost of a code or a jump-table page is always the base page-fault 
   }
 \end{equation}
 
-A successful charge for a \textsc{ram} page always sets the page's entry in $\ram¬frames$ to $\frame¬present$. In case the charge cannot be met, machine state is left unchanged. This mechanism applies to explicit data accesses (via load/store instructions), as well as to the implicit reading of instructions by the machine. The instructions for a machine are not present in its \textsc{ram} $\memory$, and so instruction addresses cannot be mapped to regular page indices; instead they are mapped to special code-page indices $\codetag \times \N$. Assuming the native code is laid out contiguously from offset zero, we first define $\bbpreamblesize(\imath)$, the size of the gas-metering stub emitted before an instruction which begins a basic block (to charge that block's gas according to $\gascostforblock$):
+A successful charge for a \textsc{ram} page always sets the page's entry in $\ram¬frames$ to $\frame¬present$. In case the charge cannot be met, machine state is left unchanged. This mechanism applies to explicit data accesses (via load/store instructions), as well as to the implicit reading of instructions by the machine. The instructions for a machine are not present in its \textsc{ram} $\memory$, and so instruction addresses cannot be mapped to regular page indices; instead they are mapped to special code-page indices $\set{\codetag} \times \N$. Assuming the native code is laid out contiguously from offset zero, we first define $\bbpreamblesize(\imath)$, the size of the gas-metering stub emitted before an instruction which begins a basic block (to charge that block's gas according to $\gascostforblock$):
 \begin{equation}
   \bbpreamblesize(\imath) \equiv \begin{cases}
     10 &\when \imath \in \basicblocks \\
@@ -1253,7 +1253,7 @@ The instruction's own native code occupies the byte range after its block's prea
 \begin{align}
   \spannedpages(o, z) &\equiv\label{eq:pagespan} \begin{cases}
     \sq{} &\when z = 0 \\
-    \sqorderby{p}{\set{\build{p}{\floor{\frac{o}{\Cpvmpagesize}} \le p \le \floor{\frac{o + z - 1}{\Cpvmpagesize}}}}} &\otherwise
+    \sqorderby{p}{p \in \set{\build{p}{\floor{\frac{o}{\Cpvmpagesize}} \le p \le \floor{\frac{o + z - 1}{\Cpvmpagesize}}}}} &\otherwise
   \end{cases} \\
   \codepages(o, z) &\equiv \sq{\build{\codepage{p}}{p \orderedin \spannedpages(o, z)}} \\
   \pageforinstruction(\mathbf{c}, \mathbf{k}, \imath) &\equiv \codepages(\codeoffset(\mathbf{c}, \mathbf{k}, \imath) + \bbpreamblesize(\imath),\ \inst¬compiledsize(\mathbf{c}, \mathbf{k}, \imath)) \\

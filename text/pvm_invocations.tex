@@ -301,51 +301,51 @@ When transitioning \textsc{pvm} state for a host-call, a number of conditions ty
   \execst' \equiv \continue,\quad \registers' \equiv \registers,\quad \memory' \equiv \memory,\quad \workingset' \equiv \workingset,\quad \context' \equiv \context\qquad\text{except as indicated below}
 \end{equation}
 
-Host-call inspections and mutations of a machine's \textsc{ram} may carry a memory-hierarchy cost beyond the nominal $g$ of the tables below, depending on what lies at the other end of the transfer. Where that end is itself a \textsc{pvm} machine the access is charged through the working-set, via $\wscharge¬internal$, as an ordinary \textsc{pvm} memory access would be:
+Host-call inspections and mutations of a machine's \textsc{ram} may carry a memory-hierarchy cost beyond the base and linear terms of the tables below, depending on what lies at the other end of the transfer. Such costs are terms of the host-call's $g$ and so are subject to the gas rule above. Where that end is itself a \textsc{pvm} machine the access is charged through the working-set as an ordinary \textsc{pvm} memory access would be. We define $\wscharge¬internal$, which computes this charge for a sequence $\mathbf{a}$ of octet accesses, each a pair of machine ($\none$ for the invoking machine) and address, and returns it together with the posterior working-set, \textsc{ram} and inner instances, in which the frame of each page touched is present:
 \begin{equation}
   \begin{aligned}
-    \wscharge¬internal(g, w, \mem, \mathbf{m}, \mathbf{a}) &= \begin{cases}
-      \tup{\continue, g, w, \mem, \mathbf{m}} &\when \mathbf{a} = \sq{} \\
-      \tup{\oog, g, w, \mem, \mathbf{m}} &\otherwhen g < g^\delta \\
-      \wscharge¬internal(g - g^\delta, w', \mem', \mathbf{m}', \mathbf{a}\sub{1\dots}) &\otherwise
+    \wscharge¬internal(w, \mem, \mathbf{m}, \mathbf{a}) &\equiv \begin{cases}
+      \tup{0, w, \mem, \mathbf{m}} &\when \mathbf{a} = \sq{} \\
+      \tup{g^\delta + g', w'', \mem'', \mathbf{m}''} &\otherwise
     \end{cases} \\
     \where \tup{m, x} &= \mathbf{a}_0\,,\quad i = \floor{\nicefrac{x}{\Cpvmpagesize}}\,,\quad \mu = \begin{cases} \mem &\when m = \none \\ \mathbf{m}\subb{m}_\pg¬ram &\otherwise \end{cases} \\
     \also (g^\delta, w') &= \gascostforpageaccess(w, \tup{m, \datapage{i}}, \pagefaultcost(\mu, i)) \\
     \also \tup{\mem', \mathbf{m}'} &= \begin{cases}
       \tup{\mem \exc \mem'_\ram¬frames\subb{i} = \frame¬present,\ \mathbf{m}} &\when m = \none \\
       \tup{\mem,\ \mathbf{m} \exc (\mathbf{m}'\subb{m}_\pg¬ram)_\ram¬frames\subb{i} = \frame¬present} &\otherwise
-    \end{cases}
+    \end{cases} \\
+    \also \tup{g', w'', \mem'', \mathbf{m}''} &= \wscharge¬internal(w', \mem', \mathbf{m}', \mathbf{a}\sub{1\dots})
   \end{aligned}
 \end{equation}
 
 In cases where access exchanges data between the invoking machine's \textsc{ram} and the node's state or context (which lies outside any machine's paged memory and so is never resident in a working-set) the exact mechanism depends on the \emph{direction} of the data transfer.
 
-Octets \emph{read out of} a machine's \textsc{ram} neither provision a frame nor alter the working-set, and carry no charge beyond the host-call's nominal $\fnmemgas$ term.
+Octets \emph{read out of} a machine's \textsc{ram} neither provision a frame nor alter the working-set, and carry no charge beyond the host-call's $\fnmemgas$ term.
 
-Octets \emph{written into} a machine's \textsc{ram} likewise stay out of the working-set (so the machine faults ordinarily on its next access to any of them), however they \emph{do} provision a new frame where none yet exists, paying the allocation-and-fill cost a first-touch fault would, less the base $\Cpvmgaspagefault$ (which is deferred to that eventual fault). Such data, having bypassed the working-set, is not resident when the machine reads it back; this read-back premium is not levied separately but folded into the nominal per-octet cost of each delivering host-call, whose memory rate is accordingly raised by $\Cpvmgasdeliver$ (gas per 1024 octets). The accessibility check, the provisioning and the write are the work of the shared function $\wscharge¬extwrite$ which writes $l$ octets of a value $\mathbf{v}$ from offset $f$ into the invoking machine's \textsc{ram} at $o$, charging against the post-nominal gas $g_0$:
+Octets \emph{written into} a machine's \textsc{ram} likewise stay out of the working-set (so a page not already resident faults ordinarily on the machine's next access), however they \emph{do} provision a new frame where none yet exists, paying the allocation-and-fill cost a first-touch fault would, less the base $\Cpvmgaspagefault$ (which is deferred to that eventual fault). Such octets, having bypassed the working-set, are treated as non-resident when the machine reads them back, whether or not their page is resident; this read-back premium is not levied separately but folded into the per-octet cost of each delivering host-call, whose memory rate is accordingly raised by $\Cpvmgasdeliver$ (gas per 1024 octets). The provisioning cost of writing $l$ octets of a value $\mathbf{v}$ into the invoking machine's \textsc{ram} at $o$ is $\wscharge¬extwritegas$, a term of the host-call's $g$. Where the host-call panics or has nothing to write, no octets are written and the cost is zero. Formally:
 \begin{equation}
   \begin{aligned}
-    \wscharge¬extwrite(g_0, \registers, \memory, o, \mathbf{v}, f, l) &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \memory, g_0} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory} \\
-      \tup{\continue, \mathtt{NONE}, \memory, g_0} &\otherwhen \mathbf{v} = \none \\
-      \tup{\oog, \registers_7, \memory^\uparrow, \gascounter^\uparrow} &\otherwhen \varepsilon^\uparrow = \oog \\
-      \tup{\continue, \len{\mathbf{v}}, \memory^\uparrow \exc (\memory^\uparrow)\subrange{o}{l} = \mathbf{v}\subrange{f}{l}, \gascounter^\uparrow} &\otherwise
+    \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) &\equiv \begin{cases}
+      0 &\when \mathbf{v} \in \set{\error, \none} \vee \Nrange{o}{l} \not\subseteq \writable{\memory} \\
+      \sum_{i \orderedin \mathbf{i}} \left(\pagefaultcost(\memory, i) - \Cpvmgaspagefault\right) &\otherwise
     \end{cases} \\
-    \where \tup{\varepsilon^\uparrow, \gascounter^\uparrow, \memory^\uparrow} &= P(g_0, \memory, \mathbf{i}) \\
-    \also \mathbf{i} &= \spannedpages(o, l)~(\ref{eq:pagespan}) \\
-    \also P(g, \mem, \mathbf{i}) &= \begin{cases}
-      \tup{\continue, g, \mem} &\when \mathbf{i} = \sq{} \\
-      \tup{\oog, g, \mem} &\otherwhen g < g^\delta \\
-      P(g - g^\delta, \mem', \mathbf{i}\sub{1\dots}) &\otherwise
-    \end{cases} \\
-    \also g^\delta &= \pagefaultcost(\mem, \mathbf{i}_0) - \Cpvmgaspagefault \\
-    \also \mem' &= \mem \exc \mem'_\ram¬frames\subb{\mathbf{i}_0} = \frame¬present
+    \where \mathbf{i} &= \spannedpages(o, l)~(\ref{eq:pagespan})
   \end{aligned}
 \end{equation}
 
-Such an access touches the octets of its range one at a time in ascending order of address, each octet an access of its containing page. Accessibility is checked before any charge, so these charges never fault, though they may exhaust gas.
+We define $\wscharge¬extwrite$, which writes $l$ octets of $\mathbf{v}$ from offset $f$ into the invoking machine's \textsc{ram} at $o$, provisioning the frames of the pages spanned, and yields the return value $\registers_7$ together with the posterior execution state and the resultant \textsc{ram}:
+\begin{equation}
+  \begin{aligned}
+    \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \memory} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory} \\
+      \tup{\continue, \mathtt{NONE}, \memory} &\otherwhen \mathbf{v} = \none \\
+      \tup{\continue, \len{\mathbf{v}}, \memory^\uparrow \exc (\memory^\uparrow)\subrange{o}{l} = \mathbf{v}\subrange{f}{l}} &\otherwise
+    \end{cases} \\
+    \where \memory^\uparrow &= \memory \exc (\memory^\uparrow_\ram¬frames)\subrange{\floor{\nicefrac{o}{\Cpvmpagesize}}}{\len{\spannedpages(o, l)}} = \sq{\frame¬present, \frame¬present, \dots}
+  \end{aligned}
+\end{equation}
 
-Should the gas run out mid-way, the result is $\oog$; the gas counter and the frames provisioned so far retain the charges already made, though no octets are written into \textsc{ram}. As $\oog$ discards the whole invocation's output, the surrounding context is immaterial and taken as its prior value. All of this is levied after the nominal $g$ of the tables below. In the descriptions that follow, the working-set argument and result are elided except where a function threads them explicitly.
+In the descriptions that follow, the working-set argument and result are elided except where a function threads them explicitly.
 
 \subsubsection{General Functions}\label{sec:generalfunctions}
 
@@ -368,7 +368,7 @@ These make no assumptions about the context $\context$; it is always passed thro
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_\Gemini(\gascounter, \registers, \memory, \workingset, \context, \jam¬blob)$ \\
+  $\Omega_\Gemini(\gascounter, \registers, \memory, \context, \jam¬blob)$ \\
   \texttt{grow\_heap} = 1} &
   $\begin{aligned}
     % This hostcall can be used to expand the RW data region of memory, or to query its size.
@@ -459,9 +459,10 @@ These make no assumptions about the context $\context$; it is always passed thro
     \using \sq{o, f_0, z} &= \registers\subrange{7}{3} \\
     \using f &= \min(f_0, \len{\mathbf{v}}) \\
     \using l &= \min(z, \len{\mathbf{v}} - f) \\
-    \tup{\execst', \registers'_7, \memory', \gascounter^*} &\equiv \wscharge¬extwrite(\gascounter - g, \registers, \memory, o, \mathbf{v}, f, l) \\
+    \using g^\downarrow &= \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) \\
+    \tup{\execst', \registers'_7, \memory'} &\equiv \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) \\
     g &\equiv \begin{cases}
-      \CgasYc{\registers_{10}} + \fnmemgas(\CgasYl{\registers_{10}} + \Cpvmgasdeliver, z) &\when \registers_{10} < 16 \\
+      \CgasYc{\registers_{10}} + \fnmemgas(\CgasYl{\registers_{10}} + \Cpvmgasdeliver, z) + g^\downarrow &\when \registers_{10} < 16 \\
       \CgasYunknown &\otherwise
     \end{cases}
   \end{aligned}$\\
@@ -498,8 +499,9 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
     \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
     \using l &= \min(z, \len{\mathbf{v}} - f) \\
-    \tup{\execst', \registers'_7, \memory', \gascounter^*} &\equiv \wscharge¬extwrite(\gascounter - g, \registers, \memory, o, \mathbf{v}, f, l) \\
-    g &\equiv \CgasHconst + \fnmemgas(\CgasHlinear + \Cpvmgasdeliver, z)
+    \using g^\downarrow &= \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) \\
+    \tup{\execst', \registers'_7, \memory'} &\equiv \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) \\
+    g &\equiv \CgasHconst + \fnmemgas(\CgasHlinear + \Cpvmgasdeliver, z) + g^\downarrow
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
@@ -576,15 +578,14 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
     \using c &= \max\left(\set{\build{k}{k \le z \wedge \Nrange{s}{k} \subseteq \readable{\mathbf{m}\subb{n}_\pg¬ram}}}\right) \\
     \using \kappa(\tup{m, x}) &= \begin{cases} 2(x - s) &\when m = n \\ 2(x - o) + 1 &\otherwise \end{cases} \\
     \using \mathbf{a} &= \sqorderby{\kappa(\tup{m, x})}{\tup{m, x} \in \set{\build{\tup{n, s+k}}{k \in \Nmax{c}}} \cup \set{\build{\tup{\none, o+k}}{k \in \Nmax{c}}}} \\
-    \using \tup{\varepsilon^\dagger, \gascounter^\dagger, \workingset^\dagger, \mem^\dagger, \mathbf{m}^\dagger} &= \wscharge¬internal(\gascounter - g, \workingset, \mem, \mathbf{m}, \mathbf{a}) \\
+    \using \tup{g^\dagger, \workingset^\dagger, \mem^\dagger, \mathbf{m}^\dagger} &= \wscharge¬internal(\workingset, \mem, \mathbf{m}, \mathbf{a}) \\
     \using \mem^\ddagger &= \mem^\dagger \exc (\mem^\dagger)\subrange{o}{c} = (\mathbf{m}\subb{n}_\pg¬ram)\subrange{s}{c} \\
-    \tup{\execst', \registers'_7, \mem', \mathbf{m}', \workingset', \gascounter^*} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mem, \mathbf{m}, \workingset, \gascounter - g} &\when \Nrange{o}{z} \not\subseteq \writable{\memory} \\
-      \tup{\continue, \mathtt{WHO}, \mem, \mathbf{m}, \workingset, \gascounter - g} &\otherwhen n \not\in \keys{\mathbf{m}} \\
-      \tup{\oog, \registers_7, \mem^\dagger, \mathbf{m}^\dagger, \workingset^\dagger, \gascounter^\dagger} &\otherwhen \varepsilon^\dagger = \oog \\
-      \tup{\continue, c, \mem^\ddagger, \mathbf{m}^\dagger, \workingset^\dagger, \gascounter^\dagger} &\otherwise
+    \tup{\execst', \registers'_7, \mem', \mathbf{m}', \workingset'} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \mem, \mathbf{m}, \workingset} &\when \Nrange{o}{z} \not\subseteq \writable{\memory} \\
+      \tup{\continue, \mathtt{WHO}, \mem, \mathbf{m}, \workingset} &\otherwhen n \not\in \keys{\mathbf{m}} \\
+      \tup{\continue, c, \mem^\ddagger, \mathbf{m}^\dagger, \workingset^\dagger} &\otherwise
     \end{cases} \\
-    g &\equiv \CgasPconst + \fnmemgas(\CgasPlinear, z)
+    g &\equiv \CgasPconst + \fnmemgas(\CgasPlinear, z) + \begin{cases} 0 &\when \Nrange{o}{z} \not\subseteq \writable{\memory} \vee n \not\in \keys{\mathbf{m}} \\ g^\dagger &\otherwise \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
@@ -595,15 +596,14 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
     \using c &= \max\left(\set{\build{k}{k \le z \wedge \Nrange{o}{k} \subseteq \writable{\mathbf{m}\subb{n}_\pg¬ram}}}\right) \\
     \using \kappa(\tup{m, x}) &= \begin{cases} 2(x - s) &\when m = \none \\ 2(x - o) + 1 &\otherwise \end{cases} \\
     \using \mathbf{a} &= \sqorderby{\kappa(\tup{m, x})}{\tup{m, x} \in \set{\build{\tup{\none, s+k}}{k \in \Nmax{c}}} \cup \set{\build{\tup{n, o+k}}{k \in \Nmax{c}}}} \\
-    \using \tup{\varepsilon^\dagger, \gascounter^\dagger, \workingset^\dagger, \mem^\dagger, \mathbf{m}^\dagger} &= \wscharge¬internal(\gascounter - g, \workingset, \mem, \mathbf{m}, \mathbf{a}) \\
+    \using \tup{g^\dagger, \workingset^\dagger, \mem^\dagger, \mathbf{m}^\dagger} &= \wscharge¬internal(\workingset, \mem, \mathbf{m}, \mathbf{a}) \\
     \using \mathbf{m}^\ddagger &= \mathbf{m}^\dagger \exc (\mathbf{m}^\ddagger\subb{n}_\pg¬ram)\subrange{o}{c} = \mem\subrange{s}{c} \\
-    \tup{\execst', \registers'_7, \mem', \mathbf{m}', \workingset', \gascounter^*} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mem, \mathbf{m}, \workingset, \gascounter - g} &\when \Nrange{s}{z} \not\subseteq \readable{\memory} \\
-      \tup{\continue, \mathtt{WHO}, \mem, \mathbf{m}, \workingset, \gascounter - g} &\otherwhen n \not\in \keys{\mathbf{m}} \\
-      \tup{\oog, \registers_7, \mem^\dagger, \mathbf{m}^\dagger, \workingset^\dagger, \gascounter^\dagger} &\otherwhen \varepsilon^\dagger = \oog \\
-      \tup{\continue, c, \mem^\dagger, \mathbf{m}^\ddagger, \workingset^\dagger, \gascounter^\dagger} &\otherwise
+    \tup{\execst', \registers'_7, \mem', \mathbf{m}', \workingset'} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \mem, \mathbf{m}, \workingset} &\when \Nrange{s}{z} \not\subseteq \readable{\memory} \\
+      \tup{\continue, \mathtt{WHO}, \mem, \mathbf{m}, \workingset} &\otherwhen n \not\in \keys{\mathbf{m}} \\
+      \tup{\continue, c, \mem^\dagger, \mathbf{m}^\ddagger, \workingset^\dagger} &\otherwise
     \end{cases} \\
-    g &\equiv \CgasOconst + \fnmemgas(\CgasOlinear, z)
+    g &\equiv \CgasOconst + \fnmemgas(\CgasOlinear, z) + \begin{cases} 0 &\when \Nrange{s}{z} \not\subseteq \readable{\memory} \vee n \not\in \keys{\mathbf{m}} \\ g^\dagger &\otherwise \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
@@ -658,7 +658,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
       \tup{g_R, \mathbf{w}}: \encode[8]{g_R} \concat \encode[8]{\mathbf{w}} = \mem\subrange{o}{112} &\when \Nrange{o}{112} \subseteq \writable{\mem} \\
       \tup{0, \error} &\otherwise
     \end{cases} \\
-    \using \tup{\varepsilon_1, \gascounter_1, \workingset_1, \mem_1, \mathbf{m}_1} &= \wscharge¬internal(\gascounter - g, \workingset, \mem, \mathbf{m}, \arg) \\
+    \using \tup{g_1, \workingset_1, \mem_1, \mathbf{m}_1} &= \wscharge¬internal(\workingset, \mem, \mathbf{m}, \arg) \\
     \using \tup{c, i', g_R', \pg¬gaschargedflag', \mathbf{w}', \mathbf{u}', \workingset_2} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g_R, \mathbf{m}\subb{n}_{\pg¬gaschargedflag}, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram, n, \workingset_1)\\
     \using \mem^* &= \mem_1 \exc \mem^*\subrange{o}{112} = \encode[8]{g_R'} \concat \encode[8]{\mathbf{w}'}\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
@@ -669,19 +669,21 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
       \end{cases}\\
       \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
     \end{cases}\\
-    \using \tup{\varepsilon_3, \gascounter_3, \workingset_3, \mem_3, \mathbf{m}_3} &= \wscharge¬internal(\gascounter_1 + g_R', \workingset_2, \mem^*, \mathbf{m}^*, \arg) \\
-    \tup{\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}', \workingset', \gascounter^*} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}, \workingset, \gascounter - g} &\when \mathbf{w} = \error \\
-      \tup{\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}, \workingset, \gascounter - g} &\otherwhen n \not\in \keys{\mathbf{m}} \\
-      \tup{\oog, \registers_7, \registers_8, \mem_1, \mathbf{m}, \workingset_1, \gascounter_1} &\otherwhen \varepsilon_1 = \oog \\
-      \tup{\oog, \registers_7, \registers_8, \mem_3, \mathbf{m}^*, \workingset_3, \gascounter_3} &\otherwhen \varepsilon_3 = \oog \\
-      \tup{\continue, \mathtt{HOST}, h, \mem_3, \mathbf{m}^*, \workingset_3, \gascounter_3} &\otherwhen c = \host \times h \\
-      \tup{\continue, \mathtt{FAULT}, x, \mem_3, \mathbf{m}^*, \workingset_3, \gascounter_3} &\otherwhen c = \fault \times x \\
-      \tup{\continue, \mathtt{OOG}, \registers_8, \mem_3, \mathbf{m}^*, \workingset_3, \gascounter_3} &\otherwhen c = \oog \\
-      \tup{\continue, \mathtt{PANIC}, \registers_8, \mem_3, \mathbf{m}^*, \workingset_3, \gascounter_3} &\otherwhen c = \panic \\
-      \tup{\continue, \mathtt{HALT}, \registers_8, \mem_3, \mathbf{m}^*, \workingset_3, \gascounter_3} &\otherwhen c = \halt \\
+    \using \tup{g_3, \workingset_3, \mem_3, \mathbf{m}_3} &= \wscharge¬internal(\workingset_2, \mem^*, \mathbf{m}^*, \arg) \\
+    \tup{\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}', \workingset'} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}, \workingset} &\when \mathbf{w} = \error \\
+      \tup{\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}, \workingset} &\otherwhen n \not\in \keys{\mathbf{m}} \\
+      \tup{\continue, \mathtt{HOST}, h, \mem_3, \mathbf{m}^*, \workingset_3} &\otherwhen c = \host \times h \\
+      \tup{\continue, \mathtt{FAULT}, x, \mem_3, \mathbf{m}^*, \workingset_3} &\otherwhen c = \fault \times x \\
+      \tup{\continue, \mathtt{OOG}, \registers_8, \mem_3, \mathbf{m}^*, \workingset_3} &\otherwhen c = \oog \\
+      \tup{\continue, \mathtt{PANIC}, \registers_8, \mem_3, \mathbf{m}^*, \workingset_3} &\otherwhen c = \panic \\
+      \tup{\continue, \mathtt{HALT}, \registers_8, \mem_3, \mathbf{m}^*, \workingset_3} &\otherwhen c = \halt \\
     \end{cases} \\
-    g &\equiv \CgasK + g_R
+    g &\equiv \CgasK + g_R + \begin{cases} 0 &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \\ g_1 + g_3 &\otherwise \end{cases} \\
+    \gascounter^* &\equiv \max(\gascounter - g, 0) + \begin{cases}
+      0 &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \vee \gascounter < g \\
+      g_R' &\otherwise
+    \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
@@ -733,8 +735,9 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
     \using l &= \min(z, \len{\mathbf{v}} - f) \\
-    \tup{\execst', \registers'_7, \memory', \gascounter^*} &\equiv \wscharge¬extwrite(\gascounter - g, \registers, \memory, o, \mathbf{v}, f, l) \\
-    g &\equiv \CgasLconst + \fnmemgas(\CgasLlinear + \Cpvmgasdeliver, z)
+    \using g^\downarrow &= \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) \\
+    \tup{\execst', \registers'_7, \memory'} &\equiv \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) \\
+    g &\equiv \CgasLconst + \fnmemgas(\CgasLlinear + \Cpvmgasdeliver, z) + g^\downarrow
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
@@ -754,8 +757,9 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
     \using l &= \min(v_Z, \len{\mathbf{v}} - f) \\
-    \tup{\execst', \registers'_7, \memory', \gascounter^*} &\equiv \wscharge¬extwrite(\gascounter - g, \registers, \memory, o, \mathbf{v}, f, l) \\
-    g &\equiv \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear + \Cpvmgasdeliver, v_Z)
+    \using g^\downarrow &= \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) \\
+    \tup{\execst', \registers'_7, \memory'} &\equiv \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) \\
+    g &\equiv \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear + \Cpvmgasdeliver, v_Z) + g^\downarrow
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
@@ -818,8 +822,9 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using f &= \min(\registers_{9}, \len{\mathbf{v}}) \\
     \using l &= \min(\registers_{10}, \len{\mathbf{v}} - f) \\
-    \tup{\execst', \registers'_7, \memory', \gascounter^*} &\equiv \wscharge¬extwrite(\gascounter - g, \registers, \memory, o, \mathbf{v}, f, l) \\
-    g &\equiv \CgasI + \fnmemgas(\Cpvmgasdeliver, \registers_{10})
+    \using g^\downarrow &= \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) \\
+    \tup{\execst', \registers'_7, \memory'} &\equiv \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) \\
+    g &\equiv \CgasI + \fnmemgas(\Cpvmgasdeliver, \registers_{10}) + g^\downarrow
   \end{aligned}$ \\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
