@@ -45,6 +45,7 @@
   \item[$\implications$] The set representing implications of accumulation. See equation \ref{eq:implications}.
   \item[$\ram$] The set of \textsc{pvm} $\mathbb{M}$emory (\textsc{ram}) states. See equation \ref{eq:pvmmemory}.
   \item[$\acconeout$] The set of single-service accumulation $\mathbb{O}$utputs. See equation \ref{eq:acconeout}.
+  \item[$\pageid$] The set of \textsc{pvm} memory $\mathbb{p}$age identifiers. See equation \ref{eq:pageid}.
   \item[$\workpackage$] The set of work-$\mathbb{P}$ackages. See equation \ref{eq:workpackage}.
   \item[$\workreport$] The set of work-$\mathbb{R}$eports. See equation \ref{eq:workreport}. \emph{Note used for the set of real numbers.}
   \item[$\partialstate$] The set representating a portion of overall $\mathbb{S}$tate, used during accumulation. See equation \ref{eq:partialstate}.
@@ -56,6 +57,7 @@
   \item[$\edsignature{k}{m}$] The set of $\mathbb{V}$alid Ed25519 signatures of the key $k$ and message $m$. A subset of $\blob[64]$. See section \ref{sec:cryptography}.
   \item[$\bssignature{k}{c}{m}$] The set of $\mathbb{V}$alid Bandersnatch signatures of the public key $k$, context $c$ and message $m$. A subset of $\blob[96]$. See section \ref{sec:cryptography}.
   \item[$\bsringproof{r}{c}{m}$] The set of $\mathbb{V}$alid Bandersnatch Ring\textsc{vrf} proofs of the root $r$, context $c$ and message $m$. A subset of $\blob[784]$. See section \ref{sec:cryptography}.
+  \item[$\workingsetsize$] The set of valid $\mathbb{w}$orking-set sizes. See equation \ref{eq:workingsetsize}.
   \item[$\workitem$] The set of $\mathbb{W}$ork items. See equation \ref{eq:workitem}.
   \item[$\defxfer$] The set of deferred transfers. See equation \ref{eq:defxfer}.
   \item[$\avspec$] The set of availability specifications. See equation \ref{eq:avspec}.
@@ -245,6 +247,7 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\memory$] The memory sequence; a member of the set $\ram$.
   \item[$\gascounter$] The gas counter.
   \item[$\registers$] The registers.
+  \item[$\workingset$] The working-set of resident page identifiers. See appendix \ref{sec:workingsetchanges}.
   \item[$\zeta$] The instruction sequence.
   \item[$\varpi$] The sequence of basic blocks of the program.
   \item[$\imath$] The instruction counter.
@@ -291,6 +294,13 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cmaxpackageexports = 3,072$] The maximum number of exports in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
   \item[$\mathsf{X}$] Context strings, see below.
   \item[$\Cepochtailstart = 500$] The number of slots into an epoch at which ticket-submission ends. See sections \ref{sec:slotkeysequence}, \ref{sec:epochmarker} and \ref{sec:safrolextandtickets}.
+  \item[$\Cpvmgaspagealloc = 300$] The gas cost of provisioning (and eventually deallocating) a physical frame for a \textsc{pvm} \textsc{ram} page. See appendix \ref{sec:workingsetchanges}.
+  \item[$\Cpvmgaspagecopy = 300$] The gas cost of populating a freshly provisioned \textsc{pvm} \textsc{ram} page from its initial image. See appendix \ref{sec:workingsetchanges}.
+  \item[$\Cpvmgasdeliver = 500$] The gas cost, per 1024 octets, added to the memory rate of a host-call which writes data into a machine's \textsc{ram}, bypassing its working-set. See appendix \ref{sec:hostfunctions}.
+  \item[$\Cpvmgaspagefault = 1000$] The base gas cost of inserting a page into the \textsc{pvm} working-set. See appendix \ref{sec:workingsetchanges}.
+  \item[$\Cpvmgaspagezero = 200$] The gas cost of zero-filling a freshly provisioned \textsc{pvm} \textsc{ram} page. See appendix \ref{sec:workingsetchanges}.
+  \item[$\Cpvmmaxworkingset = 7168$] The maximum \textsc{pvm} working-set size, in pages. See equation \ref{eq:workingsetsize}.
+  \item[$\Cpvmminworkingset = 16$] The minimum \textsc{pvm} working-set size, in pages. See equation \ref{eq:workingsetsize}.
   \item[$\Cpvmdynaddralign = 2$] The \textsc{pvm} dynamic address alignment factor. See equation \ref{eq:jumptablealignment}.
   \item[$\Cpvminitinputsize = 2^{24}$] The standard \textsc{pvm} program initialization input data size. See equation \ref{sec:standardprograminit}.
   \item[$\Cpvmpagesize = 2^{12}$] The \textsc{pvm} memory page size. See equation \ref{eq:pvmmemory}.
