@@ -258,7 +258,7 @@ We define the final execution state, the value of the instruction counter, the g
 
 We define $\varepsilon$ together with the posterior values of regular execution (denoted as prime) of each of the items of the machine state as being in accordance with the table below. When transitioning machine state for an instruction, a number of conditions typically hold true and instructions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, the instruction counter increments by one and \textsc{ram} \& registers are unchanged. Formally:
 \begin{equation}
-  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \registers' = \registers,\quad\mem' = \mem^\phase¬mem \text{ except as indicated }
+  \varepsilon = \continue,\quad \imath' = \imath + 1 + \Fskip(\imath),\quad \registers' = \registers,\quad\mem' = \mem^\phase¬mem\qquad\text{except as indicated}
 \end{equation}
 
 We define signed/unsigned transitions for various octet widths:
@@ -819,31 +819,31 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     \end{aligned}
     }
     &\to
-    \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \pvmreg, \signedgas, \bool, \regs, \ram, \sequence{\optional{\pageid}}, X}\\
-    \tup{\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem, \workingset, f, \mathbf{x}} &\mapsto \begin{cases}
+    \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \pvmreg, \gas, \bool, \regs, \ram, \sequence{\optional{\pageid}}, X}\\
+    \tup{\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem, \workingset, f, \context} &\mapsto \begin{cases}
       \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem', \workingset') = \Psi(\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem, \none, \workingset):} \\[8pt]
-      \tup{\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem', \workingset', \mathbf{x}} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
+      \tup{\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem', \workingset', \context} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
       \begin{aligned}
-        &\Psi_H^*(\pvm¬blob, \imath'', \gascounter'', \gaschargedflag', \registers'', \mem'', \workingset'', f, \mathbf{x}'')\\[2pt]
+        &\Psi_H^*(\pvm¬blob, \imath'', \gascounter'', \gaschargedflag', \registers'', \mem'', \workingset'', f, \context'')\\[2pt]
         &\quad \where \imath'' = \imath' + 1 + \Fskip(\imath')
       \end{aligned}
        &\when \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
-        &\tup{\continue, \gascounter'', \registers'', \mem'', \workingset'', \mathbf{x}''} = f(h, \gascounter', \registers', \mem', \workingset', \mathbf{x})
+        &\tup{\continue, \gascounter'', \registers'', \mem'', \workingset'', \context''} = f(h, \gascounter', \registers', \mem', \workingset', \context)
       }\\[8pt]
-      \tup{\varepsilon'', \imath', \gascounter'', \gaschargedflag', \registers'', \mem'', \workingset'', \mathbf{x}''} &\when  \bigwedge\abracegroup[\;]{
+      \tup{\varepsilon'', \imath', \gascounter'', \gaschargedflag', \registers'', \mem'', \workingset'', \context''} &\when  \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
-        &\tup{\varepsilon'', \gascounter'', \registers'', \mem'', \workingset'', \mathbf{x}''} = f(h, \gascounter', \registers', \mem', \workingset', \mathbf{x})\\[2pt]
-        &\varepsilon'' \in \set{\panic, \halt, \oog}
+        &\tup{\varepsilon'', \gascounter'', \registers'', \mem'', \workingset'', \context''} = f(h, \gascounter', \registers', \mem', \workingset', \context)\\[2pt]
+        &\varepsilon'' \in \set{\panic, \oog}
       }\\[8pt]
     \end{cases} \\
     }\!\!\!\!\!\!\!\!\\
     \begin{aligned}
-      \Psi_H(\pvm¬blob, \imath, \gascounter, \registers, \mem, w, f, \mathbf{x}) &\equiv (\varepsilon, \imath', \gascounter', \registers', \mem', \mathbf{x}') \\
-      \where (\varepsilon, \imath', \gascounter', \gaschargedflag', \registers', \mem', \workingset', \mathbf{x}') &=
-        \Psi_H^*(\pvm¬blob, \imath, \gascounter, \bot, \registers, \mem, \sq{\none, \none, \dots}\sub{\dots w}, f, \mathbf{x})
+      \Psi_H(\pvm¬blob, \imath, \gascounter, \registers, \mem, w, f, \context) &\equiv (\varepsilon, \imath', \gascounter', \registers', \mem', \context') \\
+      \where (\varepsilon, \imath', \gascounter', \gaschargedflag', \registers', \mem', \workingset', \context') &=
+        \Psi_H^*(\pvm¬blob, \imath, \gascounter, \bot, \registers, \mem, \sq{\none, \none, \dots}\sub{\dots w}, f, \context)
     \end{aligned}\\
-    \contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, \sequence{\optional{\pageid}}, X} \to \tuple{\set{\continue, \halt, \panic, \oog}, \gas, \regs, \ram, \sequence{\optional{\pageid}}, X}
+    \contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, \sequence{\optional{\pageid}}, X} \to \tuple{\set{\continue, \panic, \oog}, \gas, \regs, \ram, \sequence{\optional{\pageid}}, X}
 \end{gather}
 
 As with $\Psi$, on exit the instruction counter references the instruction \emph{which caused the exit} and the machine state is that prior to this instruction. Should the machine be invoked again using this instruction counter and code, then the same instruction which caused the exit would be executed on the proper (prior) machine state.
@@ -930,20 +930,20 @@ The three instances where the \textsc{pvm} is utilized each expect to be able to
     \tuple{
       \blob, \pvmreg, \gas, \blob[:\Cpvminitinputsize], \workingsetsize, \contextmutator{X}, X
     } &\to \tuple{\gas, \blob \cup \set{\panic, \oog}, X}\\
-    \tup{\jam¬blob, \imath, \gascounter, \mathbf{a}, w, f, \mathbf{x}} &\mapsto \begin{cases}
-      \tup{0, \panic, \mathbf{x}} &\when Y(\jam¬blob, \mathbf{a}) = \none\\
-      R(\gascounter, \Psi_H(\pvm¬blob, \imath, \gascounter, \registers, \mem, w, f, \mathbf{x})) &\when Y(\jam¬blob, \mathbf{a}) = \tup{\pvm¬blob, \registers, \mem}\\
+    \tup{\jam¬blob, \imath, \gascounter, \mathbf{a}, w, f, \context} &\mapsto \begin{cases}
+      \tup{0, \panic, \context} &\when Y(\jam¬blob, \mathbf{a}) = \none\\
+      R(\gascounter, \Psi_H(\pvm¬blob, \imath, \gascounter, \registers, \mem, w, f, \context)) &\when Y(\jam¬blob, \mathbf{a}) = \tup{\pvm¬blob, \registers, \mem}\\
       \multicolumn{2}{l}{
         \quad \where R \colon \tup{\gascounter, \tup{\begin{alignedat}{5}
           &\varepsilon,\, &&\imath',\, &&\gascounter',\\
-          &\registers',\, &&\mem',\, &&\mathbf{x}'
+          &\registers',\, &&\mem',\, &&\context'
         \end{alignedat}
         }} \mapsto \begin{cases}
-          \tup{u, \oog, \mathbf{x}'} &\when \varepsilon = \oog \\
-          \tup{u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \subseteq \readable{\mem'} \\
-          \tup{u, \sq{}, \mathbf{x}'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \not\subseteq \readable{\mem'} \\
-          \tup{u, \panic, \mathbf{x}'} &\otherwise \\
-          \multicolumn{2}{l}{\quad \where u = \gascounter - \max(\gascounter', 0)}
+          \tup{u, \oog, \context'} &\when \varepsilon = \oog \\
+          \tup{u, \memory'_{\registers'_{7}\dots+\registers'_{8}}, \context'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \subseteq \readable{\mem'} \\
+          \tup{u, \sq{}, \context'} &\when \varepsilon = \halt \wedge \Nrange{\registers'_{7}}{\registers'_{8}} \not\subseteq \readable{\mem'} \\
+          \tup{u, \panic, \context'} &\otherwise \\
+          \multicolumn{2}{l}{\quad \where u = \gascounter - \gascounter'}
         \end{cases}
       }\!\!\!\!\!\!\!\!
     \end{cases}

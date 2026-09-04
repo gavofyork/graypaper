@@ -29,7 +29,7 @@ A work-report guarantee, of the set $\guarantee$, consists of a work-report toge
 
 \subsubsection{Work Report}
 \label{sec:workreport}
-A work-report, of the set $\workreport$, is defined as a tuple of the work-package specification, $\wr¬avspec$; the refinement context, $\wr¬context$; the core-index (\ie on which the work is done), $\wr¬core$; as well as the authorizer hash $\wr¬authorizer$ and trace $\wr¬authtrace$; a segment-root lookup dictionary $\wr¬srlookup$; the gas consumed during the Is-Authorized invocation, $\wr¬authgasused$; and finally the work-digests $\wr¬digests$ which comprise the results of the evaluation of each of the items in the package together with some associated data. Formally:
+A work-report, of the set $\workreport$, is defined as a tuple of the work-package specification, $\wr¬avspec$; the refinement context, $\wr¬context$; the core-index (\ie on which the work is done), $\wr¬core$; as well as the authorizer hash $\wr¬authorizer$; the gas consumed during the Is-Authorized invocation, $\wr¬authgasused$; the trace $\wr¬authtrace$; a segment-root lookup dictionary $\wr¬srlookup$; and finally the work-digests $\wr¬digests$ which comprise the results of the evaluation of each of the items in the package together with some associated data. Formally:
 \begin{equation}
   \label{eq:workreport}
   \workreport \equiv \tuple{
@@ -38,10 +38,10 @@ A work-report, of the set $\workreport$, is defined as a tuple of the work-packa
       \isa{\wr¬context}{\workcontext},\
       \isa{\wr¬core}{\coreindex},\
       \isa{\wr¬authorizer}{\hash},\
-      \isa{\wr¬authtrace}{\blob},\\
-      &\isa{\wr¬srlookup}{\dictionary{\hash}{\hash}},\
-      \isa{\wr¬digests}{\sequence[1:\Cmaxpackageitems]{\workdigest}},\
-      \isa{\wr¬authgasused}{\gas}
+      \isa{\wr¬authgasused}{\gas},\\
+      &\isa{\wr¬authtrace}{\blob},\
+      \isa{\wr¬srlookup}{\dictionary{\hash}{\hash}},\
+      \isa{\wr¬digests}{\sequence[1:\Cmaxpackageitems]{\workdigest}}
     \end{aligned}
   }
 \end{equation}
