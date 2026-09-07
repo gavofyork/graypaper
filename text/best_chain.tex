@@ -9,28 +9,30 @@ We define the latest finalized block as $\block^\final$. All associated terms co
 
 \begin{itemize}
   \item Has the finalized block as an ancestor.
-  \item Contains no unfinalized blocks where we see an equivocation (two valid blocks at the same timeslot).
   \item Is considered audited.
 \end{itemize}
 
 Formally:
 \begin{align}
   \ancestors(\header^\best) &\owns \header^\final \\
-  \isaudited^\best &\equiv \top \\
-  \not\exists \header^A, \header^B &: \bigwedge \abracegroup[\,]{
-    \header^A &\ne \header^B \\
-    \header^A_\¬timeslot &= \header^B_\¬timeslot \\
-    \header^A &\in \ancestors(\header^\best) \\
-    \header^A &\not\in \ancestors(\header^\final)
-  }
+  \isaudited^\best &\equiv \top
 \end{align}
 
-Of these acceptable blocks, that which contains the most ancestor blocks whose author used a slot-sealer ticket, rather than a fallback key should be selected as the best head, and thus the chain on which the participant should make \textsc{Grandpa} votes.
+Of these acceptable blocks, that which contains the most ancestor blocks whose author used a slot-sealer ticket, rather than a fallback key, and which are not equivocated, should be selected as the best head, and thus the chain on which the participant should make \textsc{Grandpa} votes.
+
+Additionally, Safrole authors also should extend the chain from the best head (see \S\ref{sec:blockproduction}).
+
+We say a header is \emph{equivocated} if the node has observed another distinct header sharing its timeslot:
+\begin{align}
+  \isequivocated^A &\equiv \exists \header^B \ne \header^A : \header^B_\¬timeslot = \header^A_\¬timeslot
+\end{align}
 
 Formally, we aim to select $\block^\best$ to maximize the value $m$ where:
 \begin{equation}
-  m = \sum_{\header^A \in \ancestors^\best} \isticketed^A
+  m = \sum_{\header^A \in \ancestors^\best} \isticketed^A \cdot (1 - \isequivocated^A)
 \end{equation}
+
+Note that $m$ is non-monotonic in observed evidence: when a new equivocating header is gossiped, the score of any candidate whose chain includes the equivocated ancestor drops.
 
 The specific data to be voted on in \textsc{Grandpa} shall be the block header of the best block, $\block^\best$ together with its \emph{posterior} state root, $\merklizestate{\thestate'}$. The state root has no direct relevance to the \textsc{Grandpa} protocol, but is included alongside the header during voting/signing into order to ensure that systems utilizing the output of \textsc{Grandpa} are able to verify the most recent chain state as possible.
 
