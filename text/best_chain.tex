@@ -23,7 +23,13 @@ where $\isticketed^A$ indicates whether block $A$ was sealed with a slot-sealer 
 
 Note that $m$ is non-monotonic in observed evidence: when a new equivocating header is gossiped, the score of any candidate whose chain includes the equivocated ancestor drops.
 
-The specific data to be voted on in \textsc{Grandpa} shall be the block header of the best block, $\block^\best$ together with its \emph{posterior} state root, $\merklizestate{\thestate'}$. The state root has no direct relevance to the \textsc{Grandpa} protocol, but is included alongside the header during voting/signing into order to ensure that systems utilizing the output of \textsc{Grandpa} are able to verify the most recent chain state as possible.
+Both Safrole authors and \textsc{Grandpa} participants use this same rule to determine the current chain, and thus cannot diverge on which fork is being extended (see \S\ref{sec:blockproduction}).
+
+Because auditing lags behind block production, the tip $\block^\best$ may be unaudited near the frontier. We therefore additionally define $\block^\bestaudited$ as the deepest audited ancestor of $\block^\best$ on the same chain. Safrole authors extend $\block^\best$; \textsc{Grandpa} participants pre-vote for $\block^\bestaudited$.
+
+Under the standard assumption of $>\frac{2}{3}$ honest validators, honest voters pre-vote only for $\block^\bestaudited$, so $\header^\ghost$ is itself always audited. Consequently $\header^\final$, the latest \textsc{Grandpa}-finalized block, is always audited by construction.
+
+The specific data to be voted on in \textsc{Grandpa} shall be the block header of the audited best block, $\block^\bestaudited$ together with its \emph{posterior} state root, $\merklizestate{\thestate'}$. The state root has no direct relevance to the \textsc{Grandpa} protocol, but is included alongside the header during voting/signing into order to ensure that systems utilizing the output of \textsc{Grandpa} are able to verify the most recent chain state as possible.
 
 This implies that the posterior state must be known at the time that \textsc{Grandpa} voting occurs in order to finalize the block. However, since \textsc{Grandpa} is relied on primarily for state-root verification it makes little sense to finalize a block without an associated commitment to the posterior state.
 
