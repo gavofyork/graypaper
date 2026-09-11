@@ -781,20 +781,35 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_B(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{bless} = 16} &
   $\begin{aligned}
-    \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
-    \using \mathbf{a} &= \begin{cases}
-      \decode[4]{\memory\subrange{a}{4\Ccorecount}} &\when \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
+    \using \sq{o, n} &= \registers\subrange{7}{2} \\
+    \using \tuple{m, \mathbf{a}, v, r, \mathbf{z}} &= (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}} \\
+    \using \mathbf{h} &= \begin{cases}
+      \sq{\build{\tup{k, i, x}}{j \orderedin \Nmax{n}}} &\when \Nrange{o}{16n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using \mathbf{z} &= \begin{cases}
-      \set{\build{\kv{s}{g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\when \Nrange{o}{12n} \subseteq \readable{\memory} \\
-      \error &\otherwise
+    &\phantom{{}={}} \where \encode[4]{k, i} \concat \encode[8]{x} = \memory\subrange{o+16j}{16} \\
+    \using P(k, i) &\equiv \begin{cases}
+      \set{m} &\when \tup{k, i} = \tup{0, 0} \vee k = 4 \\
+      \set{m, v} &\when \tup{k, i} = \tup{1, 0} \\
+      \set{m, r} &\when \tup{k, i} = \tup{2, 0} \\
+      \set{m, \mathbf{a}\subb{i}} &\when k = 3 \wedge i < \Ccorecount \\
+      \emset &\otherwise
+    \end{cases} \\
+    \using \tuple{m', \mathbf{a}', v', r', \mathbf{z}'} &= \tuple{m, \mathbf{a}, v, r, \mathbf{z}} \exc \forall \tup{k, i, x} \in \mathbf{h} : \begin{cases}
+      m' = x &\when k = 0 \\
+      v' = x &\when k = 1 \\
+      r' = x &\when k = 2 \\
+      \mathbf{a}'\subb{i} = x &\when k = 3 \\
+      \mathbf{z}'\subb{i} = x &\when k = 4 \wedge x \ne 0 \\
+      i \not\in \keys{\mathbf{z}'} &\when k = 4 \wedge x = 0
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
-      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager \\
-      \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \tup{m, v, r} \not\in \serviceid^3 \\
-      \tup{\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwise \\
+      \tup{\panic, \registers_7, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\when \mathbf{h} = \error \\
+      \tup{\continue, \mathtt{CORE}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \exists \tup{k, i, x} \in \mathbf{h} : k = 3 \wedge i \ge \Ccorecount \\
+      \tup{\continue, \mathtt{HUH}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \exists \tup{k, i, x} \in \mathbf{h} : \imX_\im¬id \not\in P(k, i) \\
+      \tup{\continue, \mathtt{HUH}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \len{\set{\build{\tup{k, i}}{\tup{k, i, x} \in \mathbf{h}}}} < n \\
+      \tup{\continue, \mathtt{WHO}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \exists \tup{k, i, x} \in \mathbf{h} : k \ne 4 \wedge x \not\in \serviceid \\
+      \tup{\continue, \mathtt{OK}, \tuple{m', \mathbf{a}', v', r', \mathbf{z}'}} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasBconst + n \cdot \CgasBlinear
   \end{aligned}$\\
@@ -803,17 +818,16 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_A(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{assign} = 17} &
   $\begin{aligned}
-    \using \sq{c, o, a} &= \registers\subrange{7}{3} \\
+    \using \sq{c, o} &= \registers\subrange{7}{2} \\
     \using \mathbf{q} &= \begin{cases}
       \sq{\build{\memory\subrange{o + 32i}{32}}{i \orderedin \N_\Cauthqueuesize}} &\when \Nrange{o}{32\Cauthqueuesize} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬authqueue\subb{c}, (\imX'_\im¬state)_\ps¬assigners\subb{c}} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\when \mathbf{q} = \error \\
-      \tup{\continue, \mathtt{CORE}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen c \ge \Ccorecount \\
-      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬assigners\subb{c}\\
-      \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen a \not\in \serviceid \\
-      \tup{\continue, \mathtt{OK}, \mathbf{q}, a} &\otherwise \\
+    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬authqueue\subb{c}} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬authqueue\subb{c}} &\when \mathbf{q} = \error \\
+      \tup{\continue, \mathtt{CORE}, (\imX_\im¬state)_\ps¬authqueue\subb{c}} &\otherwhen c \ge \Ccorecount \\
+      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬authqueue\subb{c}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬assigners\subb{c}\\
+      \tup{\continue, \mathtt{OK}, \mathbf{q}} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasA
   \end{aligned}$\\
