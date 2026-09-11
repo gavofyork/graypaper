@@ -784,31 +784,31 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \sq{o, n} &= \registers\subrange{7}{2} \\
     \using \tuple{m, \mathbf{a}, v, r, \mathbf{z}} &= (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}} \\
     \using \mathbf{h} &= \begin{cases}
-      \sq{\build{\tup{k, i, x}}{j \orderedin \Nmax{n}}} &\when \Nrange{o}{16n} \subseteq \readable{\memory} \\
+      \sq{\build{\tup{k, s, x}}{j \orderedin \Nmax{n}}} &\when \Nrange{o}{13n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    &\phantom{{}={}} \where \encode[4]{k, i} \concat \encode[8]{x} = \memory\subrange{o+16j}{16} \\
-    \using P(k, i) &\equiv \begin{cases}
-      \set{m} &\when \tup{k, i} = \tup{0, 0} \vee k = 4 \\
-      \set{m, v} &\when \tup{k, i} = \tup{1, 0} \\
-      \set{m, r} &\when \tup{k, i} = \tup{2, 0} \\
-      \set{m, \mathbf{a}\subb{i}} &\when k = 3 \wedge i < \Ccorecount \\
+    &\phantom{{}={}} \where \encode[1]{k} \concat \encode[4]{s} \concat \encode[8]{x} = \memory\subrange{o+13j}{13} \\
+    \using P(k, x) &\equiv \begin{cases}
+      \set{m} &\when \tup{k, x} = \tup{0, 0} \vee k = 4 \\
+      \set{m, v} &\when \tup{k, x} = \tup{1, 0} \\
+      \set{m, r} &\when \tup{k, x} = \tup{2, 0} \\
+      \set{m, \mathbf{a}\subb{x}} &\when k = 3 \wedge x < \Ccorecount \\
       \emset &\otherwise
     \end{cases} \\
-    \using \tuple{m', \mathbf{a}', v', r', \mathbf{z}'} &= \tuple{m, \mathbf{a}, v, r, \mathbf{z}} \exc \forall \tup{k, i, x} \in \mathbf{h} : \begin{cases}
-      m' = x &\when k = 0 \\
-      v' = x &\when k = 1 \\
-      r' = x &\when k = 2 \\
-      \mathbf{a}'\subb{i} = x &\when k = 3 \\
-      \mathbf{z}'\subb{i} = x &\when k = 4 \wedge x \ne 0 \\
-      i \not\in \keys{\mathbf{z}'} &\when k = 4 \wedge x = 0
+    \using \mathbf{t} &= \set{\build{\tup{k, x}}{\tup{k, s, x} \in \mathbf{h}, k \ne 4}} \cup \set{\build{\tup{k, s}}{\tup{k, s, x} \in \mathbf{h}, k = 4}} \\
+    \using \tuple{m', \mathbf{a}', v', r', \mathbf{z}'} &= \tuple{m, \mathbf{a}, v, r, \mathbf{z}} \exc \forall \tup{k, s, x} \in \mathbf{h} : \begin{cases}
+      m' = s &\when k = 0 \\
+      v' = s &\when k = 1 \\
+      r' = s &\when k = 2 \\
+      \mathbf{a}'\subb{x} = s &\when k = 3 \\
+      \mathbf{z}'\subb{s} = x &\when k = 4 \wedge x \ne 0 \\
+      s \not\in \keys{\mathbf{z}'} &\when k = 4 \wedge x = 0
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\when \mathbf{h} = \error \\
-      \tup{\continue, \mathtt{CORE}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \exists \tup{k, i, x} \in \mathbf{h} : k = 3 \wedge i \ge \Ccorecount \\
-      \tup{\continue, \mathtt{HUH}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \exists \tup{k, i, x} \in \mathbf{h} : \imX_\im¬id \not\in P(k, i) \\
-      \tup{\continue, \mathtt{HUH}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \len{\set{\build{\tup{k, i}}{\tup{k, i, x} \in \mathbf{h}}}} < n \\
-      \tup{\continue, \mathtt{WHO}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \exists \tup{k, i, x} \in \mathbf{h} : k \ne 4 \wedge x \not\in \serviceid \\
+      \tup{\continue, \mathtt{CORE}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \exists \tup{k, s, x} \in \mathbf{h} : k = 3 \wedge x \ge \Ccorecount \\
+      \tup{\continue, \mathtt{HUH}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \exists \tup{k, s, x} \in \mathbf{h} : \imX_\im¬id \not\in P(k, x) \\
+      \tup{\continue, \mathtt{HUH}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwhen \len{\mathbf{t}} < n \\
       \tup{\continue, \mathtt{OK}, \tuple{m', \mathbf{a}', v', r', \mathbf{z}'}} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasBconst + n \cdot \CgasBlinear
