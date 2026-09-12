@@ -4,35 +4,32 @@ Nodes take part in the \textsc{Grandpa} protocol as defined by \cite{stewart2020
 
 \newcommand*{\final}{\natural}
 \newcommand*{\best}{\flat}
+\newcommand*{\bestaudited}{{\flat\isaudited}}
 
-We define the latest finalized block as $\block^\final$. All associated terms concerning block and state are similarly superscripted. We consider the \emph{best block}, $\block^\best$ to be that which is drawn from the set of acceptable blocks of the following criteria:
+We define the latest finalized block as $\block^\final$. All associated terms concerning block and state are similarly superscripted. We consider the \emph{best block}, $\block^\best$ to be a descendant of the latest \textsc{Grandpa}-\textsc{ghost} which contains the most ticket-sealed ancestor blocks with non-equivocated headers.
 
-\begin{itemize}
-  \item Has the finalized block as an ancestor.
-  \item Contains no unfinalized blocks where we see an equivocation (two valid blocks at the same timeslot).
-  \item Is considered audited.
-\end{itemize}
-
-Formally:
+We say a header is \emph{equivocated} if the node has observed another distinct header sharing its timeslot:
 \begin{align}
-  \ancestors(\header^\best) &\owns \header^\final \\
-  \isaudited^\best &\equiv \top \\
-  \not\exists \header^A, \header^B &: \bigwedge \abracegroup[\,]{
-    \header^A &\ne \header^B \\
-    \header^A_\¬timeslot &= \header^B_\¬timeslot \\
-    \header^A &\in \ancestors(\header^\best) \\
-    \header^A &\not\in \ancestors(\header^\final)
-  }
+  \isequivocated^A &\equiv \exists \header^B \ne \header^A : \header^B_\¬timeslot = \header^A_\¬timeslot
 \end{align}
 
-Of these acceptable blocks, that which contains the most ancestor blocks whose author used a slot-sealer ticket, rather than a fallback key should be selected as the best head, and thus the chain on which the participant should make \textsc{Grandpa} votes.
+Formally, $\block^\best$ is defined as:
+\begin{align}
+  \block^\best &= \argmax_{\{X\,:\,\ancestors(\header^X) \owns \header^\ghost\}} m(X)\\
+  m(X) &= \sum_{\header^A \in \ancestors^X} \isticketed^A \cdot (1 - \isequivocated^A)
+\end{align}
 
-Formally, we aim to select $\block^\best$ to maximize the value $m$ where:
-\begin{equation}
-  m = \sum_{\header^A \in \ancestors^\best} \isticketed^A
-\end{equation}
+where $\isticketed^A$ indicates whether block $A$ was sealed with a slot-sealer ticket rather than a fallback key (see equations \ref{eq:ticketconditiontrue}), and $\header^\ghost$ is the header of the \textsc{Grandpa} \textsc{ghost} block --- the deepest block whose pre-vote subtree in the latest observed round has $\ge \frac{2}{3}$ support (see \cite{stewart2020grandpa} for its algorithmic definition).
 
-The specific data to be voted on in \textsc{Grandpa} shall be the block header of the best block, $\block^\best$ together with its \emph{posterior} state root, $\merklizestate{\thestate'}$. The state root has no direct relevance to the \textsc{Grandpa} protocol, but is included alongside the header during voting/signing into order to ensure that systems utilizing the output of \textsc{Grandpa} are able to verify the most recent chain state as possible.
+Note that $m$ is non-monotonic in observed evidence: when a new equivocating header is gossiped, the score of any candidate whose chain includes the equivocated ancestor drops.
+
+Both Safrole authors and \textsc{Grandpa} participants use this same rule to determine the current chain, and thus cannot diverge on which fork is being extended (see \S\ref{sec:blockproduction}).
+
+Because auditing lags behind block production, the tip $\block^\best$ may be unaudited near the frontier. We therefore additionally define $\block^\bestaudited$ as the deepest audited ancestor of $\block^\best$ on the same chain. Safrole authors extend $\block^\best$; \textsc{Grandpa} participants pre-vote for $\block^\bestaudited$.
+
+Under the standard assumption of $>\frac{2}{3}$ honest validators, honest voters pre-vote only for $\block^\bestaudited$, so $\header^\ghost$ is itself always audited. Consequently $\header^\final$, the latest \textsc{Grandpa}-finalized block, is always audited by construction.
+
+The specific data to be voted on in \textsc{Grandpa} shall be the block header of the audited best block, $\block^\bestaudited$ together with its \emph{posterior} state root, $\merklizestate{\thestate'}$. The state root has no direct relevance to the \textsc{Grandpa} protocol, but is included alongside the header during voting/signing into order to ensure that systems utilizing the output of \textsc{Grandpa} are able to verify the most recent chain state as possible.
 
 This implies that the posterior state must be known at the time that \textsc{Grandpa} voting occurs in order to finalize the block. However, since \textsc{Grandpa} is relied on primarily for state-root verification it makes little sense to finalize a block without an associated commitment to the posterior state.
 
