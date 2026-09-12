@@ -783,15 +783,15 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\begin{aligned}
     \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
     \using \tuple{m^*, \mathbf{a}^*, v^*, r^*, \mathbf{z}^*} &= (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}} \\
-    \using D(x, y) &\equiv \begin{cases} y &\when x = 2^{64} - 2 \\ x &\otherwise \end{cases} \\
+    \using D(x, y) &\equiv \begin{cases} y &\when x = 2^{64} - 1 \\ x &\otherwise \end{cases} \\
     \using \tup{m', v', r'} &= \tup{D(m, m^*), D(v, v^*), D(r, r^*)} \\
     \using \mathbf{a} &= \begin{cases}
-      \mathbf{a}^* &\when a = 0 \\
+      \mathbf{a}^* &\when a = 2^{64} - 1 \\
       \decode[4]{\memory\subrange{a}{4\Ccorecount}} &\otherwhen \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{z} &= \begin{cases}
-      \mathbf{z}^* &\when o = 0 \\
+      \mathbf{z}^* &\when o = 2^{64} - 1 \\
       \set{\build{\kv{s}{g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\otherwhen \Nrange{o}{12n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
