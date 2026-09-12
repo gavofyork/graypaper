@@ -152,13 +152,14 @@ The \textsc{pvm} is fully defined in appendix \ref{sec:virtualmachine}, but for 
       &\blob,\,\ \ &&\pvmreg\\
       &\gas,\,\ \ &&\bool\\
       &\sequence[13]{\pvmreg},\,\ \ &&\ram\\
+      &\optional{\N},\,\ \ &&\sequence{\optional{\pageid}}\\
     \end{alignedat}
   \,}
   \to
   \tuple{\,
     \begin{aligned}
       &\set{\halt, \panic, \oog} \cup \set{\fault,\host} \times \pvmreg, \pvmreg,\\
-      &\gas,\ \ \ \bool,\ \ \ \sequence[13]{\pvmreg},\ \ \ \ram
+      &\gas, \bool, \sequence[13]{\pvmreg}, \ram, \sequence{\optional{\pageid}}
     \end{aligned}
   \,}
 \end{equation}
@@ -175,18 +176,25 @@ The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as s
 \begin{align}\label{eq:pvmmemory}
   \ram &\equiv \tuple{
     \isa{\ram¬value}{\blob[2^{32}]},
-    \isa{\ram¬access}{\sequence[p]{\set{\text{W}, \text{R}, \none}}}
-  }\,,\ p = \frac{2^{32}}{\Cpvmpagesize}\\
+    \isa{\ram¬access}{\sequence[p]{\set{\text{W}, \text{R}, \none}}},
+    \isa{\ram¬frames}{\sequence[p]{\set{\frame¬present, \frame¬missing¬zero, \frame¬missing¬copy}}}
+  }\\
+  p &= \frac{2^{32}}{\Cpvmpagesize} \notag\\
   \Cpvmpagesize &= 2^{12}
 \end{align}
 
-The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\Cpvmpagesize = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\ram$ includes two components: a value $\ram¬value$ and access $\ram¬access$. If the component is unspecified while being subscripted then the value component may be assumed. Within the context of the virtual machine, $\memory \in \ram$ is typically used to denote \textsc{ram}.
+The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\Cpvmpagesize = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\ram$ includes three components: a value $\ram¬value$, access $\ram¬access$, and frames $\ram¬frames$. If the component is unspecified while being subscripted then the value component may be assumed. The frames component records, per page, whether a physical frame has been allocated for it ($\frame¬present$) by the working-set gas model of appendix \ref{sec:workingsetchanges}, or, if not, whether first provisioning one would require copying the page from the program's initial image ($\frame¬missing¬copy$) or merely zeroing it ($\frame¬missing¬zero$). It influences gas costs only and has no effect on the semantics of reads and writes. Within the context of the virtual machine, $\memory \in \ram$ is typically used to denote \textsc{ram}.
 \begin{align}
   \readable{\memory} &\equiv \set{\build{i}{\memory_\ram¬access\subb{\floor{\nicefrac{i}{\Cpvmpagesize}}} \ne \none}} \\
   \writable{\memory} &\equiv \set{\build{i}{\memory_\ram¬access\subb{\floor{\nicefrac{i}{\Cpvmpagesize}}} = \text{W} }}
 \end{align}
 
 We define two sets of indices for the \textsc{ram} $\memory$: $\readable{\memory}$ is the set of indices which may be read from; and $\writable{\memory}$ is the set of indices which may be written to.
+
+On contemporary CPUs, memory is accessed via a series of caches, with increasing capacity but also increasing access latency at each level. In order to be able to accurately predict memory access latency in the gas cost model, the size of the \emph{working-set} of memory pages $\workingset \in \sequence{\optional{\pageid}}$ is constrained. The size is chosen at machine creation time from the set $\workingsetsize$, with a smaller working-set, capable of fitting in a lower-level cache, reducing the predicted latency and thus effective gas cost of each memory access. Every change to the working-set, although automatic and thus mostly invisible to the \textsc{pvm} programmer, incurs a significant gas cost. The smaller the working-set, the more likely each memory access is to ``miss'' and require such a change. The working-set size should be carefully chosen to balance these two factors. The working-set covers data, jump-table, and also code pages.
+\begin{equation}\label{eq:workingsetsize}
+    \workingsetsize \equiv \set{\build{n \in \N}{\Cpvmminworkingset \le n \le \Cpvmmaxworkingset}}
+\end{equation}
 
 Invocation of the \textsc{pvm} has an exit-reason as the first item in the resultant tuple. It is either:
 \begin{itemize}
