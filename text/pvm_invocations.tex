@@ -782,19 +782,26 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \texttt{bless} = 16} &
   $\begin{aligned}
     \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
+    \using \tuple{m^*, \mathbf{a}^*, v^*, r^*, \mathbf{z}^*} &= (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}} \\
+    \using D(x, y) &\equiv \begin{cases} y &\when x = 2^{64} - 2 \\ x &\otherwise \end{cases} \\
+    \using \tup{m', v', r'} &= \tup{D(m, m^*), D(v, v^*), D(r, r^*)} \\
     \using \mathbf{a} &= \begin{cases}
-      \decode[4]{\memory\subrange{a}{4\Ccorecount}} &\when \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
+      \mathbf{a}^* &\when a = 0 \\
+      \decode[4]{\memory\subrange{a}{4\Ccorecount}} &\otherwhen \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{z} &= \begin{cases}
-      \set{\build{\kv{s}{g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\when \Nrange{o}{12n} \subseteq \readable{\memory} \\
+      \mathbf{z}^* &\when o = 0 \\
+      \set{\build{\kv{s}{g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\otherwhen \Nrange{o}{12n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
+    \using p &= (\imX_\im¬id = m^*) \vee \big( m' = m^* \wedge \mathbf{z} = \mathbf{z}^* \wedge (v' = v^* \vee \imX_\im¬id = v^*) \wedge (r' = r^* \vee \imX_\im¬id = r^*) \\
+    &\phantom{{}={}} \qquad\qquad\qquad \wedge \forall c \in \coreindex : (\mathbf{a}\subb{c} = \mathbf{a}^*\subb{c} \vee \imX_\im¬id = \mathbf{a}^*\subb{c}) \big) \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
-      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager \\
-      \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \tup{m, v, r} \not\in \serviceid^3 \\
-      \tup{\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwise \\
+      \tup{\panic, \registers_7, \tuple{m^*, \mathbf{a}^*, v^*, r^*, \mathbf{z}^*}} &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
+      \tup{\continue, \mathtt{HUH}, \tuple{m^*, \mathbf{a}^*, v^*, r^*, \mathbf{z}^*}} &\otherwhen \neg p \\
+      \tup{\continue, \mathtt{WHO}, \tuple{m^*, \mathbf{a}^*, v^*, r^*, \mathbf{z}^*}} &\otherwhen \tup{m', v', r'} \not\in \serviceid^3 \\
+      \tup{\continue, \mathtt{OK}, \tuple{m', \mathbf{a}, v', r', \mathbf{z}}} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasBconst + n \cdot \CgasBlinear
   \end{aligned}$\\
