@@ -175,7 +175,7 @@ We must now define the single-step \textsc{pvm} state-transition function $\Psi_
   }
 \end{equation}
 
-Before execution, the instruction must be fetched from memory. This is done lazily, using the machine's paging hardware: each fetch of a code page not resident in the working-set is a page fault which charges gas according to $\gascostforpageaccess$ and inserts the page. We define $\codepagecharge$, which charges in order for a sequence of pages, each inserted at the base fault cost $\Cpvmgaspagefault$, halting if the gas runs out:
+The gas model assumes \textsc{pvm} instructions are compiled to native instructions, which are fetched during execution via the machine's paging hardware. Each fetch of a native code page not resident in the working-set is a page fault which charges gas according to $\gascostforpageaccess$ (see equation \ref{eq:gascostforpageaccess}) and inserts the page. We define $\codepagecharge$, which charges in order for a sequence of code pages, each inserted at the base fault cost $\Cpvmgaspagefault$, halting if the gas runs out:
 \begin{equation}
   \begin{aligned}
     \codepagecharge(g, w, \mathbf{p}) &= \begin{cases}
@@ -187,7 +187,7 @@ Before execution, the instruction must be fetched from memory. This is done lazi
   \end{aligned}
 \end{equation}
 
-On the very first step of execution, and every time execution enters a new basic block or jumps back to the beginning of the current one, the block's gas-metering preamble is fetched (charging for its code pages) and then the gas cost of the entire block~(\ref{eq:gascostforblock}) is charged in advance; no instruction may execute until both are paid. If at any point there is insufficient gas, execution is interrupted and the gas counter is left at its last value. Formally:
+On the very first step of execution, and every time execution enters a new basic block or jumps back to the beginning of the current one, the block's gas-metering preamble is fetched and executed. Gas is charged for fetching the preamble code pages (given by $\preamblepages$, defined later in this appendix in equation \ref{eq:preamblepages}), and execution of the preamble charges, in advance, the gas cost of the entire block~(see equation \ref{eq:gascostforblock}). No \textsc{pvm} instruction may execute until both charges are made. If at any point there is insufficient gas, execution is interrupted and the gas counter is left at its last value. Formally:
 \begin{equation}
   \begin{aligned}
     \tup{\varepsilon^\phase¬gas, \gascounter^\phase¬gas, \workingset^\phase¬gas} &= \begin{cases}
@@ -201,12 +201,12 @@ On the very first step of execution, and every time execution enters a new basic
   \end{aligned}
 \end{equation}
 
-The instruction's own native code is then fetched, charging for the code pages it spans:
+The instruction's own native code is then fetched, charging for the code pages it spans. The code pages are given by $\pageforinstruction$, defined later in this appendix in equation \ref{eq:pageforinstruction}.
 \begin{equation}
   \tup{\varepsilon^\phase¬fetch, \gascounter^\phase¬fetch, \workingset^\phase¬fetch} = \codepagecharge(\gascounter^\phase¬gas, \workingset^\phase¬gas, \pageforinstruction(\mathbf{c}, \mathbf{k}, \imath))
 \end{equation}
 
-An instruction that resolves its target through the jump-table reads an 8-octet entry from a native jump-table, laid out at a stride of eight octets per dynamic address unit; the entry for a target address $a$ thus lies on the jump-table page $\jumppage{\floor{\nicefrac{8a}{\Cpvmpagesize}}}$, where jump-table pages $\set{\jumptag} \times \N$ form their own class of page index, distinct from the \textsc{ram} and code pages of the same machine. This read is charged like any other access. No charge arises for the special halt address (its vector is permanently resident), nor where the entry's page lies wholly beyond the table (execution panics without any table access being made), however a charge \emph{is} made for a misaligned, zero or invalid-entry target whose page is within reach of the table, as the entry must be read before it can be found invalid. Formally:
+An instruction that resolves its target through the jump-table reads an 8-octet entry from the \emph{native} jump-table, which is laid out with a stride of $8 \cdot \Cpvmdynaddralign$ octets per entry. The entry for a target address $a$ thus lies on the (native) jump-table page $\jumppage{\floor{\nicefrac{8a}{\Cpvmpagesize}}}$. Jump-table pages $\set{\jumptag} \times \N$ form their own class of page index, distinct from the \textsc{ram} and code pages of the same machine. This jump-table read is charged like any other access. No charge arises for the special halt address (its vector is considered permanently resident), nor where the entry's page lies wholly beyond the table (execution panics without any table access being made). A charge \emph{is} made if the target address is zero or misaligned, or if the jump-table entry is invalid. Formally:
 \begin{equation}
   \begin{aligned}
     \tup{\varepsilon^\phase¬djump, \gascounter^\phase¬djump, \workingset^\phase¬djump} &= \codepagecharge(\gascounter^\phase¬fetch, \workingset^\phase¬fetch, \mathbf{p}^\phase¬djump) \\
@@ -216,7 +216,7 @@ An instruction that resolves its target through the jump-table reads an 8-octet 
     \end{cases}
   \end{aligned}
 \end{equation}
-where $a^\circ \in \optional{\N}$ is the dynamic-jump target address which the instruction at $\imath$ resolves through the jump-table --- that is, the argument passed to its $\token{djump}$ (section \ref{sec:instructiontables}) --- or $\none$ where the instruction performs no dynamic jump.
+Here, $a^\circ \in \optional{\N}$ is the dynamic-jump target address which the instruction at $\imath$ resolves through the jump-table --- that is, the argument passed to its $\token{djump}$ in section \ref{sec:instructiontables} --- or $\none$ where the instruction performs no dynamic jump.
 
 During the course of executing instructions \textsc{ram} may be accessed. When an index of \textsc{ram} below $2^{16}$ is required, the machine always panics immediately without further changes to its state regardless of the apparent (in)accessibility of the value. Otherwise, should the given index of \textsc{ram} not be accessible then machine state remains unchanged and the exit reason is a fault with the lowest inaccessible \emph{page address} to be read. Similarly, where \textsc{ram} must be mutated and yet mutable access is not possible, then machine state is unchanged, and the exit reason is a fault with the lowest page address to be written which is inaccessible.
 
