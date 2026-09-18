@@ -173,15 +173,16 @@ We refer to the time-proportional computational steps as \emph{gas} (much like i
 It is left as a rather important implementation detail to ensure that the amount of time taken while computing the function $\Psi(\dots, \gascounter, \dots)$ has a maximum computation time approximately proportional to the value of $\gascounter$ regardless of other operands.
 
 The \textsc{pvm} is a very simple \textsc{risc} \emph{register machine} and as such has 13 registers, each of which is a 64-bit quantity, denoted as $\pvmreg$, a natural less than $2^{64}$.\footnote{This is three fewer than \textsc{risc-v}'s 16, however the amount that program code output by compilers uses is 13 since two are reserved for operating system use and the third is fixed as zero} Within the context of the \textsc{pvm}, $\registers \in \sequence[13]{\pvmreg}$ is typically used to denote the registers.
-\begin{align}\label{eq:pvmmemory}
-  \ram &\equiv \tuple{
-    \isa{\ram¬value}{\blob[2^{32}]},
-    \isa{\ram¬access}{\sequence[p]{\set{\text{W}, \text{R}, \none}}},
-    \isa{\ram¬frames}{\sequence[p]{\set{\frame¬present, \frame¬missing¬zero, \frame¬missing¬copy}}}
-  }\\
-  p &= \frac{2^{32}}{\Cpvmpagesize} \notag\\
-  \Cpvmpagesize &= 2^{12}
-\end{align}
+\begin{gather}\label{eq:pvmmemory}
+  \ram \equiv \tuple{
+    \begin{aligned}
+      &\isa{\ram¬value}{\blob[2^{32}]},
+      \isa{\ram¬access}{\sequence[p]{\set{\text{W}, \text{R}, \none}}}, \\
+      &\isa{\ram¬frames}{\sequence[p]{\set{\frame¬present, \frame¬missing¬zero, \frame¬missing¬copy}}}
+    \end{aligned}
+  }\,,\ p = \frac{2^{32}}{\Cpvmpagesize}\\
+  \Cpvmpagesize = 2^{12}
+\end{gather}
 
 The \textsc{pvm} assumes a simple pageable \textsc{ram} of 32-bit addressable octets situated in pages of $\Cpvmpagesize = 4096$ octets where each page may be either immutable, mutable or inaccessible. The \textsc{ram} definition $\ram$ includes three components: a value $\ram¬value$, access $\ram¬access$, and frames $\ram¬frames$. If the component is unspecified while being subscripted then the value component may be assumed. The frames component records, per page, whether a physical frame has been allocated for it ($\frame¬present$) by the working-set gas model of appendix \ref{sec:workingsetchanges}, or, if not, whether first provisioning one would require copying the page from the program's initial image ($\frame¬missing¬copy$) or merely zeroing it ($\frame¬missing¬zero$). It influences gas costs only and has no effect on the semantics of reads and writes. Within the context of the virtual machine, $\memory \in \ram$ is typically used to denote \textsc{ram}.
 \begin{align}
