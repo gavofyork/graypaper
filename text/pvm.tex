@@ -46,10 +46,12 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
       \tup{\panic, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\otherwise
     \end{cases}
   }\\
+  \label{eq:deblob}
   \deblob&\colon\abracegrouptwo{
     (\blob, \pvmreg) &\to \tuple{\blob, \bitstring, \sequence{\pvmreg}} \cup \error \\
     (\pvm¬blob, \imath) &\mapsto \begin{cases}
-      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \pvm¬blob = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, 0) \land \mathfrak{v}_{\text{inst}}(\mathbf{c}, \mathbf{k}, \imath) \\
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c} \in \blob[:\Cmaxcodesize], \mathbf{k} \in \bitstring, \mathbf{j} \in \sequence[:\Cmaxjumptableentries]{\pvmreg} :\\
+      &\quad \pvm¬blob = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, 0) \land \mathfrak{v}_{\text{inst}}(\mathbf{c}, \mathbf{k}, \imath) \\
       \error &\otherwise
     \end{cases} \\
   }{
