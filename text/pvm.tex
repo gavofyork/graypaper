@@ -46,10 +46,12 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
       \tup{\panic, \imath, \gascounter, \gaschargedflag, \registers, \mem} &\otherwise
     \end{cases}
   }\\
+  \label{eq:deblob}
   \deblob&\colon\abracegrouptwo{
     (\blob, \pvmreg) &\to \tuple{\blob, \bitstring, \sequence{\pvmreg}} \cup \error \\
     (\pvm¬blob, \imath) &\mapsto \begin{cases}
-      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c}, \mathbf{k}, \mathbf{j} : \pvm¬blob = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, 0) \land \mathfrak{v}_{\text{inst}}(\mathbf{c}, \mathbf{k}, \imath) \\
+      \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} &\when \exists!\,\mathbf{c} \in \blob[:\Cmaxcodesize], \mathbf{k} \in \bitstring, \mathbf{j} \in \sequence[:\Cmaxjumptableentries]{\pvmreg} :\\
+      &\quad \pvm¬blob = \encode{\len{\mathbf{j}}} \concat \encode[1]{z} \concat \encode{\len{\mathbf{c}}} \concat \encode[z]{\mathbf{j}} \concat \encode{\mathbf{c}} \concat \encode{\mathbf{k}}\,,\ \mathfrak{v}_{\text{blob}}(\mathbf{c}, \mathbf{k}, 0) \land \mathfrak{v}_{\text{inst}}(\mathbf{c}, \mathbf{k}, \imath) \\
       \error &\otherwise
     \end{cases} \\
   }{
@@ -989,7 +991,7 @@ Similarly, a comparison between two tuples of the set $\execunits¬ty$ is true i
 \end{aligned}
 \end{equation}
 
-We define the function $\inst¬srcregs(\mathbf{c}, \mathbf{k}, \imath)$ which returns the set of source registers read by the instruction at $\imath$, and the function $\inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath)$ which returns the set of destination registers written by the instruction at $\imath$, as described by the equations in \ref{sec:instructiontables}. This is regardless of whether those registers would actually have been modified by that instruction when executed at runtime. \token{ecalli} is assumed to neither read nor write to any registers in this model.
+We define the function $\inst¬srcregs(\mathbf{c}, \mathbf{k}, \imath)$ which returns the set of source registers read by the instruction at $\imath$, and the function $\inst¬dstregs(\mathbf{c}, \mathbf{k}, \imath)$ which returns the set of destination registers written by the instruction at $\imath$, as described by the equations in \ref{sec:instructiontables}. This is regardless of whether those registers would actually have been modified by that instruction when executed at runtime. \token{ecalli} is assumed to neither read nor write to any registers in this model. The destination register of the \token{cmov\_iz}, \token{cmov\_nz}, \token{cmov\_iz\_imm} and \token{cmov\_nz\_imm} instructions is also counted as a source register.
 
 We also define the function $\cost¬cycles(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of cycles the instruction at $\imath$ needs to finish execution, $\cost¬decodeslots(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of decoding slots necessary to decode it, and $\cost¬execunits(\mathbf{c}, \mathbf{k}, \imath)$ which returns the number of virtual CPU execution units required to start its execution. These simply return the values as specified in \ref{sec:gascosttables}.
 
