@@ -150,20 +150,18 @@ The assurances extrinsic is a sequence of \emph{assurance} values, at most one p
 \begin{align}
   \label{eq:xtassurances}
   \xtassurances \in \sequence{\tuple{
-    \isa{\xa¬anchor}{\hash},\,
     \isa{\xa¬availabilities}{\bitstring[\Ccorecount]},\,
     \isa{\xa¬assurer}{\Nmax{\len{\activeset}}},\,
     \isa{\xa¬signature}{\edsignaturebase}
   }}
 \end{align}
 
-The assurances must all be anchored on the parent and ordered by validator index:
+The assurances must be ordered by validator index:
 \begin{align}
-  \forall a &\in \xtassurances : a_\xa¬anchor = \H_\¬parent \\
   \forall i &\in \set{ 1 \dots \len{\xtassurances} } : \xtassurances\subb{i - 1}_\xa¬assurer < \xtassurances\subb{i}_\xa¬assurer
 \end{align}
 
-The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\H_\¬parent$ and the aforementioned bitstring:
+The assurances must be anchored to the parent block header hash $\H_\¬parent$. The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\H_\¬parent$ and the aforementioned bitstring:
 \begin{align}
   \label{eq:assurancesig}
   &\forall a \in \xtassurances : a_\xa¬signature \in \edsignature{\activeset\subb{a_\xa¬assurer}_\vk¬ed}{\Xavailable \concat \blake{\encode{\H_\¬parent, a_\xa¬availabilities}}} \\
