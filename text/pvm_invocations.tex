@@ -345,8 +345,6 @@ We define $\wscharge¬extwrite$, which writes $l$ octets of $\mathbf{v}$ from of
   \end{aligned}
 \end{equation}
 
-In the descriptions that follow, the working-set argument and result are elided except where a function threads them explicitly.
-
 \subsubsection{General Functions}\label{sec:generalfunctions}
 
 These make no assumptions about the context $\context$; it is always passed through untouched, \ie $\context' = \context$.
@@ -360,7 +358,7 @@ These make no assumptions about the context $\context$; it is always passed thro
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
-  $\Omega_G(\gascounter, \registers, \memory, \context)$ \\
+  $\Omega_G(\gascounter, \registers, \memory, \workingset, \context)$ \\
   \texttt{gas} = 0} &
   $\begin{aligned}
     \registers'_7 &\equiv \gascounter^* \\
@@ -368,7 +366,7 @@ These make no assumptions about the context $\context$; it is always passed thro
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_\Gemini(\gascounter, \registers, \memory, \context, \jam¬blob)$ \\
+  $\Omega_\Gemini(\gascounter, \registers, \memory, \workingset, \context, \jam¬blob)$ \\
   \texttt{grow\_heap} = 1} &
   $\begin{aligned}
     % This hostcall can be used to expand the RW data region of memory, or to query its size.
@@ -400,7 +398,7 @@ These make no assumptions about the context $\context$; it is always passed thro
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_Y(\gascounter, \registers, \memory, \context, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{i})$ \\
+  $\Omega_Y(\gascounter, \registers, \memory, \workingset, \context, p, n, \mathbf{r}, i, \overline{\mathbf{i}}, \overline{\mathbf{x}}, \mathbf{i})$ \\
   \texttt{fetch} = 2} &
   $\begin{aligned}
     \using \mathbf{v} &= \begin{cases}
@@ -483,7 +481,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
-  $\Omega_H(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}, s, \mathbf{d}, t)$ \\
+  $\Omega_H(\gascounter, \registers, \memory, \workingset, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}, s, \mathbf{d}, t)$ \\
   \texttt{historical\_lookup} = 7} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -505,7 +503,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_E(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}, \segoff)$ \\
+  $\Omega_E(\gascounter, \registers, \memory, \workingset, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}, \segoff)$ \\
   \texttt{export} = 8} &
   $\begin{aligned}
     \using p &= \registers_7 \\
@@ -523,7 +521,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_\Gamma(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}, s, \mathbf{d}, t)$ \\
+  $\Omega_\Gamma(\gascounter, \registers, \memory, \workingset, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}, s, \mathbf{d}, t)$ \\
   \texttt{compile} = 9} &
   $\begin{aligned}
     \using \sq{m, p, l, f, i} &= \registers\subrange{7}{5} \\
@@ -555,7 +553,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_M(\gascounter, \registers, \memory, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}})$ \\
+  $\Omega_M(\gascounter, \registers, \memory, \workingset, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}})$ \\
   \texttt{machine} = 10} &
   $\begin{aligned}
     \using \sq{h, i} &= \registers\subrange{7}{2} \\
@@ -719,7 +717,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \endhead
   \makecell*[l]{
-  $\Omega_L(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_L(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{lookup} = 3} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -741,7 +739,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_R(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_R(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{read} = 4} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -763,7 +761,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_W(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_W(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{write} = 5} &
   $\begin{aligned}
     \using d &= \begin{cases}
@@ -799,7 +797,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_I(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_I(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{info} = 6} &
   $\begin{aligned}
     \using \mathbf{a} &= \begin{cases}
@@ -828,7 +826,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$ \\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_B(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_B(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{bless} = 16} &
   $\begin{aligned}
     \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
@@ -850,7 +848,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_A(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_A(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{assign} = 17} &
   $\begin{aligned}
     \using \sq{c, o, a} &= \registers\subrange{7}{3} \\
@@ -869,7 +867,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_D(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_D(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{designate} = 18} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers\subrange{7}{2} \\
@@ -886,7 +884,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_C(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_C(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{checkpoint} = 19} &
   $\begin{aligned}
     \imY' &\equiv \imX \\
@@ -895,7 +893,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_N(\gascounter, \registers, \memory, \imXY, t)$ \\
+  $\Omega_N(\gascounter, \registers, \memory, \workingset, \imXY, t)$ \\
   \texttt{new} = 20} &
   $\begin{aligned}
     \using s &= \begin{cases}
@@ -953,7 +951,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_V(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_V(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{supervisor} = 29} &
   $\begin{aligned}
     \using d &= \begin{cases}
@@ -978,7 +976,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_U(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_U(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{upgrade} = 21} &
   $\begin{aligned}
     \using d &= \begin{cases}
@@ -1006,7 +1004,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_T(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_T(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{transfer} = 22} &
   $\begin{aligned}
     \using \dx¬source &= \begin{cases}
@@ -1064,7 +1062,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_J(\gascounter, \registers, \memory, \imXY, t)$ \\
+  $\Omega_J(\gascounter, \registers, \memory, \workingset, \imXY, t)$ \\
   \texttt{eject} = 23} &
   $\begin{aligned}
     \using d &= \registers_7 \\
@@ -1083,7 +1081,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_Q(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_Q(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{query} = 24} &
   $\begin{aligned}
     \using \mathbf{s} &= \begin{cases}
@@ -1110,7 +1108,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_S(\gascounter, \registers, \memory, \imXY, t)$ \\
+  $\Omega_S(\gascounter, \registers, \memory, \workingset, \imXY, t)$ \\
   \texttt{solicit} = 25} &
   $\begin{aligned}
     \using d &= \begin{cases}
@@ -1141,7 +1139,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_F(\gascounter, \registers, \memory, \imXY, t)$ \\
+  $\Omega_F(\gascounter, \registers, \memory, \workingset, \imXY, t)$ \\
   \texttt{forget} = 26} &
   $\begin{aligned}
     \using d &= \begin{cases}
@@ -1178,7 +1176,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_\Taurus(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_\Taurus(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{yield} = 27} &
   $\begin{aligned}
     \using o &= \registers_7 \\
@@ -1194,7 +1192,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_\Aries(\gascounter, \registers, \memory, \imXY)$ \\
+  $\Omega_\Aries(\gascounter, \registers, \memory, \workingset, \imXY)$ \\
   \texttt{provide} = 28} &
   $\begin{aligned}
     \using \sq{o, z} &= \registers_{8, 9} \\
