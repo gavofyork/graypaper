@@ -296,11 +296,6 @@ Memory-sized gas for host-calls is given by a rate $L$ (gas per 1024 octets) and
 \end{equation}
 With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call tables below use this formula for all memory-sized terms.
 
-When transitioning \textsc{pvm} state for a host-call, a number of conditions typically hold true and host functions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, and \textsc{ram}, registers, working-set and context are unchanged. Formally:
-\begin{equation}
-  \execst' \equiv \continue,\quad \registers' \equiv \registers,\quad \memory' \equiv \memory,\quad \workingset' \equiv \workingset,\quad \context' \equiv \context\qquad\text{except as indicated below}
-\end{equation}
-
 Host-call inspections and mutations of a machine's \textsc{ram} may carry a memory-hierarchy cost beyond the base and linear terms of the tables below, depending on what lies at the other end of the transfer. Such costs are terms of the host-call's $g$ and so are subject to the gas rule above. Where that end is itself a \textsc{pvm} machine the access is charged through the working-set as an ordinary \textsc{pvm} memory access would be. We define $\wscharge¬internal$, which computes this charge for a sequence $\mathbf{a}$ of octet accesses, each a pair of machine ($\none$ for the invoking machine) and address, and returns it together with the posterior working-set, \textsc{ram} and inner instances, in which the frame of each page touched is present:
 \begin{equation}
   \begin{aligned}
@@ -343,6 +338,11 @@ We define $\wscharge¬extwrite$, which writes $l$ octets of $\mathbf{v}$ from of
     \end{cases} \\
     \where \memory^\uparrow &= \memory \exc (\memory^\uparrow_\ram¬frames)\subrange{\floor{\nicefrac{o}{\Cpvmpagesize}}}{\len{\spannedpages(o, l)}} = \sq{\frame¬present, \frame¬present, \dots}
   \end{aligned}
+\end{equation}
+
+When transitioning \textsc{pvm} state for a host-call, a number of conditions typically hold true and host functions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, and \textsc{ram}, registers, working-set and context are unchanged. Formally:
+\begin{equation}
+  \execst' \equiv \continue,\quad \registers' \equiv \registers,\quad \memory' \equiv \memory,\quad \workingset' \equiv \workingset,\quad \context' \equiv \context\qquad\text{except as indicated below}
 \end{equation}
 
 \subsubsection{General Functions}\label{sec:generalfunctions}
