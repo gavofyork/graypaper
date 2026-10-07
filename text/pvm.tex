@@ -1204,7 +1204,7 @@ The state transition function $\gas¬sim'''$ which simulates the rest of the vir
 In addition to the static gas cost of each basic block as calculated by $\gascostforblock$, gas is charged dynamically whenever a memory page outside of the current working-set is accessed. Such an access implicitly adds the accessed page to the working-set. The working-set is a first-in first-out buffer of fixed length, and each insertion drops the oldest entry. A dropped page ceases to be resident, and re-accessing it later incurs a further working-set charge. This affects only gas, never the contents or accessibility of the page, so (given enough gas) the working-set has no effect on execution semantics. The function $\gascostforpageaccess$ determines the working-set change, if any, required to access a page $p \in \pageid$ whose insertion cost is $c$, and the corresponding gas cost.
 \begin{equation}\label{eq:gascostforpageaccess}
   \gascostforpageaccess\colon \abracegroup{
-    \tuple{\sequence{\optional{\pageid}}, \pageid, \N} &\to \tuple{\gas, \sequence{\optional{\pageid}}} \\
+    \tuple{\sequence{\optional{\pageid}}, \pageid, \gas} &\to \tuple{\gas, \sequence{\optional{\pageid}}} \\
     \tup{\workingset, p, c} &\mapsto \begin{cases}
       (0, \workingset) &\when p \in \workingset \\
       (c, \workingset\sub{1\dots} \append p) &\otherwise
