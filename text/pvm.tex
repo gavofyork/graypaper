@@ -870,37 +870,40 @@ With conditions:
 \end{align}
 Thus, if the above conditions cannot be satisfied with unique values, then the result is $\none$, otherwise it is a tuple of $\pvm¬blob$ as above and $\mem$, $\registers$ such that:
 \begin{equation}\label{eq:memlayout}
-  \forall i \in \Nbits{32} : ((\mem_\ram¬value)\sub{i}, (\mem_\ram¬access)_{\floor{\nicefrac{i}{\Cpvmpagesize}}}) = \bracegroup{\begin{alignedat}{5}
-    &\tup{\is{\ram¬value}{\mathbf{o}_{i - \Cpvminitzonesize}},\,\is{\ram¬access}{R}} &&\ \when
-        \Cpvminitzonesize
-            &\ \leq i < \ &&
-                \Cpvminitzonesize + \len{\mathbf{o}}\\
-    &\tup{0, R} &&\ \when
-        \Cpvminitzonesize + \len{\mathbf{o}}
-            &\ \leq i < \ &&
-                \Cpvminitzonesize + \rnp{\len{\mathbf{o}}} \\
-    &(\mathbf{w}_{i - (2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}})}, W) &&\ \when
-        2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}}
-            &\ \leq i < \ &&
-                2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}} + \len{\mathbf{w}}\\
-    &\tup{0, W} &&\ \when
-        2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}} + \len{\mathbf{w}}
-            &\ \leq i < \ &&
-                2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}} + \rnp{\len{\mathbf{w}}} + z\Cpvmpagesize\\
-    &\tup{0, W} &&\ \when
-        2^{32} - 2\Cpvminitzonesize - \Cpvminitinputsize - \rnp{s}
-            &\ \leq i < \ &&
-                2^{32} - 2\Cpvminitzonesize - \Cpvminitinputsize\\
-    &(\mathbf{a}_{i - (2^{32} - \Cpvminitzonesize - \Cpvminitinputsize)}, R) &&\ \when
-        2^{32} - \Cpvminitzonesize - \Cpvminitinputsize
-            &\ \leq i < \ &&
-                2^{32} - \Cpvminitzonesize - \Cpvminitinputsize + \len{\mathbf{a}}\\
-    &\tup{0, R} &&\ \when
-        2^{32} - \Cpvminitzonesize - \Cpvminitinputsize + \len{\mathbf{a}}
-            &\ \leq i < \ &&
-                2^{32} - \Cpvminitzonesize - \Cpvminitinputsize + \rnp{\len{\mathbf{a}}}\\
-    &\tup{0, \none} &&\otherwise&&&
-  \end{alignedat}}\\
+  \begin{aligned}
+    \forall i \in \Nbits{32} &: \\
+    ((\mem_\ram¬value)\sub{i}, (\mem_\ram¬access)_{\floor{\nicefrac{i}{\Cpvmpagesize}}}, (\mem_\ram¬frames)_{\floor{\nicefrac{i}{\Cpvmpagesize}}}) &= \bracegroup{\begin{alignedat}{5}
+      &\tup{\is{\ram¬value}{\mathbf{o}_{i - \Cpvminitzonesize}},\,\is{\ram¬access}{R}, \frame¬missing¬copy} &&\ \when
+          \Cpvminitzonesize
+              &\ \leq i < \ &&
+                  \Cpvminitzonesize + \len{\mathbf{o}}\\
+      &\tup{0, R, \frame¬missing¬zero} &&\ \when
+          \Cpvminitzonesize + \len{\mathbf{o}}
+              &\ \leq i < \ &&
+                  \Cpvminitzonesize + \rnp{\len{\mathbf{o}}} \\
+      &(\mathbf{w}_{i - (2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}})}, W, \frame¬missing¬copy) &&\ \when
+          2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}}
+              &\ \leq i < \ &&
+                  2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}} + \len{\mathbf{w}}\\
+      &\tup{0, W, \frame¬missing¬zero} &&\ \when
+          2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}} + \len{\mathbf{w}}
+              &\ \leq i < \ &&
+                  2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}} + \rnp{\len{\mathbf{w}}} + z\Cpvmpagesize\\
+      &\tup{0, W, \frame¬missing¬zero} &&\ \when
+          2^{32} - 2\Cpvminitzonesize - \Cpvminitinputsize - \rnp{s}
+              &\ \leq i < \ &&
+                  2^{32} - 2\Cpvminitzonesize - \Cpvminitinputsize\\
+      &(\mathbf{a}_{i - (2^{32} - \Cpvminitzonesize - \Cpvminitinputsize)}, R, \frame¬missing¬copy) &&\ \when
+          2^{32} - \Cpvminitzonesize - \Cpvminitinputsize
+              &\ \leq i < \ &&
+                  2^{32} - \Cpvminitzonesize - \Cpvminitinputsize + \len{\mathbf{a}}\\
+      &\tup{0, R, \frame¬missing¬zero} &&\ \when
+          2^{32} - \Cpvminitzonesize - \Cpvminitinputsize + \len{\mathbf{a}}
+              &\ \leq i < \ &&
+                  2^{32} - \Cpvminitzonesize - \Cpvminitinputsize + \rnp{\len{\mathbf{a}}}\\
+      &\tup{0, \none, \frame¬missing¬zero} &&\otherwise&&&
+    \end{alignedat}}\\
+  \end{aligned}
 \end{equation}
 \begin{equation}\label{eq:registers}
   \forall i \in \Nmax{13} : \registers\sub{i} = \begin{cases}
@@ -912,13 +915,7 @@ Thus, if the above conditions cannot be satisfied with unique values, then the r
     \end{cases}
 \end{equation}
 
-No page begins with an allocated frame. The cost of provisioning each page's frame falls on whichever access first touches it (see appendix \ref{sec:workingsetchanges}), and depends on whether that page's initial content must be copied from the program image or is merely zeroed:
-\begin{equation}
-  \forall j \in \Nmax{\nicefrac{2^{32}}{\Cpvmpagesize}} : \mem_\ram¬frames\subb{j} = \begin{cases}
-    \frame¬missing¬copy &\when \Nrange{j\Cpvmpagesize}{\Cpvmpagesize} \cap \mathcal{I} \ne \emptyset \\
-    \frame¬missing¬zero &\otherwise
-  \end{cases}\ ,\quad \mathcal{I} = \Nrange{\Cpvminitzonesize}{\len{\mathbf{o}}} \cup \Nrange{2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}}}{\len{\mathbf{w}}} \cup \Nrange{2^{32} - \Cpvminitzonesize - \Cpvminitinputsize}{\len{\mathbf{a}}}
-\end{equation}
+Note that no page begins with an allocated frame. The cost of provisioning each page's frame falls on whichever access first touches it (see appendix \ref{sec:workingsetchanges}), and depends on whether that page's initial content must be copied from the program image ($\frame¬missing¬copy$) or is merely zeroed ($\frame¬missing¬zero$).
 
 \subsection{Argument Invocation Definition}
 
