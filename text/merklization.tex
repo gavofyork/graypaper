@@ -59,13 +59,21 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(11) &\mapsto \encode[4]{\thetime} \;, \\
     &&C(12) &\mapsto \encode{
       \encode[4]{\manager, \assigners, \delegator, \registrar},
-      \alwaysaccers
+      \var{\sq{\orderby{s}{\build{
+        \tup{\encode[4]{s}, \encode[8]{\alwaysaccers\subb{s}}}
+      }{
+        s \in \keys{\alwaysaccers}
+      }}}}
     } \;, \\
     &&C(13) &\mapsto \encode{
       \var{\valstatsaccumulator},
       \var{\valstatsprevious},
       \corestats,
-      \servicestats
+      \var{\sq{\orderby{s}{\build{
+        \tup{\encode[4]{s}, \encode{\servicestats\subb{s}}}
+      }{
+        s \in \keys{\servicestats}
+      }}}}
     } \;, \\
     &&C(14) &\mapsto \encode{
       \sq{\build{
