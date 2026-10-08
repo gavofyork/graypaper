@@ -59,13 +59,21 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&C(11) &\mapsto \encode[4]{\thetime} \;, \\
     &&C(12) &\mapsto \encode{
       \encode[4]{\manager, \assigners, \delegator, \registrar},
-      \alwaysaccers
+      \var{\sq{\orderby{s}{\build{
+        \tup{\encode[4]{s}, \encode[8]{\alwaysaccers\subb{s}}}
+      }{
+        s \in \keys{\alwaysaccers}
+      }}}}
     } \;, \\
     &&C(13) &\mapsto \encode{
-      \var{\sq{\build{\encode[4]{\mathbf{v}}}{\mathbf{v} \orderedin \valstatsaccumulator}}},
-      \var{\sq{\build{\encode[4]{\mathbf{v}}}{\mathbf{v} \orderedin \valstatsprevious}}},
+      \var{\valstatsaccumulator},
+      \var{\valstatsprevious},
       \corestats,
-      \servicestats
+      \var{\sq{\orderby{s}{\build{
+        \tup{\encode[4]{s}, \encode{\servicestats\subb{s}}}
+      }{
+        s \in \keys{\servicestats}
+      }}}}
     } \;, \\
     &&C(14) &\mapsto \encode{
       \sq{\build{
@@ -115,8 +123,6 @@ The state serialization is then defined as the dictionary built from the amalgam
 \end{equation}
 
 Note that most rows describe a single mapping between a key derived from a natural and the serialization of a state component. However, the final four rows each define sets of mappings since these items act over all service accounts and in the case of the final three rows, the keys of a nested dictionary with the service.
-
-Also note that all non-discriminator numeric serialization in state is done in fixed-length according to the size of the term.
 
 Finally, be aware that \Jam does not allow service storage keys to be directly inspected or enumerated. Thus the key values themselves are not required to be known by implementations, and only the Merklisation-ready serialisation is important, which is a fixed-size hash (alongside the service index and item marker). Implementations are free to use this fact in order to avoid storing the keys themselves.
 
