@@ -333,6 +333,18 @@ We require that the gas allotted for accumulation of each work-digest in each wo
     \forall \wdX \in \wrX_\wr¬digests: \wdX_\wd¬gaslimit \ge \accounts\subb{\wdX_\wd¬serviceindex}_\sa¬minaccgas
 \end{equation}
 
+The work-package itself is not available for checking, so we require that the activity given in the work-digests of each work-report is within the limits of its work-package (see equations \ref{eq:limitworkpackagebandwidth}, \ref{eq:checkextractsize} and \ref{eq:wplimits}). Of the items which the bundle size limit $\Cmaxbundlesize$ covers, the work-digests give only the imports and the extrinsics:
+\begin{equation}
+  \label{eq:reportrefineload}
+  \forall \wrX \in \incomingreports:\ \begin{aligned}[t]
+    &\sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gasused) \le \Cpackagerefgas \ \wedge
+    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬importcount) \le \Cmaxpackageimports \ \wedge \\
+    &\sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬exportcount) \le \Cmaxpackageexports \ \wedge
+    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬xtcount) \le \Cmaxpackagexts \ \wedge \\
+    &\sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬xtsize + \wdX_\wd¬importcount \cdot \Csegmentfootprint) \le \Cmaxbundlesize
+  \end{aligned}
+\end{equation}
+
 
 
 
