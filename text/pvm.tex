@@ -41,7 +41,7 @@
 \newcommand*{\datapage}[1]{{\tup{\datatag, #1}}}
 \newcommand*{\codepage}[1]{{\tup{\codetag, #1}}}
 \newcommand*{\jumppage}[1]{{\tup{\jumptag, #1}}}
-\newcommand*{\pageforinstruction}{I}
+\newcommand*{\pagesforinstruction}{I}
 \newcommand*{\preamblepages}{Q}
 \newcommand*{\codeoffset}{O}
 \newcommand*{\codepages}{S}
@@ -201,9 +201,9 @@ On the very first step of execution, and every time execution enters a new basic
   \end{aligned}
 \end{equation}
 
-The instruction's own native code is then fetched, charging for the code pages it spans. The code pages are given by $\pageforinstruction$, defined later in this appendix in equation \ref{eq:pageforinstruction}.
+The instruction's own native code is then fetched, charging for the code pages it spans. The code pages are given by $\pagesforinstruction$, defined later in this appendix in equation \ref{eq:pagesforinstruction}.
 \begin{equation}
-  \tup{\varepsilon^\phase¬fetch, \gascounter^\phase¬fetch, \workingset^\phase¬fetch} = \codepagecharge(\gascounter^\phase¬gas, \workingset^\phase¬gas, \pageforinstruction(\mathbf{c}, \mathbf{k}, \imath))
+  \tup{\varepsilon^\phase¬fetch, \gascounter^\phase¬fetch, \workingset^\phase¬fetch} = \codepagecharge(\gascounter^\phase¬gas, \workingset^\phase¬gas, \pagesforinstruction(\mathbf{c}, \mathbf{k}, \imath))
 \end{equation}
 
 An instruction that resolves its target through the jump-table reads an 8-octet entry from the \emph{native} jump-table, which is laid out with a stride of $8 \cdot \Cpvmdynaddralign$ octets per entry. The entry for a target address $a$ thus lies on the (native) jump-table page $\jumppage{\floor{\nicefrac{8a}{\Cpvmpagesize}}}$. Jump-table pages $\set{\jumptag} \times \N$ form their own class of page index, distinct from the \textsc{ram} and code pages of the same machine. This jump-table read is charged like any other access. No charge arises for the special halt address (its vector is considered permanently resident), nor where the entry's page lies wholly beyond the table (execution panics without any table access being made). A charge \emph{is} made if the target address is zero or misaligned, or if the jump-table entry is invalid. Formally:
@@ -1248,14 +1248,14 @@ From this, $\codeoffset$ gives the byte offset at which the native code of the i
   }
 \end{equation}
 
-The instruction's own native code occupies the byte range after its block's preamble (if any), and the preamble, where present, the range before it. $\codepages(o, z)$ gives the ascending code pages spanned by the $z$-byte range at $o$, and $\pageforinstruction$ and $\preamblepages$ apply this to the instruction's own range and to its preamble's:
+The instruction's own native code occupies the byte range after its block's preamble (if any), and the preamble, where present, the range before it. $\codepages(o, z)$ gives the ascending code pages spanned by the $z$-byte range at $o$, and $\pagesforinstruction$ and $\preamblepages$ apply this to the instruction's own range and to its preamble's:
 \begin{align}
   \codepages(o, z) &\equiv \begin{cases}
     \sq{} &\when z = 0 \\
     \sq{\build{\codepage{p}}{p \orderedin \N, \floor{\frac{o}{\Cpvmpagesize}} \le p \le \floor{\frac{o + z - 1}{\Cpvmpagesize}}}} &\otherwise
   \end{cases} \\
-  \label{eq:pageforinstruction}
-  \pageforinstruction(\mathbf{c}, \mathbf{k}, \imath) &\equiv \codepages(\codeoffset(\mathbf{c}, \mathbf{k}, \imath) + \bbpreamblesize(\imath),\ \inst¬compiledsize(\mathbf{c}, \mathbf{k}, \imath)) \\
+  \label{eq:pagesforinstruction}
+  \pagesforinstruction(\mathbf{c}, \mathbf{k}, \imath) &\equiv \codepages(\codeoffset(\mathbf{c}, \mathbf{k}, \imath) + \bbpreamblesize(\imath),\ \inst¬compiledsize(\mathbf{c}, \mathbf{k}, \imath)) \\
   \label{eq:preamblepages}
   \preamblepages(\mathbf{c}, \mathbf{k}, \imath) &\equiv \codepages(\codeoffset(\mathbf{c}, \mathbf{k}, \imath),\ \bbpreamblesize(\imath))
 \end{align}
