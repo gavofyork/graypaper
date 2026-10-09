@@ -194,7 +194,7 @@ We define two sets of indices for the \textsc{ram} $\memory$: $\readable{\memory
 
 On contemporary CPUs, memory is accessed via a series of caches, with increasing capacity but also increasing access latency at each level. In order to be able to accurately predict memory access latency in the gas cost model, the size of the \emph{working-set} of memory pages $\workingset \in \sequence{\optional{\pageid}}$ is constrained. The size is chosen at machine creation time from the set $\workingsetsize$, with a smaller working-set, capable of fitting in a lower-level cache, reducing the predicted latency and thus effective gas cost of each memory access. Every change to the working-set, although automatic and thus mostly invisible to the \textsc{pvm} programmer, incurs a significant gas cost. The smaller the working-set, the more likely each memory access is to ``miss'' and require such a change. The working-set size should be carefully chosen to balance these two factors. The working-set covers data, jump-table, and also code pages.
 \begin{equation}\label{eq:workingsetsize}
-    \workingsetsize \equiv \set{\build{n \in \N}{\Cpvmminworkingset \le n \le \Cpvmmaxworkingset}}
+    \workingsetsize \equiv \set{\build{n}{n \in \N, \Cpvmminworkingset \le n \le \Cpvmmaxworkingset}}
 \end{equation}
 
 Invocation of the \textsc{pvm} has an exit-reason as the first item in the resultant tuple. It is either:
