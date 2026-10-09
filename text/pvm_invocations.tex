@@ -296,49 +296,51 @@ Memory-sized gas for host-calls is given by a rate $L$ (gas per 1024 octets) and
 \end{equation}
 With base cost $c$, total gas is $c + \fnmemgas(L, \ell)$. The host-call tables below use this formula for all memory-sized terms.
 
-Host-call inspections and mutations of a machine's \textsc{ram} may carry a memory-hierarchy cost beyond the base and linear terms of the tables below, depending on what lies at the other end of the transfer. Such costs are terms of the host-call's $g$ and so are subject to the gas rule above. Where that end is itself a \textsc{pvm} machine the access is charged through the working-set as an ordinary \textsc{pvm} memory access would be. We define $\wscharge¬internal$, which computes this charge for a sequence $\mathbf{a}$ of octet accesses, each a pair of machine ($\none$ for the invoking machine) and address, and returns it together with the posterior working-set, \textsc{ram} and inner instances, in which the frame of each page touched is present:
+Host-call inspections and mutations of a machine's \textsc{ram} may carry a memory-hierarchy cost beyond the cost given by $\fnmemgas$. Any such costs are included in $g$ and so are subject to the gas rule above.
+
+\newcommand*{\wscharge¬internal}{\Theta}
+\newcommand*{\extwrite}{\Theta^{\downarrow}}
+
+Transfers between the \textsc{ram} of an inner \textsc{pvm} instance and the \textsc{ram} of the top-level instance, in particular via the \texttt{peek} and \texttt{poke} host-calls, are charged through the working-set as ordinary \textsc{pvm} memory accesses would be. We define $\wscharge¬internal$, which computes this charge for a sequence $\mathbf{a}$ of octet accesses, and returns it together with the index of the first invalid access (or $\len{\mathbf{a}}$ if all accesses are valid) and the posterior working-set, \textsc{ram} and inner instances, in which the frame of each page touched is present. Each access in $\mathbf{a}$ is a tuple of a machine ($\none$ for the top-level machine), an octet address, and a boolean indicating whether the access is a read ($\top$) or a write ($\bot$).
 \begin{equation}
   \begin{aligned}
-    \wscharge¬internal(w, \mem, \mathbf{m}, \mathbf{a}) &\equiv \begin{cases}
-      \tup{0, w, \mem, \mathbf{m}} &\when \mathbf{a} = \sq{} \\
-      \tup{g^\delta + g', w'', \mem'', \mathbf{m}''} &\otherwise
+    \wscharge¬internal(\mathbf{w}, \mem, \mathbf{m}, \mathbf{a}) &\equiv \begin{cases}
+      \tup{0, 0, \mathbf{w}, \mem, \mathbf{m}} &\when \mathbf{a} = \sq{} \lor x \not\in \set{\kv{\top}{\readable{\mathbf{u}}}, \kv{\bot}{\writable{\mathbf{u}}}}\subb{r} \\
+      \tup{g^\delta + g', 1 + v, \mathbf{w}'', \mem'', \mathbf{m}''} &\otherwise
     \end{cases} \\
-    \where \tup{m, x} &= \mathbf{a}_0\,,\quad i = \floor{\nicefrac{x}{\Cpvmpagesize}}\,,\quad \mu = \begin{cases} \mem &\when m = \none \\ \mathbf{m}\subb{m}_\pg¬ram &\otherwise \end{cases} \\
-    \also (g^\delta, w') &= \gascostforpageaccess(w, \tup{m, \datapage{i}}, \pagefaultcost(\mu, i)) \\
-    \also \tup{\mem', \mathbf{m}'} &= \begin{cases}
-      \tup{\mem \exc \mem'_\ram¬frames\subb{i} = \frame¬present,\ \mathbf{m}} &\when m = \none \\
-      \tup{\mem,\ \mathbf{m} \exc (\mathbf{m}'\subb{m}_\pg¬ram)_\ram¬frames\subb{i} = \frame¬present} &\otherwise
+    \where \tup{\pid¬machine, x, r} &= \mathbf{a}_0\,,\quad i = \floor{\nicefrac{x}{\Cpvmpagesize}}\,,\quad \mathbf{u} = \begin{cases}
+      \mem &\when \pid¬machine = \none \\
+      \mathbf{m}\subb{\pid¬machine}_\pg¬ram &\otherwise
     \end{cases} \\
-    \also \tup{g', w'', \mem'', \mathbf{m}''} &= \wscharge¬internal(w', \mem', \mathbf{m}', \mathbf{a}\sub{1\dots})
+    \also (g^\delta, \mathbf{w}') &= \gascostforpageaccess(\mathbf{w}, \tup{\pid¬machine, \is{\pid¬index}{\datapage{i}}}, \pagefaultcost(\mathbf{u}, i)) \\
+    \also \tup{\mem', \mathbf{m}'} &= \tup{\mem, \mathbf{m}} \exc \begin{cases}
+      \mem'_\ram¬frames\subb{i} = \frame¬present &\when \pid¬machine = \none \\
+      (\mathbf{m}'\subb{\pid¬machine}_\pg¬ram)_\ram¬frames\subb{i} = \frame¬present &\otherwise
+    \end{cases} \\
+    \also \tup{g', v, \mathbf{w}'', \mem'', \mathbf{m}''} &= \wscharge¬internal(\mathbf{w}', \mem', \mathbf{m}', \mathbf{a}\sub{1\dots})
   \end{aligned}
 \end{equation}
 
-In cases where access exchanges data between the invoking machine's \textsc{ram} and the node's state or context (which lies outside any machine's paged memory and so is never resident in a working-set) the exact mechanism depends on the \emph{direction} of the data transfer.
+Transfers out of the invoking machine's \textsc{ram} to the node's state or context neither provision frames nor alter the working-set, and carry no charge beyond the host-call's $\fnmemgas$ term.
 
-Octets \emph{read out of} a machine's \textsc{ram} neither provision a frame nor alter the working-set, and carry no charge beyond the host-call's $\fnmemgas$ term.
-
-Octets \emph{written into} a machine's \textsc{ram} likewise stay out of the working-set (so a page not already resident faults ordinarily on the machine's next access), however they \emph{do} provision a new frame where none yet exists, paying the allocation-and-fill cost a first-touch fault would, less the base $\Cpvmgaspagefault$ (which is deferred to that eventual fault). Such octets, having bypassed the working-set, are treated as non-resident when the machine reads them back, whether or not their page is resident; this read-back premium is not levied separately but folded into the per-octet cost of each delivering host-call, whose memory rate is accordingly raised by $\Cpvmgasdeliver$ (gas per 1024 octets). The provisioning cost of writing $l$ octets of a value $\mathbf{v}$ into the invoking machine's \textsc{ram} at $o$ is $\wscharge¬extwritegas$, a term of the host-call's $g$. Where the host-call panics or has nothing to write, no octets are written and the cost is zero. Formally:
+Transfers into the invoking machine's \textsc{ram} from the node's state or context likewise bypass the working-set (so a written page not already resident faults ordinarily on the machine's next access), however they \emph{do} provision new frames where none yet exist. The allocate-and-fill cost for a newly provisioned frame is charged as for a normal first-touch fault, less the base $\Cpvmgaspagefault$ (which is deferred to that eventual fault). For convenience we define $\extwrite$, which covers the common behaviour of all such \emph{delivering} host functions. $\extwrite$ writes up to $z$ octets of $\mathbf{v}$ from offset $f$ into the invoking machine's \textsc{ram} at $o$, provisioning the frames of the pages spanned. It provides the gas cost of the provisioning together with the execution status and posterior values of $\registers_7$ and \textsc{ram}.
 \begin{equation}
   \begin{aligned}
-    \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) &\equiv \begin{cases}
-      0 &\when \mathbf{v} \in \set{\error, \none} \vee \Nrange{o}{l} \not\subseteq \writable{\memory} \\
-      \sum_{i \orderedin \mathbf{i}} \left(\pagefaultcost(\memory, i) - \Cpvmgaspagefault\right) &\otherwise
+    \extwrite(\registers, \memory, o, \mathbf{v}, f, z) &\equiv \begin{cases}
+      \tup{0, \panic, \registers_7, \memory} &\when \mathbf{v} = \error \\
+      \tup{0, \continue, \mathtt{NONE}, \memory} &\otherwhen \mathbf{v} = \none \\
+      \tup{0, \continue, \len{\mathbf{v}}, \memory} &\otherwhen f \ge \len{\mathbf{v}} \lor z = 0 \\
+      \tup{0, \panic, \registers_7, \memory} &\otherwhen o \not\in \writable{\memory} \\
+      \tup{\pagefaultcost(\memory, i) - \Cpvmgaspagefault + g', \execst', \registers'_7, \memory''} &\otherwise
     \end{cases} \\
-    \where \mathbf{i} &= \spannedpages(o, l)~(\ref{eq:pagespan})
+    \where i &= \floor{\nicefrac{o}{\Cpvmpagesize}}\,,\quad \memory' = \memory \exc \abracegroup{
+      \memory'\sub{o} &= \mathbf{v}\subb{f} \\
+      \memory'_\ram¬frames\subb{i} &= \frame¬present
+    } \\
+    \also \tup{g', \execst', \registers'_7, \memory''} &= \extwrite(\registers, \memory', o + 1, \mathbf{v}, f + 1, z - 1)
   \end{aligned}
 \end{equation}
-
-We define $\wscharge¬extwrite$, which writes $l$ octets of $\mathbf{v}$ from offset $f$ into the invoking machine's \textsc{ram} at $o$, provisioning the frames of the pages spanned, and yields the return value $\registers_7$ together with the posterior execution state and the resultant \textsc{ram}:
-\begin{equation}
-  \begin{aligned}
-    \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \memory} &\when \mathbf{v} = \error \vee \Nrange{o}{l} \not\subseteq \writable{\memory} \\
-      \tup{\continue, \mathtt{NONE}, \memory} &\otherwhen \mathbf{v} = \none \\
-      \tup{\continue, \len{\mathbf{v}}, \memory^\uparrow \exc (\memory^\uparrow)\subrange{o}{l} = \mathbf{v}\subrange{f}{l}} &\otherwise
-    \end{cases} \\
-    \where \memory^\uparrow &= \memory \exc (\memory^\uparrow_\ram¬frames)\subrange{\floor{\nicefrac{o}{\Cpvmpagesize}}}{\len{\spannedpages(o, l)}} = \sq{\frame¬present, \frame¬present, \dots}
-  \end{aligned}
-\end{equation}
+It is expected that modified memory is evicted from the cache of the physical core executing the invoking machine, even though the working-set is untouched. Any subsequent access by the machine of modified memory in the working-set is thus expected to suffer a read-back penalty for which there is no direct gas charge. To account for this, the cost (per 1024 octets) of each delivering host-call is raised by $\Cpvmgasdeliver$ in the table below.
 
 When transitioning \textsc{pvm} state for a host-call, a number of conditions typically hold true and host functions are defined essentially by their exceptions to these rules. Specifically, the machine does not halt, and \textsc{ram}, registers, working-set and context are unchanged. Formally:
 \begin{equation}
@@ -454,11 +456,8 @@ These make no assumptions about the context $\context$; it is always passed thro
       \encode{\mathbf{i}[\registers_{11}]} &\when \mathbf{i} \ne \none \wedge \registers_{10} = 15 \wedge \registers_{11} < \len{\mathbf{i}} \\
       \none &\otherwise
     \end{cases} \\
-    \using \sq{o, f_0, z} &= \registers\subrange{7}{3} \\
-    \using f &= \min(f_0, \len{\mathbf{v}}) \\
-    \using l &= \min(z, \len{\mathbf{v}} - f) \\
-    \using g^\downarrow &= \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) \\
-    \tup{\execst', \registers'_7, \memory'} &\equiv \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) \\
+    \using \sq{o, f, z} &= \registers\subrange{7}{3} \\
+    \tup{g^\downarrow, \execst', \registers'_7, \memory'} &\equiv \extwrite(\registers, \memory, o, \mathbf{v}, f, z) \\
     g &\equiv \begin{cases}
       \CgasYc{\registers_{10}} + \fnmemgas(\CgasYl{\registers_{10}} + \Cpvmgasdeliver, z) + g^\downarrow &\when \registers_{10} < 16 \\
       \CgasYunknown &\otherwise
@@ -488,17 +487,13 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
       \mathbf{d}\subb{s} &\when \registers_7 = 2^{64} - 1 \\
       \mathbf{d}[\registers_7] &\otherwise
     \end{cases} \\
-    \using \sq{h, o} &= \registers\subrange{8}{2} \\
-    \using z &= \registers_{11} \\
+    \using \sq{h, o, f, z} &= \registers\subrange{8}{4} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \Nrange{h}{32} \not\subseteq \readable{\memory} \\
       \none &\otherwhen \mathbf{a} = \none \\
       \histlookup(\mathbf{a}, t, \memory\subrange{h}{32}) &\otherwise \\
     \end{cases} \\
-    \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
-    \using l &= \min(z, \len{\mathbf{v}} - f) \\
-    \using g^\downarrow &= \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) \\
-    \tup{\execst', \registers'_7, \memory'} &\equiv \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) \\
+    \tup{g^\downarrow, \execst', \registers'_7, \memory'} &\equiv \extwrite(\registers, \memory, o, \mathbf{v}, f, z) \\
     g &\equiv \CgasHconst + \fnmemgas(\CgasHlinear + \Cpvmgasdeliver, z) + g^\downarrow
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -573,17 +568,19 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \texttt{peek} = 11} &
   $\begin{aligned}
     \using \sq{n, o, s, z} &= \registers\subrange{7}{4} \\
-    \using c &= \max\left(\set{\build{k}{k \le z \wedge \Nrange{s}{k} \subseteq \readable{\mathbf{m}\subb{n}_\pg¬ram}}}\right) \\
-    \using \kappa(\tup{m, x}) &= \begin{cases} 2(x - s) &\when m = n \\ 2(x - o) + 1 &\otherwise \end{cases} \\
-    \using \mathbf{a} &= \sqorderby{\kappa(\tup{m, x})}{\tup{m, x} \in \set{\build{\tup{n, s+k}}{k \in \Nmax{c}}} \cup \set{\build{\tup{\none, o+k}}{k \in \Nmax{c}}}} \\
-    \using \tup{g^\dagger, \workingset^\dagger, \mem^\dagger, \mathbf{m}^\dagger} &= \wscharge¬internal(\workingset, \mem, \mathbf{m}, \mathbf{a}) \\
-    \using \mem^\ddagger &= \mem^\dagger \exc (\mem^\dagger)\subrange{o}{c} = (\mathbf{m}\subb{n}_\pg¬ram)\subrange{s}{c} \\
+    \using \mathbf{a} &= \sq{\build{\sq{\tup{n, s+k, \top}, \tup{\none, o+k, \bot}}}{k \orderedin \Nmax{z}}} \\
+    \using \tup{g^\dagger, v, \mathbf{w}^\dagger, \mathbf{u}^\dagger, \mathbf{m}^\dagger} &= \wscharge¬internal(\workingset, \mem, \mathbf{m}, \concatall{\mathbf{a}}) \\
+    \using c &= \floor{\nicefrac{v}{2}} \\
+    \using \mathbf{u}^\ddagger &= \mathbf{u}^\dagger \exc \mathbf{u}^\ddagger\subrange{o}{c} = (\mathbf{m}\subb{n}_\pg¬ram)\subrange{s}{c} \\
     \tup{\execst', \registers'_7, \mem', \mathbf{m}', \workingset'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mem, \mathbf{m}, \workingset} &\when \Nrange{o}{z} \not\subseteq \writable{\memory} \\
-      \tup{\continue, \mathtt{WHO}, \mem, \mathbf{m}, \workingset} &\otherwhen n \not\in \keys{\mathbf{m}} \\
-      \tup{\continue, c, \mem^\ddagger, \mathbf{m}^\dagger, \workingset^\dagger} &\otherwise
+      \tup{\continue, \mathtt{WHO}, \mem, \mathbf{m}, \workingset} &\when n \not\in \keys{\mathbf{m}} \\
+      \tup{\panic, \registers_7, \mathbf{u}^\ddagger, \mathbf{m}^\dagger, \mathbf{w}^\dagger} &\otherwhen v \bmod 2 = 1 \\
+      \tup{\continue, c, \mathbf{u}^\ddagger, \mathbf{m}^\dagger, \mathbf{w}^\dagger} &\otherwise
     \end{cases} \\
-    g &\equiv \CgasPconst + \fnmemgas(\CgasPlinear, z) + \begin{cases} 0 &\when \Nrange{o}{z} \not\subseteq \writable{\memory} \vee n \not\in \keys{\mathbf{m}} \\ g^\dagger &\otherwise \end{cases}
+    g &\equiv \CgasPconst + \fnmemgas(\CgasPlinear, z) + \begin{cases}
+      0 &\when n \not\in \keys{\mathbf{m}} \\
+      g^\dagger &\otherwise
+    \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
@@ -591,17 +588,19 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \texttt{poke} = 12} &
   $\begin{aligned}
     \using \sq{n, s, o, z} &= \registers\subrange{7}{4} \\
-    \using c &= \max\left(\set{\build{k}{k \le z \wedge \Nrange{o}{k} \subseteq \writable{\mathbf{m}\subb{n}_\pg¬ram}}}\right) \\
-    \using \kappa(\tup{m, x}) &= \begin{cases} 2(x - s) &\when m = \none \\ 2(x - o) + 1 &\otherwise \end{cases} \\
-    \using \mathbf{a} &= \sqorderby{\kappa(\tup{m, x})}{\tup{m, x} \in \set{\build{\tup{\none, s+k}}{k \in \Nmax{c}}} \cup \set{\build{\tup{n, o+k}}{k \in \Nmax{c}}}} \\
-    \using \tup{g^\dagger, \workingset^\dagger, \mem^\dagger, \mathbf{m}^\dagger} &= \wscharge¬internal(\workingset, \mem, \mathbf{m}, \mathbf{a}) \\
+    \using \mathbf{a} &= \sq{\build{\sq{\tup{\none, s+k, \top}, \tup{n, o+k, \bot}}}{k \orderedin \Nmax{z}}} \\
+    \using \tup{g^\dagger, v, \mathbf{w}^\dagger, \mathbf{u}^\dagger, \mathbf{m}^\dagger} &= \wscharge¬internal(\workingset, \mem, \mathbf{m}, \concatall{\mathbf{a}}) \\
+    \using c &= \floor{\nicefrac{v}{2}} \\
     \using \mathbf{m}^\ddagger &= \mathbf{m}^\dagger \exc (\mathbf{m}^\ddagger\subb{n}_\pg¬ram)\subrange{o}{c} = \mem\subrange{s}{c} \\
     \tup{\execst', \registers'_7, \mem', \mathbf{m}', \workingset'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \mem, \mathbf{m}, \workingset} &\when \Nrange{s}{z} \not\subseteq \readable{\memory} \\
-      \tup{\continue, \mathtt{WHO}, \mem, \mathbf{m}, \workingset} &\otherwhen n \not\in \keys{\mathbf{m}} \\
-      \tup{\continue, c, \mem^\dagger, \mathbf{m}^\ddagger, \workingset^\dagger} &\otherwise
+      \tup{\continue, \mathtt{WHO}, \mem, \mathbf{m}, \workingset} &\when n \not\in \keys{\mathbf{m}} \\
+      \tup{\panic, \registers_7, \mathbf{u}^\dagger, \mathbf{m}^\ddagger, \mathbf{w}^\dagger} &\otherwhen c < z \land v \bmod 2 = 0 \\
+      \tup{\continue, c, \mathbf{u}^\dagger, \mathbf{m}^\ddagger, \mathbf{w}^\dagger} &\otherwise
     \end{cases} \\
-    g &\equiv \CgasOconst + \fnmemgas(\CgasOlinear, z) + \begin{cases} 0 &\when \Nrange{s}{z} \not\subseteq \readable{\memory} \vee n \not\in \keys{\mathbf{m}} \\ g^\dagger &\otherwise \end{cases}
+    g &\equiv \CgasOconst + \fnmemgas(\CgasOlinear, z) + \begin{cases}
+      0 &\when n \not\in \keys{\mathbf{m}} \\
+      g^\dagger &\otherwise
+    \end{cases}
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
@@ -609,10 +608,7 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \texttt{pages} = 13} &
   $\begin{aligned}
     \using \sq{n, p, c, r} &= \registers\subrange{7}{4} \\
-    \using \mathbf{u} &= \begin{cases}
-      \mathbf{m}\subb{n}_\pg¬ram &\when n \in \keys{\mathbf{m}} \\
-      \error &\otherwise\\
-    \end{cases} \\
+    \using \mathbf{u} &= \mathbf{m}\subb{n}_\pg¬ram \\
     \using \mathbf{u}' &= \mathbf{u} \exc \begin{cases}
       (\mathbf{u}'_\ram¬value)_{p\Cpvmpagesize\dots+c\Cpvmpagesize} = \begin{cases}
        \sq{0, 0, \dots} &\when r < 3 \\
@@ -627,16 +623,16 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
         \sq{\frame¬missing¬zero, \frame¬missing¬zero, \dots} &\when r < 3 \\
         (\mathbf{u}_\ram¬frames)\subrange{p}{c} &\otherwise
       \end{cases}
-    \end{cases}\\
+    \end{cases} \\
+    \using \mathbf{w} &= \begin{cases}
+      \clearpages(\workingset, \set{\build{\tup{\is{\pid¬machine}{n}, \is{\pid¬index}{\datapage{i}}}}{i \in \Nrange{p}{c}}}) &\when r < 3 \\
+      \workingset &\otherwise
+    \end{cases} \\
     \tup{\registers'_7, \mathbf{m}', \workingset'} &\equiv \begin{cases}
-      \tup{\mathtt{WHO}, \mathbf{m}, \workingset} &\when \mathbf{u} = \error \\
+      \tup{\mathtt{WHO}, \mathbf{m}, \workingset} &\when n \not\in \keys{\mathbf{m}} \\
       \tup{\mathtt{HUH}, \mathbf{m}, \workingset} &\otherwhen r > 4 \vee p < 16 \vee p+c \ge \nicefrac{2^{32}}{\Cpvmpagesize} \\
       \tup{\mathtt{HUH}, \mathbf{m}, \workingset} &\otherwhen r > 2 \wedge (\mathbf{u}_\ram¬access)\subrange{p}{c} \ni \none \\
-      \tup{\mathtt{OK}, \mathbf{m}', \workingset^\dagger} &\otherwise\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'\subb{n}_\pg¬ram = \mathbf{u}' \\
-    \end{cases} \\
-    \where \workingset^\dagger &= \begin{cases}
-      \workingset \setminus \set{\build{\tup{n, \datapage{i}}}{p \le i < p + c}} &\when r < 3 \\
-      \workingset &\otherwise
+      \tup{\mathtt{OK}, \mathbf{m}', \mathbf{w}} &\otherwise\,,\ \where \mathbf{m}' = \mathbf{m} \exc \mathbf{m}'\subb{n}_\pg¬ram = \mathbf{u}'
     \end{cases} \\
     g &\equiv \begin{cases}
       \CgasZfreeconst + c \cdot \CgasZfreelinear &\when r = 0 \\
@@ -651,14 +647,9 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   \texttt{invoke} = 14} &
   $\begin{aligned}
     \using \sq{n, o} &= \registers_{7, 8} \\
-    \using \arg &= \sq{\build{\tup{\none, x}}{x \orderedin \Nrange{o}{112}}} \\
-    \using \tup{g_R, \mathbf{w}} &= \begin{cases}
-      \tup{g_R, \mathbf{w}}: \encode[8]{g_R} \concat \encode[8]{\mathbf{w}} = \mem\subrange{o}{112} &\when \Nrange{o}{112} \subseteq \writable{\mem} \\
-      \tup{0, \error} &\otherwise
-    \end{cases} \\
-    \using \tup{g_1, \workingset_1, \mem_1, \mathbf{m}_1} &= \wscharge¬internal(\workingset, \mem, \mathbf{m}, \arg) \\
-    \using \tup{c, i', g_R', \pg¬gaschargedflag', \mathbf{w}', \mathbf{u}', \workingset_2} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g_R, \mathbf{m}\subb{n}_{\pg¬gaschargedflag}, \mathbf{w}, \mathbf{m}\subb{n}_\pg¬ram, n, \workingset_1)\\
-    \using \mem^* &= \mem_1 \exc \mem^*\subrange{o}{112} = \encode[8]{g_R'} \concat \encode[8]{\mathbf{w}'}\\
+    \using \tup{g^\dagger, v, \mathbf{w}^\dagger, \mathbf{u}^\dagger, \emset} &= \wscharge¬internal(\workingset, \mem, \emset, \sq{\build{\tup{\none, x, \bot}}{x \orderedin \Nrange{o}{112}}}) \\
+    \using \encode[8]{g_R, \mathbf{r}} &= \mem\subrange{o}{112} \\
+    \using \tup{c, i', g_R', \pg¬gaschargedflag', \mathbf{r}', \mathbf{u}', \mathbf{w}'} &= \Psi(\mathbf{m}\subb{n}_\pg¬code, \mathbf{m}\subb{n}_\pg¬pc, g_R, \mathbf{m}\subb{n}_{\pg¬gaschargedflag}, \mathbf{r}, \mathbf{m}\subb{n}_\pg¬ram, n, \mathbf{w}^\dagger)\\
     \using \mathbf{m}^* &= \mathbf{m} \exc \begin{cases}
       \mathbf{m}^*\subb{n}_\pg¬ram = \mathbf{u}'\\
       \mathbf{m}^*\subb{n}_\pg¬pc = \begin{cases}
@@ -667,19 +658,24 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
       \end{cases}\\
       \mathbf{m}^*\subb{n}_{\pg¬gaschargedflag} = \pg¬gaschargedflag'\\
     \end{cases}\\
-    \using \tup{g_3, \workingset_3, \mem_3, \mathbf{m}_3} &= \wscharge¬internal(\workingset_2, \mem^*, \mathbf{m}^*, \arg) \\
+    \using \tup{g^\ddagger, 112, \mathbf{w}^\ddagger, \mathbf{u}^\ddagger, \emset} &= \wscharge¬internal(\mathbf{w}', \mathbf{u}^\dagger, \emset, \sq{\build{\tup{\none, x, \bot}}{x \orderedin \Nrange{o}{112}}}) \\
+    \using \mathbf{u}^* &= \mathbf{u}^\ddagger \exc \mathbf{u}^*\subrange{o}{112} = \encode[8]{g_R', \mathbf{r}'}\\
     \tup{\execst', \registers'_7, \registers'_8, \mem', \mathbf{m}', \workingset'} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \registers_8, \mem, \mathbf{m}, \workingset} &\when \mathbf{w} = \error \\
-      \tup{\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}, \workingset} &\otherwhen n \not\in \keys{\mathbf{m}} \\
-      \tup{\continue, \mathtt{HOST}, h, \mem_3, \mathbf{m}^*, \workingset_3} &\otherwhen c = \host \times h \\
-      \tup{\continue, \mathtt{FAULT}, x, \mem_3, \mathbf{m}^*, \workingset_3} &\otherwhen c = \fault \times x \\
-      \tup{\continue, \mathtt{OOG}, \registers_8, \mem_3, \mathbf{m}^*, \workingset_3} &\otherwhen c = \oog \\
-      \tup{\continue, \mathtt{PANIC}, \registers_8, \mem_3, \mathbf{m}^*, \workingset_3} &\otherwhen c = \panic \\
-      \tup{\continue, \mathtt{HALT}, \registers_8, \mem_3, \mathbf{m}^*, \workingset_3} &\otherwhen c = \halt \\
+      \tup{\continue, \mathtt{WHO}, \registers_8, \mem, \mathbf{m}, \workingset} &\when n \not\in \keys{\mathbf{m}} \\
+      \tup{\panic, \registers_7, \registers_8, \mathbf{u}^\dagger, \mathbf{m}, \mathbf{w}^\dagger} &\otherwhen v < 112 \\
+      \tup{\continue, \mathtt{HOST}, h, \mathbf{u}^*, \mathbf{m}^*, \mathbf{w}^\ddagger} &\otherwhen c = \host \times h \\
+      \tup{\continue, \mathtt{FAULT}, x, \mathbf{u}^*, \mathbf{m}^*, \mathbf{w}^\ddagger} &\otherwhen c = \fault \times x \\
+      \tup{\continue, \mathtt{OOG}, \registers_8, \mathbf{u}^*, \mathbf{m}^*, \mathbf{w}^\ddagger} &\otherwhen c = \oog \\
+      \tup{\continue, \mathtt{PANIC}, \registers_8, \mathbf{u}^*, \mathbf{m}^*, \mathbf{w}^\ddagger} &\otherwhen c = \panic \\
+      \tup{\continue, \mathtt{HALT}, \registers_8, \mathbf{u}^*, \mathbf{m}^*, \mathbf{w}^\ddagger} &\otherwhen c = \halt \\
     \end{cases} \\
-    g &\equiv \CgasK + g_R + \begin{cases} 0 &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \\ g_1 + g_3 &\otherwise \end{cases} \\
+    g &\equiv \CgasK + \begin{cases}
+      0 &\when n \not\in \keys{\mathbf{m}} \\
+      g^\dagger &\otherwhen v < 112 \\
+      g^\dagger + g_R + g^\ddagger &\otherwise
+    \end{cases} \\
     \gascounter^* &\equiv \max(\gascounter - g, 0) + \begin{cases}
-      0 &\when \mathbf{w} = \error \vee n \not\in \keys{\mathbf{m}} \vee \gascounter < g \\
+      0 &\when n \not\in \keys{\mathbf{m}} \vee v < 112 \vee \gascounter < g \\
       g_R' &\otherwise
     \end{cases}
   \end{aligned}$\\
@@ -688,12 +684,12 @@ These assume some refine context triple $\tup{\mathbf{m}, \pvm¬module¬map, \ma
   $\Omega_X(\gascounter, \registers, \memory, \workingset, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}})$ \\
   \texttt{expunge} = 15} &
   $\begin{aligned}
-    \using \sq{m, n} &= \registers_{7, 8} \\
-    \using \workingset^\dagger &= \workingset \setminus \set{\build{\tup{n, i}}{i \in \set{\datatag, \codetag, \jumptag} \times \N}} \\
+    \using \sq{r, n} &= \registers_{7, 8} \\
+    \using \mathbf{w} &= \clearpages(\workingset, \set{\build{\tup{\is{\pid¬machine}{n}, \pid¬index}}{\pid¬index \in \set{\datatag, \codetag, \jumptag} \times \N}}) \\
     \tup{\registers'_7, \mathbf{m}', \pvm¬module¬map', \workingset'} &\equiv \begin{cases}
-      \tup{\mathtt{WHO}, \mathbf{m}, \pvm¬module¬map, \workingset} &\when (m = 0 \wedge n \not\in \keys{\mathbf{m}}) \vee (m = 1 \wedge n \not\in \keys{\pvm¬module¬map}) \\
-      \tup{\mathbf{m}\subb{n}_\pg¬pc, \mathbf{m} \setminus \set{n}, \pvm¬module¬map, \workingset^\dagger} &\otherwhen m = 0 \\
-      \tup{\mathtt{OK}, \mathbf{m}, \pvm¬module¬map \setminus \set{n}, \workingset} &\otherwhen m = 1 \\
+      \tup{\mathtt{WHO}, \mathbf{m}, \pvm¬module¬map, \workingset} &\when (r = 0 \wedge n \not\in \keys{\mathbf{m}}) \vee (r = 1 \wedge n \not\in \keys{\pvm¬module¬map}) \\
+      \tup{\mathbf{m}\subb{n}_\pg¬pc, \mathbf{m} \setminus \set{n}, \pvm¬module¬map, \mathbf{w}} &\otherwhen r = 0 \\
+      \tup{\mathtt{OK}, \mathbf{m}, \pvm¬module¬map \setminus \set{n}, \workingset} &\otherwhen r = 1 \\
       \tup{\mathtt{HUH}, \mathbf{m}, \pvm¬module¬map, \workingset} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasX
@@ -724,17 +720,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \imX_\im¬self &\when \registers_7 = 2^{64} - 1 \\
       (\imX_\im¬state)_\ps¬accounts[\registers_7] &\otherwise
     \end{cases} \\
-    \using \sq{h, o} &= \registers\subrange{8}{2} \\
-    \using z &= \registers_{11} \\
+    \using \sq{h, o, f, z} &= \registers\subrange{8}{4} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \Nrange{h}{32} \not\subseteq \readable{\memory} \\
       \none &\otherwhen \mathbf{a} = \none \\
       \mathbf{a}_\sa¬preimages[\memory\subrange{h}{32}] &\otherwise \\
     \end{cases} \\
-    \using f &= \min(\registers_{10}, \len{\mathbf{v}}) \\
-    \using l &= \min(z, \len{\mathbf{v}} - f) \\
-    \using g^\downarrow &= \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) \\
-    \tup{\execst', \registers'_7, \memory'} &\equiv \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) \\
+    \tup{g^\downarrow, \execst', \registers'_7, \memory'} &\equiv \extwrite(\registers, \memory, o, \mathbf{v}, f, z) \\
     g &\equiv \CgasLconst + \fnmemgas(\CgasLlinear + \Cpvmgasdeliver, z) + g^\downarrow
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -746,17 +738,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \imX_\im¬self &\when \registers_7 = 2^{64} - 1 \\
       (\imX_\im¬state)_\ps¬accounts[\registers_7] &\otherwise
     \end{cases} \\
-    \using \sq{k_O, k_Z, o} &= \registers\subrange{8}{3} \\
-    \using v_Z &= \registers_{12} \\
+    \using \sq{k_O, k_Z, o, f, v_Z} &= \registers\subrange{8}{5} \\
     \using \mathbf{v} &= \begin{cases}
       \error &\when \Nrange{k_O}{k_Z} \not\subseteq \readable{\memory} \\
       \none &\otherwhen \mathbf{a} = \none \\
       \mathbf{a}_\sa¬storage\subb{\memory\subrange{k_O}{k_Z}} &\otherwise
     \end{cases} \\
-    \using f &= \min(\registers_{11}, \len{\mathbf{v}}) \\
-    \using l &= \min(v_Z, \len{\mathbf{v}} - f) \\
-    \using g^\downarrow &= \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) \\
-    \tup{\execst', \registers'_7, \memory'} &\equiv \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) \\
+    \tup{g^\downarrow, \execst', \registers'_7, \memory'} &\equiv \extwrite(\registers, \memory, o, \mathbf{v}, f, v_Z) \\
     g &\equiv \CgasRconst + \fnmemgas(\CgasRkeylinear, k_Z) + \fnmemgas(\CgasRvallinear + \Cpvmgasdeliver, v_Z) + g^\downarrow
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
@@ -804,7 +792,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \imX_\im¬self &\when \registers_7 = 2^{64} - 1 \\
       (\imX_\im¬state)_\ps¬accounts\subb{\registers_7} &\otherwise
     \end{cases} \\
-    \using o &= \registers_8 \\
+    \using \sq{o, f, z} &= \registers\subrange{8}{3} \\
     \using \mathbf{v} &= \begin{cases}
       \begin{aligned}
         &\fnencode(
@@ -818,11 +806,8 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \end{aligned} &\when \mathbf{a} \ne \none \\
       \none &\otherwise
     \end{cases} \\
-    \using f &= \min(\registers_{9}, \len{\mathbf{v}}) \\
-    \using l &= \min(\registers_{10}, \len{\mathbf{v}} - f) \\
-    \using g^\downarrow &= \wscharge¬extwritegas(\memory, o, \mathbf{v}, l) \\
-    \tup{\execst', \registers'_7, \memory'} &\equiv \wscharge¬extwrite(\registers, \memory, o, \mathbf{v}, f, l) \\
-    g &\equiv \CgasI + \fnmemgas(\Cpvmgasdeliver, \registers_{10}) + g^\downarrow
+    \tup{g^\downarrow, \execst', \registers'_7, \memory'} &\equiv \extwrite(\registers, \memory, o, \mathbf{v}, f, z) \\
+    g &\equiv \CgasI + \fnmemgas(\Cpvmgasdeliver, z) + g^\downarrow
   \end{aligned}$ \\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{

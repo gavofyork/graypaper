@@ -48,9 +48,9 @@
 \newcommand*{\bbpreamblesize}{B}
 \newcommand*{\codepagecharge}{C}
 \newcommand*{\branchsize}{J}
+\newcommand*{\clearpages}{D}
 \newcommand*{\gascostforpageaccess}{\gascounter^\workingset}
 \newcommand*{\pagefaultcost}{\mathfrak{c}}
-\newcommand*{\spannedpages}{\Pi}
 \newcommand*{\startofbasicblock}{\mathfrak{L}}
 We declare the general \textsc{pvm} function $\Psi$. We assume a single-step invocation function $\Psi_1$ and define the full \textsc{pvm} recursively as a sequence of such mutations up until the single-step mutation results in a halting condition. We additionally define the function $\deblob$ which extracts the instruction data, opcode bitmask and dynamic jump table from a \textsc{pvm} program blob, validates its structure, and verifies whether the given $\imath$ is a valid instruction counter location within the program:
 \begin{align}
@@ -1248,14 +1248,15 @@ From this, $\codeoffset$ gives the byte offset at which the native code of the i
   }
 \end{equation}
 
-The instruction's own native code occupies the byte range after its block's preamble (if any), and the preamble, where present, the range before it. $\spannedpages(o, z)$ gives the ascending pages spanned by the $z$-byte range at $o$, $\codepages$ tags them as code pages, and $\pageforinstruction$ and $\preamblepages$ apply this to the instruction's own range and to its preamble's:
+The instruction's own native code occupies the byte range after its block's preamble (if any), and the preamble, where present, the range before it. $\codepages(o, z)$ gives the ascending code pages spanned by the $z$-byte range at $o$, and $\pageforinstruction$ and $\preamblepages$ apply this to the instruction's own range and to its preamble's:
 \begin{align}
-  \spannedpages(o, z) &\equiv\label{eq:pagespan} \begin{cases}
+  \codepages(o, z) &\equiv \begin{cases}
     \sq{} &\when z = 0 \\
-    \sqorderby{p}{p \in \set{\build{p}{\floor{\frac{o}{\Cpvmpagesize}} \le p \le \floor{\frac{o + z - 1}{\Cpvmpagesize}}}}} &\otherwise
+    \sq{\build{\codepage{p}}{p \orderedin \N, \floor{\frac{o}{\Cpvmpagesize}} \le p \le \floor{\frac{o + z - 1}{\Cpvmpagesize}}}} &\otherwise
   \end{cases} \\
-  \codepages(o, z) &\equiv \sq{\build{\codepage{p}}{p \orderedin \spannedpages(o, z)}} \\
+  \label{eq:pageforinstruction}
   \pageforinstruction(\mathbf{c}, \mathbf{k}, \imath) &\equiv \codepages(\codeoffset(\mathbf{c}, \mathbf{k}, \imath) + \bbpreamblesize(\imath),\ \inst¬compiledsize(\mathbf{c}, \mathbf{k}, \imath)) \\
+  \label{eq:preamblepages}
   \preamblepages(\mathbf{c}, \mathbf{k}, \imath) &\equiv \codepages(\codeoffset(\mathbf{c}, \mathbf{k}, \imath),\ \bbpreamblesize(\imath))
 \end{align}
 
@@ -1269,12 +1270,12 @@ The working-set is shared with inner \textsc{pvm} instances. For this reason, pa
 
 The working-set size is fixed for the duration of an invocation, drawn from the valid sizes $\workingsetsize$~(\ref{eq:workingsetsize}). The lower bound $\Cpvmminworkingset$ guarantees forward progress: it exceeds the most pages any single step can need resident at once, so a step is never forced to evict a page it still requires. The upper bound $\Cpvmmaxworkingset$ keeps the resident set within the last-level cache of reference hardware, which is what justifies the pricing of resident accesses set out later in the gas cost tables~(\ref{eq:loadcost}).
 
-An entry is removed when the page it identifies ceases to exist: on expunging an inner machine, or deallocating or resetting \textsc{ram} pages through the $\mathtt{pages}$ host-call (appendix \ref{sec:refinefunctions}). The removed pages are replaced by $\none$ in-place. We write the removal of a page set $\mathbf{s} \subseteq \pageid$ as set-subtraction:
+An entry is removed when the page it identifies ceases to exist: on expunging an inner machine, or deallocating or resetting \textsc{ram} pages through the $\mathtt{pages}$ host-call (appendix \ref{sec:refinefunctions}). We define the function $\clearpages$, which removes the page indices $\mathbf{p}$ from the working-set $\mathbf{w}$ by replacing them with $\none$:
 \begin{equation}
-  \workingset \setminus \mathbf{s} \equiv \sq{\build{\begin{cases}
-    \none &\when e \in \mathbf{s} \\
+  \clearpages(\mathbf{w} \in \sequence{\optional{\pageid}}, \mathbf{p} \in \protoset{\pageid}) \equiv \sq{\build{\begin{cases}
+    \none &\when e \in \mathbf{p} \\
     e &\otherwise
-  \end{cases}}{e \orderedin \workingset}}
+  \end{cases}}{e \orderedin \mathbf{w}}}
 \end{equation}
 
 \subsection{Gas Cost Tables}\label{sec:gascosttables}
