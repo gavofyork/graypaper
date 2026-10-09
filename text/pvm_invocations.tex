@@ -886,7 +886,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \registers_7 &\otherwise
     \end{cases} \\
     \using \sq{\local¬desiredid, x, o} &= \registers\subrange{8}{3} \\
-    \using &\encode{\sa¬codehash, \encode[4]{l}, \encode[8]{a, \sa¬minmemogas, \sa¬gratis}} = \memory\subrange{o}{60} \\
+    \using &\encode{\sa¬codehash, \encode[4]{l, \sa¬accworkingsetsize}, \encode[8]{a, \sa¬minmemogas, \sa¬gratis}} = \memory\subrange{o}{64} \\
     \using \tup{i', i^*} &= \begin{cases}
       \tup{\local¬desiredid, \imX_\im¬nextfreeid} &\when \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \\
       \tup{\imX_\im¬nextfreeid, \text{check}(\Cminpublicindex + (\imX_\im¬nextfreeid - \Cminpublicindex + 42) \bmod (2^{32} - \Cminpublicindex - 2^8))} &\otherwise
@@ -901,7 +901,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \is{\sa¬supervisorbalance}{\mathbf{a}_\sa¬minbalance - \sa¬balance}, \\
       &\is{\sa¬minaccgas}{a},
       \sa¬minmemogas,
-      \is{\sa¬accworkingsetsize}{\Cpvmmaxworkingset},
+      \sa¬accworkingsetsize,
       \is{\mathbf{\sa¬preimages}}{\emset},
       \is{\sa¬created}{t},
       \sa¬gratis,
@@ -923,8 +923,8 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \imX_\im¬id = \effectivesupervisor{\mathbf{d}}{s} &\otherwise
     \end{cases} \\
     \tup{\execst', \registers'_7, \imX'_\im¬nextfreeid, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \Nrange{o}{60} \not\subseteq \readable{\memory} \\
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen l \not\in \preimagelen \\
+      \tup{\panic, \registers_7, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \Nrange{o}{64} \not\subseteq \readable{\memory} \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen l \not\in \preimagelen \lor \sa¬accworkingsetsize \not\in \workingsetsize \\
       \tup{\continue, \mathtt{WHO}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen s \not\in \keys{\mathbf{d}} \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen x > 3 \lor \neg p \lor (\sa¬gratis \ne 0 \wedge \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager) \\
       \tup{\continue, \mathtt{CASH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{s}_\sa¬balance < 0 \lor \mathbf{d}'\subb{s}_\sa¬supervisorbalance < 0 \lor {} \\
