@@ -886,7 +886,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \registers_7 &\otherwise
     \end{cases} \\
     \using \sq{\local¬desiredid, x, o} &= \registers\subrange{8}{3} \\
-    \using &\encode{\sa¬codehash, \encode[4]{l}, \encode[8]{\sa¬minaccgas, \sa¬minmemogas, \sa¬gratis}} = \memory\subrange{o}{60} \\
+    \using &\encode{\sa¬codehash, \encode[4]{l}, \encode[8]{a, \sa¬minmemogas, \sa¬gratis}} = \memory\subrange{o}{60} \\
     \using \tup{i', i^*} &= \begin{cases}
       \tup{\local¬desiredid, \imX_\im¬nextfreeid} &\when \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \\
       \tup{\imX_\im¬nextfreeid, \text{check}(\Cminpublicindex + (\imX_\im¬nextfreeid - \Cminpublicindex + 42) \bmod (2^{32} - \Cminpublicindex - 2^8))} &\otherwise
@@ -899,7 +899,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \is{\sa¬supervisor}{\imX_\im¬id},
       \is{\sa¬supervisorcreated}{(\imX_\im¬self)_\sa¬created},
       \is{\sa¬supervisorbalance}{\mathbf{a}_\sa¬minbalance - \sa¬balance}, \\
-      &\sa¬minaccgas,
+      &\is{\sa¬minaccgas}{a},
       \sa¬minmemogas,
       \is{\sa¬accworkingsetsize}{\Cpvmmaxworkingset},
       \is{\mathbf{\sa¬preimages}}{\emset},
