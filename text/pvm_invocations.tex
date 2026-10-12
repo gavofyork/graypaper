@@ -968,7 +968,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \imX_\im¬id &\when \registers_7 = 2^{64} - 1 \\
       \registers_7 &\otherwise
     \end{cases} \\
-    \using \sq{o, a, m} &= \registers\subrange{8}{3} \\
+    \using \sq{o, a, m, w} &= \registers\subrange{8}{4} \\
     \using c &= \begin{cases}
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \\
       \error &\otherwise
@@ -977,12 +977,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \mathbf{d}' &= \mathbf{d} \exc \abracegroup{
       \mathbf{d}'\subb{d}_\sa¬codehash &= c \\
       \mathbf{d}'\subb{d}_\sa¬minaccgas &= a \\
-      \mathbf{d}'\subb{d}_\sa¬minmemogas &= m
+      \mathbf{d}'\subb{d}_\sa¬minmemogas &= m \\
+      \mathbf{d}'\subb{d}_\sa¬accworkingsetsize &= w
     } \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when c = \error \\
       \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d \not\in \keys{\mathbf{d}} \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \lor w \not\in \workingsetsize \\
       \tup{\continue, \mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d}} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasU
