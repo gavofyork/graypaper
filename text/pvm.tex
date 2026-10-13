@@ -177,12 +177,12 @@ We must now define the single-step \textsc{pvm} state-transition function $\Psi_
 The gas model assumes \textsc{pvm} instructions are compiled to native instructions, which are fetched during execution via the machine's paging hardware. Each fetch of a native code page not resident in the working-set is a page fault which charges gas according to $\gascostforpageaccess$ (see equation \ref{eq:gascostforpageaccess}) and inserts the page. We define $\codepagecharge$, which charges in order for a sequence of code pages, each inserted at the base fault cost $\Cpvmgaspagefault$, halting if the gas runs out:
 \begin{equation}
   \begin{aligned}
-    \codepagecharge(g, w, \mathbf{p}) &= \begin{cases}
-      \tup{\continue, g, w} &\when \mathbf{p} = \sq{} \\
-      \tup{\oog, g, w} &\otherwhen g < g^\delta \\
-      \codepagecharge(g - g^\delta, w', \mathbf{p}\sub{1\dots}) &\otherwise
+    \codepagecharge(g, \mathbf{w}, \mathbf{p}) &= \begin{cases}
+      \tup{\continue, g, \mathbf{w}} &\when \mathbf{p} = \sq{} \\
+      \tup{\oog, g, \mathbf{w}} &\otherwhen g < g^\delta \\
+      \codepagecharge(g - g^\delta, \mathbf{w}', \mathbf{p}\sub{1\dots}) &\otherwise
     \end{cases} \\
-    \where (g^\delta, w') &= \gascostforpageaccess(w, \tup{\pid¬machine, \is{\pid¬index}{\mathbf{p}_0}}, \Cpvmgaspagefault)
+    \where (g^\delta, \mathbf{w}') &= \gascostforpageaccess(\mathbf{w}, \tup{\pid¬machine, \is{\pid¬index}{\mathbf{p}_0}}, \Cpvmgaspagefault)
   \end{aligned}
 \end{equation}
 
