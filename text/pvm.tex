@@ -58,12 +58,11 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
     \tuple{\blob, \pvmreg, \gas, \bool, \regs, \ram, \optional{\N}, \sequence{\optional{\pageid}}} &\to \tuple{\set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg, \pvmreg, \gas, \bool, \regs, \ram, \sequence{\optional{\pageid}}}\\
     \tup{\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem, \pid¬machine, \workingset} &\mapsto \begin{cases}
       \Psi(\pvm¬blob, \imath', \gascounter', \gaschargedflag', \registers', \mem', \pid¬machine, \workingset') &\when \varepsilon = \continue\\
-      \tup{\varepsilon, 0, \gascounter', \gaschargedflag', \registers', \mem', \workingset'} &\when \varepsilon \in \set{ \panic, \halt }\\
-      \tup{\varepsilon, \imath, \gascounter', \gaschargedflag', \registers, \mem, \workingset'} &\otherwise
+      \tup{\varepsilon, \imath', \gascounter', \gaschargedflag', \registers', \mem', \workingset'} &\otherwise
     \end{cases} \\
     \where \tup{\varepsilon, \imath', \gascounter', \gaschargedflag', \registers', \mem', \workingset'} &= \begin{cases}
       \Psi_1(\mathbf{c}, \mathbf{k}, \mathbf{j}, \imath, \gascounter, \gaschargedflag, \registers, \mem, \pid¬machine, \workingset) &\when \tup{\mathbf{c}, \mathbf{k}, \mathbf{j}} = \deblob(\pvm¬blob, \imath) \\
-      \tup{\panic, \imath, \gascounter, \gaschargedflag, \registers, \mem, \workingset} &\otherwise
+      \tup{\panic, 0, \gascounter, \gaschargedflag, \registers, \mem, \workingset} &\otherwise
     \end{cases}
   }\\
   \deblob&\colon\abracegrouptwo{
@@ -94,7 +93,7 @@ We declare the general \textsc{pvm} function $\Psi$. We assume a single-step inv
 
 The \textsc{pvm} exit reason $\varepsilon \in \set{\halt, \panic, \oog} \cup \set{\fault, \host} \times \pvmreg$ may be one of regular halt $\halt$, panic $\panic$ or out-of-gas $\oog$, or alternatively a host-call $\host$, in which the host-call identifier is associated, or page-fault $\fault$ in which case the address into \textsc{ram} is associated.
 
-In the case of a final halt, either through panic or success, the instruction counter returned is zero. In all other cases, the return value of the instruction counter indexes the one \emph{which caused the exit to happen} and the machine state represents the prior state of said instruction, thus ensuring \emph{de facto} consistency. In order to continue beyond these exit cases, some environmental factor must be adjusted; for a page-fault, \textsc{ram} must be changed, for a gas-underflow, more gas must be supplied and for a host-call, the instruction-counter must be incremented and the relevant host-call state-transition performed.
+In the case of a final halt, either through panic or success, the instruction counter returned is zero. In the case of a host-call, the instruction counter returned is that of the following instruction; when the machine is next invoked, it is assumed that the relevant host-call state-transition has been performed. In all other cases, the return value of the instruction counter indexes the one \emph{which caused the exit to happen} and the machine state represents the prior state of said instruction, thus ensuring \emph{de facto} consistency. In order to continue beyond these exit cases, some environmental factor must be adjusted; for a page-fault, \textsc{ram} must be changed and for a gas-underflow, more gas must be supplied.
 
 \subsection{Instructions, Opcodes and Skip-distance}\label{sec:programdecoding}
 
@@ -250,6 +249,7 @@ We define the final execution state, the value of the instruction counter, the g
     \tup{\varepsilon^\phase¬gas, \imath, \gascounter^\phase¬gas, \bot, \registers, \mem, \workingset^\phase¬gas} &\when \varepsilon^\phase¬gas \ne \continue \\
     \tup{\varepsilon^\phase¬fetch, \imath, \gascounter^\phase¬fetch, \top, \registers, \mem, \workingset^\phase¬fetch} &\otherwhen \varepsilon^\phase¬fetch \ne \continue \\
     \tup{\varepsilon^\phase¬djump, \imath, \gascounter^\phase¬djump, \top, \registers, \mem, \workingset^\phase¬djump} &\otherwhen \varepsilon^\phase¬djump \ne \continue \\
+    \tup{\panic, 0, \gascounter^\phase¬mem, \top, \registers, \mem^\phase¬mem, \workingset^\phase¬mem} &\otherwhen \varepsilon^\phase¬mem = \panic \\
     \tup{\varepsilon^\phase¬mem, \imath, \gascounter^\phase¬mem, \top, \registers, \mem^\phase¬mem, \workingset^\phase¬mem} &\otherwhen \varepsilon^\phase¬mem \ne \continue \\
     \tup{\varepsilon, \imath', \gascounter^\phase¬mem, \top, \registers', \mem', \workingset^\phase¬mem} &\otherwhen \varepsilon \not\in \set{\continue} \cup \set{\host} \times \pvmreg \\
     \tup{\varepsilon, \imath', \gascounter^\phase¬mem, \mathbf{c}_\imath \not\in T, \registers', \mem', \workingset^\phase¬mem} &\otherwise
@@ -306,7 +306,7 @@ Immediate arguments are encoded in little-endian format with the most-significan
 Any alterations of the program counter stemming from an unconditional static jump must be to the start of a basic block or else a panic occurs. Formally:
 \begin{equation}
   \token{sjump}(b) \implies \tup{\varepsilon, \imath'} = \begin{cases}
-    \tup{\panic, \imath} &\when b \not\in \basicblocks \\
+    \tup{\panic, 0} &\when b \not\in \basicblocks \\
     \tup{\continue, b} &\otherwise
   \end{cases}
 \end{equation}
@@ -314,7 +314,7 @@ Any alterations of the program counter stemming from an unconditional static jum
 Similarly, conditional jumps are valid if and only if both branches point to the start of a basic block (regardless of whether a branch is taken), otherwise a panic occurs:
 \begin{equation}
   \token{branch}(b, c) \implies \tup{\varepsilon, \imath'} = \begin{cases}
-    \tup{\panic, \imath} &\when b \not\in \basicblocks \lor \imath + 1 + \text{skip}(\imath) \not\in \basicblocks \\
+    \tup{\panic, 0} &\when b \not\in \basicblocks \lor \imath + 1 + \text{skip}(\imath) \not\in \basicblocks \\
     \tup{\continue, \imath + 1 + \Fskip(\imath)} &\otherwhen \lnot c \\
     \tup{\continue, b} &\otherwise
   \end{cases}
@@ -325,8 +325,8 @@ Jumps whose next instruction is dynamically computed must use an address which m
 As with other irregular alterations to the program counter, target code index must be the start of a basic block or else a panic occurs. Formally:
 \begin{equation}\label{eq:jumptablealignment}
   \token{djump}(a) \implies \tup{\varepsilon, \imath'} = \begin{cases}
-    \tup{\halt, \imath} &\when a = 2^{32} - 2^{16}\\
-    \tup{\panic, \imath} &\otherwhen a = 0 \vee a > \len{\mathbf{j}}\cdot\Cpvmdynaddralign \vee a \bmod \Cpvmdynaddralign \ne 0 \vee \mathbf{j}_{(\nicefrac{a}{\Cpvmdynaddralign}) - 1} \not\in \basicblocks \\
+    \tup{\halt, 0} &\when a = 2^{32} - 2^{16}\\
+    \tup{\panic, 0} &\otherwhen a = 0 \vee a > \len{\mathbf{j}}\cdot\Cpvmdynaddralign \vee a \bmod \Cpvmdynaddralign \ne 0 \vee \mathbf{j}_{(\nicefrac{a}{\Cpvmdynaddralign}) - 1} \not\in \basicblocks \\
     (\continue, \mathbf{j}_{(\nicefrac{a}{\Cpvmdynaddralign}) - 1}) &\otherwise
   \end{cases}
 \end{equation}
@@ -346,7 +346,7 @@ We assume the skip length $\ell$ is well-defined:
   \thead{$\instructions_\imath$} & \thead{\textbf{Name}} & \thead{\textbf{Mutations}} \\
   \midrule
   \endhead
-  0&\token{trap}&$\varepsilon = \panic$\\
+  0&\token{trap}&$\varepsilon = \panic \ ,\qquad \imath' = 0$\\
   \mrule
   1&\token{fallthrough}&$\token{sjump}(\imath + 1 + \text{skip}(\imath))$\\
   \mrule
@@ -819,19 +819,15 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     \end{aligned}
     }
     &\to
-    \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \pvmreg, \gas, \bool, \regs, \ram, \sequence{\optional{\pageid}}, X}\\
+    \tuple{\set{\panic, \oog, \halt} \cup \set{\fault} \times \pvmreg, \gas, \bool, \regs, \ram, \sequence{\optional{\pageid}}, X}\\
     \tup{\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem, \workingset, f, \context} &\mapsto \begin{cases}
       \multicolumn{2}{l}{\text{let }(\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem', \workingset') = \Psi(\pvm¬blob, \imath, \gascounter, \gaschargedflag, \registers, \mem, \none, \workingset):} \\[8pt]
-      \tup{\varepsilon', \imath', \gascounter', \gaschargedflag', \registers', \mem', \workingset', \context} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
-      \begin{aligned}
-        &\Psi_H^*(\pvm¬blob, \imath'', \gascounter'', \gaschargedflag', \registers'', \mem'', \workingset'', f, \context'')\\[2pt]
-        &\quad \where \imath'' = \imath' + 1 + \Fskip(\imath')
-      \end{aligned}
-       &\when \bigwedge\abracegroup[\;]{
+      \tup{\varepsilon', \gascounter', \gaschargedflag', \registers', \mem', \workingset', \context} &\when \varepsilon' \in \set{ \halt, \panic, \oog } \cup \set{\fault} \times \pvmreg \\[4pt]
+      \Psi_H^*(\pvm¬blob, \imath', \gascounter'', \gaschargedflag', \registers'', \mem'', \workingset'', f, \context'') &\when \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
         &\tup{\continue, \gascounter'', \registers'', \mem'', \workingset'', \context''} = f(h, \gascounter', \registers', \mem', \workingset', \context)
       }\\[8pt]
-      \tup{\varepsilon'', \imath', \gascounter'', \gaschargedflag', \registers'', \mem'', \workingset'', \context''} &\when  \bigwedge\abracegroup[\;]{
+      \tup{\varepsilon'', \gascounter'', \gaschargedflag', \registers'', \mem'', \workingset'', \context''} &\when  \bigwedge\abracegroup[\;]{
         &\varepsilon' = \host \times h\\[2pt]
         &\tup{\varepsilon'', \gascounter'', \registers'', \mem'', \workingset'', \context''} = f(h, \gascounter', \registers', \mem', \workingset', \context)\\[2pt]
         &\varepsilon'' \in \set{\panic, \oog}
@@ -840,13 +836,13 @@ An extended version of the \textsc{pvm} invocation which is able to progress an 
     }\!\!\!\!\!\!\!\!\\
     \begin{aligned}
       \Psi_H(\pvm¬blob, \imath, \gascounter, \registers, \mem, w, f, \context) &\equiv (\varepsilon, \gascounter', \registers', \mem', \context') \\
-      \where (\varepsilon, \imath', \gascounter', \gaschargedflag', \registers', \mem', \workingset', \context') &=
+      \where (\varepsilon, \gascounter', \gaschargedflag', \registers', \mem', \workingset', \context') &=
         \Psi_H^*(\pvm¬blob, \imath, \gascounter, \bot, \registers, \mem, \sq{\none, \none, \dots}\sub{\dots w}, f, \context)
     \end{aligned}\\
     \contextmutator{X} \equiv \tuple{\N, \gas, \regs, \ram, \sequence{\optional{\pageid}}, X} \to \tuple{\set{\continue, \panic, \oog}, \gas, \regs, \ram, \sequence{\optional{\pageid}}, X}
 \end{gather}
 
-With $\Psi_H$, host-calls (\ie \token{ecalli} instructions) are in effect handled internally with the state-mutator function provided as an argument, preventing the possibility of the result being a host-call fault. Note that in the case of a successful host-call transition, we must provide the new instruction counter value $\imath''$ explicitly alongside the fresh posterior state for said instruction.
+With $\Psi_H$, host-calls (\ie \token{ecalli} instructions) are in effect handled internally with the state-mutator function provided as an argument, preventing the possibility of the result being a host-call fault.
 
 \subsection{Standard Program Initialization}\label{sec:standardprograminit}
 The software programs which will run in each of the three instances where the \textsc{pvm} is utilized in the main document have a very typical setup pattern characteristic of an output of a compiler and linker. This means that \textsc{ram} has sections for program-specific read-only data, read-write (heap) data and the stack. An adjunct to this, very typical of our usage patterns is an extra read-only section via which invocation-specific data may be passed (\ie arguments). It thus makes sense to define this properly in a single initializer function. These sections are quantized into \emph{major zones}, and one major zone is always left unallocated between sections in order to reduce accidental overrun. Sections are padded with zeroes to the nearest \textsc{pvm} memory page boundary.
