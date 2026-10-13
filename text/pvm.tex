@@ -1224,7 +1224,7 @@ The insertion cost of a code or a jump-table page is always the base page-fault 
 
 A successful charge for a \textsc{ram} page always sets the page's entry in $\ram¬frames$ to $\frame¬present$. In case the charge cannot be met, machine state is left unchanged.
 
-The gas model assumes \textsc{pvm} instructions are compiled to native instructions prior to execution, with the inclusion of a gas-metering preamble at the beginning of each basic block. \textsc{pvm} instructions are mapped to native code pages $\set{\codetag} \times \N$ via a conservative estimate of the native code size required for each instruction and basic-block preamble. It is expected that no-op instructions are inserted into the native code as necessary to make the actual layout match the estimation. We first define $\bbpreamblesize(\imath)$, the size of the gas-metering stub emitted before the instruction at address $\imath$ (to charge that block's gas according to $\gascostforblock$), or 0 if the instruction does not begin a basic block:
+The gas model assumes \textsc{pvm} instructions are compiled to native instructions prior to execution, with the inclusion of a gas-metering preamble at the beginning of each basic block. \textsc{pvm} instructions are mapped to native code pages $\set{\codetag} \times \N$ via a conservative estimate of the native code size required for each instruction and basic-block preamble. It is expected that no-op instructions are inserted into the native code as necessary to make the actual layout match the estimation. The function $\inst¬compiledsize(\mathbf{c}, \mathbf{k}, \imath)$ (defined in \ref{sec:compiledsizes}) returns the size of the native code translation of the \textsc{pvm} instruction at address $\imath$. The function $\bbpreamblesize(\imath)$ returns the size of the gas-metering stub emitted before the instruction at address $\imath$ (to charge that block's gas according to $\gascostforblock$), or 0 if the instruction does not begin a basic block:
 \begin{equation}
   \bbpreamblesize(\imath) \equiv \begin{cases}
     10 &\when \imath \in \basicblocks \\
@@ -1232,7 +1232,7 @@ The gas model assumes \textsc{pvm} instructions are compiled to native instructi
   \end{cases}
 \end{equation}
 
-From this, $\codeoffset$ gives the byte offset at which the native code of the instruction at address $\imath$ begins, including any preceding basic-block preamble:
+From these, $\codeoffset$ gives the byte offset at which the native code of the instruction at address $\imath$ begins, including any preceding basic-block preamble:
 \begin{equation}
   \codeoffset\colon \abracegroup{
     \tuple{\blob, \bitstring, \pvmreg} &\to \N \\
@@ -1255,8 +1255,6 @@ The instruction's own native code occupies the byte range after its block's prea
   \label{eq:preamblepages}
   \preamblepages(\mathbf{c}, \mathbf{k}, \imath) &\equiv \codepages(\codeoffset(\mathbf{c}, \mathbf{k}, \imath),\ \bbpreamblesize(\imath))
 \end{align}
-
-The function $\inst¬compiledsize(\mathbf{c}, \mathbf{k}, \imath)$ (defined in \ref{sec:compiledsizes}) returns the size of the native code translation of the \textsc{pvm} instruction at address $\imath$.
 
 The working-set is shared with inner \textsc{pvm} instances. For this reason, page identifiers characterized by the set $\pageid$ consist of a machine identifier $\pid¬machine$ in addition to a page index $\pid¬index$. $\none$ is used to identify the top-level \textsc{pvm} instance. A page index is a page number paired with one of the disjoint class tags $\datatag$, $\codetag$ or $\jumptag$, for \textsc{ram}, code and jump-table pages respectively.
 \begin{equation}
