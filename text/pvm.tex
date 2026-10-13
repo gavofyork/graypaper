@@ -177,7 +177,7 @@ We must now define the single-step \textsc{pvm} state-transition function $\Psi_
 The gas model assumes \textsc{pvm} instructions are compiled to native instructions, which are fetched during execution via the machine's paging hardware. Each fetch of a native code page not resident in the working-set is a page fault which charges gas according to $\gascostforpageaccess$ (see equation \ref{eq:gascostforpageaccess}) and inserts the page. We define $\codepagecharge$, which charges in order for a sequence of code pages, each inserted at the base fault cost $\Cpvmgaspagefault$, halting if the gas runs out:
 \begin{equation}
   \begin{aligned}
-    \codepagecharge(g, \mathbf{w}, \mathbf{p}) &= \begin{cases}
+    \codepagecharge(g, \mathbf{w}, \mathbf{p}) &\equiv \begin{cases}
       \tup{\continue, g, \mathbf{w}} &\when \mathbf{p} = \sq{} \\
       \tup{\oog, g, \mathbf{w}} &\otherwhen g < g^\delta \\
       \codepagecharge(g - g^\delta, \mathbf{w}', \mathbf{p}\sub{1\dots}) &\otherwise
@@ -226,7 +226,7 @@ Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the sets of indices by which $\me
   \begin{aligned}
     (\varepsilon^\phase¬mem, \gascounter^\phase¬mem, \workingset^\phase¬mem, \mem^\phase¬mem) &= A(\gascounter^\phase¬djump, \workingset^\phase¬djump, \mem,
       \sqorderby{x}{(x, r) \in \set{\build{(x, \is{r}{\top})}{x \in \mathbf{r}}} \cup \set{\build{(x, \is{r}{\bot})}{x \in \mathbf{w}}}}) \\
-    A(g, w, \mem, \mathbf{p}) &= \begin{cases}
+    A(g, w, \mem, \mathbf{p}) &\equiv \begin{cases}
       (\continue, g, w, \mem) &\when \mathbf{p} = \sq{} \\
       (\panic, g, w, \mem) &\otherwhen y < 2^{16} \\
       (\fault \times i \cdot \Cpvmpagesize, g, w, \mem) &\otherwhen y \not\in
