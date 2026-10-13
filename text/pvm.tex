@@ -221,23 +221,23 @@ During the course of executing an instruction \textsc{ram} may be accessed. When
 
 In addition to these accessibility checks, as with instruction fetches and jump-table reads, \textsc{ram} reads and writes implicitly pull accessed pages into the working-set, allocating frames for pages (recorded in $\mem_\ram¬frames$) where none yet exist. If the gas cost of a working-set change cannot be covered by the available gas, execution is interrupted. Charges made (and frames allocated) for the earlier pages of a step persist even where a later access of the same step faults or exhausts gas.
 
-Formally, let $\mathbf{r}$ and $\mathbf{w}$ be the sets of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\phase¬mem$, posterior gas balance $\gascounter^\phase¬mem$, posterior working-set $\workingset^\phase¬mem$, and posterior \textsc{ram} $\mem^\phase¬mem$ (which may differ from $\mem$ in its frames component only) as follows:
+Formally, let $\mathbf{a}$ and $\mathbf{a}^*$ be the sets of indices by which $\mem$ must be subscripted for inspection and mutation respectively in order to calculate the result of $\Psi_1$. We define the memory-access exceptional execution state $\varepsilon^\phase¬mem$, posterior gas balance $\gascounter^\phase¬mem$, posterior working-set $\workingset^\phase¬mem$, and posterior \textsc{ram} $\mem^\phase¬mem$ (which may differ from $\mem$ in its frames component only) as follows:
 \begin{equation}
   \begin{aligned}
     (\varepsilon^\phase¬mem, \gascounter^\phase¬mem, \workingset^\phase¬mem, \mem^\phase¬mem) &= A(\gascounter^\phase¬djump, \workingset^\phase¬djump, \mem,
-      \sqorderby{x}{(x, r) \in \set{\build{(x, \is{r}{\top})}{x \in \mathbf{r}}} \cup \set{\build{(x, \is{r}{\bot})}{x \in \mathbf{w}}}}) \\
-    A(g, w, \mem, \mathbf{p}) &\equiv \begin{cases}
-      (\continue, g, w, \mem) &\when \mathbf{p} = \sq{} \\
-      (\panic, g, w, \mem) &\otherwhen y < 2^{16} \\
-      (\fault \times i \cdot \Cpvmpagesize, g, w, \mem) &\otherwhen y \not\in
+      \sqorderby{x}{(x, r) \in \set{\build{(x, \is{r}{\top})}{x \in \mathbf{a}}} \cup \set{\build{(x, \is{r}{\bot})}{x \in \mathbf{a}^*}}}) \\
+    A(g, \mathbf{w}, \mem, \mathbf{p}) &\equiv \begin{cases}
+      (\continue, g, \mathbf{w}, \mem) &\when \mathbf{p} = \sq{} \\
+      (\panic, g, \mathbf{w}, \mem) &\otherwhen y < 2^{16} \\
+      (\fault \times i \cdot \Cpvmpagesize, g, \mathbf{w}, \mem) &\otherwhen y \not\in
         \set{\kv{\top}{\readable\mem}, \kv{\bot}{\writable\mem}}\subb{r} \\
-      (\oog, g, w, \mem) &\otherwhen g < g^\delta \\
-      A(g - g^\delta, w', \mem', \mathbf{p}\sub{1\dots}) &\otherwise
+      (\oog, g, \mathbf{w}, \mem) &\otherwhen g < g^\delta \\
+      A(g - g^\delta, \mathbf{w}', \mem', \mathbf{p}\sub{1\dots}) &\otherwise
     \end{cases} \\
     \where \tup{x, r} &= \mathbf{p}_0 \\
     \also y &= x \bmod 2^{32} \\
     \also i &= \floor{\frac{y}{\Cpvmpagesize}} \\
-    \also (g^\delta, w') &= \gascostforpageaccess(w, \tup{\pid¬machine, \is{\pid¬index}{\datapage{i}}}, \pagefaultcost(\mem, i)) \\
+    \also (g^\delta, \mathbf{w}') &= \gascostforpageaccess(\mathbf{w}, \tup{\pid¬machine, \is{\pid¬index}{\datapage{i}}}, \pagefaultcost(\mem, i)) \\
     \also \mem' &= \mem \exc \mem'_\ram¬frames\subb{i} = \frame¬present
   \end{aligned}
 \end{equation}
