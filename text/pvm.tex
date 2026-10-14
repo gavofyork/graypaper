@@ -1542,13 +1542,13 @@ In the following table the $\mathbf{c}$, $\mathbf{k}$, $w$, and $\imath$ argumen
 
 $\inst¬compiledsize$ is given by the table below. $\srcdsteq{i}$ holds when the destination register coincides with the $i$-th source register; $\reg_b$ is the base register used by a load or store for address computation; and $t_1 = 3$ and $t_2 = 4$ are the two guest registers whose underlying native registers are expected to force, respectively, a displacement byte and an index byte in native addressing. The decoded immediates $\immed_X, \immed_Y$ are as defined in section \ref{sec:instructiontables}.
 
-Direct branch and jump instructions are expected to be translated to a fixed prefix (a register comparison or an immediate load) followed by a relative jump to the target basic block. The jump is expected to occupy just 2 bytes when the target has already been translated, \ie it lies at or before $\imath$, and is within a signed byte's reach; otherwise a larger jump instruction is expected. The size of direct branch and jump instructions is therefore layout-dependent. The size of a branch whose target is $t$, whose fixed prefix is $p$ bytes, and whose trailing jump occupies $r$ bytes when short and $R$ when long is given by $\branchsize(t, p, r, R)$:
+Direct branch and jump instructions are expected to be translated to a fixed prefix (a register comparison or an immediate load) followed by a relative jump to the target basic block. The jump is expected to occupy just 2 bytes when the target has already been translated, \ie it lies at or before $\imath$, and is within a signed byte's reach; otherwise a larger jump instruction is expected. The size of direct branch and jump instructions is therefore layout-dependent. The size of a branch whose target is $t$, whose fixed prefix is $p$ bytes, and whose trailing jump occupies $r$ bytes when long is given by $\branchsize(t, p, r)$:
 \begin{equation}
-  \branchsize(t, p, r, R) \equiv p + \begin{cases}
-    r &\when t \le \imath \;\wedge\; -128 \le \Delta \le 127 \\
-    R &\otherwise
+  \branchsize(t, p, r) \equiv p + \begin{cases}
+    2 &\when t \le \imath \;\wedge\; -128 \le \Delta \le 127 \\
+    r &\otherwise
   \end{cases}
-  \quad\where \Delta = \codeoffset(\mathbf{c}, \mathbf{k}, t) - \left(\codeoffset(\mathbf{c}, \mathbf{k}, \imath) + \bbpreamblesize(\imath) + p + r\right)
+  \quad\where \Delta = \codeoffset(\mathbf{c}, \mathbf{k}, t) - \left(\codeoffset(\mathbf{c}, \mathbf{k}, \imath) + \bbpreamblesize(\imath) + p + 2\right)
 \end{equation}
 For the register-immediate branches the comparison prefix $q$ is smaller when the immediate fits in a signed byte:
 \begin{equation}
@@ -1556,8 +1556,8 @@ For the register-immediate branches the comparison prefix $q$ is smaller when th
 \end{equation}
 
 \renewcommand*{\mrule}{\cmidrule(lr){1-2}}
-\newcommand*{\csbranch}{$\branchsize(\immed_X, 3, 2, 6)$}
-\newcommand*{\csbranchimm}{$\branchsize(\immed_Y, q, 2, 6)$}
+\newcommand*{\csbranch}{$\branchsize(\immed_X, 3, 6)$}
+\newcommand*{\csbranchimm}{$\branchsize(\immed_Y, q, 6)$}
 \newcommand*{\srcone}[2]{$\begin{cases}
     #1 &\when \srcdsteq{1} \\
     #2 &\otherwise
@@ -1754,8 +1754,8 @@ For the register-immediate branches the comparison prefix $q$ is smaller when th
   \token{branch\_le\_s\_imm}&\csbranchimm \\ \mrule
   \token{branch\_ge\_s\_imm}&\csbranchimm \\ \mrule
   \token{branch\_gt\_s\_imm}&\csbranchimm \\ \mrule
-  \token{jump}&$\branchsize(\immed_X, 0, 2, 5)$ \\ \mrule
-  \token{load\_imm\_jump}&$\branchsize(\immed_Y, 7, 2, 5)$ \\ \mrule
+  \token{jump}&$\branchsize(\immed_X, 0, 5)$ \\ \mrule
+  \token{load\_imm\_jump}&$\branchsize(\immed_Y, 7, 5)$ \\ \mrule
   \token{jump\_ind}&$\begin{cases}
     11 &\when \immed_X = 0 \\
     13 &\when \reg_b \ne t_2 \land {-}128 \le \signed{\immed_X} \le 127 \\
