@@ -1208,7 +1208,11 @@ In addition to the static gas cost of each basic block as calculated by $\gascos
   }
 \end{equation}
 
-This mechanism applies to explicit data accesses (via load/store instructions), as well as to the implicit reading of instructions by the machine. The instructions for a machine are not present in its \textsc{ram} $\memory$, and so instruction addresses cannot be mapped to regular page indices; instead they are mapped to special code-page indices $\set{\codetag} \times \N$. Similarly, jump-table pages have special indices $\set{\jumptag} \times \N$.
+The working-set is shared with inner \textsc{pvm} instances. For this reason, page identifiers characterized by the set $\pageid$ consist of a machine identifier $\pid¬machine$ in addition to a page index $\pid¬index$. $\none$ is used to identify the top-level \textsc{pvm} instance. The working-set mechanism applies to explicit data accesses (via load/store instructions), as well as to the implicit loads of instructions and jump-table entries. The instructions and jump-table for a machine are not present in its \textsc{ram} $\memory$, and so instruction and jump-table addresses cannot be mapped to regular page indices. Instead, the page index in a page identifier is tagged with one of $\datatag$, $\codetag$ or $\jumptag$, meaning a \textsc{ram}, code or jump-table page respectively.
+\begin{equation}
+  \label{eq:pageid}
+  \pageid \equiv \tuple{\isa{\pid¬machine}{\optional{\N}}, \isa{\pid¬index}{\set{\datatag, \codetag, \jumptag} \times \N}}
+\end{equation}
 
 The insertion cost of a code or a jump-table page is always the base page-fault cost $\Cpvmgaspagefault$, covering the fault itself together with the mapping and unmapping work implied by insertion and eviction. The insertion cost of a \textsc{ram} page additionally depends on whether a physical frame has previously been allocated for it, as recorded by the frames component $\ram¬frames$ of the \textsc{ram} (\ref{eq:pvmmemory}). Upon a page's first-ever access a frame must be provisioned, paying $\Cpvmgaspagealloc$ (which accounts both for its allocation and for its eventual deallocation when the machine is destroyed), as well as the cost of populating the page: $\Cpvmgaspagezero$ where the page is zero-sourced (the frame has to be merely cleared), and $\Cpvmgaspagecopy$ where it is copy-sourced (its content must be copied from the program's initial image). Which applies is a fixed property of the page's provenance, recorded as $\frame¬missing¬zero$ or $\frame¬missing¬copy$ in $\ram¬frames$ when the machine is laid out (\ref{eq:memlayout}), and does \emph{not} depend on the page's current contents. Once allocated, a frame persists regardless of eviction from the working-set, and re-insertion pays only the base cost. Formally, the insertion cost of the \textsc{ram} page with index $i$ of a machine with \textsc{ram} $\mu$ is given by $\pagefaultcost$:
 \begin{equation}\label{eq:pagefaultcost}
@@ -1255,12 +1259,6 @@ The instruction's own native code occupies the byte range after its block's prea
   \label{eq:preamblepages}
   \preamblepages(\mathbf{c}, \mathbf{k}, \imath) &\equiv \codepages(\codeoffset(\mathbf{c}, \mathbf{k}, \imath),\ \bbpreamblesize(\imath))
 \end{align}
-
-The working-set is shared with inner \textsc{pvm} instances. For this reason, page identifiers characterized by the set $\pageid$ consist of a machine identifier $\pid¬machine$ in addition to a page index $\pid¬index$. $\none$ is used to identify the top-level \textsc{pvm} instance. A page index is a page number paired with one of the disjoint class tags $\datatag$, $\codetag$ or $\jumptag$, for \textsc{ram}, code and jump-table pages respectively.
-\begin{equation}
-  \label{eq:pageid}
-  \pageid \equiv \tuple{\isa{\pid¬machine}{\optional{\N}}, \isa{\pid¬index}{\set{\datatag, \codetag, \jumptag} \times \N}}
-\end{equation}
 
 The working-set size is fixed for the duration of an invocation, drawn from the valid sizes $\workingsetsize$~(\ref{eq:workingsetsize}). The lower bound $\Cpvmminworkingset$ guarantees forward progress: it exceeds the most pages any single step can need resident at once, so a step is never forced to evict a page it still requires. The upper bound $\Cpvmmaxworkingset$ keeps the resident set within the last-level cache of reference hardware, which is what justifies the pricing of resident accesses set out later in the gas cost tables~(\ref{eq:loadcost}).
 
