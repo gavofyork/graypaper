@@ -1262,7 +1262,7 @@ The instruction's own native code occupies the byte range after its block's prea
 
 The working-set size is fixed for the duration of an invocation, drawn from the valid sizes $\workingsetsize$~(\ref{eq:workingsetsize}). The lower bound $\Cpvmminworkingset$ guarantees forward progress: it exceeds the most pages any single step can need resident at once, so a step is never forced to evict a page it still requires. The upper bound $\Cpvmmaxworkingset$ keeps the resident set within the last-level cache of reference hardware, which is what justifies the pricing of resident accesses set out later in the gas cost tables~(\ref{eq:loadcost}).
 
-An entry is removed when the page it identifies ceases to exist: on expunging an inner machine, or deallocating or resetting \textsc{ram} pages through the $\mathtt{pages}$ host-call (appendix \ref{sec:refinefunctions}). We define the function $\clearpages$, which removes the page indices $\mathbf{p}$ from the working-set $\mathbf{w}$ by replacing them with $\none$:
+An entry is removed when the page it identifies ceases to exist, \ie on expunging the page's machine, or on deallocating or resetting the page through the $\mathtt{pages}$ host-call (appendix \ref{sec:refinefunctions}). We define the function $\clearpages$, which removes the page indices $\mathbf{p}$ from the working-set $\mathbf{w}$ by replacing them with $\none$:
 \begin{equation}
   \clearpages(\mathbf{w} \in \sequence{\optional{\pageid}}, \mathbf{p} \in \protoset{\pageid}) \equiv \sq{\build{\begin{cases}
     \none &\when e \in \mathbf{p} \\
