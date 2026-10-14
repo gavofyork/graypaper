@@ -1568,20 +1568,20 @@ For the register-immediate branches the comparison prefix $q$ is smaller when th
   \end{cases}$}
 \newcommand*{\srcimm}[3]{$\begin{cases}
     #1 &\when \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
-    #2 &\when \srcdsteq{1} \lor {-}128 \le \signed{\immed_X} \le 127 \\
+    #2 &\otherwhen \srcdsteq{1} \lor {-}128 \le \signed{\immed_X} \le 127 \\
     #3 &\otherwise
   \end{cases}$}
 \newcommand*{\setltimm}{$\begin{cases}
     12 &\when \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
-    15 &\when \srcdsteq{1} \\
-    11 &\when \lnot \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
+    15 &\otherwhen \srcdsteq{1} \\
+    11 &\otherwhen {-}128 \le \signed{\immed_X} \le 127 \\
     14 &\otherwise
   \end{cases}$}
 \newcommand*{\indbase}[5]{$\begin{cases}
     #1 &\when \reg_b \notin \set{t_1, t_2} \land \immed_X = 0 \\
-    #2 &\when (\reg_b \ne t_2 \land {-}128 \le \signed{\immed_X} \le 127) \lor (\reg_b = t_2 \land \immed_X = 0) \\
-    #3 &\when \reg_b \ne t_2 \\
-    #4 &\when \reg_b = t_2 \land {-}128 \le \signed{\immed_X} \le 127 \\
+    #2 &\otherwhen (\reg_b \ne t_2 \land {-}128 \le \signed{\immed_X} \le 127) \lor (\reg_b = t_2 \land \immed_X = 0) \\
+    #3 &\otherwhen \reg_b \ne t_2 \\
+    #4 &\otherwhen {-}128 \le \signed{\immed_X} \le 127 \\
     #5 &\otherwise
   \end{cases}$}
 \newcommand*{\loadsx}[2]{$\begin{cases}
@@ -1703,15 +1703,15 @@ For the register-immediate branches the comparison prefix $q$ is smaller when th
   \token{xnor}&\srctwo{6}{9} \\ \mrule
   \token{neg\_add\_imm\_64}&$\begin{cases}
     3 &\when \srcdsteq{1} \land \immed_X = 0 \\
-    7 &\when \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
-    6 &\when \lnot \srcdsteq{1} \land \immed_X = 0 \\
+    7 &\otherwhen \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
+    6 &\otherwhen \lnot \srcdsteq{1} \land \immed_X = 0 \\
     10 &\otherwise
   \end{cases}$ \\ \mrule
   \token{neg\_add\_imm\_32}&$\begin{cases}
     6 &\when \srcdsteq{1} \land \immed_X = 0 \\
-    10 &\when \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
-    13 &\when \srcdsteq{1} \\
-    9 &\when \lnot \srcdsteq{1} \land \immed_X = 0 \\
+    10 &\otherwhen \srcdsteq{1} \land {-}128 \le \signed{\immed_X} \le 127 \\
+    13 &\otherwhen \srcdsteq{1} \\
+    9 &\otherwhen \immed_X = 0 \\
     12 &\otherwise
   \end{cases}$ \\ \mrule
   \token{load\_imm}&$\begin{cases}
@@ -1758,16 +1758,16 @@ For the register-immediate branches the comparison prefix $q$ is smaller when th
   \token{load\_imm\_jump}&$\branchsize(\immed_Y, 7, 5)$ \\ \mrule
   \token{jump\_ind}&$\begin{cases}
     11 &\when \immed_X = 0 \\
-    13 &\when \reg_b \ne t_2 \land {-}128 \le \signed{\immed_X} \le 127 \\
-    16 &\when \reg_b \ne t_2 \\
-    14 &\when \reg_b = t_2 \land {-}128 \le \signed{\immed_X} \le 127 \\
+    13 &\otherwhen \reg_b \ne t_2 \land {-}128 \le \signed{\immed_X} \le 127 \\
+    16 &\otherwhen \reg_b \ne t_2 \\
+    14 &\otherwhen {-}128 \le \signed{\immed_X} \le 127 \\
     17 &\otherwise
   \end{cases}$ \\ \mrule
   \token{load\_imm\_jump\_ind}&$\begin{cases}
     18 &\when \immed_Y = 0 \\
-    20 &\when \reg_b \ne t_2 \land {-}128 \le \signed{\immed_Y} \le 127 \\
-    23 &\when \reg_b \ne t_2 \\
-    21 &\when \reg_b = t_2 \land {-}128 \le \signed{\immed_Y} \le 127 \\
+    20 &\otherwhen \reg_b \ne t_2 \land {-}128 \le \signed{\immed_Y} \le 127 \\
+    23 &\otherwhen \reg_b \ne t_2 \\
+    21 &\otherwhen {-}128 \le \signed{\immed_Y} \le 127 \\
     24 &\otherwise
   \end{cases}$ \\ \mrule
   \token{ecalli}&29 \\
