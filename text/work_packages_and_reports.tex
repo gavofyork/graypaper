@@ -117,6 +117,15 @@ We limit the total size of the auditable \emph{work-bundle}, containing the work
   &\Cmaxbundlesize \equiv \Cmaxpackageimports\cdot\Csegmentfootprint + 4096 + 64 + 64 = 13,791,360
 \end{align}
 
+The encoded bundle (see equation \ref{eq:makebundle}) also contains the fixed-size fields and length prefixes of the work-package (214 octets, plus 32 for each prerequisite and 62 for each work-item), a 34-octet reference and a one-octet justification length prefix for each imported segment, and a 36-octet reference for each extrinsic. The bundle length is thus bounded by $\Cmaxbundlelen$:
+\begin{equation}
+  \label{eq:maxbundlelen}
+  \begin{aligned}
+    \Cmaxbundlelen &\equiv \Cmaxbundlesize + 214 + 32\Cmaxreportdeps + 62\Cmaxpackageitems + 35\Cmaxpackageimports + 36\Cmaxpackagexts \\
+    &= 13,904,950
+  \end{aligned}
+\end{equation}
+
 We limit the sums of each of the two gas limits to be at most the maximum gas allocated to a core for the corresponding operation:
 \begin{equation}
   \label{eq:wplimits}
