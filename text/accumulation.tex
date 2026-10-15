@@ -482,11 +482,12 @@ We define the final state of the ready queue and the accumulated map by integrat
 
 \subsection{Preimage Integration}
 
-After accumulation, we must integrate all preimages provided in the lookup extrinsic to arrive at the posterior account state. The lookup extrinsic is a sequence of pairs of service indices and data. These pairs must be ordered and without duplicates (equation \ref{eq:preimagesareordered} requires this). The data must have been solicited by a service but not yet provided in the \emph{prior} state. Formally:
+After accumulation, we must integrate all preimages provided in the lookup extrinsic to arrive at the posterior account state. The lookup extrinsic is a sequence of pairs of service indices and data, of length at most $\Cmaxxtpreimageslen$. These pairs must be ordered and without duplicates (equation \ref{eq:preimagesareordered} requires this). The data must have been solicited by a service but not yet provided in the \emph{prior} state. The total number of data octets within the lookup extrinsic must not exceed $\Cmaxxtpreimagesdatasize$. Formally:
 \begin{align}
-  \xtpreimages &\in \sequence{\tuple{ \serviceid,\, \blob }} \\
+  \label{eq:xtpreimages}\xtpreimages &\in \sequence[:\Cmaxxtpreimageslen]{\tuple{ \serviceid,\, \blob }} \\
   \label{eq:preimagesareordered}\xtpreimages &= \sqorderuniqby{i}{i \in \xtpreimages} \\
-  \forall \tup{\xp¬serviceindex, \xp¬data} &\in \xtpreimages : \local¬fnprovidable(\accountspre, \xp¬serviceindex, \xp¬data)
+  \forall \tup{\xp¬serviceindex, \xp¬data} &\in \xtpreimages : \local¬fnprovidable(\accountspre, \xp¬serviceindex, \xp¬data) \\
+  \label{eq:maxxtpreimagesdatasize}\sum_{\tup{\xp¬serviceindex, \xp¬data} \in \xtpreimages}\!\!\!\!\len{\xp¬data} &\le \Cmaxxtpreimagesdatasize
 \end{align}
 
 We disregard, without prejudice, any preimages which due to the effects of accumulation are no longer useful. We define $\accountspostpreimage$ as the state after the integration of the still-relevant preimages:
