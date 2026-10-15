@@ -333,7 +333,7 @@ We require that the gas allotted for accumulation of each work-digest in each wo
     \forall \wdX \in \wrX_\wr¬digests: \wdX_\wd¬gaslimit \ge \accounts\subb{\wdX_\wd¬serviceindex}_\sa¬minaccgas
 \end{equation}
 
-The work-package itself is not available for checking, so we require that the activity given in each work-report is within the limits of its work-package (see equations \ref{eq:limitworkpackagebandwidth}, \ref{eq:checkextractsize}, \ref{eq:maxbundlelen}, \ref{eq:wplimits} and \ref{eq:isauthinvocation}). Of the items which the bundle size limit $\Cmaxbundlesize$ covers, the work-digests give only the imports and the extrinsics:
+The work-package itself is not available for checking, so we require that the activity given in each work-report is within the limits of its work-package (see equations \ref{eq:limitworkpackagebandwidth}, \ref{eq:checkextractsize}, \ref{eq:maxbundlesize}, \ref{eq:wplimits} and \ref{eq:isauthinvocation}). Of the items which the input data limit $\Cmaxinputsize$ covers, the work-digests give only the imports and the extrinsics:
 \begin{equation}
   \label{eq:reportrefineload}
   \forall \wrX \in \incomingreports:\ \begin{aligned}[t]
@@ -341,8 +341,8 @@ The work-package itself is not available for checking, so we require that the ac
     \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬importcount) \le \Cmaxpackageimports \ \wedge \\
     &\sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬exportcount) \le \Cmaxpackageexports \ \wedge
     \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬xtcount) \le \Cmaxpackagexts \ \wedge \\
-    &\sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬xtsize + \wdX_\wd¬importcount \cdot \Csegmentfootprint) \le \Cmaxbundlesize \ \wedge \\
-    &(\wrX_\wr¬avspec)_\as¬bundlelen \le \Cmaxbundlelen \ \wedge
+    &\sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬xtsize + \wdX_\wd¬importcount \cdot \Csegmentfootprint) \le \Cmaxinputsize \ \wedge \\
+    &(\wrX_\wr¬avspec)_\as¬bundlelen \le \Cmaxbundlesize \ \wedge
     \wrX_\wr¬authgasused \le \Cpackageauthgas
   \end{aligned}
 \end{equation}
