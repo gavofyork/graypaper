@@ -117,7 +117,7 @@ We limit the total size of the \emph{input data} of a work-package, its import a
   &\Cmaxinputsize \equiv \Cmaxpackageimports\cdot\Csegmentfootprint + 4096 + 64 + 64 = 13,791,360
 \end{align}
 
-The encoded bundle (see equation \ref{eq:makebundle}) also contains the fixed-size fields and length prefixes of the work-package (214 octets, plus 32 for each prerequisite and 62 for each work-item), a 34-octet reference and a one-octet justification length prefix for each imported segment, and a 36-octet reference for each extrinsic. The bundle length is thus bounded by $\Cmaxbundlesize$:
+The encoded bundle (see equation \ref{eq:makebundle}) also contains the fixed-size fields and length prefixes of the work-package (214 octets) and work-items (62 octets each), a 32 octet hash for each prerequisite, a 34-octet reference and a one-octet justification length prefix for each imported segment, and a 36-octet reference for each extrinsic. The bundle length is thus bounded by $\Cmaxbundlesize$:
 \begin{equation}
   \label{eq:maxbundlesize}
   \begin{aligned}
