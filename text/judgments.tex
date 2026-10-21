@@ -172,12 +172,12 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
     \offenders' &\equiv \offenders \cup \set{\build{
         \xc¬offenderkey
       }{
-        \tup{\xc¬offenderkey, \dots} \in \xtculprits
+        \tup{\xc¬reporthash, \xc¬offenderkey, \xc¬signature} \in \xtculprits
       }} \\
     &\phantom{{} \equiv \offenders {}} \cup \set{\build{
         \xf¬offenderkey
       }{
-        \tup{\xf¬offenderkey, \dots} \in \xtfaults
+        \tup{\xf¬reporthash, \xf¬validity, \xf¬offenderkey, \xf¬signature} \in \xtfaults
       }}
   \end{split}
 \end{align}
@@ -187,7 +187,7 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
 The offenders markers must contain exactly the keys of all new offenders, respectively. Formally:
 \begin{align}
   \H_\¬offendersmark &\equiv
-    \sq{\build{\xc¬offenderkey}{\tup{\xc¬offenderkey,\dots} \orderedin \xtculprits}}
+    \sq{\build{\xc¬offenderkey}{\tup{\xc¬reporthash, \xc¬offenderkey, \xc¬signature} \orderedin \xtculprits}}
     \concat
-    \sq{\build{\xf¬offenderkey}{\tup{\xf¬offenderkey,\dots} \orderedin \xtfaults}}
+    \sq{\build{\xf¬offenderkey}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offenderkey, \xf¬signature} \orderedin \xtfaults}}
 \end{align}
