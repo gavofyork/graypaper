@@ -1,12 +1,12 @@
 \section{Disputes, Verdicts and Judgments}\label{sec:disputes}
 
-\Jam provides a means of recording \emph{judgments}: consequential votes amongst most of the validators over the validity of a \emph{work-report} (a unit of work done within \Jam, see section \ref{sec:reporting}). Such collections of judgments are known as \emph{verdicts}. \Jam also provides a means of registering \emph{offenses}, judgments and guarantees which dissent with an established \emph{verdict}. Together these form the \emph{disputes} system.
+\Jam provides a means of recording \emph{judgments}: consequential votes from validators over the validity of a \emph{work-report} (a unit of work done within \Jam, see section \ref{sec:reporting}). Collections of judgments from which the validity of a work-report can be concluded are known as \emph{verdicts}. \Jam also provides a means of registering \emph{offenses}, judgments and guarantees which dissent with an established \emph{verdict}. Together these form the \emph{disputes} system.
 
 The registration of a verdict is not expected to happen very often in practice, however it is an important security backstop for removing and banning invalid work-reports from the processing pipeline as well as removing troublesome keys from the validator set where there is consensus over their malfunction. It also helps coordinate nodes to revert chain-extensions containing invalid work-reports and provides a convenient means of aggregating all offending validators for punishment in a higher-level system.
 
 Judgement statements come about naturally as part of the auditing process and are expected to be positive, further affirming the guarantors' assertion that the work-report is valid. In the event of a negative judgment, then all validators audit said work-report and we assume a verdict will be reached. Auditing and guaranteeing are off-chain processes properly described in sections \ref{sec:workpackagesandworkreports} and \ref{sec:auditing}.
 
-A judgment against a report implies that the chain is already reverted to some point prior to the accumulation of said report, usually forking at the block immediately prior to that at which accumulation happened. The specific strategy for chain selection is described fully in section \ref{sec:bestchain}. Authoring a block with a non-positive verdict has the effect of cancelling its imminent accumulation, as can be seen in equation \ref{eq:removenonpositive}.
+A verdict against a report implies that the chain is already reverted to some point prior to the accumulation of said report, usually forking at the block immediately prior to that at which accumulation happened. The specific strategy for chain selection is described fully in section \ref{sec:bestchain}. Authoring a block with a non-positive verdict for a report has the effect of cancelling the report's imminent accumulation, as can be seen in equation \ref{eq:removenonpositive}.
 
 Registering a verdict also has the effect of placing a permanent record of the event on-chain and allowing any offending keys to be placed on-chain both immediately or in forthcoming blocks, again for permanent record.
 
@@ -16,7 +16,7 @@ As mentioned, recording reports found to have a high confidence of invalidity is
 
 \subsection{The State}
 
-The \emph{disputes} state includes four items, three of which concern verdicts: a good-set ($\goodset$), a bad-set ($\badset$) and a wonky-set ($\wonkyset$) containing the hashes of all work-reports which were respectively judged to be correct, incorrect or that it appears impossible to judge. The fourth item, the punish-set ($\offenders$), is a set of Ed25519 keys representing validators which were found to have misjudged a work-report.
+The \emph{disputes} state includes four items, three of which concern verdicts: a good-set ($\goodset$), a bad-set ($\badset$) and a wonky-set ($\wonkyset$). The good-set contains the hashes of all work-reports which were judged to be correct. Both the bad-set and the wonky-set contain hashes of work-reports judged to be incorrect; the bad-set contains those judged incorrect by a super-majority of validators and thus a majority of honest validators, while the wonky-set contains those not yet judged incorrect by a super-majority but still judged incorrect by at least one honest validator. While bad and wonky reports are both deemed invalid, offenses may only be registered against reports in the bad-set; reports in the wonky-set are not considered to have sufficient consensus over their invalidity to warrant punishment.\footnote{All honest validators ought to agree on the validity of a report, and thus a single negative judgment from an honest validator ought to be sufficient to be convinced of the invalidity of a report. In practice however we imagine that honest validators may disagree due to implementation bugs, and so are conservative in registering offenses.} The fourth item in the disputes state, the punish-set ($\offenders$), is a set of Ed25519 keys representing validators which were found to have misjudged a work-report.
 \begin{equation}\label{eq:disputesspec}
   \disputes \equiv \tup{\goodset, \badset, \wonkyset, \offenders}
 \end{equation}
@@ -42,24 +42,23 @@ The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise i
   \end{aligned}
 \end{equation}
 
-The signatures of all judgments must be valid in terms of one of the two allowed validator key-sets, identified by the verdict's second term which must be either the epoch index of the prior state or one less. Each verdict must contain judgments from exactly two-thirds plus one of the identified validators. Formally:
+The signatures of all judgments must be valid in terms of one of the two allowed validator key-sets, identified by the verdict's second term which must be either the epoch index of the prior state or one less. Formally:
 \begin{gather}
   K(\xv¬epochindex) \equiv \begin{cases}
     \activeset &\when \xv¬epochindex = \displaystyle \ffrac{\thetime}{\Cepochlen}\\
     \previousset &\otherwise
   \end{cases}\\
   \begin{aligned}
-    \forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts : \bigwedge &\abracegroup{
-      &\len{\xv¬judgments} = \floor{\twothirds\len{\mathbf{k}}} + 1 \,,\\
-      &\forall \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments :\\
-      &\quad \xvj¬judgeindex < \len{\mathbf{k}} \wedge \xvj¬signature \in \edsignature{\mathbf{k}[\xvj¬judgeindex]_\vk¬ed}{\Xvalidif{v} \concat \xv¬reporthash}
-    }\\
+    \forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts, \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments : \bigwedge &\abracegroup{
+      \xvj¬judgeindex &< \len{\mathbf{k}} \,,\\
+      \xvj¬signature &\in \edsignature{\mathbf{k}[\xvj¬judgeindex]_\vk¬ed}{\Xvalidif{v} \concat \xv¬reporthash}
+    } \\
     &\where \mathbf{k} = K(\xv¬epochindex)
   \end{aligned}\\
   \Xvalid \equiv \text{{\small \texttt{\$jam\_valid}}}\,,\ \Xinvalid \equiv \text{{\small \texttt{\$jam\_invalid}}}
 \end{gather}
 
-Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set:
+Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set. Note that as discussed above we do not permit offenses to be reported against wonky reports despite otherwise considering them to be invalid.
 \begin{align}
   \forall \tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
     &\xc¬reporthash \in \badset' \,,\\
@@ -67,19 +66,19 @@ Offender signatures must be similarly valid and reference work-reports with judg
     &\xc¬signature \in \edsignature{\xc¬offenderindex}{\Xguarantee \concat \xc¬reporthash}
   }\\
   \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
-    &\xf¬reporthash \in \badset' \Leftrightarrow \xf¬reporthash \not\in \goodset' \Leftrightarrow \xf¬validity \,,\\
+    &\xf¬validity \Rightarrow \xf¬reporthash \in \badset' \,,\\
+    &\lnot\xf¬validity \Rightarrow \xf¬reporthash \in \goodset' \,,\\
     &\xf¬offenderindex \in \mathbf{k} \,,\\
     &\xf¬signature \in \edsignature{\xf¬offenderindex}{\Xvalidif{v} \concat \xf¬reporthash}\\
   }\\
   \nonumber\where \mathbf{k} &= \set{\build{i_\vk¬ed}{i \in \previousset \cup \activeset}} \setminus \offenders
 \end{align}
 
-Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. There may be no duplicate report hashes within the extrinsic, nor amongst any past reported hashes. Formally:
+Verdicts $\xtverdicts$ must be ordered by report hash. There may be no duplicate report hashes within the extrinsic. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. Formally:
 \begin{align}
   &\xtverdicts = \sqorderuniqby{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}\\
   &\xtculprits = \sqorderuniqby{\xc¬offenderindex}{\tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} \in \xtculprits} \,,\
-  \xtfaults = \sqorderuniqby{\xf¬offenderindex}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!\\
-  &\set{\build{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}} \disjoint \goodset \cup \badset \cup \wonkyset
+  \xtfaults = \sqorderuniqby{\xf¬offenderindex}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!
 \end{align}
 
 The judgments of all verdicts must be ordered by validator index and there may be no duplicates:
@@ -87,41 +86,59 @@ The judgments of all verdicts must be ordered by validator index and there may b
   \forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts : \xv¬judgments = \sqorderuniqby{\xvj¬judgeindex}{\tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments}
 \end{equation}
 
+\newcommand*{\good}{\top}
+\newcommand*{\bad}{\bot}
+\newcommand*{\wonky}{\bot^*}
+
+Each verdict must contain either concordant judgments from exactly two-thirds plus one of the identified validators, indicating that the report is good ($\good$, positive judgments) or bad ($\bad$, negative judgments), or negative judgments from exactly one-third of the validators, indicating that the report is wonky ($\wonky$). Formally:
+\begin{gather}
+  \begin{aligned}
+    V(\xv¬epochindex, \xv¬judgments) \equiv {} &\begin{cases}
+      \good &\when t = \len{\xv¬judgments} = \floor{\nicefrac{2n}{3}} + 1 \\
+      \bad &\when t = 0 \land \len{\xv¬judgments} = \floor{\nicefrac{2n}{3}} + 1 \\
+      \wonky &\when t = 0 \land \len{\xv¬judgments} = \floor{\nicefrac{n}{3}} \\
+      \error &\otherwise
+    \end{cases} \\
+    &\where t = \sum_{\tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments}\!\!\!\! \xvj¬validity \\
+    &\also n = \len{K(\xv¬epochindex)}
+  \end{aligned} \\
+  \forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts : V(\xv¬epochindex, \xv¬judgments) \ne \error
+\end{gather}
+
 \newcommand*{\verdicts}{\mathbf{v}}
 \newcommand*{\vs¬reporthash}{\¬reporthash}
-\newcommand*{\vs¬valid}{v}
+\newcommand*{\vs¬validity}{v}
 
-We define $\verdicts$ to derive from the sequence of verdicts introduced in the block's extrinsic. For each verdict, $\verdicts$ contains only the report hash and whether the report is good ($\top$), bad ($\bot$) or wonky ($\none$), which is determined from the sum of positive judgments. We require this sum to be either exactly two-thirds-plus-one, zero or one-third of the validator set indicating, respectively, that the report is good, that it's bad, or that it's wonky.\footnote{This requirement may seem somewhat arbitrary, but these happen to be the decision thresholds for our three possible actions and are acceptable since the security assumptions include the requirement that at least two-thirds-plus-one validators are live (\cite{cryptoeprint:2024/961} discusses the security implications in depth).} Formally:
+We define $\verdicts$ to derive from the sequence of verdicts introduced in the block's extrinsic. For each verdict, $\verdicts$ contains only the report hash and whether the report is good, bad or wonky. Formally:
 \begin{equation}\label{eq:verdicts}
   \begin{aligned}
-    \verdicts &\in \sequence{\tup{\hash, \set{\top, \bot, \none}}} \\
+    \verdicts &\in \sequence{\tup{\hash, \set{\good, \bad, \wonky}}} \\
     \verdicts &\equiv \sq{\build{
       \tup{\xv¬reporthash, V(\xv¬epochindex, \xv¬judgments)}
     }{
       \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \orderedin \xtverdicts
-    }} \\
-    V(\xv¬epochindex, \xv¬judgments) &\equiv \begin{cases}
-      \top &\when t = \floor{\twothirds\len{\mathbf{k}}} + 1 \\
-      \bot &\when t = 0 \\
-      \none &\when t = \floor{\onethird\len{\mathbf{k}}}
-    \end{cases} \\
-    \where t &= \sum_{\tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments}\!\!\!\! \xvj¬validity \\
-    \also \mathbf{k} &= K(\xv¬epochindex)
+    }}
   \end{aligned}
 \end{equation}
 
-Any verdict containing solely valid judgments implies the same report having at least one valid entry in the faults sequence $\xtfaults$. Formally:
+The extrinsic must not contain a verdict for any already-judged report, with the exception of a bad verdict for a report previously found wonky.
 \begin{align}
-  \forall \tup{\¬reporthash, \top} \in \verdicts &:
-    \exists \tup{\¬reporthash, \dots} \in \xtfaults
+  \set{\build{\vs¬reporthash}{\tup{\vs¬reporthash, \vs¬validity} \in \verdicts}} &\disjoint \goodset \cup \badset \\
+  \set{\build{\vs¬reporthash}{\tup{\vs¬reporthash, \vs¬validity} \in \verdicts, \vs¬validity \ne \bad}} &\disjoint \wonkyset
 \end{align}
 
-We clear any availability assignments for work-reports which we judged as uncertain or invalid:
+A good verdict implies the same report having at least one valid entry in the faults sequence $\xtfaults$. Formally:
+\begin{align}
+  \forall \tup{\vs¬reporthash, \good} \in \verdicts &:
+    \exists \tup{\vs¬reporthash, \dots} \in \xtfaults
+\end{align}
+
+We clear any availability assignments for work-reports which we judged as incorrect (bad or wonky):
 \begin{equation}\label{eq:removenonpositive}
   \forall c \in \coreindex : \availassignmentspostjudgment\subb{c} = \begin{cases}
     \none &\!\!\!\!\when
-      \tup{\blake{(\availassignments\subb{c}_\aa¬guarantee)_\g¬workreport}, \vs¬valid} \in \verdicts,
-      \vs¬valid \in \set{\bot, \none} \\
+      \tup{\blake{(\availassignments\subb{c}_\aa¬guarantee)_\g¬workreport}, \vs¬validity} \in \verdicts,
+      \vs¬validity \in \set{\bad, \wonky} \\
     \availassignments\subb{c} &\!\!\!\!\otherwise
   \end{cases}\!\!\!\!\!\!\!
 \end{equation}
@@ -132,19 +149,23 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
   \goodset' &\equiv \goodset \cup \set{\build{
       \vs¬reporthash
     }{
-      \tup{\vs¬reporthash, \top} \in \verdicts
+      \tup{\vs¬reporthash, \good} \in \verdicts
     }} \\
   \label{eq:badsetdef}
   \badset' &\equiv \badset \cup \set{\build{
       \vs¬reporthash
     }{
-      \tup{\vs¬reporthash, \bot} \in \verdicts
+      \tup{\vs¬reporthash, \bad} \in \verdicts
     }} \\
   \label{eq:wonkysetdef}
-  \wonkyset' &\equiv \wonkyset \cup \set{\build{
+  \wonkyset' &\equiv (\wonkyset \cup \set{\build{
       \vs¬reporthash
     }{
-      \tup{\vs¬reporthash, \none} \in \verdicts
+      \tup{\vs¬reporthash, \wonky} \in \verdicts
+    }}) \setminus \set{\build{
+      \vs¬reporthash
+    }{
+      \tup{\vs¬reporthash, \bad} \in \verdicts
     }} \\
   \label{eq:offendersdef}
   \begin{split}
