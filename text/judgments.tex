@@ -60,16 +60,16 @@ The signatures of all judgments must be valid in terms of one of the two allowed
 
 Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set. Note that as discussed above we do not permit offenses to be reported against wonky reports despite otherwise considering them to be invalid.
 \begin{align}
-  \forall \tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
+  \forall \tup{\xc¬reporthash, \xc¬offenderkey, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
     &\xc¬reporthash \in \badset' \,,\\
-    &\xc¬offenderindex \in \mathbf{k} \,,\\
-    &\xc¬signature \in \edsignature{\xc¬offenderindex}{\Xguarantee \concat \xc¬reporthash}
+    &\xc¬offenderkey \in \mathbf{k} \,,\\
+    &\xc¬signature \in \edsignature{\xc¬offenderkey}{\Xguarantee \concat \xc¬reporthash}
   }\\
-  \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
+  \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offenderkey, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
     &\xf¬validity \Rightarrow \xf¬reporthash \in \badset' \,,\\
     &\lnot\xf¬validity \Rightarrow \xf¬reporthash \in \goodset' \,,\\
-    &\xf¬offenderindex \in \mathbf{k} \,,\\
-    &\xf¬signature \in \edsignature{\xf¬offenderindex}{\Xvalidif{v} \concat \xf¬reporthash}\\
+    &\xf¬offenderkey \in \mathbf{k} \,,\\
+    &\xf¬signature \in \edsignature{\xf¬offenderkey}{\Xvalidif{v} \concat \xf¬reporthash}\\
   }\\
   \nonumber\where \mathbf{k} &= \set{\build{i_\vk¬ed}{i \in \previousset \cup \activeset}} \setminus \offenders
 \end{align}
@@ -77,8 +77,8 @@ Offender signatures must be similarly valid and reference work-reports with judg
 Verdicts $\xtverdicts$ must be ordered by report hash. There may be no duplicate report hashes within the extrinsic. Offender signatures $\xtculprits$ and $\xtfaults$ must each be ordered by the validator's Ed25519 key. Formally:
 \begin{align}
   &\xtverdicts = \sqorderuniqby{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}\\
-  &\xtculprits = \sqorderuniqby{\xc¬offenderindex}{\tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} \in \xtculprits} \,,\
-  \xtfaults = \sqorderuniqby{\xf¬offenderindex}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!
+  &\xtculprits = \sqorderuniqby{\xc¬offenderkey}{\tup{\xc¬reporthash, \xc¬offenderkey, \xc¬signature} \in \xtculprits} \,,\
+  \xtfaults = \sqorderuniqby{\xf¬offenderkey}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offenderkey, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!
 \end{align}
 
 The judgments of all verdicts must be ordered by validator index and there may be no duplicates:
@@ -170,14 +170,14 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
   \label{eq:offendersdef}
   \begin{split}
     \offenders' &\equiv \offenders \cup \set{\build{
-        \¬offenderindex
+        \xc¬offenderkey
       }{
-        \tup{\¬offenderindex, \dots} \in \xtculprits
+        \tup{\xc¬offenderkey, \dots} \in \xtculprits
       }} \\
     &\phantom{{} \equiv \offenders {}} \cup \set{\build{
-        \¬offenderindex
+        \xf¬offenderkey
       }{
-        \tup{\¬offenderindex, \dots} \in \xtfaults
+        \tup{\xf¬offenderkey, \dots} \in \xtfaults
       }}
   \end{split}
 \end{align}
@@ -187,7 +187,7 @@ The state's good-set, bad-set and wonky-set assimilate the hashes of the reports
 The offenders markers must contain exactly the keys of all new offenders, respectively. Formally:
 \begin{align}
   \H_\¬offendersmark &\equiv
-    \sq{\build{\¬offenderindex}{\tup{\¬offenderindex,\dots} \orderedin \xtculprits}}
+    \sq{\build{\xc¬offenderkey}{\tup{\xc¬offenderkey,\dots} \orderedin \xtculprits}}
     \concat
-    \sq{\build{\¬offenderindex}{\tup{\¬offenderindex,\dots} \orderedin \xtfaults}}
+    \sq{\build{\xf¬offenderkey}{\tup{\xf¬offenderkey,\dots} \orderedin \xtfaults}}
 \end{align}
