@@ -190,13 +190,13 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
         \text{o/w}\!\!\!\!\!\!\!\! \\
     \end{cases} \\
     &\quad\where i = \max(\Nmax{\len{\mathbf{r}} + 1}): \\
-    &\qquad \sum_{r \in \mathbf{r}\sub{\dots i}, d \in r_\wr¬digests}\!\!\!\!\!\!\!\!(d_\wd¬gaslimit) + \sum_{t \in \mathbf{t}}(t_\dx¬gas) + \!\!\!\!\sum_{x \in \values{\mathbf{f}}}\!\!\!\!(x) \le g \\
+    &\qquad \sum_{r \in \mathbf{r}\sub{\dots i}, d \orderedin r_\wr¬digests}\!\!\!\!\!\!\!\!(d_\wd¬gaslimit) + \sum_{t \orderedin \mathbf{t}}(t_\dx¬gas) + \!\!\!\!\sum_{\kv{s}{x} \in \mathbf{f}}\!\!\!\!(x) \le g \\
     &\quad\also \mathbf{s} = \set{\build{d_\wd¬serviceindex}{r \in \mathbf{r}\sub{\dots i}, d \in r_\wr¬digests}} \cup \keys{\mathbf{f}} \\
     &\quad\also \tup{\mathbf{t}^!, \mathbf{t}^Q} = \local¬fnpartitionxfers(\mathbf{t}, \mathbf{s}, \psX_\ps¬accounts) \\
     &\quad\also n = i + \len{\mathbf{t}^!} + \len{\mathbf{f}} \\
     &\quad\also \tup{\psX^*\!\!, \mathbf{t}^*\!\!, \mathbf{b}^*\!\!, \mathbf{u}^*} = \accpar(\psX, \mathbf{t}^!,\mathbf{r}\sub{\dots i}, \mathbf{f}) \\
     &\quad\also \tup{j, \psX'\!, \mathbf{b}, \mathbf{u}, \mathbf{t}^\dagger} = \accseq(g^*, \mathbf{t}^Q\! \concat \mathbf{t}^*\!\!, \mathbf{r}\sub{i\dots}, \psX^*\!\!, \emset)\\
-    &\quad\also g^* = g + \sum_{t \in \mathbf{t^*}}(t_\dx¬gas) - \!\!\!\!\!\!\sum_{\tup{s, u} \in \mathbf{u}^*}\!\!\!\!\!\!(u)
+    &\quad\also g^* = g + \sum_{t \orderedin \mathbf{t^*}}(t_\dx¬gas) - \!\!\!\!\!\!\sum_{\tup{s, u} \in \mathbf{u}^*}\!\!\!\!\!\!(u)
   }
 \end{equation}
 
@@ -355,8 +355,8 @@ The single-service accumulation function, $\accone$, transforms an initial state
     &\text{where:} \\
     &\ \begin{aligned}
       g &= \subifnone{\mathbf{f}\sub{s}, 0}
-        + \!\!\!\!\sum_{t \in \mathbf{t}, t_\dx¬dest = s}\!\!\!\!(t_\dx¬gas)
-        + \!\!\!\!\!\!\!\!\sum_{r \in \mathbf{r}, d \in r_\wr¬digests, d_\wd¬serviceindex = s}\!\!\!\!\!\!\!\!(d_\wd¬gaslimit) \\
+        + \!\!\!\!\sum_{t \orderedin \mathbf{t}, t_\dx¬dest = s}\!\!\!\!(t_\dx¬gas)
+        + \!\!\!\!\!\!\!\!\sum_{r \in \mathbf{r}, d \orderedin r_\wr¬digests, d_\wd¬serviceindex = s}\!\!\!\!\!\!\!\!(d_\wd¬gaslimit) \\
       \mathbf{i}^T &= \sq{\build{
         t
       }{
@@ -392,7 +392,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
   \begin{aligned}
     \using g &= \max\left(
       \Cblockaccgas,
-      \Creportaccgas \cdot \Ccorecount + \textstyle \sum_{x \in \values{\alwaysaccers}}(x)
+      \Creportaccgas \cdot \Ccorecount + \textstyle \sum_{\kv{s}{x} \in \alwaysaccers}(x)
     \right) \\
     \also \psX &= \tup{
       \is{\ps¬accounts}{\accountspre},
@@ -449,7 +449,7 @@ From this formulation, we also receive $\local¬numberofreportsaccumulated$, the
     t_\dx¬dest = s
   }}} \\
   \nonumber
-  \also &G(s) \equiv \sum_{\tup{s, u} \in \mathbf{u}}(u)
+  \also &G(s) \equiv \sum_{\tup{s, u} \orderedin \mathbf{u}}(u)
 \end{align}
 
 The second intermediate state $\accountspostxfer$ may then be defined with the last-accumulation record being updated for all accumulated services:

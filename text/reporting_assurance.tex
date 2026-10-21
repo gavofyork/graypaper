@@ -329,7 +329,7 @@ No guarantees may be placed on cores which already have availability assignments
 We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\Creportaccgas$:
 \begin{equation}
   \forall \wrX \in \incomingreports:
-    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \Creportaccgas \ \wedge \
+    \sum_{\wdX \orderedin \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \Creportaccgas \ \wedge \
     \forall \wdX \in \wrX_\wr¬digests: \wdX_\wd¬gaslimit \ge \accounts\subb{\wdX_\wd¬serviceindex}_\sa¬minaccgas
 \end{equation}
 
