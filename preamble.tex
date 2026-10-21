@@ -96,7 +96,7 @@
 \newcommand*{\orderuniqby}[2]{#2\,\middle\lWavy\,#1}
 \newcommand*{\sqorderby}[2]{\sq{\orderby{#1}{#2}}}
 \newcommand*{\sqorderuniqby}[2]{\sq{\orderuniqby{#1}{#2}}}
-\newcommand*{\orderedin}{\ensuremath{\mathrel{\mathrlap{<}{\scalebox{0.95}[1]{$-$}}}}}
+\newcommand*{\orderedin}{\ensuremath{\mathrel{\mathrlap{<}{\text{\scalebox{0.95}[1]{$-$}}}}}}
 % Encoding types with a length prefix
 \newcommand*{\var}[1]{\left\updownarrow#1\right.\!}
 
@@ -289,6 +289,13 @@
 \newcommand*{\Cpvmmaxjumptableentries}{\mathsf{Z}_J}
 \newcommand*{\Cpvmpagesize}{\mathsf{Z}_P}
 \newcommand*{\Cpvminitzonesize}{\mathsf{Z}_Z}
+\newcommand*{\Cpvmgaspagefault}{\mathsf{G}_F}
+\newcommand*{\Cpvmgaspagealloc}{\mathsf{G}_A}
+\newcommand*{\Cpvmgaspagezero}{\mathsf{G}_Z}
+\newcommand*{\Cpvmgaspagecopy}{\mathsf{G}_C}
+\newcommand*{\Cpvmgasdeliver}{\mathsf{G}_D}
+\newcommand*{\Cpvmminworkingset}{\mathsf{W}_{\text{min}}}
+\newcommand*{\Cpvmmaxworkingset}{\mathsf{W}_{\text{max}}}
 \newcommand*{\Cgasunknown}{\mathsf{M}_\none}
 \newcommand*{\CgasG}{\mathsf{M}_G}
 \newcommand*{\CgasGeminiconst}{\mathsf{M}_{\Gemini,c}}
@@ -369,6 +376,7 @@
 \newcommand*{\Z}{\mathbb{Z}}
 \newcommand*{\zerohash}{\hash[0]}
 \newcommand*{\valcount}{\mathbb{V}}
+\newcommand*{\workingsetsize}{\mathbb{w}}
 
 %%%%%%%%%%%%
 % Blob and bitstring
@@ -487,6 +495,14 @@
 \newcommand*{\ram}{\mathbb{M}}
 \newcommand*{\ram¬value}{\mathbf{v}}
 \newcommand*{\ram¬access}{\mathbf{a}}
+\newcommand*{\ram¬frames}{\mathbf{f}}
+\newcommand*{\frame¬present}{\top}
+\newcommand*{\frame¬missing¬zero}{\bot_{\mathrm{z}}}
+\newcommand*{\frame¬missing¬copy}{\bot_{\mathrm{c}}}
+
+\newcommand*{\pageid}{\mathbb{p}}
+\newcommand*{\pid¬machine}{m}
+\newcommand*{\pid¬index}{i}
 
 \newcommand*{\workpackage}{\mathbb{P}}
 \newcommand*{\wpX}{\mathbf{p}}
@@ -494,6 +510,7 @@
 \newcommand*{\wp¬authcodehost}{h}
 \newcommand*{\wp¬authcodehash}{u}
 \newcommand*{\wp¬authconfig}{\mathbf{f}}
+\newcommand*{\wp¬authworkingsetsize}{w}
 \newcommand*{\wp¬context}{\¬context}
 \newcommand*{\wp¬workitems}{\mathbf{w}}
 % derived fields
@@ -507,6 +524,7 @@
 \newcommand*{\wi¬codehash}{\¬codehash}
 \newcommand*{\wi¬payload}{\¬payload}
 \newcommand*{\wi¬refgaslimit}{g}
+\newcommand*{\wi¬refworkingsetsize}{w}
 \newcommand*{\wi¬accgaslimit}{a} % O/L ¬authorizer
 \newcommand*{\wi¬exportcount}{\¬exportcount}
 \newcommand*{\wi¬importsegments}{\mathbf{i}}
@@ -581,6 +599,7 @@
 \newcommand*{\sa¬gratis}{f}
 \newcommand*{\sa¬minaccgas}{g}
 \newcommand*{\sa¬minmemogas}{m}
+\newcommand*{\sa¬accworkingsetsize}{w}
 \newcommand*{\sa¬codehash}{c} % Inconsistent with ¬codehash
 \newcommand*{\sa¬balance}{b}
 \newcommand*{\sa¬supervisor}{u}
@@ -865,6 +884,7 @@
 \newcommand*{\gaschargedflag}{\tilde{\gascounter}}
 \newcommand*{\registers}{\varphi}
 \newcommand*{\memory}{\mu}
+\newcommand*{\workingset}{\mathfrak{w}}
 \newcommand*{\pvmreg}{\N_R}
 \newcommand*{\context}{\mathfrak{x}}
 
