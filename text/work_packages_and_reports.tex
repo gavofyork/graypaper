@@ -96,9 +96,9 @@ We limit the total number of exported items to $\Cmaxpackageexports = 3072$, the
   \!\!\!\!
   \begin{aligned}
     &\forall \wpX \in \workpackage: \\
-    &\ \sum_{\wiX \in \wpX_\wp¬workitems} \wiX_\wi¬exportcount \le \Cmaxpackageexports \wedge\
-    \sum_{\wiX \in \wpX_\wp¬workitems} \len{\wiX_\wi¬importsegments} \le \Cmaxpackageimports \wedge\
-    \sum_{\wiX \in \wpX_\wp¬workitems} \len{\wiX_\wi¬extrinsics} \le \Cmaxpackagexts
+    &\ \sum_{\wiX \orderedin \wpX_\wp¬workitems} \wiX_\wi¬exportcount \le \Cmaxpackageexports \wedge\
+    \sum_{\wiX \orderedin \wpX_\wp¬workitems} \len{\wiX_\wi¬importsegments} \le \Cmaxpackageimports \wedge\
+    \sum_{\wiX \orderedin \wpX_\wp¬workitems} \len{\wiX_\wi¬extrinsics} \le \Cmaxpackagexts
   \end{aligned}
 \end{equation}
 
@@ -109,8 +109,8 @@ We limit the total size of the auditable \emph{work-bundle}, containing the work
   \label{eq:checkextractsize}
   &\begin{aligned}
     &\forall \wpX \in \workpackage: \Big(\len{\wpX_\wp¬authtoken} + \len{\wpX_\wp¬authconfig} +
-    \!\!\sum_{\wiX \in \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \Cmaxbundlesize \\
-    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\Csegmentfootprint + \!\!\!\!\!\!\sum_{\tup{h, l} \in \wiX_\wi¬extrinsics} \!\!\!l
+    \!\!\sum_{\wiX \orderedin \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \Cmaxbundlesize \\
+    &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\Csegmentfootprint + \!\!\!\!\!\!\sum_{\tup{h, l} \orderedin \wiX_\wi¬extrinsics} \!\!\!l
   \end{aligned}\\
   \label{eq:segmentfootprint}
   &\Csegmentfootprint \equiv \Csegmentsize + 32\ceil{\log_2(\Cmaxpackageexports)}\\
@@ -121,9 +121,9 @@ We limit the sums of each of the two gas limits to be at most the maximum gas al
 \begin{equation}
   \label{eq:wplimits}
   \forall \wpX \in \workpackage:\ \;
-    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_\wi¬accgaslimit) < \Creportaccgas
+    \sum_{\wiX \orderedin \wpX_\wp¬workitems}(\wiX_\wi¬accgaslimit) < \Creportaccgas
   \quad\wedge\ \;
-    \sum_{\wiX \in \wpX_\wp¬workitems}(\wiX_\wi¬refgaslimit) < \Cpackagerefgas
+    \sum_{\wiX \orderedin \wpX_\wp¬workitems}(\wiX_\wi¬refgaslimit) < \Cpackagerefgas
 \end{equation}
 
 %The implication of equation \ref{eq:checkextractsize} is that we have access to the preimage of all extrinsic data. For guaranteeing, this implies the work-package author probably submits the preimages alongside the work-package itself. For auditing, the extrinsic preimages may be reconstructed in the same manner as the work-package. Both are described later.
@@ -146,7 +146,7 @@ Given the result $\wd¬result$ and gas used $\wd¬gasused$ of some work-item, we
       &\is{\wd¬importcount}{\len{\wi¬importsegments}},\,
       \wd¬exportcount,\,
       \is{\wd¬xtcount}{\len{\wi¬extrinsics}},\,
-      \is{\wd¬xtsize}{\!\!\!\!\sum_{\tup{h, z} \in \wi¬extrinsics}\!\!\!\!z}
+      \is{\wd¬xtsize}{\!\!\!\!\sum_{\tup{h, z} \orderedin \wi¬extrinsics}\!\!\!\!z}
     \end{aligned}}\!\!\!\!
   }
 \end{equation}
