@@ -126,7 +126,7 @@ Formally, we define our result context to be $\implications$, and our invocation
     \isa{\im¬id}{\serviceid},
     \isa{\im¬state}{\partialstate},
     \isa{\im¬modifiedaccounts}{\protoset{\serviceid}},
-    \isa{\im¬nextfreeid}{\serviceid},
+    \isa{\im¬freeids}{\sequence{\serviceid}},
     \isa{\im¬xfers}{\defxfers},
     \isa{\im¬yield}{\optional{\hash}},
     \isa{\im¬provisions}{\protoset{\tuple{\serviceid, \blob}}}
@@ -143,13 +143,22 @@ We define $\Psi_A$, the Accumulation invocation function as:
 \newcommand*{\local¬basestate}{\ao¬poststate}
 \newcommand*{\local¬postxferstate}{\mathbf{s}}
 \begin{gather}
+  \label{eq:accout}
+  \accout \equiv \tuple{
+    \isa{\ao¬poststate}{\partialstate},
+    \isa{\ao¬modifiedaccounts}{\protoset{\serviceid}},
+    \isa{\ao¬defxfers}{\defxfers},
+    \isa{\ao¬yield}{\optional{\hash}},
+    \isa{\ao¬gasused}{\gas},
+    \isa{\ao¬provisions}{\protoset{\tuple{\serviceid, \blob}}}
+  } \\
   \label{eq:accinvocation}
   \Psi_A \colon\abracegroup{
     \tuple{
-      \partialstate, \timeslot, \serviceid, \gas, \sequence{\operandtuple \cup \defxfer}
+      \partialstate, \timeslot, \serviceid, \gas, \sequence{\operandtuple \cup \defxfer}, \sequence{\serviceid}
     }
-    &\to \acconeout \\
-    \tup{\local¬basestate, t, s, g, \mathbf{i}} &\mapsto \begin{cases}
+    &\to \accout \\
+    \tup{\local¬basestate, t, s, g, \mathbf{i}, \mathbf{c}} &\mapsto \begin{cases}
       \tup{
         \ao¬poststate,
         \is{\ao¬modifiedaccounts}{\emset},
@@ -168,7 +177,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
         \is{\ao¬provisions}{\sq{}}
       }
         &\otherwhen \jam¬blob = \none \vee \len{\jam¬blob} > \Cmaxservicecodesize \\
-      C(\Psi_M(\jam¬blob, 5, g, \encode{t, s, \len{\mathbf{i}}}, F, I(\local¬postxferstate, \ao¬modifiedaccounts, s)^2))
+      C(\Psi_M(\jam¬blob, 5, g, \encode{t, s, \len{\mathbf{i}}}, F, I(\local¬postxferstate, \ao¬modifiedaccounts, s, \mathbf{c})^2))
         &\otherwise
     \end{cases} \\
     &\phantom{{}\mapsto{}} \where \jam¬blob = \local¬basestate_\ps¬accounts\subb{s}_\sa¬code \\
@@ -183,17 +192,16 @@ We define $\Psi_A$, the Accumulation invocation function as:
     }}
   }\\
   I\colon\abracegroup{
-    \tuple{\partialstate, \protoset{\serviceid}, \serviceid} &\to \implications\\
-    \tup{\im¬state, \im¬modifiedaccounts, \im¬id} &\mapsto \tup{
+    \tuple{\partialstate, \protoset{\serviceid}, \serviceid, \sequence{\serviceid}} &\to \implications\\
+    \tup{\im¬state, \im¬modifiedaccounts, \im¬id, \im¬freeids} &\mapsto \tup{
       \im¬id,
       \im¬state,
       \im¬modifiedaccounts,
-      \im¬nextfreeid,
+      \im¬freeids,
       \is{\im¬xfers}{\sq{}},
       \is{\im¬yield}{\none},
       \is{\im¬provisions}{\sq{}}
-    }\\
-    &\qquad\where \im¬nextfreeid = \text{check}((\decode[4]{\blake{\encode{\im¬id, \entropyaccumulator', \H_\¬timeslot}}} \bmod (2^{32}-\Cminpublicindex-2^8)) + \Cminpublicindex) \\
+    }
   }\\
   F \in \contextmutator{\implicationspair} \colon \tup{n, \gascounter, \registers, \memory, \imXY} \mapsto \begin{cases}
     \Omega_G(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{gas} \\
@@ -222,7 +230,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \multicolumn{2}{l}{\where \registers' = \registers \exc \registers'_7 = \mathtt{WHAT}}
   \end{cases} \\
   C\colon\abracegroup{
-    \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \acconeout \\
+    \tuple{\gas, \blob \cup \set{\oog, \panic}, \implicationspair} &\to \accout \\
     \tup{\ao¬gasused, \mathbf{o}, \imXY} &\mapsto \begin{cases}
       \tup{
         \is{\ao¬poststate}{\imY_\im¬state},
@@ -254,18 +262,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
 
 The mutator $F$ governs how this context will alter for any given parameterization, and the collapse function $C$ selects one of the two dimensions of context depending on whether the virtual machine's halt was regular or exceptional.
 
-The initializer function $I$ maps some partial state, a set identifying modified services, and a service account index to yield a mutator context such that no further alterations to the given state are implied in either exit scenario. Note that the component $\im¬nextfreeid$ utilizes the random accumulator $\entropyaccumulator'$ and the block's timeslot $\H_\¬timeslot$ to create a deterministic sequence of identifiers which are extremely likely to be unique.
-
-Concretely, we create the identifier from the Blake2 hash of the identifier of the creating service, the current random accumulator $\entropyaccumulator'$ and the block's timeslot. Thus, within a service's accumulation it is almost certainly unique, but it is not necessarily unique across all services, nor at all times in the past. We utilize a \emph{check} function to find the first such index in this sequence which does not already represent a service:
-\begin{equation}
-  \label{eq:newserviceindex}
-  \text{check}(i \in \serviceid) \equiv \begin{cases}
-    i &\when i \not\in \keys{\local¬basestate_\ps¬accounts} \\
-    \text{check}((i - \Cminpublicindex + 1) \bmod (2^{32}-2^8-\Cminpublicindex) + \Cminpublicindex)&\otherwise
-  \end{cases}
-\end{equation}
-
-\nb In the highly unlikely event that a block executes to find that a single service index has inadvertently been attached to two different services, then the block is considered invalid. Since no service can predict the identifier sequence ahead of time, they cannot intentionally disadvantage the block author.
+The initializer function $I$ maps some partial state, a set identifying modified services, a service account index, and a sequence of unused service indices to yield a mutator context such that no further alterations to the given state are implied.
 
 \undef{\local¬basestate}
 
@@ -402,7 +399,7 @@ These make no assumptions about the context $\context$; it is always passed thro
       \encode{p_\wp¬context} &\when p \ne \none \wedge \registers_{10} = 10 \\
       \encode{\var{\sq{\build{S(w)}{w \orderedin p_\wp¬workitems}}}} &\when p \ne \none \wedge \registers_{10} = 11 \\
       S(p_\wp¬workitems[\registers_{11}]) &\when p \ne \none \wedge \registers_{10} = 12 \wedge \registers_{11} < \len{p_\wp¬workitems} \\
-      \multicolumn{2}{l}{\where S(w) \equiv \encode{\encode[4]{w_\wi¬serviceindex}, w_\wi¬codehash, \encode[8]{w_\wi¬refgaslimit, w_\wi¬accgaslimit}, \encode[2]{w_\wi¬exportcount, \len{w_\wi¬importsegments}, \len{w_\wi¬extrinsics}}, \encode[4]{\len{w_\wi¬payload}}}} \\
+      \multicolumn{2}{l}{\where S(w) \equiv \encode{\encode[8]{w_\wi¬serviceindex}, w_\wi¬codehash, \encode[8]{w_\wi¬refgaslimit, w_\wi¬accgaslimit}, \encode[2]{w_\wi¬exportcount, \len{w_\wi¬importsegments}, \len{w_\wi¬extrinsics}}, \encode[4]{\len{w_\wi¬payload}}}} \\
       p_\wp¬workitems[\registers_{11}]_\wi¬payload &\when p \ne \none \wedge \registers_{10} = 13 \wedge \registers_{11} < \len{p_\wp¬workitems} \\
       \encode{\var{\mathbf{i}}} &\when \mathbf{i} \ne \none \wedge \registers_{10} = 14 \\
       \encode{\mathbf{i}[\registers_{11}]} &\when \mathbf{i} \ne \none \wedge \registers_{10} = 15 \wedge \registers_{11} < \len{\mathbf{i}} \\
@@ -758,12 +755,12 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \begin{aligned}
         &\fnencode(
           \mathbf{a}_\sa¬codehash,
-          \encode[4]{\mathbf{a}_\sa¬supervisor, \mathbf{a}_\sa¬supervisorcreated},
-          \encode[8]{\mathbf{a}_\sa¬balance, \mathbf{a}_\sa¬supervisorbalance, \mathbf{a}_\sa¬minbalance, \mathbf{a}_\sa¬minaccgas, \mathbf{a}_\sa¬minmemogas, \mathbf{a}_\sa¬octets}, \\
+          \encode[8]{\mathbf{a}_\sa¬supervisor, \mathbf{a}_\sa¬balance, \mathbf{a}_\sa¬supervisorbalance, \mathbf{a}_\sa¬minbalance, \mathbf{a}_\sa¬minaccgas, \mathbf{a}_\sa¬minmemogas, \mathbf{a}_\sa¬octets}, \\
         &\phantom{\fnencode(}
           \encode[4]{\mathbf{a}_\sa¬items},
           \encode[8]{\mathbf{a}_\sa¬gratis},
-          \encode[4]{\mathbf{a}_\sa¬created, \mathbf{a}_\sa¬lastacc, \mathbf{a}_\sa¬parent})
+          \encode[4]{\mathbf{a}_\sa¬created, \mathbf{a}_\sa¬lastacc},
+          \encode[8]{\mathbf{a}_\sa¬parent})
       \end{aligned} &\when \mathbf{a} \ne \none \\
       \none &\otherwise
     \end{cases} \\
@@ -783,17 +780,16 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\begin{aligned}
     \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
     \using \mathbf{a} &= \begin{cases}
-      \decode[4]{\memory\subrange{a}{4\Ccorecount}} &\when \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
+      \decode[8]{\memory\subrange{a}{8\Ccorecount}} &\when \Nrange{a}{8\Ccorecount} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \mathbf{z} &= \begin{cases}
-      \set{\build{\kv{s}{g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\when \Nrange{o}{12n} \subseteq \readable{\memory} \\
+      \set{\build{\kv{s}{g} \ \where \encode[8]{s, g} = \memory\subrange{o+16i}{16}}{i \in \Nmax{n}}} &\when \Nrange{o}{16n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager \\
-      \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\otherwhen \tup{m, v, r} \not\in \serviceid^3 \\
       \tup{\continue, \mathtt{OK}, \tuple{m, \mathbf{a}, v, r, \mathbf{z}}} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasBconst + n \cdot \CgasBlinear
@@ -812,7 +808,6 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\when \mathbf{q} = \error \\
       \tup{\continue, \mathtt{CORE}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen c \ge \Ccorecount \\
       \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen \imX_\im¬id \ne (\imX_\im¬state)_\ps¬assigners\subb{c}\\
-      \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, (\imX_\im¬state)_\ps¬assigners\subb{c}} &\otherwhen a \not\in \serviceid \\
       \tup{\continue, \mathtt{OK}, \mathbf{q}, a} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasA
@@ -854,19 +849,19 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using \sq{\local¬desiredid, x, o} &= \registers\subrange{8}{3} \\
     \using &\encode{\sa¬codehash, \encode[4]{l}, \encode[8]{\sa¬minaccgas, \sa¬minmemogas, \sa¬gratis}} = \memory\subrange{o}{60} \\
-    \using \tup{i', i^*} &= \begin{cases}
-      \tup{\local¬desiredid, \imX_\im¬nextfreeid} &\when \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \\
-      \tup{\imX_\im¬nextfreeid, \text{check}(\Cminpublicindex + (\imX_\im¬nextfreeid - \Cminpublicindex + 42) \bmod (2^{32} - \Cminpublicindex - 2^8))} &\otherwise
+    \using \tup{i', \mathbf{c}'} &= \begin{cases}
+      \tup{\local¬desiredid, \imX_\im¬freeids} &\when \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \\
+      \tup{(\imX_\im¬freeids)\sub{0}, (\imX_\im¬freeids)\interval{1}{}} &\otherwhen \imX_\im¬freeids \ne \sq{} \\
+      \tup{\error, \imX_\im¬freeids} &\otherwise
     \end{cases}\\
     \using \mathbf{a} \in \serviceaccount &= \tup{\begin{aligned}
       &\sa¬codehash,
       \is{\mathbf{\sa¬storage}}{\emset},
       \is{\mathbf{\sa¬requests}}{\set{\kv{\tup{\sa¬codehash, l}}{\sq{}}}},
       \sa¬balance,
-      \is{\sa¬supervisor}{\imX_\im¬id},
-      \is{\sa¬supervisorcreated}{(\imX_\im¬self)_\sa¬created},
-      \is{\sa¬supervisorbalance}{\mathbf{a}_\sa¬minbalance - \sa¬balance}, \\
-      &\sa¬minaccgas,
+      \is{\sa¬supervisor}{\imX_\im¬id}, \\
+      &\is{\sa¬supervisorbalance}{\mathbf{a}_\sa¬minbalance - \sa¬balance},
+      \sa¬minaccgas,
       \sa¬minmemogas,
       \is{\mathbf{\sa¬preimages}}{\emset},
       \is{\sa¬created}{t},
@@ -888,15 +883,15 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \imX_\im¬id \in \set{s, \effectivesupervisor{\mathbf{d}}{s}} &\when x \in \set{0, 2} \\
       \imX_\im¬id = \effectivesupervisor{\mathbf{d}}{s} &\otherwise
     \end{cases} \\
-    \tup{\execst', \registers'_7, \imX'_\im¬nextfreeid, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \Nrange{o}{60} \not\subseteq \readable{\memory} \\
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen l \not\in \preimagelen \\
-      \tup{\continue, \mathtt{WHO}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen s \not\in \keys{\mathbf{d}} \\
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen x > 3 \lor \neg p \lor (\sa¬gratis \ne 0 \wedge \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager) \\
-      \tup{\continue, \mathtt{CASH}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{s}_\sa¬balance < 0 \lor \mathbf{d}'\subb{s}_\sa¬supervisorbalance < 0 \lor {} \\
+    \tup{\execst', \registers'_7, \imX'_\im¬freeids, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \imX_\im¬freeids, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \Nrange{o}{60} \not\subseteq \readable{\memory} \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬freeids, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen l \not\in \preimagelen \\
+      \tup{\continue, \mathtt{WHO}, \imX_\im¬freeids, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen s \not\in \keys{\mathbf{d}} \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬freeids, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen x > 3 \lor \neg p \lor (\sa¬gratis \ne 0 \wedge \imX_\im¬id \ne (\imX_\im¬state)_\ps¬manager) \\
+      \tup{\continue, \mathtt{FULL}, \imX_\im¬freeids, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen i' = \error \lor i' \in \keys{\mathbf{d}} \\
+      \tup{\continue, \mathtt{CASH}, \imX_\im¬freeids, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{s}_\sa¬balance < 0 \lor \mathbf{d}'\subb{s}_\sa¬supervisorbalance < 0 \lor {} \\
       &\phantom{\otherwhen} \mathbf{d}'\subb{s}_\sa¬balance + \mathbf{d}'\subb{s}_\sa¬supervisorbalance < \mathbf{d}'\subb{s}_\sa¬minbalance \\
-      \tup{\continue, \mathtt{FULL}, \imX_\im¬nextfreeid, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \wedge \local¬desiredid \in \keys{\mathbf{d}} \\
-      \tup{\continue, i', i^*, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{s}} &\otherwise
+      \tup{\continue, i', \mathbf{c}', \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{s}} &\otherwise
     \end{cases} \\
     g &\equiv \CgasN
   \end{aligned}$\\
@@ -914,10 +909,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \registers_8 &\otherwise
     \end{cases} \\
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
-    \using \mathbf{d}' &= \mathbf{d} \exc \abracegroup{
-      \mathbf{d}'\subb{d}_\sa¬supervisor &= u \\
-      \mathbf{d}'\subb{d}_\sa¬supervisorcreated &= \mathbf{d}\subb{u}_\sa¬created
-    } \\
+    \using \mathbf{d}' &= \mathbf{d} \exc \mathbf{d}'\subb{d}_\sa¬supervisor = u \\
     \tup{\registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \keys{\mathbf{d}} \lor u \not\in \keys{\mathbf{d}} \\
       \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \ne \effectivesupervisor{\mathbf{d}}{d} \\

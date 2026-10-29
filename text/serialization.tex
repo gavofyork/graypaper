@@ -148,7 +148,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \\
   \encodepreimages{\xtpreimages} &= \encode{
     \var{\sq{\build{
-      \tup{\encode[4]{\xp¬serviceindex}, \var{\xp¬data}}
+      \tup{\encode[8]{\xp¬serviceindex}, \var{\xp¬data}}
     }{
       \tup{\xp¬serviceindex, \xp¬data} \orderedin \xtpreimages}
     }}}
@@ -220,7 +220,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   }
   \\
   \encode{\wdX \in \workdigest} &\equiv \encode{
-    \encode[4]{\wdX_\wd¬serviceindex},
+    \encode[8]{\wdX_\wd¬serviceindex},
     \wdX_\wd¬codehash,
     \wdX_\wd¬payloadhash,
     \encode[8]{\wdX_\wd¬gaslimit},
@@ -252,7 +252,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   }
   \\
   \encode{\wpX \in \workpackage} &\equiv \encode{
-    \encode[4]{\wpX_\wp¬authcodehost},
+    \encode[8]{\wpX_\wp¬authcodehost},
     \wpX_\wp¬authcodehash,
     \wpX_\wp¬context,
     \var{\wpX_\wp¬authtoken},
@@ -261,7 +261,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   }
   \\
   \encode{\wiX \in \workitem} &\equiv \encode{
-    \encode[4]{\wiX_\wi¬serviceindex},
+    \encode[8]{\wiX_\wi¬serviceindex},
     \wiX_\wi¬codehash,
     \encode[8]{\wiX_\wi¬refgaslimit},
     \encode[8]{\wiX_\wi¬accgaslimit},
@@ -282,8 +282,8 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
   \\
   \encode{\dxX \in \defxfer} &\equiv \encode{
     1,
-    \encode[4]{\dxX_\dx¬source},
-    \encode[4]{\dxX_\dx¬dest},
+    \encode[8]{\dxX_\dx¬source},
+    \encode[8]{\dxX_\dx¬dest},
     \dxX_\dx¬destsupervisor,
     \encode[8]{\dxX_\dx¬amount},
     \dxX_\dx¬memo,
