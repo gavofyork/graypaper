@@ -118,12 +118,11 @@ Unlike the other invocation functions, the Refine invocation function implicitly
 
 \subsection{Accumulate Invocation}\label{sec:accumulateinvocation}
 
-Since this is a transition which can directly affect a substantial amount of on-chain state, our invocation context is accordingly complex. It is a tuple with elements for each of the aspects of state which can be altered through this invocation and beyond the account of the service itself includes the deferred transfer list and several dictionaries for alterations to preimage lookup state, core assignments, validator key assignments, newly created accounts and alterations to account privilege levels.
-
-Formally, we define our result context to be $\implications$, and our invocation context to be a pair of these contexts, $\implications \times \implications$ (and thus for any value $\imX \in \implications$ there exists $\imX^2 \in \implications \times \implications$), with one dimension being the regular dimension and generally named $\imX$ and the other being the exceptional dimension and being named $\imY$. The only function which actually alters this second dimension is $\mathtt{checkpoint}$, $\Omega_C$ and so it is rarely seen.
+Since this is a transition which can directly affect a substantial amount of on-chain state, our invocation context is accordingly complex. We first define a result context, characterized by the set $\implications$, as a tuple containing the identity of the accumulating service $\im¬id$, state components $\im¬state \in \partialstate$ (see equation \ref{eq:partialstate}), a flag indicating if the accumulating service was the registrar at the beginning of the invocation $\im¬wasregistrar$, a set identifying modified accounts $\im¬modifiedaccounts$, a sequence of unused public service indices $\im¬freeids$, a list of deferred transfers produced by the invocation $\im¬xfers$, an optional output commitment $\im¬yield$, and a set of preimages to be integrated into the state $\im¬provisions$. We define a convenience equivalence $\imX_\im¬self$ to easily denote the accumulating service account.
 \begin{align}\label{eq:implications}
   \implications &\equiv \tuple{
     \isa{\im¬id}{\serviceid},
+    \isa{\im¬wasregistrar}{\bool},
     \isa{\im¬state}{\partialstate},
     \isa{\im¬modifiedaccounts}{\protoset{\serviceid}},
     \isa{\im¬freeids}{\sequence{\serviceid}},
@@ -135,9 +134,7 @@ Formally, we define our result context to be $\implications$, and our invocation
     \imX_\im¬self &\equiv (\imX_\im¬state)_\ps¬accounts\subb{\imX_\im¬id}
 \end{align}
 
-We define a convenience equivalence $\imX_\im¬self$ to easily denote the accumulating service account.
-
-We track both regular and exceptional dimensions within our context mutator, but collapse the result of the invocation to one or the other depending on whether the termination was regular or exceptional (\ie out-of-gas or panic).
+We define our invocation context to be a pair of result contexts, $\implications \times \implications$ (and thus for any value $\imX \in \implications$ there exists $\imX^2 \in \implications \times \implications$), with one dimension being the regular dimension and generally named $\imX$ and the other being the exceptional dimension and being named $\imY$. The only function which actually alters this second dimension is $\mathtt{checkpoint}$, $\Omega_C$ and so it is rarely seen. We track both regular and exceptional dimensions within our context mutator, but collapse the result of the invocation to one or the other depending on whether the termination was regular or exceptional (\ie out-of-gas or panic).
 
 We define $\Psi_A$, the Accumulation invocation function as:
 \newcommand*{\local¬basestate}{\ao¬poststate}
@@ -195,6 +192,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \tuple{\partialstate, \protoset{\serviceid}, \serviceid, \sequence{\serviceid}} &\to \implications\\
     \tup{\im¬state, \im¬modifiedaccounts, \im¬id, \im¬freeids} &\mapsto \tup{
       \im¬id,
+      \is{\im¬wasregistrar}{\im¬id = \im¬state_\ps¬registrar},
       \im¬state,
       \im¬modifiedaccounts,
       \im¬freeids,
@@ -262,7 +260,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
 
 The mutator $F$ governs how this context will alter for any given parameterization, and the collapse function $C$ selects one of the two dimensions of context depending on whether the virtual machine's halt was regular or exceptional.
 
-The initializer function $I$ maps some partial state, a set identifying modified services, a service account index, and a sequence of unused service indices to yield a mutator context such that no further alterations to the given state are implied.
+The initializer function $I$ maps some partial state, a set identifying modified services, a service account index, and a sequence of unused public service indices to yield a mutator context such that no further alterations to the given state are implied.
 
 \undef{\local¬basestate}
 
@@ -850,7 +848,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \sq{\local¬desiredid, x, o} &= \registers\subrange{8}{3} \\
     \using &\encode{\sa¬codehash, \encode[4]{l}, \encode[8]{\sa¬minaccgas, \sa¬minmemogas, \sa¬gratis}} = \memory\subrange{o}{60} \\
     \using \tup{i', \mathbf{c}'} &= \begin{cases}
-      \tup{\local¬desiredid, \imX_\im¬freeids} &\when \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \local¬desiredid < \Cminpublicindex \\
+      \tup{\local¬desiredid, \imX_\im¬freeids} &\when \imX_\im¬id = (\imX_\im¬state)_\ps¬registrar \wedge \imX_\im¬wasregistrar \wedge \local¬desiredid < \Cminpublicindex \\
       \tup{(\imX_\im¬freeids)\sub{0}, (\imX_\im¬freeids)\interval{1}{}} &\otherwhen \imX_\im¬freeids \ne \sq{} \\
       \tup{\error, \imX_\im¬freeids} &\otherwise
     \end{cases}\\

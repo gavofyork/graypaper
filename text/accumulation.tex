@@ -180,7 +180,7 @@ As the result of accumulating a transfer cannot reasonably be discarded (this wo
 
 Note that a deferred transfer may still be discarded, and the funds effectively burnt, if by the point of its accumulation the destination service has been ejected. See the definition of $\Psi_A$ in equation \ref{eq:accinvocation}.
 
-We define the outer accumulation function $\accseq$ which transforms a gas-limit, a sequence of deferred transfers, a sequence of work-reports, an initial partial-state, a dictionary of services enjoying free accumulation and a sequence of unused service indices, into a tuple of the number of work-reports accumulated, a posterior state-context, the resultant accumulation-output pairings, the service-indexed gas usage and the sequence of processed transfers:
+We define the outer accumulation function $\accseq$ which transforms a gas-limit, a sequence of deferred transfers, a sequence of work-reports, an initial partial-state, a dictionary of services enjoying free accumulation and a sequence of unused public service indices, into a tuple of the number of work-reports accumulated, a posterior state-context, the resultant accumulation-output pairings, the service-indexed gas usage and the sequence of processed transfers:
 \begin{equation}
   \label{eq:accseq}
   \accseq\colon\abracegroup{
@@ -209,7 +209,7 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
 \newcommand*{\local¬acc}{\accumulate}
 \newcommand*{\local¬manpost}{\mathbf{e}^*}
 
-We come to define the parallelized accumulation function $\accpar$ which, with the help of the Accumulation invocation function $\Psi_A$, transforms an initial state-context, together with a sequence of deferred transfers, a sequence of work-reports, a dictionary of privileged always-accumulate services and a sequence of unused service indices, into a tuple of the posterior state-context, the resultant deferred-transfers and accumulation-output pairings, the service-indexed gas usage, and a sequence of still unused service indices. Note that for the privileges we employ a function $R$ which selects the service to which the manager service changed, or if no change was made, then that which the service itself changed to. This allows privileges to be `owned' and facilitates the removal of the manager service which we see as a helpful possibility. Formally:
+We come to define the parallelized accumulation function $\accpar$ which, with the help of the Accumulation invocation function $\Psi_A$, transforms an initial state-context, together with a sequence of deferred transfers, a sequence of work-reports, a dictionary of privileged always-accumulate services and a sequence of unused public service indices, into a tuple of the posterior state-context, the resultant deferred-transfers and accumulation-output pairings, the service-indexed gas usage, and a sequence of still unused public service indices. Note that for the privileges we employ a function $R$ which selects the service to which the manager service changed, or if no change was made, then that which the service itself changed to. This allows privileges to be `owned' and facilitates the removal of the manager service which we see as a helpful possibility. Formally:
 \begin{gather}
   \label{eq:accpar}
   \accpar\colon\abracegroup[\;]{\begin{aligned}
@@ -362,7 +362,7 @@ $\local¬fnprovide$ is the preimage integration function, which transforms a dic
   }
 \end{align}
 
-We note that while forming the union of newly added services, defined in the above context as $\mathbf{n}$, it is impossible for different services to each contribute the same index for a new service. This is because each service's Accumulate logic is given a separate sequence of unused service indices, disjoint from all the others.
+We note that while forming the union of newly added services, defined in the above context as $\mathbf{n}$, it is impossible for different services to each contribute the same index for a new service. This is because each service's Accumulate logic is given a separate sequence of unused public service indices, disjoint from all the others, and only the registrar service may allocate service indices in the protected range $\Nmax{\Cminpublicindex}$. Note that the manager service may assign itself as the registrar at any time, but following such an assignment is incapable of exercising the privilege until the following round.
 
 \subsection{Final State Integration}
 
