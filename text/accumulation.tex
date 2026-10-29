@@ -4,6 +4,8 @@
 \newcommand*{\local¬fnprovidable}{Y}
 \newcommand*{\local¬fnprovide}{I}
 \newcommand*{\local¬fnpartitionxfers}{T}
+\newcommand*{\local¬fngaslimit}{L}
+\newcommand*{\local¬fnaccinput}{A}
 \newcommand*{\local¬numberofreportsaccumulated}{n}
 \newcommand*{\local¬servicegasused}{\mathbf{u}}
 \newcommand*{\local¬processedtransfers}{\mathbf{t}}
@@ -131,7 +133,7 @@ Rather than passing whole work-digests into accumulate, we extract the salient i
 
 The union of the two $\operandtuple \cup \defxfer$ characterizes inputs to the Accumulation invocation function $\Psi_A$ (defined in equation \ref{eq:accinvocation}).
 
-Our formalisms continue by defining $\partialstate$ as a characterization of (\ie values capable of representing) state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\accountspre$), the upcoming validator keys $\stagingset$, the queue of authorizers $\authqueue$ and the privileges state $\privileges$. Formally:
+Our formalisms continue by defining $\partialstate$ as a characterization of (\ie values capable of representing) state components which are both needed and mutable by the accumulation process. This comprises the service accounts state ($\ps¬accounts$, as in $\accountspre$), the upcoming validator keys ($\ps¬stagingset$, as in $\stagingset$), the queue of authorizers ($\ps¬authqueue$, as in $\authqueue$) and the privileges state ($\ps¬manager$, $\ps¬assigners$, $\ps¬delegator$, $\ps¬registrar$ and $\ps¬alwaysaccers$, as in $\privileges$). Formally:
 \begin{equation}
   \label{eq:partialstate}
   \partialstate \equiv \tuple{\begin{aligned}
@@ -178,12 +180,12 @@ As the result of accumulating a transfer cannot reasonably be discarded (this wo
 
 Note that a deferred transfer may still be discarded, and the funds effectively burnt, if by the point of its accumulation the destination service has been ejected. See the definition of $\Psi_A$ in equation \ref{eq:accinvocation}.
 
-We define the outer accumulation function $\accseq$ which transforms a gas-limit, a sequence of deferred transfers, a sequence of work-reports, an initial partial-state and a dictionary of services enjoying free accumulation, into a tuple of the number of work-reports accumulated, a posterior state-context, the resultant accumulation-output pairings, the service-indexed gas usage and the sequence of processed transfers:
+We define the outer accumulation function $\accseq$ which transforms a gas-limit, a sequence of deferred transfers, a sequence of work-reports, an initial partial-state, a dictionary of services enjoying free accumulation and a sequence of unused public service indices, into a tuple of the number of work-reports accumulated, a posterior state-context, the resultant accumulation-output pairings, the service-indexed gas usage and the sequence of processed transfers:
 \begin{equation}
   \label{eq:accseq}
   \accseq\colon\abracegroup{
-    &\tuple{\gas, \defxfers, \workreports, \partialstate, \dictionary{\serviceid}{\gas}} \to \tuple{\N, \partialstate, \local¬fnservouts, \local¬fngasused, \defxfers} \\
-    &\tup{g, \mathbf{t}, \mathbf{r}, \psX, \mathbf{f}} \!\mapsto\! \begin{cases}
+    &\tuple{\gas, \defxfers, \workreports, \partialstate, \dictionary{\serviceid}{\gas}, \sequence{\serviceid}} \to \tuple{\N, \partialstate, \local¬fnservouts, \local¬fngasused, \defxfers} \\
+    &\tup{g, \mathbf{t}, \mathbf{r}, \psX, \mathbf{f}, \mathbf{c}} \!\mapsto\! \begin{cases}
       \tup{0, \psX, \emset, \sq{}, \sq{}} &
         \when n = 0 \\
       \tup{i + j, \psX', \mathbf{b}^* \!\cup \mathbf{b}, \mathbf{u}^* \!\!\concat \mathbf{u}, \mathbf{t}^!\! \concat \mathbf{t}^\dagger}\!\!\!\! &
@@ -194,8 +196,8 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
     &\quad\also \mathbf{s} = \set{\build{d_\wd¬serviceindex}{r \in \mathbf{r}\sub{\dots i}, d \in r_\wr¬digests}} \cup \keys{\mathbf{f}} \\
     &\quad\also \tup{\mathbf{t}^!, \mathbf{t}^Q} = \local¬fnpartitionxfers(\mathbf{t}, \mathbf{s}, \psX_\ps¬accounts) \\
     &\quad\also n = i + \len{\mathbf{t}^!} + \len{\mathbf{f}} \\
-    &\quad\also \tup{\psX^*\!\!, \mathbf{t}^*\!\!, \mathbf{b}^*\!\!, \mathbf{u}^*} = \accpar(\psX, \mathbf{t}^!,\mathbf{r}\sub{\dots i}, \mathbf{f}) \\
-    &\quad\also \tup{j, \psX'\!, \mathbf{b}, \mathbf{u}, \mathbf{t}^\dagger} = \accseq(g^*, \mathbf{t}^Q\! \concat \mathbf{t}^*\!\!, \mathbf{r}\sub{i\dots}, \psX^*\!\!, \emset)\\
+    &\quad\also \tup{\psX^*\!\!, \mathbf{t}^*\!\!, \mathbf{b}^*\!\!, \mathbf{u}^*\!\!, \mathbf{c}^*} = \accpar(\psX, \mathbf{t}^!,\mathbf{r}\sub{\dots i}, \mathbf{f}, \mathbf{c}) \\
+    &\quad\also \tup{j, \psX'\!, \mathbf{b}, \mathbf{u}, \mathbf{t}^\dagger} = \accseq(g^*, \mathbf{t}^Q\! \concat \mathbf{t}^*\!\!, \mathbf{r}\sub{i\dots}, \psX^*\!\!, \emset, \mathbf{c}^*)\\
     &\quad\also g^* = g + \sum_{t \in \mathbf{t^*}}(t_\dx¬gas) - \!\!\!\!\!\!\sum_{\tup{s, u} \in \mathbf{u}^*}\!\!\!\!\!\!(u)
   }
 \end{equation}
@@ -203,18 +205,19 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
 \newcommand*{\local¬accounts}{\mathbf{d}}
 \newcommand*{\local¬stagingset}{\mathbf{i}}
 \newcommand*{\local¬authqueue}{\mathbf{q}}
+\newcommand*{\local¬accraw}{\accumulate_?}
 \newcommand*{\local¬acc}{\accumulate}
 \newcommand*{\local¬manpost}{\mathbf{e}^*}
 
-We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of deferred transfers, a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the posterior state-context, the resultant deferred-transfers and accumulation-output pairings, and the service-indexed gas usage. Note that for the privileges we employ a function $R$ which selects the service to which the manager service changed, or if no change was made, then that which the service itself changed to. This allows privileges to be `owned' and facilitates the removal of the manager service which we see as a helpful possibility. Formally:
+We come to define the parallelized accumulation function $\accpar$ which, with the help of the Accumulation invocation function $\Psi_A$, transforms an initial state-context, together with a sequence of deferred transfers, a sequence of work-reports, a dictionary of privileged always-accumulate services and a sequence of unused public service indices, into a tuple of the posterior state-context, the resultant deferred-transfers and accumulation-output pairings, the service-indexed gas usage, and a sequence of still unused public service indices. Note that for the privileges we employ a function $R$ which selects the service to which the manager service changed, or if no change was made, then that which the service itself changed to. This allows privileges to be `owned' and facilitates the removal of the manager service which we see as a helpful possibility. Formally:
 \begin{gather}
   \label{eq:accpar}
   \accpar\colon\abracegroup[\;]{\begin{aligned}
-    &\tuple{\partialstate, \defxfers, \workreports, \dictionary{\serviceid}{\gas}} \to \tuple{\partialstate, \defxfers, \local¬fnservouts, \local¬fngasused} \\
-    &\tup{\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}} \mapsto \tup{
+    &\tuple{\partialstate, \defxfers, \workreports, \dictionary{\serviceid}{\gas}, \sequence{\serviceid}} \to \tuple{\partialstate, \defxfers, \local¬fnservouts, \local¬fngasused, \sequence{\serviceid}} \\
+    &\tup{\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}, \mathbf{c}} \mapsto \tup{
       \tup{
         \ps¬accounts', \ps¬stagingset', \ps¬authqueue', \ps¬manager', \ps¬assigners', \ps¬delegator', \ps¬registrar', \ps¬alwaysaccers'
-      }, \concatall{\mathbf{t}'}, \mathbf{b}, \mathbf{u}
+      }, \concatall{\mathbf{t}'}, \mathbf{b}, \mathbf{u}, \mathbf{c}'
     }\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
@@ -222,11 +225,16 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         \ps¬accounts, \ps¬stagingset, \ps¬authqueue, \ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers
       } = \psX \\
       \mathbf{s} &= \set{\build{
-        d_\wd¬serviceindex
+          d_\wd¬serviceindex
         }{
           r \in \mathbf{r}, d \in r_\wr¬digests
         }} \cup \keys{\mathbf{f}} \cup \set{\build{t_\dx¬dest}{t \in \mathbf{t}}} \\
-      N(\mathbf{o}) \in \acconeout &\equiv \tup{
+      J(e) &\equiv \min(i, \len{\mathbf{c}}) \\
+      &\phantom{{}\equiv{}} \where i = \!\!\sum_{s \in \mathbf{s}, s < e}\, \floor{\frac{\local¬fngaslimit(\mathbf{t}, \mathbf{r}, \mathbf{f}, s)}{\CgasN}} \\
+      C(s) &\equiv \mathbf{c}\interval{J(s)}{J(s + 1)} \\
+      \mathbf{c}' &= \mathbf{c}\interval{J(\max(\mathbf{s}) + 1)}{} \\
+      \local¬accraw(s) \equiv {} &\Psi_A(\psX, \thetime', s, \local¬fngaslimit(\mathbf{t}, \mathbf{r}, \mathbf{f}, s), \local¬fnaccinput(\mathbf{t}, \mathbf{r}, s), C(s)) \\
+      N(\mathbf{o}) \in \accout &\equiv \tup{
         \ao¬poststate,
         \is{\ao¬modifiedaccounts}{\emset},
         \is{\ao¬defxfers}{\sq{}},
@@ -238,8 +246,7 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         N(\mathbf{o}) &\when s \in \mathbf{o}_\ao¬modifiedaccounts \land s \in \mathbf{y}_\ao¬modifiedaccounts \setminus \set{\effectivesupervisor{\ps¬accounts}{s}} \\
         \mathbf{o} &\otherwise
       \end{cases} \\
-      &\phantom{{}\equiv{}} \where \mathbf{o} = \accone(\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}, s) \\
-      &\phantom{{}\equiv{}} \also \mathbf{y} = \accone(\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}, \effectivesupervisor{\ps¬accounts}{s}) \\
+      &\phantom{{}\equiv{}} \where \mathbf{o} = \local¬accraw(s)\,,\ \mathbf{y} = \local¬accraw(\effectivesupervisor{\ps¬accounts}{s}) \\
       \mathbf{u} &= \sq{\build{
           \tup{s, \local¬acc(s)_\ao¬gasused}
         }{
@@ -306,6 +313,36 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
 \end{gather}
 \undef{\local¬acc}
 
+$\local¬fngaslimit$ and $\local¬fnaccinput$ give, respectively, the gas limit and inputs for a single invocation of the Accumulate logic of a service $s$. They both accept a sequence of deferred-transfers $\mathbf{t}$ and a sequence of work-reports $\mathbf{r}$, from which the transfers and digests destined for $s$ are isolated. $\local¬fngaslimit$ additionally accepts a dictionary of services enjoying free accumulation $\mathbf{f}$, with the values indicating the amount of free gas.
+\begin{gather}
+  \local¬fngaslimit(\mathbf{t}, \mathbf{r}, \mathbf{f}, s) \equiv \subifnone{\mathbf{f}\sub{s}, 0}
+    + \!\!\!\!\sum_{t \in \mathbf{t}, t_\dx¬dest = s}\!\!\!\!(t_\dx¬gas)
+    + \!\!\!\!\!\!\!\!\sum_{r \in \mathbf{r}, d \in r_\wr¬digests, d_\wd¬serviceindex = s}\!\!\!\!\!\!\!\!(d_\wd¬gaslimit) \\
+  \begin{aligned}
+    \local¬fnaccinput(\mathbf{t}, \mathbf{r}, s) \equiv {} &\sq{\build{
+      t
+    }{
+      t \orderedin \mathbf{t}, t_\dx¬dest = s
+    }} \concat \\
+    &\sq{\build{
+      \tup{\begin{alignedat}{3}
+        \is{\ot¬result}{d_\wd¬result},\,
+        \is{\ot¬gaslimit}{d_\wd¬gaslimit},\,
+        \is{\ot¬payloadhash}{d_\wd¬payloadhash},\,
+        \is{&\ot¬authtrace\;&}{r_\wr¬authtrace&},\\
+        \is{\ot¬segroot}{(r_\wr¬avspec)_\as¬segroot},\,
+        \is{\ot¬packagehash}{(r_\wr¬avspec)_\as¬packagehash},\,
+        \is{&\ot¬authorizer\;&}{r_\wr¬authorizer&}
+      \end{alignedat}}
+    }{
+      \begin{alignedat}{2}
+        r& \orderedin \mathbf{r},&\\
+        d& \orderedin r_\wr¬digests,&\ d_\wd¬serviceindex = s
+      \end{alignedat}
+    }}
+  \end{aligned}
+\end{gather}
+
 $\local¬fnprovide$ is the preimage integration function, which transforms a dictionary of service states and a set of service/blob pairs into a new dictionary of service states. Preimage provisions into services which no longer exist or whose relevant request is dropped are disregarded:
 \begin{align}
   \local¬fnprovide &\colon\abracegroup{
@@ -325,64 +362,7 @@ $\local¬fnprovide$ is the preimage integration function, which transforms a dic
   }
 \end{align}
 
-We note that while forming the union of newly added services, defined in the above context as $\mathbf{n}$, different services may not each contribute the same index for a new service. New indices are explicitly selected to avoid such conflicts. In the unlikely event of a conflict, the block must be considered invalid.
-
-The single-service accumulation function, $\accone$, transforms an initial state-context, a sequence of deferred-transfers, a sequence of work-reports, a dictionary of services enjoying free accumulation (with the values indicating the amount of free gas) and a service index into an alterations state-context, a set identifying the modified services, a sequence of \emph{transfers}, a possible accumulation-output, the actual \textsc{pvm} gas used and a set of preimage provisions. This function wrangles the work-digests of a particular service from a set of work-reports and invokes \textsc{pvm} execution with said data:
-\begin{equation}
-  \label{eq:acconeout}
-  \acconeout \equiv \tuple{
-    \begin{alignedat}{3}
-      \isa{\ao¬poststate&}{\partialstate},\;
-      \isa{&\ao¬modifiedaccounts&}{\protoset{\serviceid}},\;
-      \isa{&\ao¬defxfers&}{\defxfers},\; \\
-      \isa{\ao¬yield&}{\optional{\hash}},\;
-      \isa{&\ao¬gasused&}{\gas},\;
-      \isa{&\ao¬provisions&}{\protoset{\tuple{\serviceid, \blob}}}
-    \end{alignedat}
-  }
-\end{equation}
-\begin{align}
-  \label{eq:accone}
-  &\accone \colon \abracegroup[\;]{
-    &\begin{aligned}
-      \tuple{\begin{aligned}
-        &\partialstate, \defxfers, \workreports,\\
-        &\dictionary{\serviceid}{\gas}, \serviceid
-      \end{aligned}}
-      &\to \acconeout \\
-      \tup{\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}, s} &\mapsto \Psi_A(\psX, \thetime', s, g, \mathbf{i}^T \!\!\concat \mathbf{i}^U)
-    \end{aligned} \\
-    &\text{where:} \\
-    &\ \begin{aligned}
-      g &= \subifnone{\mathbf{f}\sub{s}, 0}
-        + \!\!\!\!\sum_{t \in \mathbf{t}, t_\dx¬dest = s}\!\!\!\!(t_\dx¬gas)
-        + \!\!\!\!\!\!\!\!\sum_{r \in \mathbf{r}, d \in r_\wr¬digests, d_\wd¬serviceindex = s}\!\!\!\!\!\!\!\!(d_\wd¬gaslimit) \\
-      \mathbf{i}^T &= \sq{\build{
-        t
-      }{
-        t \orderedin \mathbf{t}, t_\dx¬dest = s
-      }}\\
-      \mathbf{i}^U &= \sq{\build{
-        \tup{\begin{alignedat}{3}
-          \is{\ot¬result}{d_\wd¬result},\,
-          \is{\ot¬gaslimit}{d_\wd¬gaslimit},\,
-          \is{\ot¬payloadhash}{d_\wd¬payloadhash},\,
-          \is{&\ot¬authtrace\;&}{r_\wr¬authtrace&},\\
-          \is{\ot¬segroot}{(r_\wr¬avspec)_\as¬segroot},\,
-          \is{\ot¬packagehash}{(r_\wr¬avspec)_\as¬packagehash},\,
-          \is{&\ot¬authorizer\;&}{r_\wr¬authorizer&}
-        \end{alignedat}}
-      }{
-        \begin{alignedat}{2}
-          r& \orderedin \mathbf{r},&\\
-          d& \orderedin r_\wr¬digests,&\ d_\wd¬serviceindex = s
-        \end{alignedat}
-      }}
-    \end{aligned}
-  }\!\!\!\!
-\end{align}
-
-This draws upon $\wd¬gaslimit$, the gas limit implied by the selected deferred-transfers, work-reports and gas-privileges.
+We note that while forming the union of newly added services, defined in the above context as $\mathbf{n}$, it is impossible for different services to each contribute the same index for a new service. This is because each service's Accumulate logic is given a separate sequence of unused public service indices, disjoint from all the others, and only the registrar service may allocate service indices in the protected range $\Nmax{\Cminpublicindex}$. Note that the manager service may assign itself as the registrar at any time, but following such an assignment is incapable of exercising the privilege until the following round.
 
 \subsection{Final State Integration}
 
@@ -394,34 +374,34 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
       \Cblockaccgas,
       \Creportaccgas \cdot \Ccorecount + \textstyle \sum_{x \in \values{\alwaysaccers}}(x)
     \right) \\
-    \also \psX &= \tup{
-      \is{\ps¬accounts}{\accountspre},
-      \is{\ps¬stagingset}{\stagingset},
-      \is{\ps¬authqueue}{\authqueue},
-      \is{\ps¬manager}{\manager},
-      \is{\ps¬assigners}{\assigners},
-      \is{\ps¬delegator}{\delegator},
-      \is{\ps¬registrar}{\registrar},
-      \is{\ps¬alwaysaccers}{\alwaysaccers}
-    }
+    \also \psX &= \tup{\begin{alignedat}{4}
+      \is{\ps¬accounts&}{\accountspre}\,,\;
+      \is{&\ps¬stagingset&}{\stagingset}\,,\;
+      \is{&\ps¬authqueue&}{\authqueue}\,,\;
+      \is{&\ps¬manager&}{\manager}\,,\\
+      \is{\ps¬assigners&}{\assigners}\,,\;
+      \is{&\ps¬delegator&}{\delegator}\,,\;
+      \is{&\ps¬registrar&}{\registrar}\,,\;
+      \is{&\ps¬alwaysaccers&}{\alwaysaccers}
+    \end{alignedat}} \\
+    \also \mathbf{c} &= \order{i \in \Nrange{\thetime' \cdot 2^{32}}{2^{32}}}
   \end{aligned} \\
   \label{eq:finalstateaccumulation}
   \tup{
     \local¬numberofreportsaccumulated, \psX', \mathbf{b}, \local¬servicegasused, \local¬processedtransfers
-  } \equiv \accseq(g, \sq{}, \justbecameavailable^*, \psX, \alwaysaccers) \\
+  } \equiv \accseq(g, \sq{}, \justbecameavailable^*, \psX, \alwaysaccers, \mathbf{c}) \\
   \lastaccout' \equiv \sq{\tup{s, h} \in \mathbf{b}} \\
   \label{eq:accountspostaccdef}
-  \tup{
-    \is\ps¬accounts{\accountspostacc},
-    \is\ps¬stagingset{\stagingset'},
-    \is\ps¬authqueue{\authqueue'},
-    \is\ps¬manager{\manager'},
-    \is\ps¬assigners{\assigners'},
-    \is\ps¬delegator{\delegator'},
-    \is\ps¬registrar{\registrar'},
-    \is\ps¬alwaysaccers{\alwaysaccers'}
-  } \equiv \psX'
-  \!\!\!\!\!
+  \tup{\begin{alignedat}{4}
+    \is{\ps¬accounts&}{\accountspostacc}\,,\;
+    \is{&\ps¬stagingset&}{\stagingset'}\,,\;
+    \is{&\ps¬authqueue&}{\authqueue'}\,,\;
+    \is{&\ps¬manager&}{\manager'}\,,\\
+    \is{\ps¬assigners&}{\assigners'}\,,\;
+    \is{&\ps¬delegator&}{\delegator'}\,,\;
+    \is{&\ps¬registrar&}{\registrar'}\,,\;
+    \is{&\ps¬alwaysaccers&}{\alwaysaccers'}
+  \end{alignedat}} \equiv \psX'
 \end{gather}
 
 From this formulation, we also receive $\local¬numberofreportsaccumulated$, the total number of work-reports accumulated and $\local¬servicegasused$, the gas used in the accumulation process for each service. We compose $\accumulationstatistics$, our accumulation statistics, which is a mapping from the service indices which were accumulated to the amount of gas used throughout accumulation and the number of work-items and transfers accumulated. Formally:
@@ -432,7 +412,7 @@ From this formulation, we also receive $\local¬numberofreportsaccumulated$, the
   &\textstyle \accumulationstatistics \equiv \set{\build{
     \kv{s}{S(s)}
   }{
-    S(s) \ne \tup{0, 0, 0}
+    s \in \serviceid, S(s) \ne \tup{0, 0, 0}
   }}
   \!\!\!\!\\
   \nonumber
