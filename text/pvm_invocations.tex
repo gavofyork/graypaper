@@ -795,8 +795,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \set{\build{\kv{s}{g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\otherwhen \Nrange{o}{12n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using p &= (\imX_\im¬id = m^*) \vee \big( m' = m^* \wedge \mathbf{z} = \mathbf{z}^* \wedge (v' = v^* \vee \imX_\im¬id = v^*) \wedge (r' = r^* \vee \imX_\im¬id = r^*) \\
-    &\phantom{{}={}} \qquad\qquad\qquad \wedge \forall c \in \coreindex : (\mathbf{a}\subb{c} = \mathbf{a}^*\subb{c} \vee \imX_\im¬id = \mathbf{a}^*\subb{c}) \big) \\
+    \using p &= (\imX_\im¬id = m^*) \vee \bigwedge \abracegroup{
+      m' &= m^* \\
+      \forall c \in \coreindex : \mathbf{a}\subb{c} &= \mathbf{a}^*\subb{c} \vee \imX_\im¬id = \mathbf{a}^*\subb{c} \\
+      v' &= v^* \vee \imX_\im¬id = v^* \\
+      r' &= r^* \vee \imX_\im¬id = r^* \\
+      \mathbf{z} &= \mathbf{z}^*
+    } \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_{\tup{\ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers}}} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \tuple{m^*, \mathbf{a}^*, v^*, r^*, \mathbf{z}^*}} &\when \set{\mathbf{z}, \mathbf{a}} \ni \error \\
       \tup{\continue, \mathtt{HUH}, \tuple{m^*, \mathbf{a}^*, v^*, r^*, \mathbf{z}^*}} &\otherwhen \neg p \\
