@@ -57,8 +57,8 @@ The state serialization is then defined as the dictionary built from the amalgam
       }}
     } \;, \\
     &&C(11) &\mapsto \encode[4]{\thetime} \;, \\
-    &&C(12) &\mapsto \encode{
-      \encode[4]{\manager, \assigners, \delegator, \registrar},
+    &&C(12) &\mapsto \encode[4]{\manager, \assigners, \delegator, \registrar} \concat \\
+    &&&\phantom{{}\mapsto{}} \encode{
       \var{\sq{\orderby{s}{\build{
         \tup{\encode[4]{s}, \encode[8]{\alwaysaccers\subb{s}}}
       }{
