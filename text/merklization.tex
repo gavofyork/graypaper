@@ -4,17 +4,19 @@ The Merklization process defines a cryptographic commitment from which arbitrary
 
 \subsection{Serialization}
 
-The serialization of state primarily involves placing all the various components of $\thestate$ into a single mapping from 31-octet sequence \emph{state-keys} to octet sequences of indefinite length. The state-key is constructed from a hash component and a chapter component, equivalent to either the index of a state component or, in the case of the inner dictionaries of $\accounts$, a service index.
+The serialization of state primarily involves placing all the various components of $\thestate$ into a single mapping from 31-octet sequence \emph{state-keys} to octet sequences of indefinite length.
 
-We define the state-key constructor functions $C$ as:
+We define the state-key constructor function $C$ as:
 \begin{equation}
   C\colon\abracegroup{
-    \Nbits{8} \cup \tup{\Nbits{8}, \serviceid} \cup \tup{\serviceid, \blob} &\to \blob[31] \\
+    \Nbits{8} \cup \tuple{\serviceid, \set{\none}} \cup \tuple{\serviceid, \Nbits{32}, \blob} &\to \blob[31] \\
     i \in \Nbits{8} &\mapsto \sq{i, 0, 0, \dots} \\
-    \tup{i, s \in \serviceid} &\mapsto \sq{i, n_0, 0, n_1, 0, n_2, 0, n_3, 0, 0, \dots}\ \where n = \encode[4]{s} \\
-    \tup{s, h} &\mapsto \sq{n_0, a_0, n_1, a_1, n_2, a_2, n_3, a_3, a_4, a_5, \dots, a_{26}}\ \where n = \encode[4]{s}, a = \blake{h}
+    \tup{s \in \serviceid, \none} &\mapsto \blake{n}\interval{}{16} \concat n \concat \sq{0, \dots}\ \where n = \encode[8]{s} \\
+    \tup{s \in \serviceid, l \in \Nbits{32}, \mathbf{k} \in \blob} &\mapsto \blake{\encode[8]{s} \concat \encode[4]{l} \concat \mathbf{k}}\interval{}{31}
   }
 \end{equation}
+
+Note that the state-key for the fixed-size fields of a service account, produced by the second case, includes both a truncated hash of the service index and the service index itself. The purpose of the truncated hash is to decorrelate these state-keys, thus minimising their depth in the Merkle tree. The unhashed service index is included so that these state-keys can be easily identified.
 
 The state serialization is then defined as the dictionary built from the amalgamation of each of the components. Cryptographic hashing ensures that there will be no duplicate state-keys given that there are no duplicate inputs to $C$. Formally, we define $T$ which transforms some state $\thestate$ into its serialized form:
 \begin{equation}
@@ -58,7 +60,7 @@ The state serialization is then defined as the dictionary built from the amalgam
     } \;, \\
     &&C(11) &\mapsto \encode[4]{\thetime} \;, \\
     &&C(12) &\mapsto \encode{
-      \encode[4]{\manager, \assigners, \delegator, \registrar},
+      \encode[8]{\manager, \assigners, \delegator, \registrar},
       \alwaysaccers
     } \;, \\
     &&C(13) &\mapsto \encode{
@@ -82,13 +84,13 @@ The state serialization is then defined as the dictionary built from the amalgam
       \sq{\build{\var{\mathbf{i}}}{\mathbf{i} \orderedin \accumulated}}
     } \;, \\
     &&C(16) &\mapsto \encode{
-      \var{\sq{\build{\tup{\encode[4]{s}, \encode{h}}}{\tup{s, h} \orderedin \lastaccout}}}
+      \var{\sq{\build{\tup{\encode[8]{s}, \encode{h}}}{\tup{s, h} \orderedin \lastaccout}}}
     } \;, \\
-    \forall \kv{s}{\saX} \in \accounts: &&C(255, s) &\mapsto \encode{
+    \forall \kv{s}{\saX} \in \accounts: &&C(s, \none) &\mapsto \encode{
       0,
       \saX_\sa¬codehash,
-      \encode[4]{\saX_\sa¬supervisor, \saX_\sa¬supervisorcreated},
       \encode[8]{
+        \saX_\sa¬supervisor,
         \saX_\sa¬balance,
         \saX_\sa¬supervisorbalance,
         \saX_\sa¬minaccgas,
@@ -100,15 +102,14 @@ The state serialization is then defined as the dictionary built from the amalgam
     &&&\phantom{{}\mapsto{}} \encode[4]{
       \saX_\sa¬items,
       \saX_\sa¬created,
-      \saX_\sa¬lastacc,
-      \saX_\sa¬parent
-    } \;, \\
+      \saX_\sa¬lastacc
+    } \concat \encode[8]{\saX_\sa¬parent} \;, \\
     \forall \kv{s}{\saX} \in \accounts, \kv{\mathbf{k}}{\mathbf{v}} \in \saX_\sa¬storage:
-      &&C(s, \encode[4]{2^{32}-1} \concat \mathbf{k}) &\mapsto \mathbf{v} \;, \\
+      &&C(s, 2^{32}-1, \mathbf{k}) &\mapsto \mathbf{v} \;, \\
     \forall \kv{s}{\saX} \in \accounts, \kv{h}{\mathbf{p}} \in \saX_\sa¬preimages:
-      &&C(s, \encode[4]{2^{32}-2} \concat h) &\mapsto \mathbf{p} \;, \\
+      &&C(s, 2^{32}-2, h) &\mapsto \mathbf{p} \;, \\
     \forall \kv{s}{\saX} \in \accounts, \kv{\tup{h, l}}{\mathbf{t}} \in \saX_\sa¬requests:
-      &&C(s, \encode[4]{l} \concat h) &\mapsto \encode{
+      &&C(s, l, h) &\mapsto \encode{
         \var{\sq{\build{\encode[4]{x}}{x \orderedin \mathbf{t}}}}
       }
   }
@@ -118,7 +119,7 @@ Note that most rows describe a single mapping between a key derived from a natur
 
 Also note that all non-discriminator numeric serialization in state is done in fixed-length according to the size of the term.
 
-Finally, be aware that \Jam does not allow service storage keys to be directly inspected or enumerated. Thus the key values themselves are not required to be known by implementations, and only the Merklisation-ready serialisation is important, which is a fixed-size hash (alongside the service index and item marker). Implementations are free to use this fact in order to avoid storing the keys themselves.
+Finally, be aware that \Jam does not allow service storage keys to be directly inspected or enumerated. Thus the key values themselves are not required to be known by implementations, and only the Merklisation-ready serialisation is important, which is a fixed-size hash. Implementations are free to use this fact in order to avoid storing the keys themselves.
 
 \subsection{Merklization}
 
