@@ -156,9 +156,9 @@ The assurances extrinsic is a sequence of \emph{assurance} values, at most one p
   }}
 \end{align}
 
-The assurances must be ordered by validator index:
+The assurances must be ordered by validator index, with no duplicate indices:
 \begin{equation}
-  \forall i \in \set{ 1 \dots \len{\xtassurances} } : \xtassurances\subb{i - 1}_\xa¬assurer < \xtassurances\subb{i}_\xa¬assurer
+  \xtassurances = \sqorderuniqby{a_\xa¬assurer}{a \in \xtassurances}
 \end{equation}
 
 The signature must be one whose public key is that of the validator assuring and whose message is the serialization of the parent hash $\H_\¬parent$ and the aforementioned bitstring:
