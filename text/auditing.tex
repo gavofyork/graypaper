@@ -108,7 +108,7 @@ We finally define $\local¬reporttranche(\wrX)$, the tranche in which we will au
 
 The definition of $\local¬reporttranche$ is such that the expected size of each additional tranche, and thus the expected number of new validators which step up to cover each no-show, is 2.25. Modeling by \cite{cryptoeprint:2024/961} shows that this is close to optimal. Note that if there are 30 or fewer validators, all validators select all cores in their initial tranche.
 
-The number of tranches we require for a work-report is determined by the announcements and judgments received from other validators, as well as the wall-clock time which has elapsed since receipt of the former. Note that there may not be consensus on the number of tranches required for a particular work-report. We define $A(\wrX \in \workreport, n)$ as a dictionary whose keys are the indices of the validators which have announced their evaluation of $\wrX$ in tranche $n$, and whose corresponding values are counts of whole seconds elapsed since announcement receipt.
+The number of tranches we require for a work-report is determined by the announcements and judgments received from other validators, as well as the wall-clock time which has elapsed since receipt of the former. Note that there may not be consensus on the number of tranches required for a particular work-report. We define $A(\wrX \in \workreport, n)$ as a dictionary whose keys are the indices of the validators which have announced their intent to evaluate $\wrX$ in tranche $n$, and whose corresponding values are counts of whole seconds elapsed since announcement receipt.
 \begin{equation}
   A: \tuple{\workreport, \N} \to \dictionary{\Nmax{\len{\activeset}}}{\N}
 \end{equation}
