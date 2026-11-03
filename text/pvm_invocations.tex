@@ -784,10 +784,11 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \sq{m, a, v, r, o, n} &= \registers\subrange{7}{6} \\
     \using \mathbf{p} &= (\imX_\im¬state)_\ps¬privileges \\
     \using D(x, y) &\equiv \begin{cases} y &\when x = 2^{64} - 1 \\ x &\otherwise \end{cases} \\
+    \using D_{32}(x, y) &\equiv \begin{cases} y &\when x = 2^{32} - 1 \\ x &\otherwise \end{cases} \\
     \using \tup{m', v', r'} &= \tup{D(m, \mathbf{p}_\pr¬manager), D(v, \mathbf{p}_\pr¬delegator), D(r, \mathbf{p}_\pr¬registrar)} \\
     \using \pr¬assigners &= \begin{cases}
       \mathbf{p}_\pr¬assigners &\when a = 2^{64} - 1 \\
-      \sq{\build{D(\decode[4]{\memory\subrange{a + 4c}{4}}, \mathbf{p}_\pr¬assigners\subb{c})}{c \orderedin \coreindex}} &\otherwhen \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
+      \sq{\build{D_{32}(\decode[4]{\memory\subrange{a + 4c}{4}}, \mathbf{p}_\pr¬assigners\subb{c})}{c \orderedin \coreindex}} &\otherwhen \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \pr¬alwaysaccers &= \begin{cases}
