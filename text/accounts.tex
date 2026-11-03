@@ -168,19 +168,16 @@ We may then define a third dependent term $\sa¬minbalance$, the minimum, or \em
 
 Finally, $\alwaysaccers$ is a small dictionary containing the indices of services which automatically accumulate in each block together with a basic amount of gas with which each accumulates. Formally:
 \begin{align}
+  \label{eq:privilegestype}
+  \privilegestype &\equiv \tuple{\begin{aligned}
+    \isa{\pr¬manager&}{\serviceid}\,,\;
+    \isa{\pr¬delegator}{\serviceid}\,,\;
+    \isa{\pr¬registrar}{\serviceid}\,,\\
+    \isa{\pr¬assigners&}{\sequence[\Ccorecount]{\serviceid}}\,,\;
+    \isa{\pr¬alwaysaccers}{\dictionary{\serviceid}{\gas}}
+  \end{aligned}} \\
   \label{eq:privilegesspec}
-  \privileges &\equiv \tuple{
-    \manager,
-    \delegator,
-    \registrar,
-    \assigners,
-    \alwaysaccers
-  }\\
-  \manager &\in \serviceid \ ,\qquad
-  \delegator \in \serviceid \ ,\qquad
-  \registrar \in \serviceid \\
-  \assigners &\in \sequence[\Ccorecount]{\serviceid} \ ,\qquad
-  \alwaysaccers \in \dictionary{\serviceid}{\gas}
+  \privileges &\in \privilegestype
 \end{align}
 
 \subsection{Supervisors}

@@ -599,7 +599,7 @@
 \newcommand*{\effectivesupervisor}[2]{#1\subb{#2}_e}
 
 % Fields of deferred transfer.
-\newcommand*{\defxfer}{\mathbb{X}}
+\newcommand*{\defxfer}{\mathbb{t}}
 \newcommand*{\defxfers}{\sequence\defxfer}
 \newcommand*{\dxX}{x}
 \newcommand*{\dx¬source}{s}
@@ -619,16 +619,19 @@
 \newcommand*{\vk¬metadata}{m}
 \newcommand*{\allvalkeys}{\sequence[\valcount]{\valkey}}
 
+\newcommand*{\privilegestype}{\mathbb{X}}
+\newcommand*{\pr¬manager}{m}
+\newcommand*{\pr¬delegator}{v}
+\newcommand*{\pr¬registrar}{r}
+\newcommand*{\pr¬assigners}{\mathbf{a}}
+\newcommand*{\pr¬alwaysaccers}{\mathbf{z}}
+
 \newcommand*{\partialstate}{\mathbb{S}}
 \newcommand*{\psX}{\mathbf{e}}
 \newcommand*{\ps¬accounts}{\mathbf{d}}
 \newcommand*{\ps¬stagingset}{\mathbf{i}}
 \newcommand*{\ps¬authqueue}{\mathbf{q}}
-\newcommand*{\ps¬manager}{m}
-\newcommand*{\ps¬assigners}{\mathbf{a}}
-\newcommand*{\ps¬delegator}{v}
-\newcommand*{\ps¬registrar}{r}
-\newcommand*{\ps¬alwaysaccers}{\mathbf{z}}
+\newcommand*{\ps¬privileges}{\mathbf{x}}
 
 %%%%%%%%%%%%%%
 % State item tuples (fields of lower greek letters)
@@ -794,11 +797,11 @@
 \newcommand*{\entropyaccumulator}{\eta_0}
 
 \newcommand*{\privileges}{\chi}
-\newcommand*{\manager}{\privileges_M}
-\newcommand*{\delegator}{\privileges_V}
-\newcommand*{\registrar}{\privileges_R}
-\newcommand*{\assigners}{\privileges_A}
-\newcommand*{\alwaysaccers}{\privileges_Z}
+\newcommand*{\manager}{\privileges_\pr¬manager}
+\newcommand*{\delegator}{\privileges_\pr¬delegator}
+\newcommand*{\registrar}{\privileges_\pr¬registrar}
+\newcommand*{\assigners}{\privileges_\pr¬assigners}
+\newcommand*{\alwaysaccers}{\privileges_\pr¬alwaysaccers}
 
 \newcommand*{\accumulated}{\xi}
 \newcommand*{\accumulatedcup}{\overbrace{\accumulated}}
