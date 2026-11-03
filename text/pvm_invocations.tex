@@ -787,7 +787,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \tup{m', v', r'} &= \tup{D(m, \mathbf{p}_\pr¬manager), D(v, \mathbf{p}_\pr¬delegator), D(r, \mathbf{p}_\pr¬registrar)} \\
     \using \pr¬assigners &= \begin{cases}
       \mathbf{p}_\pr¬assigners &\when a = 2^{64} - 1 \\
-      \decode[4]{\memory\subrange{a}{4\Ccorecount}} &\otherwhen \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
+      \sq{\build{D(\decode[4]{\memory\subrange{a + 4c}{4}}, \mathbf{p}_\pr¬assigners\subb{c})}{c \orderedin \coreindex}} &\otherwhen \Nrange{a}{4\Ccorecount} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using \pr¬alwaysaccers &= \begin{cases}
