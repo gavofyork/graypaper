@@ -38,7 +38,7 @@ The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise i
       }}
     }}\\
     \also \xtculprits &\in \sequence[:\Cmaxextrinsicoffenses]{\tuple{\hash, \edkey, \edsignaturebase}} \\
-    \also \xtfaults &\in \sequence[:\Cmaxextrinsicoffenses]{\tuple{\hash, \set{\top,\bot}, \edkey, \edsignaturebase}}
+    \also \xtfaults &\in \sequence[:\Cmaxextrinsicoffenses]{\tuple{\hash, \set{\top,\bot}, \ffrac{\thetime}{\Cepochlen} - \N_2, \edkey, \edsignaturebase}}
   \end{aligned}
 \end{equation}
 
@@ -52,24 +52,24 @@ The signatures of all judgments must be valid in terms of one of the two allowed
     \forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts : \bigwedge &\abracegroup{
       &\len{\xv¬judgments} = \floor{\twothirds\len{\mathbf{k}}} + 1 \,,\\
       &\forall \tup{\xvj¬validity, \xvj¬judgeindex, \xvj¬signature} \in \xv¬judgments :\\
-      &\quad \xvj¬judgeindex < \len{\mathbf{k}} \wedge \xvj¬signature \in \edsignature{\mathbf{k}[\xvj¬judgeindex]_\vk¬ed}{\Xvalidif{v} \concat \xv¬reporthash}
+      &\quad \xvj¬judgeindex < \len{\mathbf{k}} \wedge \xvj¬signature \in \edsignature{\mathbf{k}[\xvj¬judgeindex]_\vk¬ed}{\Xvalidif{v} \concat \xv¬reporthash \concat \encode[4]{\xv¬epochindex}}
     }\\
     &\where \mathbf{k} = K(\xv¬epochindex)
   \end{aligned}\\
   \Xvalid \equiv \text{{\small \texttt{\$jam\_valid}}}\,,\ \Xinvalid \equiv \text{{\small \texttt{\$jam\_invalid}}}
 \end{gather}
 
-Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set:
+Offender signatures must be similarly valid and reference work-reports with judgments and may not report keys which are already in the punish-set. A fault identifies the epoch  signed by the judgment, and the signing key must be in that epoch's epoch's validator key-set:
 \begin{align}
   \forall \tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} &\in \xtculprits : \bigwedge \abracegroup{
     &\xc¬reporthash \in \badset' \,,\\
     &\xc¬offenderindex \in \mathbf{k} \,,\\
     &\xc¬signature \in \edsignature{\xc¬offenderindex}{\Xguarantee \concat \xc¬reporthash}
   }\\
-  \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
+  \forall \tup{\xf¬reporthash, \xf¬validity, \xf¬epochindex, \xf¬offenderindex, \xf¬signature} &\in \xtfaults : \bigwedge \abracegroup{
     &\xf¬reporthash \in \badset' \Leftrightarrow \xf¬reporthash \not\in \goodset' \Leftrightarrow \xf¬validity \,,\\
-    &\xf¬offenderindex \in \mathbf{k} \,,\\
-    &\xf¬signature \in \edsignature{\xf¬offenderindex}{\Xvalidif{v} \concat \xf¬reporthash}\\
+    &\xf¬offenderindex \in \mathbf{k} \cap \set{\build{i_\vk¬ed}{i \in K(\xf¬epochindex)}} \,,\\
+    &\xf¬signature \in \edsignature{\xf¬offenderindex}{\Xvalidif{v} \concat \xf¬reporthash \concat \encode[4]{\xf¬epochindex}}\\
   }\\
   \nonumber\where \mathbf{k} &= \set{\build{i_\vk¬ed}{i \in \previousset \cup \activeset}} \setminus \offenders
 \end{align}
@@ -78,7 +78,7 @@ Verdicts $\xtverdicts$ must be ordered by report hash. Offender signatures $\xtc
 \begin{align}
   &\xtverdicts = \sqorderuniqby{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}\\
   &\xtculprits = \sqorderuniqby{\xc¬offenderindex}{\tup{\xc¬reporthash, \xc¬offenderindex, \xc¬signature} \in \xtculprits} \,,\
-  \xtfaults = \sqorderuniqby{\xf¬offenderindex}{\tup{\xf¬reporthash, \xf¬validity, \xf¬offenderindex, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!\\
+  \xtfaults = \sqorderuniqby{\xf¬offenderindex}{\tup{\xf¬reporthash, \xf¬validity, \xf¬epochindex, \xf¬offenderindex, \xf¬signature} \in \xtfaults}\!\!\!\!\!\!\\
   &\set{\build{\xv¬reporthash}{\tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts}} \disjoint \goodset \cup \badset \cup \wonkyset
 \end{align}
 
