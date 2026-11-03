@@ -381,7 +381,7 @@ These make no assumptions about the context $\context$; it is always passed thro
           \encode[2]{\Cmaxpackagexts},
           \encode[2]{\Cassurancetimeoutperiod},\\
           &\encode[4]{\Cmaxauthcodesize},
-          \encode[4]{\Cmaxbundlesize},
+          \encode[4]{\Cmaxinputsize},
           \encode[4]{\Cmaxservicecodesize},
           \encode[4]{\Cmaxpackageimports},
           \encode[4]{\Cmaxreportvarsize},\\
@@ -792,7 +792,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \end{cases} \\
     \using \pr¬alwaysaccers &= \begin{cases}
       \mathbf{p}_\pr¬alwaysaccers &\when o = 2^{64} - 1 \\
-      \set{\build{\kv{s}{g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\otherwhen \Nrange{o}{12n} \subseteq \readable{\memory} \\
+      \set{\build{\tup{s, g} \ \where \encode[4]{s} \concat \encode[8]{g} = \memory\subrange{o+12i}{12}}{i \in \Nmax{n}}} &\otherwhen \Nrange{o}{12n} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
     \using p &= (\imX_\im¬id = \mathbf{p}_\pr¬manager) \vee \bigwedge \abracegroup{
@@ -805,7 +805,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \mathbf{p}' &= \tup{\is{\pr¬manager}{m'}, \is{\pr¬delegator}{v'}, \is{\pr¬registrar}{r'}, \pr¬assigners, \pr¬alwaysaccers} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬privileges} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{p}} &\when \set{\pr¬assigners, \pr¬alwaysaccers} \ni \error \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{p}} &\otherwhen \neg p \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{p}} &\otherwhen \neg p \vee \len{\set{\build{s}{\tup{s, g} \in \pr¬alwaysaccers}}} \ne n \\
       \tup{\continue, \mathtt{WHO}, \mathbf{p}} &\otherwhen \tup{m', v', r'} \not\in \serviceid^3 \\
       \tup{\continue, \mathtt{OK}, \mathbf{p}'} &\otherwise \\
     \end{cases} \\

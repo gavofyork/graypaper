@@ -44,7 +44,7 @@ The newly available work-reports, $\justbecameavailable$, are partitioned into t
     r \orderedin \justbecameavailable,
     \len{(r_\wr¬context)_\wc¬prerequisites} > 0 \vee r_\wr¬srlookup \ne \emset
   }, \accumulatedcup)\!\!\!\!\\
-  D(r) &\equiv (r, \set{(r_\wr¬context)_\wc¬prerequisites} \cup \keys{r_\wr¬srlookup})
+  D(r) &\equiv (r, (r_\wr¬context)_\wc¬prerequisites \cup \keys{r_\wr¬srlookup})
 \end{align}
 
 We define the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by sets of now-accumulated work-package hashes (those in $\accumulated$). It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the set provided as a parameter, and removes any dependencies which appear in said set. Formally:
