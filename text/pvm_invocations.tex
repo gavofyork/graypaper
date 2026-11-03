@@ -807,7 +807,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \mathbf{p}' &= \tup{\is{\pr¬manager}{m'}, \is{\pr¬delegator}{v'}, \is{\pr¬registrar}{r'}, \pr¬assigners, \pr¬alwaysaccers} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬privileges} &\equiv \begin{cases}
       \tup{\panic, \registers_7, \mathbf{p}} &\when \set{\pr¬assigners, \pr¬alwaysaccers} \ni \error \\
-      \tup{\continue, \mathtt{HUH}, \mathbf{p}} &\otherwhen \neg p \vee \len{\set{\build{s}{\tup{s, g} \in \pr¬alwaysaccers}}} \ne n \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{p}} &\otherwhen \neg p \vee (o \ne 2^{64} - 1 \wedge \len{\set{\build{s}{\tup{s, g} \in \pr¬alwaysaccers}}} \ne n) \\
       \tup{\continue, \mathtt{WHO}, \mathbf{p}} &\otherwhen \tup{m', v', r'} \not\in \serviceid^3 \\
       \tup{\continue, \mathtt{OK}, \mathbf{p}'} &\otherwise \\
     \end{cases} \\
