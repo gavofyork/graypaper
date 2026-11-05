@@ -132,11 +132,11 @@ We define $\local¬necessarytranches(\wrX)$ as the number of tranches we deem cu
   \local¬necessarytranches(\wrX) \equiv \len{\sq{\build{a}{a \orderedin \local¬trancheages(\wrX), a \ge 0}}}
 \end{equation}
 
-$\local¬necessarytranches$ utilises a helper function $\local¬trancheages$ which provides a sequence of tranche \emph{ages} for the given work-report. The first element in the sequence gives the age of tranche 0, the second the age of tranche 1, and so on. A positive age means that the tranche has been triggered and is the whole number of seconds which have elapsed since. A negative age means that the tranche has not yet been triggered but will be triggered in the future unless a message is received which prevents this. Tranches which have not and will not be triggered given the current $A$ and $J$ do not have an age and are not included in the sequence. Note that the age of tranche 0 $a_0$ is the same for all work-reports; it is the number of whole seconds elapsed since we began auditing the block.
+$\local¬necessarytranches$ utilises a helper function $\local¬trancheages$ which provides a sequence of tranche \emph{ages} for the given work-report. The first element in the sequence gives the age of tranche 0, the second the age of tranche 1, and so on. A positive age means that the tranche has been triggered and is the whole number of seconds which have elapsed since. A negative age means that the tranche has not yet been triggered but will be triggered in the future unless a message is received which prevents this. Tranches which have not and will not be triggered given the current $A$ and $J$ do not have an age and are not included in the sequence. The age of tranche 0 is the same for all work-reports: $a_0$. It is the number of whole seconds elapsed since we began auditing the block.
 \begin{gather}
   \local¬trancheages(\wrX) \equiv \local¬trancheages^*(\wrX, 0, a_0, \sq{}) \\
   \local¬trancheages^* \colon \abracegroup{
-    &\tuple{\workreport, \N, \N, \sequence{\N}} \to \sequence{\Z} \\
+    &\tuple{\workreport, \N, \Z, \sequence{\Z}} \to \sequence{\Z} \\
     &\tup{\wrX, n, a, \mathbf{e}} \mapsto \sq{a} \concat \begin{cases}
       \sq{} &\when \mathbf{e}' = \sq{} \\
       \local¬trancheages^*(\wrX, n + 1, \mathbf{e}'\sub{0}, \mathbf{e}'\interval{1}{}) &\otherwise
