@@ -36,7 +36,7 @@ All items in the work-package specification field of the work-report should be r
 \subsection{Selection of Reports}
 \label{sec:auditselection}
 
-Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\block$ with other terms corresponding to the state-transition implied by that block, so $\availassignments$ is said block's prior availability assignments, $\activeset$ is its prior validator set, $\header$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
+Each validator shall perform auditing duties on each valid block received. Since we are entering off-chain logic, and we cannot assume consensus, we henceforth consider ourselves a specific validator of index $v$ and assume ourselves focused on some recent block $\block$ with other terms corresponding to the state-transition implied by that block, so $\availassignments$ is said block's prior availability assignments, $\activeset$ is its prior validator set, $\thetime$ is its prior timeslot, $\header$ is its header \etc Practically, all considerations must be replicated for all blocks and multiple blocks' considerations may be underway simultaneously.
 
 \newcommand*{\local¬reports}{\mathbf{q}}
 \newcommand*{\local¬initialseed}{s\sub{0}}
@@ -193,7 +193,7 @@ From the mapping $\local¬evaluation$ the validator issues a set of judgments $\
     \edsigndata{
       \activeset\subb{v}\sub{\vk¬ed}
     }{
-      \Xvalidif{\local¬evaluation(\wrX)} \concat \blake{\wrX}
+      \Xvalidif{\local¬evaluation(\wrX)} \concat \blake{\wrX} \concat \encode[4]{\ffrac{\thetime}{\Cepochlen}}
     }
   }{
     \wrX \in \local¬responsibilities
