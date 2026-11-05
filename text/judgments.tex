@@ -38,15 +38,16 @@ The disputes extrinsic $\xtdisputes$ is functional grouping of three otherwise i
       }}
     }}\\
     \also \xtculprits &\in \sequence[:\Cmaxextrinsicoffenses]{\tuple{\hash, \edkey, \edsignaturebase}} \\
-    \also \xtfaults &\in \sequence[:\Cmaxextrinsicoffenses]{\tuple{\hash, \set{\top,\bot}, \ffrac{\thetime}{\Cepochlen} - \N_2, \edkey, \edsignaturebase}}
+    \also \xtfaults &\in \sequence[:\Cmaxextrinsicoffenses]{\tuple{\hash, \set{\top,\bot}, \timeslot, \edkey, \edsignaturebase}}
   \end{aligned}
 \end{equation}
 
 The signatures of all judgments must be valid in terms of one of the two allowed validator key-sets, identified by the verdict's second term which must be either the epoch index of the prior state or one less. Each verdict must contain judgments from exactly two-thirds plus one of the identified validators. Formally:
 \begin{gather}
   K(\xv¬epochindex) \equiv \begin{cases}
-    \activeset &\when \xv¬epochindex = \displaystyle \ffrac{\thetime}{\Cepochlen}\\
-    \previousset &\otherwise
+    \activeset &\when \xv¬epochindex = \displaystyle \ffrac{\thetime}{\Cepochlen}\\[8pt]
+    \previousset &\when \xv¬epochindex = \displaystyle \ffrac{\thetime}{\Cepochlen} - 1\\
+    \sq{} &\otherwise
   \end{cases}\\
   \begin{aligned}
     \forall \tup{\xv¬reporthash, \xv¬epochindex, \xv¬judgments} \in \xtverdicts : \bigwedge &\abracegroup{
