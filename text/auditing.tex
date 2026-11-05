@@ -42,12 +42,13 @@ Each validator shall perform auditing duties on each valid block received. Since
 \newcommand*{\local¬initialseed}{s\sub{0}}
 \newcommand*{\local¬initialtranche}{\mathbf{a}\sub{0}}
 \newcommand*{\local¬reportseed}{S}
-\newcommand*{\local¬reporttranche}{C}
+\newcommand*{\local¬reporttranche}{N}
 \newcommand*{\local¬necessarytranches}{T}
 \newcommand*{\local¬trancheages}{G}
 \newcommand*{\local¬maxnecessarytranches}{T^\circ}
 \newcommand*{\local¬responsibilities}{\mathbf{a}}
 \newcommand*{\local¬ourannouncements}{\mathbf{o}}
+\newcommand*{\local¬candidatebundle}{C}
 \newcommand*{\local¬evaluation}{E}
 \newcommand*{\local¬audited}{U}
 
@@ -170,12 +171,12 @@ Announcements for the work-reports $\local¬ourannouncements$ must be broadcast 
 
 We must attempt to reconstruct all work-package bundles corresponding to each work-report in the set $\local¬responsibilities$. This may be done through requesting erasure-coded chunks from one-third of the validators, verified through the erasure coding's Merkle root, and reconstructing the bundles as per the recovery function $\fnecrecover{\len{\activeset}}{}$ defined in section $\ref{sec:erasurecoding}$.
 
-Thus, for any such work-report $\wrX \in \local¬responsibilities$ we are assured we will be able to reconstruct some candidate work-package bundle $C(\wrX) \in \blob$. We decode this candidate bundle into a work-package and its associated extrinsic data, imported segments, and imported segment proofs. These are verified as described in section \ref{sec:auditfetching}. We then attempt to reproduce the report on the core to give $\local¬evaluation$, a mapping from reports to evaluations:
+Thus, for any such work-report $\wrX \in \local¬responsibilities$ we are assured we will be able to reconstruct some candidate work-package bundle $\local¬candidatebundle(\wrX) \in \blob$. We decode this candidate bundle into a work-package and its associated extrinsic data, imported segments, and imported segment proofs. These are verified as described in section \ref{sec:auditfetching}. We then attempt to reproduce the report on the core to give $\local¬evaluation$, a mapping from reports to evaluations:
 \begin{equation}
   \begin{aligned}
     &\forall \wrX \in \local¬responsibilities: \\
     &\local¬evaluation(\wrX) \Leftrightarrow \begin{cases}
-      M(\wrX, \wpX) &\when \exists \wpX \in \workpackage: \makebundle(\wpX, \wrX_\wr¬srlookup) = C(\wrX) \\
+      M(\wrX, \wpX) &\when \exists \wpX \in \workpackage: \makebundle(\wpX, \wrX_\wr¬srlookup) = \local¬candidatebundle(\wrX) \\
       \bot &\otherwise
     \end{cases} \\
     &\where M(\wrX, \wpX) \equiv \wrX = \computereport(\wpX, \wrX_\wr¬core, \wrX_\wr¬srlookup, (\wrX_\wr¬avspec)_\as¬erasureshards)
