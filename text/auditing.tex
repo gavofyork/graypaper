@@ -1,5 +1,8 @@
 \section{Auditing and Judging}\label{sec:auditing}
 
+\newcommand*{\local¬announcementages}{A}
+\newcommand*{\local¬judgments}{J}
+
 The auditing and judging system is theoretically equivalent to that in \textsc{Elves}, introduced by \cite{cryptoeprint:2024/961}. For a full security analysis of the mechanism, see this work. There is a difference in terminology, where the terms \emph{backing}, \emph{approval} and \emph{inclusion} there refer to our guaranteeing, auditing and accumulation, respectively.
 
 %The main point of divergence is in \Jam extending the utility of the availability system so that it does not simply serve auditing, but also allows data intentionally created as a side effect within a core to be utilized at some later stage without the requirement to re-insert it into the availability system. This creates additional bandwidth \emph{in to} the availability system for the importing of more such data. To maximize the value of this alteration, the expiry time of data entering the availability system is extended well beyond that which is needed for auditing, to 28 days.
@@ -18,7 +21,7 @@ Once all of any given block's newly available work-reports are audited, then the
 
 In regular operation, no negative judgments will be found for a work-report, and there will be no direct consequences of the auditing stage. In the unlikely event that a negative judgment is found, then \emph{all} validators are required to evaluate the report and issue a judgment of their own. If greater than $\twothirds$ of the validators still issue positive judgments, then validators issuing negative judgments may receive a punishment for time-wasting. If greater than $\onethird$ of the validators issue negative judgments, then the block which includes the work-report is ban-listed. It and all its descendants are disregarded and may not be built on. In all cases, once there are enough votes, a verdict can be constructed by a block author and placed in a disputes extrinsic to denote the outcome. See section \ref{sec:disputes} for details on this.
 
-All announcements and judgments are published to all validators along with metadata describing the signed material. On receipt of such data, validators are expected to update their perspective accordingly (later defined as $J$ and $A$).
+All announcements and judgments are published to all validators along with metadata describing the signed material. On receipt of such data, validators are expected to update their perspective accordingly (later defined as $\local¬judgments$ and $\local¬announcementages$).
 
 \subsection{Data Fetching}
 \label{sec:auditfetching}
@@ -109,22 +112,22 @@ We finally define $\local¬reporttranche(\wrX)$, the tranche in which we will au
 
 The definition of $\local¬reporttranche$ is such that the expected size of each additional tranche, and thus the expected number of new validators which step up to cover each no-show, is 2.25. Modeling by \cite{cryptoeprint:2024/961} shows that this is close to optimal. Note that if there are 30 or fewer validators, all validators select all cores in their initial tranche.
 
-The number of tranches we require for a work-report is determined by the announcements and judgments received from other validators, as well as the wall-clock time which has elapsed since receipt of the former. Note that there may not be consensus on the number of tranches required for a particular work-report. We define $A(\wrX \in \workreport, n)$ as a dictionary whose keys are the indices of the validators which have announced their intent to evaluate $\wrX$ in tranche $n$, and whose corresponding values are counts of whole seconds elapsed since announcement receipt.
+The number of tranches we require for a work-report is determined by the announcements and judgments received from other validators, as well as the wall-clock time which has elapsed since receipt of the former. Note that there may not be consensus on the number of tranches required for a particular work-report. We define $\local¬announcementages(\wrX \in \workreport, n)$ as a dictionary whose keys are the indices of the validators which have announced their intent to evaluate $\wrX$ in tranche $n$, and whose corresponding values are counts of whole seconds elapsed since announcement receipt.
 \begin{equation}
-  A: \tuple{\workreport, \N} \to \dictionary{\Nmax{\len{\activeset}}}{\N}
+  \local¬announcementages: \tuple{\workreport, \N} \to \dictionary{\Nmax{\len{\activeset}}}{\N}
 \end{equation}
 
-A well-behaved validator should announce intent to audit a particular work-report in at most one tranche. The definitions above however allow a validator to prove their requirement to audit a particular report in both the initial tranche and a later tranche. If two such conflicting announcements are received, the later tranche announcement should be ignored and should not be returned by $A$. Formally:
+A well-behaved validator should announce intent to audit a particular work-report in at most one tranche. The definitions above however allow a validator to prove their requirement to audit a particular report in both the initial tranche and a later tranche. If two such conflicting announcements are received, the later tranche announcement should be ignored and should not be returned by $\local¬announcementages$. Formally:
 \begin{equation}
   \begin{aligned}
     &\forall \wrX \in \workreport, n \in \Nclamp{1}{}, d \in \Nmax{\len{\activeset}} : \\
-    &\quad d \in \keys{A(\wrX, 0)} \Rightarrow d \not\in \keys{A(\wrX, n)}
+    &\quad d \in \keys{\local¬announcementages(\wrX, 0)} \Rightarrow d \not\in \keys{\local¬announcementages(\wrX, n)}
   \end{aligned}
 \end{equation}
 
-We further define $J_\top$ and $J_\bot$ to be the validator indices who we know to have made respectively, positive and negative, judgments mapped from each work-report. We don't care from which tranche a judgment is made.
+We further define $\local¬judgments_\top$ and $\local¬judgments_\bot$ to be the validator indices who we know to have made respectively, positive and negative, judgments mapped from each work-report. We don't care from which tranche a judgment is made.
 \begin{align}
-  J_\bool: \workreport \to \protoset{\Nmax{\len{\activeset}}}
+  \local¬judgments_\bool: \workreport \to \protoset{\Nmax{\len{\activeset}}}
 \end{align}
 
 We define $\local¬necessarytranches(\wrX)$ as the number of tranches we deem currently required for the work-report $\wrX$: one additional tranche per no-show and one per empty tranche.
@@ -132,7 +135,7 @@ We define $\local¬necessarytranches(\wrX)$ as the number of tranches we deem cu
   \local¬necessarytranches(\wrX) \equiv \len{\sq{\build{a}{a \orderedin \local¬trancheages(\wrX), a \ge 0}}}
 \end{equation}
 
-$\local¬necessarytranches$ utilises a helper function $\local¬trancheages$ which provides a sequence of tranche \emph{ages} for the given work-report. The first element in the sequence gives the age of tranche 0, the second the age of tranche 1, and so on. A positive age means that the tranche has been triggered and is the whole number of seconds which have elapsed since. A negative age means that the tranche has not yet been triggered but will be triggered in the future unless a message is received which prevents this. Tranches which have not and will not be triggered given the current $A$ and $J$ do not have an age and are not included in the sequence. The age of tranche 0 is the same for all work-reports: $a_0$. It is the number of whole seconds elapsed since we began auditing the block, which we should do shortly after receiving the block.
+$\local¬necessarytranches$ utilises a helper function $\local¬trancheages$ which provides a sequence of tranche \emph{ages} for the given work-report. The first element in the sequence gives the age of tranche 0, the second the age of tranche 1, and so on. A positive age means that the tranche has been triggered and is the whole number of seconds which have elapsed since. A negative age means that the tranche has not yet been triggered but will be triggered in the future unless a message is received which prevents this. Tranches which have not and will not be triggered given the current $\local¬announcementages$ and $\local¬judgments$ do not have an age and are not included in the sequence. The age of tranche 0 is the same for all work-reports: $a_0$. It is the number of whole seconds elapsed since we began auditing the block, which we should do shortly after receiving the block.
 \begin{gather}
   \local¬trancheages(\wrX) \equiv \local¬trancheages^*(\wrX, 0, a_0, \sq{}) \\
   \local¬trancheages^* \colon \abracegroup{
@@ -141,10 +144,10 @@ $\local¬necessarytranches$ utilises a helper function $\local¬trancheages$ whi
       \sq{} &\when \mathbf{e}' = \sq{} \\
       \local¬trancheages^*(\wrX, n + 1, \mathbf{e}'\sub{0}, \mathbf{e}'\interval{1}{}) &\otherwise
     \end{cases} \\
-    &\quad \where \mathbf{n} = A(\wrX, n) \setminus J_\top(\wrX) \\
+    &\quad \where \mathbf{n} = \local¬announcementages(\wrX, n) \setminus \local¬judgments_\top(\wrX) \\
     &\quad \also \mathbf{e}^n = \sq{\build{\min(g - \Cnoshowseconds, a)}{\kv{d}{g} \in \mathbf{n}}} \\
     &\quad \also \mathbf{e}^\dagger = \begin{cases}
-      \sq{a - \Cmintrancheageseconds} &\when A(\wrX, n) = \emset \\
+      \sq{a - \Cmintrancheageseconds} &\when \local¬announcementages(\wrX, n) = \emset \\
       \mathbf{e}^n &\otherwise
     \end{cases} \\
     &\quad \also \mathbf{e}' = \begin{cases}
@@ -164,7 +167,7 @@ We may now define our auditing responsibilities as the set of work-reports $\loc
   \nonumber
   \where \local¬responsibilities^c &= \set{\build{\wrX}{\wrX \in \justbecameavailable, \local¬reporttranche(\wrX) < \local¬maxnecessarytranches(\wrX)}} \\
   \nonumber
-  \also \local¬responsibilities^j &= \set{\build{\wrX}{\wrX \in \justbecameavailable, J_\bot(\wrX) \ne \emset}}
+  \also \local¬responsibilities^j &= \set{\build{\wrX}{\wrX \in \justbecameavailable, \local¬judgments\bot(\wrX) \ne \emset}}
 \end{align}
 
 Announcements for the work-reports $\local¬ourannouncements$ must be broadcast promptly, even if we do not have sufficient computing capacity to begin evaluation immediately. An announcement for a report $\wrX$ consists of the block's header hash $\blake{\header}$, the hash of the report $\blake{\wrX}$, and the tranche $\local¬reporttranche(\wrX)$, together with a \textsc{vrf} signature proving the auditing requirement (see equations \ref{eq:initialaudit} and \ref{eq:latertranches}). \emph{Publication of an announcement should be taken as a contract to complete the audit regardless of any future information.}
@@ -201,7 +204,7 @@ From the mapping $\local¬evaluation$ the validator issues a set of judgments $\
   }}
 \end{equation}
 
-All judgments $\mathbf{j}$ should be published to other validators in order that they build their view of $J$ and in the case of a negative judgment arising, can form an extrinsic for $\xtdisputes$.
+All judgments $\mathbf{j}$ should be published to other validators in order that they build their view of $\local¬judgments$ and in the case of a negative judgment arising, can form an extrinsic for $\xtdisputes$.
 
 Note that the guarantors of a report are expected to follow the same procedure as all other validators, but having already attested to the report's validity in the guarantee may reasonably skip fetching and evaluation and immediately issue a positive judgment.
 
@@ -209,7 +212,7 @@ We now formalize the \emph{audited} condition for a work-report $\wrX$ as $\loca
 \begin{equation}
   \local¬audited(\wrX) \Leftrightarrow \begin{cases}
     \local¬evaluation(\wrX) &\when \wrX \in \local¬responsibilities \\
-    \len{J_\top(\wrX)} > \onethird\len{\activeset} \lor \text{last}(\local¬trancheages(\wrX)) \ge \Cmintrancheageseconds &\otherwise
+    \len{\local¬judgments_\top(\wrX)} > \onethird\len{\activeset} \lor \text{last}(\local¬trancheages(\wrX)) \ge \Cmintrancheageseconds &\otherwise
   \end{cases}
 \end{equation}
 
