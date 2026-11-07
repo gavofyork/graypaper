@@ -136,23 +136,24 @@ where $i = i_{15} \ldots i_0$ is the binary representation of $i$.
 
 \subsection{The Generator Polynomial}
 
-To erasure code a message of $d = \fnecoriginalshards(v)$ words into $v$ code words, we represent each message as a field element as described in previous section and we interpolate the polynomial $p(y)$ of maximum $d - 1$ degree which satisfies the following equalities:
+To erasure code a message of $d = \fnecoriginalshards(v)$ words into $v$ code words, we represent each message as a field element as described in previous section and we interpolate the polynomial $p(y)$ of maximum $d' - 1$ degree, where $d' = 2^{\ceil{\log_2 d}}$, which satisfies the following equalities:
 \begin{equation}
    \begin{array}{l}
      p (\tilde{0}) = \widetilde{m_0}\\
      p (\tilde{1}) = \widetilde{m_1}\\
      \vdots\\
-     p (\widetilde{d-1}) = \widetilde{m_{d-1}}
+     p (\widetilde{d-1}) = \widetilde{m_{d-1}}\\
+     p (\tilde{\imath}) = 0 \quad \forall i \in \Z\interval{d}{d'}
    \end{array}
 \end{equation}
 
-After finding $p(y)$ with such properties, we evaluate $p$ at the following points:
+After finding $p(y)$ with such properties, we evaluate $p$ at the following points, where $v' = v + d' - d$:
 \begin{equation}
    \begin{array}{l}
-     \widetilde{r_d} : = p (\widetilde{d})\\
-     \widetilde{r_{d+1}} : = p (\widetilde{d+1})\\
+     \widetilde{r_d} : = p (\widetilde{d'})\\
+     \widetilde{r_{d+1}} : = p (\widetilde{d'+1})\\
      \vdots\\
-     \widetilde{r_{v-1}} : = p (\widetilde{v-1})
+     \widetilde{r_{v-1}} : = p (\widetilde{v'-1})
    \end{array}
 \end{equation}
 
