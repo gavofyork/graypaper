@@ -322,7 +322,9 @@ We define the availability specifier function $\newavailabilityspecifier$, which
   \also z &= 2 \cdot \fnecoriginalshards(\as¬erasureshards)
 \end{align*}
 
-The paged-proofs function $\pagedproofs$, defined earlier in equation \ref{eq:pagedproofs}, accepts a sequence of segments and returns a sequence of paged-proofs sufficient to justify the correctness of every segment. There are exactly $\ceil{\nicefrac{1}{64}}$ paged-proof segments as the number of yielded segments, each composed of a page of 64 hashes of segments, together with a Merkle proof from the root to the subtree-root which includes those 64 segments.
+The paged-proofs function $\pagedproofs$, defined earlier in equation \ref{eq:pagedproofs}, accepts a sequence of segments and returns a sequence of paged-proofs sufficient to justify the correctness of every segment. There are exactly $\ceil{\nicefrac{\len{\mathbf{s}}}{64}}$ paged-proof segments, each composed of a page of 64 hashes of segments, together with a Merkle proof from the root to the subtree-root which includes those 64 segments.
+
+If no segments are exported then $\mathbf{s} \concat \pagedproofs(\mathbf{s}) = \sq{}$, so $\mathbf{s}^\clubsuit$ is $\as¬erasureshards$ items, each $\merklizewb{\sq{}} = \zerohash$. Each item merklized into $\as¬erasureroot$ is then a bundle-chunk hash concatenated with $\zerohash$, and $\as¬erasureroot$ is fixed by $\mathbf{b}^\clubsuit$ alone.
 
 The functions $\fnmerklizecd$ and $\fnmerklizewb$ are the fixed-depth and simple binary Merkle root functions, defined in equations \ref{eq:constantdepthmerkleroot} and \ref{eq:simplemerkleroot}. The functions $\fnerasurecode{}{}$ and $\fnecoriginalshards$ are the erasure-coding and original-chunk-count functions, defined in appendix \ref{sec:erasurecoding}.
 

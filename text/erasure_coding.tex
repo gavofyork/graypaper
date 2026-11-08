@@ -29,10 +29,11 @@ Formally we begin by defining two utility functions for splitting some large seq
   \forall n \in \N, k \in \N :\ &\join(\mathbf{c} \in \sequence[k]{\blob[n]}) \in \blob[kn] \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots
 \end{align}
 
-We define the transposition operator hence:
+We define the transposition operator, which takes $n$ sequences each of length $m$ to $m$ sequences each of length $n$, hence:
 \begin{equation}\label{eq:transpose}
   {}^\text{T}\sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{0, 1}, \mathbf{x}_{0, 2}, \dots}, \sq{\mathbf{x}_{1, 0}, \mathbf{x}_{1, 1}, \dots}, \dots} \equiv \sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{1, 0}, \mathbf{x}_{2, 0}, \dots}, \sq{\mathbf{x}_{0, 1}, \mathbf{x}_{1, 1}, \dots}, \dots}
 \end{equation}
+Where $n = 0$, $m$ is given by the type of the argument and the result is $m$ empty sequences; \eg ${}^\text{T}\erasurecodemany{v}{k}{\sq{}}$ is a sequence of $v$ empty sequences.
 
 We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into $2 \cdot \fnecoriginalshards(v)$ octets and results in a sequence of $v$ smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
