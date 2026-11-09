@@ -46,9 +46,8 @@ Each validator shall perform auditing duties on each valid block received. Since
 \newcommand*{\local¬initialtranche}{\mathbf{a}\sub{0}}
 \newcommand*{\local¬reportseed}{S}
 \newcommand*{\local¬reporttranche}{N}
-\newcommand*{\local¬necessarytranches}{T}
-\newcommand*{\local¬trancheages}{G}
-\newcommand*{\local¬maxnecessarytranches}{T^\circ}
+\newcommand*{\local¬lasttranche}{L}
+\newcommand*{\local¬maxnecessarytranche}{L^\circ}
 \newcommand*{\local¬responsibilities}{\mathbf{a}}
 \newcommand*{\local¬ourannouncements}{\mathbf{o}}
 \newcommand*{\local¬candidatebundle}{C}
@@ -131,25 +130,27 @@ We further define $\local¬judgments_\top$ and $\local¬judgments_\bot$ to be th
   \local¬judgments_\bool: \workreport \to \protoset{\Nmax{\len{\activeset}}}
 \end{align}
 
-We define $\local¬necessarytranches(\wrX)$ as the number of tranches we deem currently required for the work-report $\wrX$: one additional tranche per no-show and one per empty tranche.
-\begin{equation}
-  \local¬necessarytranches(\wrX) \equiv \len{\sq{\build{a}{a \orderedin \local¬trancheages(\wrX), a \ge 0}}}
-\end{equation}
-
-$\local¬necessarytranches$ utilises a helper function $\local¬trancheages$ which provides a sequence of tranche \emph{ages} for the given work-report. The first element in the sequence gives the age of tranche 0, the second the age of tranche 1, and so on. A positive age means that the tranche has been triggered and is the whole number of seconds which have elapsed since. A negative age means that the tranche has not yet been triggered but will be triggered in the future unless a message is received which prevents this. Tranches which have not and will not be triggered given the current $\local¬announcementages$ and $\local¬judgments$ do not have an age and are not included in the sequence. The age of tranche 0 is the same for all work-reports: $a_0$. It is the number of whole seconds elapsed since we began auditing the block, which we should do shortly after receiving the block.
+We now define the last-tranche function $\local¬lasttranche$, which given a work-report provides a pair $\tup{n, u}$. $n$ is the index of the last tranche that is currently required for the work-report and $u$ is either $\top$ if no more tranches are scheduled and this tranche is considered old enough for us to have observed all announcements for it, or $\bot$ otherwise. Note that if positive judgments have been seen from over one-third of the validator set, we do not require any tranches beyond the initial tranche. Otherwise, we require one additional tranche per no-show and one per empty tranche.
 \begin{gather}
-  \local¬trancheages(\wrX) \equiv \local¬trancheages^*(\wrX, 0, a_0, \sq{}) \\
-  \local¬trancheages^* \colon \abracegroup{
-    &\tuple{\workreport, \N, \Z, \sequence{\Z}} \to \sequence{\Z} \\
-    &\tup{\wrX, n, a, \mathbf{e}} \mapsto \sq{a} \concat \begin{cases}
-      \sq{} &\when \mathbf{e}' = \sq{} \\
-      \local¬trancheages^*(\wrX, n + 1, \mathbf{e}'\sub{0}, \mathbf{e}'\interval{1}{}) &\otherwise
+  \local¬lasttranche \colon \abracegroup{
+    &\workreport \to \tuple{\isa{n}{\N}, \isa{u}{\bool}} \\
+    &\wrX \mapsto \begin{cases}
+      \tup{\is{n}{0}, \is{u}{\top}} &\when \len{\local¬judgments_\top(\wrX)} > \onethird\len{\activeset} \\
+      \local¬lasttranche^*(\wrX, 0, a_0, \sq{}) &\otherwise
+    \end{cases}
+  } \\
+  \local¬lasttranche^* \colon \abracegroup{
+    &\tuple{\workreport, \N, \N, \sequence{\Z}} \to \tuple{\isa{n}{\N}, \isa{u}{\bool}} \\
+    &\tup{\wrX, n, a, \mathbf{e}} \mapsto \begin{cases}
+      \tup{n, \is{u}{a \ge \Cmintrancheageseconds}} &\when \mathbf{e}' = \sq{} \\
+      \tup{n, \is{u}{\bot}} &\text{o/w if } \mathbf{e}'\sub{0} < 0 \\
+      \local¬lasttranche^*(\wrX, n + 1, \mathbf{e}'\sub{0}, \mathbf{e}'\interval{1}{}) &\otherwise
     \end{cases} \\
-    &\quad \where \mathbf{n} = \local¬announcementages(\wrX, n) \setminus \local¬judgments_\top(\wrX) \\
-    &\quad \also \mathbf{e}^n = \sq{\build{\min(g - \Cnoshowseconds, a)}{\kv{d}{g} \in \mathbf{n}}} \\
+    &\quad \where \mathbf{m} = \local¬announcementages(\wrX, n) \setminus \local¬judgments_\top(\wrX) \\
+    &\quad \also \mathbf{e}^m = \order{\build{\min(g - \Cnoshowseconds, a)}{\kv{d}{g} \in \mathbf{m}}} \\
     &\quad \also \mathbf{e}^\dagger = \begin{cases}
       \sq{a - \Cmintrancheageseconds} &\when \local¬announcementages(\wrX, n) = \emset \\
-      \mathbf{e}^n &\otherwise
+      \mathbf{e}^m &\otherwise
     \end{cases} \\
     &\quad \also \mathbf{e}' = \begin{cases}
       \sq{} &\when n = \local¬reporttranche(\wrX) \\
@@ -157,18 +158,21 @@ $\local¬necessarytranches$ utilises a helper function $\local¬trancheages$ whi
     \end{cases}
   }
 \end{gather}
-The $n$, $a$, and $\mathbf{e}$ arguments to $\local¬trancheages^*$ are respectively the index of a tranche, the age of the tranche, and an ordered sequence of later tranche ages. Note that a tranche is never deemed empty until at least $\Cmintrancheageseconds$ seconds have elapsed since its triggering: prior to this it is assumed that announcements for the tranche may simply not have been received yet. Also note that only positive judgments are considered by $\local¬trancheages$; if a negative judgment is received for a report, we immediately schedule its evaluation and abandon the regular tranche mechanism.
 
-$\local¬necessarytranches(\wrX)$ varies as time progresses and as messages are received from other validators. Its progression may not be monotonic: it may increase as more validators are considered to be no-shows or decrease if a judgment is received from a validator previously considered to be a no-show. We define $\local¬maxnecessarytranches(\wrX)$ as the maximum value of $\local¬necessarytranches(\wrX)$ observed so far. Unlike $\local¬necessarytranches(\wrX)$, $\local¬maxnecessarytranches(\wrX)$ necessarily increases monotonically over time.
+The helper function $\local¬lasttranche^*$ iterates over each currently required tranche via tail-recursion, with the $n$ argument giving the tranche index. The $a$ and $\mathbf{e}$ arguments are respectively the \emph{age} of the tranche and an ordered sequence of later tranche ages. A non-negative age means that the tranche has been triggered and is the whole number of seconds which have elapsed since. By definition all currently required tranches have a non-negative age. A negative age means that the tranche has not yet been triggered but is scheduled to be triggered in the future unless a message is received which prevents this. The age of tranche 0 is the same for all work-reports: $a_0$. It is the number of whole seconds elapsed since we began auditing the block, which we should do shortly after receiving the block.
+
+Note that a tranche is never deemed empty until at least $\Cmintrancheageseconds$ seconds have elapsed since its triggering: prior to this it is assumed that announcements for the tranche may simply not have been received yet. Also note that only positive judgments are considered by $\local¬lasttranche$; if a negative judgment is received for a report, we immediately schedule its evaluation and abandon the regular tranche mechanism.
+
+$\local¬lasttranche(\wrX)_n$ varies as time progresses and as messages are received from other validators. Its progression may not be monotonic: it may increase as more validators are considered to be no-shows or decrease if a judgment is received from a validator previously considered to be a no-show. We define $\local¬maxnecessarytranche(\wrX)$ as the maximum value of $\local¬lasttranche(\wrX)_n$ observed so far. Unlike $\local¬lasttranche(\wrX)_n$, $\local¬maxnecessarytranche(\wrX)$ necessarily increases monotonically over time.
 
 We may now define our auditing responsibilities as the set of work-reports $\local¬responsibilities$, which may grow over time but never shrinks. We also define the set $\local¬ourannouncements$, the subset of $\local¬responsibilities$ which we must announce to other validators. We need not announce intent to audit work-reports for which we have received a negative judgment; the negative judgment should be gossiped instead.
 \begin{align}
   \local¬responsibilities &\equiv \local¬responsibilities^c \cup \local¬responsibilities^j \ ,\qquad
     \local¬ourannouncements \equiv \local¬responsibilities^c \setminus \local¬responsibilities^j \\
   \nonumber
-  \where \local¬responsibilities^c &= \set{\build{\wrX}{\wrX \in \justbecameavailable, \local¬reporttranche(\wrX) < \local¬maxnecessarytranches(\wrX)}} \\
+  \where \local¬responsibilities^c &= \set{\build{\wrX}{\wrX \in \justbecameavailable, \local¬reporttranche(\wrX) \le \local¬maxnecessarytranche(\wrX)}} \\
   \nonumber
-  \also \local¬responsibilities^j &= \set{\build{\wrX}{\wrX \in \justbecameavailable, \local¬judgments\bot(\wrX) \ne \emset}}
+  \also \local¬responsibilities^j &= \set{\build{\wrX}{\wrX \in \justbecameavailable, \local¬judgments_\bot(\wrX) \ne \emset}}
 \end{align}
 
 Announcements for the work-reports $\local¬ourannouncements$ must be broadcast promptly, even if we do not have sufficient computing capacity to begin evaluation immediately. An announcement for a report $\wrX$ consists of the block's header hash $\blake{\header}$, the hash of the report $\blake{\wrX}$, and the tranche $\local¬reporttranche(\wrX)$, together with a \textsc{vrf} signature proving the auditing requirement (see equations \ref{eq:initialaudit} and \ref{eq:latertranches}). \emph{Publication of an announcement should be taken as a contract to complete the audit regardless of any future information.}
@@ -213,13 +217,13 @@ We now formalize the \emph{audited} condition for a work-report $\wrX$ as $\loca
 \begin{equation}
   \local¬audited(\wrX) \Leftrightarrow \begin{cases}
     \local¬evaluation(\wrX) &\when \wrX \in \local¬responsibilities \\
-    \len{\local¬judgments_\top(\wrX)} > \onethird\len{\activeset} \lor \text{last}(\local¬trancheages(\wrX)) \ge \Cmintrancheageseconds &\otherwise
+    \local¬lasttranche(\wrX)_u &\otherwise
   \end{cases}
 \end{equation}
 
 Our block $\block$ may be considered audited, a condition denoted $\isaudited$, when all the work-reports which were made available are considered audited. Formally:
 \begin{align}
-  \isaudited &\Leftrightarrow \forall \wrX \in \justbecameavailable : U(\wrX)
+  \isaudited &\Leftrightarrow \forall \wrX \in \justbecameavailable : \local¬audited(\wrX)
 \end{align}
 
 For any block we must judge it to be audited (\ie $\isaudited = \top$) before we vote for the block to be finalized in \textsc{Grandpa}. See section \ref{sec:grandpa} for more information here.
