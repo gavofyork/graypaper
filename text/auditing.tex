@@ -167,10 +167,10 @@ $\local¬lasttranche(\wrX)_n$ varies as time progresses and as messages are rece
 
 We may now define our auditing responsibilities as the set of work-reports $\local¬responsibilities$, which may grow over time but never shrinks. We also define the set $\local¬ourannouncements$, the subset of $\local¬responsibilities$ which we must announce to other validators. We need not announce intent to audit work-reports for which we have received a negative judgment; the negative judgment should be gossiped instead.
 \begin{align}
-  \local¬responsibilities &\equiv \local¬responsibilities^c \cup \local¬responsibilities^j \ ,\qquad
-    \local¬ourannouncements \equiv \local¬responsibilities^c \setminus \local¬responsibilities^j \\
+  \local¬responsibilities &\equiv \local¬responsibilities^t \cup \local¬responsibilities^j \ ,\qquad
+    \local¬ourannouncements \equiv \local¬responsibilities^t \setminus \local¬responsibilities^j \\
   \nonumber
-  \where \local¬responsibilities^c &= \set{\build{\wrX}{\wrX \in \justbecameavailable, \local¬reporttranche(\wrX) \le \local¬maxnecessarytranche(\wrX)}} \\
+  \where \local¬responsibilities^t &= \set{\build{\wrX}{\wrX \in \justbecameavailable, \local¬reporttranche(\wrX) \le \local¬maxnecessarytranche(\wrX)}} \\
   \nonumber
   \also \local¬responsibilities^j &= \set{\build{\wrX}{\wrX \in \justbecameavailable, \local¬judgments_\bot(\wrX) \ne \emset}}
 \end{align}
