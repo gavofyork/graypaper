@@ -226,7 +226,7 @@ Our block $\block$ may be considered audited, a condition denoted $\isaudited$, 
   \isaudited &\Leftrightarrow \forall \wrX \in \justbecameavailable : \local¬audited(\wrX)
 \end{align}
 
-For any block we must judge it to be audited (\ie $\isaudited = \top$) before we vote for the block to be finalized in \textsc{Grandpa}. See section \ref{sec:grandpa} for more information here.
+For any block we must judge it to be audited (\ie $\isaudited = \top$) before we vote for the block to be finalized in \textsc{Grandpa}. See section \ref{sec:grandpa} for more information here. Note that a block may be finalized without us considering it to be audited (\ie $\isaudited = \bot$). In this case, we may terminate the auditing process without waiting for $\isaudited = \top$. We must however complete evaluation of all announced reports and publish corresponding judgments.
 
 Furthermore, we pointedly disregard chains which include the accumulation of a report which we know at least $\onethird$ of validators judge as being invalid. Any chains including such a block are not eligible for authoring on. The \emph{best block}, \ie that on which we build new blocks, is defined as the chain with the most regular Safrole blocks which does \emph{not} contain any such disregarded block. Implementation-wise, this may require reversion to an earlier head or alternative fork.
 
