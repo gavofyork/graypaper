@@ -139,18 +139,18 @@ The historical lookup function $\histlookup$ may now be defined as:
 
 We define the dependent values $\sa¬items$ and $\sa¬octets$ as the storage footprint of the service, specifically the number of items in storage and the total number of octets used in storage. They are defined purely in terms of the storage map of a service, and it must be assumed that whenever a service's storage is changed, these change also.
 
-Furthermore, as we will see in the account serialization function in section \ref{sec:serialization}, these are expected to be found explicitly within the Merklized state data. Because of this we make explicit their set.
+Furthermore, as we will see in the account serialization function in section \ref{sec:serialization}, these are expected to be found explicitly within the Merklized state data.
 
 We may then define a third dependent term $\sa¬minbalance$, the minimum, or \emph{threshold}, balance needed for any given service account in terms of its storage footprint.
 \begin{align}
-  \forall \mathbf{a} \in \values{\accounts}\colon \abracegroup{
-    \mathbf{a}_\sa¬items \in \Nbits{32} &\equiv
+  \forall \mathbf{a} \in \serviceaccount\colon \abracegroup{
+    \mathbf{a}_\sa¬items &\equiv
       2\cdot\len{\,\mathbf{a}_\sa¬requests\,} + \len{\,\mathbf{a}_\sa¬storage\,} \\
-    \mathbf{a}_\sa¬octets \in \Nbits{64} &\equiv
+    \mathbf{a}_\sa¬octets &\equiv
       \sum\limits_{\,\tup{h, z} \in \keys{\mathbf{a}_\sa¬requests}\,} \!\!\!\!81 + z \\
     &\phantom{\equiv\ } + \sum\limits_{\tup{x, y} \in \mathbf{a}_\sa¬storage} 34 + \len{y} + \len{x} \\
     \label{eq:deposits}
-    \mathbf{a}_\sa¬minbalance \in \balance &\equiv
+    \mathbf{a}_\sa¬minbalance &\equiv
       \max(0,
         \Cbasedeposit
         + \Citemdeposit \cdot \mathbf{a}_\sa¬items
