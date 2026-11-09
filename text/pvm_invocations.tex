@@ -77,14 +77,14 @@ Unlike the other invocation functions, the Refine invocation function implicitly
     \label{eq:refinvocation}
     \tuple{\coreindex, \N, \workpackage, \blob, \sequence{\sequence{\segment}}, \N} &\to \tuple{\blob \cup \workerror, \sequence{\segment}, \gas} \\
     \tup{c, i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff} &\mapsto \begin{cases}
-      \tup{\token{BAD}, \sq{}, 0} &\when w_\wi¬serviceindex \not\in \keys{\accounts} \vee \mathbf{c} = \none \\
-      \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\mathbf{c}} > \Cmaxservicecodesize \\
+      \tup{\token{BAD}, \sq{}, 0} &\when w_\wi¬serviceindex \not\in \keys{\accounts} \vee \mathbf{b} = \none \\
+      \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\mathbf{b}} > \Cmaxservicecodesize \\
       &\otherwise: \\
       &\quad\using \mathbf{a} = \encode{c, i, w_\wi¬serviceindex, \var{w_\wi¬payload}, \blake{p}}\\
-      &\quad\also \tup{u, \mathbf{o}, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}} = \Psi_M(\mathbf{c}, 0, w_\wi¬refgaslimit, \mathbf{a}, F, \tup{\emptyset, \emptyset, \sq{}})\ \colon\\
+      &\quad\also \tup{u, \mathbf{o}, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}} = \Psi_M(\mathbf{b}, 0, w_\wi¬refgaslimit, \mathbf{a}, F, \tup{\emptyset, \emptyset, \sq{}})\ \colon\\
       \tup{\mathbf{o}, \sq{}, u} &\quad\when \mathbf{o} \in \set{ \oog, \panic }  \\
       \tup{\mathbf{o}, \mathbf{e}, u} &\quad\otherwise \\
-      \multicolumn{2}{l}{\where w = p_\wp¬workitems\subb{i},\ \mathbf{c} = \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)}
+      \multicolumn{2}{l}{\where w = p_\wp¬workitems\subb{i},\ \mathbf{b} = \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)}
     \end{cases} \\
   } \\
   \label{eq:refinemutator}
@@ -172,7 +172,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
       C(\Psi_M(\mathbf{c}, 5, g, \encode{t, s, \len{\mathbf{i}}}, F, I(\local¬postxferstate, \ao¬modifiedaccounts, s)^2))
         &\otherwise
     \end{cases} \\
-    &\phantom{{}\mapsto{}} \where \mathbf{c} = \mathbf{s}_\sa¬preimages[\mathbf{s}_\sa¬codehash],\ \mathbf{s} = \local¬basestate_\ps¬accounts\subb{s} \\
+    &\phantom{{}\mapsto{}} \where \mathbf{c} = \local¬basestate_\ps¬accounts\subb{s}_\sa¬preimages[\local¬basestate_\ps¬accounts\subb{s}_\sa¬codehash] \\
     &\phantom{{}\mapsto{}} \also \local¬postxferstate = \local¬basestate \exc \abracegroup{
       \local¬postxferstate_\ps¬accounts\subb{s}_\sa¬balance &= \local¬basestate_\ps¬accounts\subb{s}_\sa¬balance + \!\!\!\!\!\sum_{r \in \mathbf{x}, r_\dx¬destsupervisor = \bot}\!\!\!\!\!r_\dx¬amount \\
       \local¬postxferstate_\ps¬accounts\subb{s}_\sa¬supervisorbalance &= \local¬basestate_\ps¬accounts\subb{s}_\sa¬supervisorbalance + \!\!\!\!\!\sum_{r \in \mathbf{x}, r_\dx¬destsupervisor = \top}\!\!\!\!\!r_\dx¬amount
