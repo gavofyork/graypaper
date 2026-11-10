@@ -317,11 +317,13 @@ We define the availability specifier function $\newavailabilityspecifier$, which
     \sq{\build{\concatall{\mathbf{x}}}{\mathbf{x} \orderedin \transpose \sq{\mathbf{b}^\clubsuit, \mathbf{s}^\clubsuit}}}
   }\\
   \also \mathbf{b}^\clubsuit &= \blakemany{\erasurecode{\as¬erasureshards}{\ceil{\nicefrac{\len{\mathbf{b}}}{z}}}{\zeropad{z}{\mathbf{b}}}}\\
-  \also \mathbf{s}^\clubsuit &= \merklizewbmany{\transpose\erasurecodemany{\as¬erasureshards}{\nicefrac{\Csegmentsize}{z}}{\mathbf{s} \concat \pagedproofs(\mathbf{s})}}\\
+  \also \mathbf{s}^\clubsuit &= \merklizewbmany{{}^\text{T}_{\as¬erasureshards}\erasurecodemany{\as¬erasureshards}{\nicefrac{\Csegmentsize}{z}}{\mathbf{s} \concat \pagedproofs(\mathbf{s})}}\\
   \also z &= 2 \cdot \fnecoriginalshards(\as¬erasureshards)
 \end{align*}
 
-The paged-proofs function $\pagedproofs$, defined earlier in equation \ref{eq:pagedproofs}, accepts a sequence of segments and returns a sequence of paged-proofs sufficient to justify the correctness of every segment. There are exactly $\ceil{\nicefrac{1}{64}}$ paged-proof segments as the number of yielded segments, each composed of a page of 64 hashes of segments, together with a Merkle proof from the root to the subtree-root which includes those 64 segments.
+The paged-proofs function $\pagedproofs$, defined earlier in equation \ref{eq:pagedproofs}, accepts a sequence of segments $\mathbf{s}$ and returns a sequence of paged-proofs sufficient to justify the correctness of every segment. There are exactly $\ceil{\nicefrac{\len{\mathbf{s}}}{64}}$ paged-proof segments, each composed of a page of 64 hashes of segments, together with a Merkle proof from the root to the subtree-root which includes those 64 segments.
+
+Note that if no segments are exported, each item of $\mathbf{s}^\clubsuit$ is the zero hash $\zerohash$.
 
 The functions $\fnmerklizecd$ and $\fnmerklizewb$ are the fixed-depth and simple binary Merkle root functions, defined in equations \ref{eq:constantdepthmerkleroot} and \ref{eq:simplemerkleroot}. The functions $\fnerasurecode{}{}$ and $\fnecoriginalshards$ are the erasure-coding and original-chunk-count functions, defined in appendix \ref{sec:erasurecoding}.
 
