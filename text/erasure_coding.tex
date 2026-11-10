@@ -127,16 +127,26 @@ m\sub{i} = \tup{m\sub{i, 0} \ldots m\sub{i, 15}}
 
 Where $m_{i, 0}$ is the least significant bit of message word $m\sub{i}$. Accordingly we consider the field element $\widetilde{m\sub{i}} = \sum^{15}_{j = 0} m\sub{i, j} v\sub{j}$ to represent that message word.
 
-Similarly, we represent each integer index $i$ between 0 and $2^{16} - 1$ with the field element:
-\begin{equation}
-\tilde{i} = \sum^{15}_{j = 0} i\sub{j} v\sub{j}
-\end{equation}
-
-where $i = i_{15} \ldots i_0$ is the binary representation of $i$.
+Similarly, we assign each of the $v$ validators a unique index $j \in \Nmax{v}$.
 
 \subsection{The Generator Polynomial}
 
-To erasure code a message of $d = \fnecoriginalshards(v)$ words into $v$ code words, we represent each message as a field element as described in previous section and we interpolate the polynomial $p(y)$ of maximum $d' - 1$ degree, where $d' = 2^{\ceil{\log_2 d}}$, which satisfies the following equalities:
+To erasure code $d = \fnecoriginalshards(v)$ message words into $v$ code words, let $d' = 2^{\ceil{\log_2 d}}$ and $v' = v + d' - d$. We index the code words by indices in $I$ as defined:
+\begin{equation}
+   I \equiv \Z\interval{0}{d} \cup \Z\interval{d'}{v'}
+\end{equation}
+and deliver the code word at index $i \in I$ to validator $f(i)$, where:
+\begin{equation}
+   f(i) \equiv \begin{cases} i & i < d \\ i - (d' - d) & i \geq d' \end{cases}
+\end{equation}
+
+Each index $i \in I$ is represented by the field element:
+\begin{equation}
+   \tilde{i} = \sum^{15}_{j = 0} i\sub{j} v\sub{j}
+\end{equation}
+where $i = i_{15} \ldots i_0$ is the binary representation of $i$.
+
+We represent each message word as a field element as described in the previous section and interpolate the polynomial $p(y)$ of maximum degree $d' - 1$ satisfying:
 \begin{equation}
    \begin{array}{l}
      p (\tilde{0}) = \widetilde{m_0}\\
@@ -147,17 +157,7 @@ To erasure code a message of $d = \fnecoriginalshards(v)$ words into $v$ code wo
    \end{array}
 \end{equation}
 
-After finding $p(y)$ with such properties, we evaluate $p$ at the following points, where $v' = v + d' - d$:
-\begin{equation}
-   \begin{array}{l}
-     \widetilde{r_d} : = p (\widetilde{d'})\\
-     \widetilde{r_{d+1}} : = p (\widetilde{d'+1})\\
-     \vdots\\
-     \widetilde{r_{v-1}} : = p (\widetilde{v'-1})
-   \end{array}
-\end{equation}
-
-We then distribute the message words and the extra code words among the validators according to their corresponding indices.
+The code word at index $i \in I$ is $p(\tilde{i})$; in particular, for $i < d$ this equals the message word $\widetilde{m_i}$.
 
 %To ensure the availability of work-package data in an adversarial environment, we use a Reed-Solomon code over the field $GF(2^{16})$ with rate of three to get a three times redundant data to be distributed among validators. This ensures that one-third of the validators may be dishonest or malfunctioning and yet any party is still able to reconstruct a work-package once we are assured that two-thirds-plus-one of the validators have each received their set of chunks for said work-package.
 
