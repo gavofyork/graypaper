@@ -157,7 +157,9 @@ We represent each message word as a field element as described in the previous s
    \end{array}
 \end{equation}
 
-The code word at index $i \in I$ is $p(\tilde{i})$; in particular, for $i < d$ this equals the message word $\widetilde{m_i}$.
+After finding $p(y)$, we evaluate it at the remaining indices in $I$, namely $i \in \Z\interval{d'}{v'}$. The code word at index $i \in I$ is $p(\tilde{i})$ and is delivered to validator $f(i)$.
+
+Note that the code is systematic, i.e. $p(\tilde{i})$ is equal to $\widetilde{m_i}$ for $i < d$.
 
 %To ensure the availability of work-package data in an adversarial environment, we use a Reed-Solomon code over the field $GF(2^{16})$ with rate of three to get a three times redundant data to be distributed among validators. This ensures that one-third of the validators may be dishonest or malfunctioning and yet any party is still able to reconstruct a work-package once we are assured that two-thirds-plus-one of the validators have each received their set of chunks for said work-package.
 
