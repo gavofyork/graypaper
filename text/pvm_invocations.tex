@@ -739,8 +739,8 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when \mathbf{k} = \error \vee \mathbf{v} = \error\\
       \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d \not\in \keys{\mathbf{d}} \\
       \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \\
-      \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{d}_\sa¬minbalance > \mathbf{d}'\subb{d}_\sa¬balance + \mathbf{d}'\subb{d}_\sa¬supervisorbalance \\
-      \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{d}_\sa¬items \not\in \Nbits{32} \vee \mathbf{d}'\subb{d}_\sa¬octets \not\in \Nbits{64} \\
+      \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{d}_\sa¬minbalance > \mathbf{d}'\subb{d}_\sa¬balance + \mathbf{d}'\subb{d}_\sa¬supervisorbalance \lor {} \\
+      &\phantom{\otherwhen} \mathbf{d}'\subb{d}_\sa¬items \not\in \Nbits{32} \vee \mathbf{d}'\subb{d}_\sa¬octets \not\in \Nbits{64} \\
       \tup{\continue, l, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d}} &\otherwise\\
     \end{cases} \\
     g &\equiv \CgasWconst + \fnmemgas(\CgasWkeylinear, k_Z) + \fnmemgas(\CgasWvallinear, v_Z)
@@ -1085,8 +1085,8 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\panic, \registers_7, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d \not\in \keys{\mathbf{d}} \\
       \tup{\continue, \mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \imX_\im¬id \not\in \set{d, \effectivesupervisor{\mathbf{d}}{d}} \lor \mathbf{d}' = \error \\
-      \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{d}_\sa¬balance + \mathbf{d}'\subb{d}_\sa¬supervisorbalance < \mathbf{d}'\subb{d}_\sa¬minbalance \\
-      \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{d}_\sa¬items \not\in \Nbits{32} \vee \mathbf{d}'\subb{d}_\sa¬octets \not\in \Nbits{64} \\
+      \tup{\continue, \mathtt{FULL}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen \mathbf{d}'\subb{d}_\sa¬balance + \mathbf{d}'\subb{d}_\sa¬supervisorbalance < \mathbf{d}'\subb{d}_\sa¬minbalance \lor {} \\
+      &\phantom{\otherwhen} \mathbf{d}'\subb{d}_\sa¬items \not\in \Nbits{32} \vee \mathbf{d}'\subb{d}_\sa¬octets \not\in \Nbits{64} \\
       \tup{\continue, \mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d}} &\otherwise
     \end{cases} \\
     g &\equiv \CgasS
