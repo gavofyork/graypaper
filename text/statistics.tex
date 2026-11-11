@@ -66,11 +66,11 @@ The objective statistics are updated in line with their description, formally:
       \end{cases}\\
     \valstatsaccumulator'\subb{v}_\vs¬preimagesize &=
       \valstatsaccumulator^\ddagger\subb{v}_\vs¬preimagesize + \begin{cases}
-        \sum_{d \in \xtpreimages}\len{d} &\when v = \H_\¬authorindex \\
+        \sum_{\mathbf{p} \in \xtpreimages}\len{\mathbf{p}_\xp¬data} &\when v = \H_\¬authorindex \\
         0 &\otherwise
       \end{cases}\\
     \valstatsaccumulator'\subb{v}_\vs¬guarantees &=
-      \valstatsaccumulator^\ddagger\subb{v}_\vs¬guarantees + (\activeset'\sub{v} \in \reporters)
+      \valstatsaccumulator^\ddagger\subb{v}_\vs¬guarantees + (\activeset'\subb{v}_\vk¬ed \in \reporters)
   \end{split}
 \end{align}
 
@@ -111,7 +111,7 @@ The other two components of statistics are the core and service activity statist
 The core statistics are updated using several intermediate values from across the overall state-transition function; $\incomingreports$, the incoming work-reports, as defined in \ref{eq:incomingworkreports} and $\justbecameavailable$, the newly available work-reports, as defined in \ref{eq:availableworkreports}. We define the statistics as follows:
 \begin{align}
   \forall c \in \coreindex : \corestats'\subb{c} &\equiv \tup{
-    \begin{alignedat}{5}
+    \begin{alignedat}{3}
       \is{\cs¬importcount&}{R(c)_\¬importcount}\,,\;
       \is{&\cs¬xtcount&}{R(c)_\¬xtcount}\,,\;
       \is{&\cs¬xtsize&}{R(c)_\¬xtsize}\,,\\
@@ -154,20 +154,18 @@ The core statistics are updated using several intermediate values from across th
 Finally, the service statistics are updated using the same intermediate values as the core statistics, but with a different set of calculations:
 \begin{align}
   \forall s \in \local¬servicesactive : \servicestats'\subb{s} &\equiv \tup{
-    \begin{alignedat}{5}
+    \begin{alignedat}{3}
       \is{\ss¬importcount&}{R(s)_\¬importcount}\,,\;
       \is{&\ss¬xtcount&}{R(s)_\¬xtcount}\,,\;
       \is{&\ss¬xtsize&}{R(s)_\¬xtsize}\,,\\
       \is{\ss¬exportcount&}{R(s)_\¬exportcount}\,,\;
-      \is{&\ss¬refinement&}{\span\span\tup{R(s)_\local¬counter, R(s)_\¬gasused}}\,,\;\\
+      \is{&\ss¬refinement&}{\tup{R(s)_\local¬counter, R(s)_\¬gasused}}\,,\;\span\span\\
       \is{\ss¬provision&}{
-        \span\span\textstyle
-        \sum_{\tup{\xp¬serviceindex, \xp¬data}\,\in \xtpreimages}\tup{1, \len{\xp¬data}}
-      }\,,\;\\
+        \sum_{\mathbf{p} \in \xtpreimages, \mathbf{p}_\xp¬serviceindex = s}\tup{1, \len{\mathbf{p}_\xp¬data}}
+      }\,,\;\span\span\span\span\\
       \is{\ss¬accumulation&}{
-        \span\span
         \subifnone{\accumulationstatistics\subb{s}, \tup{0, 0, 0}}
-      }
+      }\span\span\span\span
     \end{alignedat}
   }\!\!\!\!\\
   \where \local¬servicesactive &=

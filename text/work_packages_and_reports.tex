@@ -104,26 +104,35 @@ We limit the total number of exported items to $\Cmaxpackageexports = 3072$, the
 
 We make an assumption that the preimage to each extrinsic hash in each work-item is known by the guarantor. In general this data will be passed to the guarantor alongside the work-package.
 
-We limit the total size of the auditable \emph{work-bundle}, containing the work-package, import and extrinsic items, together with all payloads, the authorizer configuration and the authorization token to around 13.6\textsc{mb}. This limit allows 2\textsc{mb}/s/core D$^{3}$L imports, and thus a full complement of 3,072 imports, assuming no extrinsics, 64 bytes for each of the authorization token and trace, and a work-item payload of 4\textsc{kb}:
+We limit the total size of the \emph{input data} of a work-package, its import and extrinsic items together with all payloads, the authorizer configuration and the authorization token, to around 13.8\textsc{mb}. This limit allows 2\textsc{mb}/s/core D$^{3}$L imports, and thus a full complement of 3,072 imports, assuming no extrinsics, 64 bytes for each of the authorization token and the authorizer configuration, and a work-item payload of 4\textsc{kb}:
 \begin{align}
   \label{eq:checkextractsize}
   &\begin{aligned}
     &\forall \wpX \in \workpackage: \Big(\len{\wpX_\wp¬authtoken} + \len{\wpX_\wp¬authconfig} +
-    \!\!\sum_{\wiX \orderedin \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \Cmaxbundlesize \\
+    \!\!\sum_{\wiX \orderedin \wpX_\wp¬workitems}\!\!S(\wiX)\Big) \le \Cmaxinputsize \\
     &\where S(\wiX \in \workitem) \equiv \len{\wiX_\wi¬payload} + \len{\wiX_\wi¬importsegments}\cdot\Csegmentfootprint + \!\!\!\!\!\!\sum_{\tup{h, l} \orderedin \wiX_\wi¬extrinsics} \!\!\!l
   \end{aligned}\\
   \label{eq:segmentfootprint}
   &\Csegmentfootprint \equiv \Csegmentsize + 32\ceil{\log_2(\Cmaxpackageexports)}\\
-  &\Cmaxbundlesize \equiv \Cmaxpackageimports\cdot\Csegmentfootprint + 4096 + 64 + 64 = 13,791,360
+  &\Cmaxinputsize \equiv \Cmaxpackageimports\cdot\Csegmentfootprint + 4096 + 64 + 64 = 13,791,360
 \end{align}
+
+The encoded bundle (see equation \ref{eq:makebundle}) also contains the fixed-size fields and length prefixes of the work-package (214 octets) and work-items (62 octets each), a 32 octet hash for each prerequisite, a 34-octet reference and a one-octet justification length prefix for each imported segment, and a 36-octet reference for each extrinsic. The bundle length is thus bounded by $\Cmaxbundlesize$:
+\begin{equation}
+  \label{eq:maxbundlesize}
+  \begin{aligned}
+    \Cmaxbundlesize &\equiv \Cmaxinputsize + 214 + 32\Cmaxreportdeps + 62\Cmaxpackageitems + 35\Cmaxpackageimports + 36\Cmaxpackagexts \\
+    &= 13,904,950
+  \end{aligned}
+\end{equation}
 
 We limit the sums of each of the two gas limits to be at most the maximum gas allocated to a core for the corresponding operation:
 \begin{equation}
   \label{eq:wplimits}
   \forall \wpX \in \workpackage:\ \;
-    \sum_{\wiX \orderedin \wpX_\wp¬workitems}(\wiX_\wi¬accgaslimit) < \Creportaccgas
+    \sum_{\wiX \orderedin \wpX_\wp¬workitems}(\wiX_\wi¬accgaslimit) \le \Creportaccgas
   \quad\wedge\ \;
-    \sum_{\wiX \orderedin \wpX_\wp¬workitems}(\wiX_\wi¬refgaslimit) < \Cpackagerefgas
+    \sum_{\wiX \orderedin \wpX_\wp¬workitems}(\wiX_\wi¬refgaslimit) \le \Cpackagerefgas
 \end{equation}
 
 %The implication of equation \ref{eq:checkextractsize} is that we have access to the preimage of all extrinsic data. For guaranteeing, this implies the work-package author probably submits the preimages alongside the work-package itself. For auditing, the extrinsic preimages may be reconstructed in the same manner as the work-package. Both are described later.
@@ -211,9 +220,9 @@ Where:
     j \orderedin \Nmax{\len{\wpX_\wp¬workitems}}
   }} \\
   \countupexports(\wpX, j) &\equiv \begin{cases}
-    \tup{\oversize, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\when \len{r} + z > \Cmaxreportvarsize\\
+    \tup{r, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\when r \not\in \blob \\
+    \tup{\oversize, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\otherwhen \len{r} + z > \Cmaxreportvarsize\\
     \tup{\badexports, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\otherwhen \len{\mathbf{e}} \ne \local¬theitem_\wi¬exportcount \\
-    \tup{r, u, \sq{\segment_0, \segment_0, \dots}\interval{}{\local¬theitem_\wi¬exportcount}} &\otherwhen r \not\in \blob \\
     \tup{r, u, \mathbf{e}} &\otherwise \\
     \multicolumn{2}{l}{\where \tup{r, \mathbf{e}, u} = \Psi_R(
       c, j, \wpX, \wr¬authtrace, \importsegmentdata^\#_\wr¬srlookup(\wpX_\wp¬workitems), \ell
@@ -309,11 +318,13 @@ We define the availability specifier function $\newavailabilityspecifier$, which
     \sq{\build{\concatall{\mathbf{x}}}{\mathbf{x} \orderedin \transpose \sq{\mathbf{b}^\clubsuit, \mathbf{s}^\clubsuit}}}
   }\\
   \also \mathbf{b}^\clubsuit &= \blakemany{\erasurecode{\as¬erasureshards}{\ceil{\nicefrac{\len{\mathbf{b}}}{z}}}{\zeropad{z}{\mathbf{b}}}}\\
-  \also \mathbf{s}^\clubsuit &= \merklizewbmany{\transpose\erasurecodemany{\as¬erasureshards}{\nicefrac{\Csegmentsize}{z}}{\mathbf{s} \concat \pagedproofs(\mathbf{s})}}\\
+  \also \mathbf{s}^\clubsuit &= \merklizewbmany{{}^\text{T}_{\as¬erasureshards}\erasurecodemany{\as¬erasureshards}{\nicefrac{\Csegmentsize}{z}}{\mathbf{s} \concat \pagedproofs(\mathbf{s})}}\\
   \also z &= 2 \cdot \fnecoriginalshards(\as¬erasureshards)
 \end{align*}
 
-The paged-proofs function $\pagedproofs$, defined earlier in equation \ref{eq:pagedproofs}, accepts a sequence of segments and returns a sequence of paged-proofs sufficient to justify the correctness of every segment. There are exactly $\ceil{\nicefrac{1}{64}}$ paged-proof segments as the number of yielded segments, each composed of a page of 64 hashes of segments, together with a Merkle proof from the root to the subtree-root which includes those 64 segments.
+The paged-proofs function $\pagedproofs$, defined earlier in equation \ref{eq:pagedproofs}, accepts a sequence of segments $\mathbf{s}$ and returns a sequence of paged-proofs sufficient to justify the correctness of every segment. There are exactly $\ceil{\nicefrac{\len{\mathbf{s}}}{64}}$ paged-proof segments, each composed of a page of 64 hashes of segments, together with a Merkle proof from the root to the subtree-root which includes those 64 segments.
+
+Note that if no segments are exported, each item of $\mathbf{s}^\clubsuit$ is the zero hash $\zerohash$.
 
 The functions $\fnmerklizecd$ and $\fnmerklizewb$ are the fixed-depth and simple binary Merkle root functions, defined in equations \ref{eq:constantdepthmerkleroot} and \ref{eq:simplemerkleroot}. The functions $\fnerasurecode{}{}$ and $\fnecoriginalshards$ are the erasure-coding and original-chunk-count functions, defined in appendix \ref{sec:erasurecoding}.
 

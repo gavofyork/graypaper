@@ -48,6 +48,7 @@
   \item[$\workpackage$] The set of work-$\mathbb{P}$ackages. See equation \ref{eq:workpackage}.
   \item[$\workreport$] The set of work-$\mathbb{R}$eports. See equation \ref{eq:workreport}. \emph{Note used for the set of real numbers.}
   \item[$\partialstate$] The set representating a portion of overall $\mathbb{S}$tate, used during accumulation. See equation \ref{eq:partialstate}.
+  \item[$\defxfer$] The set of deferred $\mathbb{t}$ransfers. See equation \ref{eq:defxfer}.
   \item[$\safroleticket$] The set of slot-sealer $\mathbb{T}$ickets. See equation \ref{eq:ticket}.
   \item[$\operandtuple$] The information concerning a single work-item once prepared as an operand for the accumulation function. See equation \ref{eq:operandtuple}.
   \item[$\valcount$] The set of $\mathbb{V}$alidator key-set sizes. See equation \ref{eq:valcount}.
@@ -57,7 +58,7 @@
   \item[$\bssignature{k}{c}{m}$] The set of $\mathbb{V}$alid Bandersnatch signatures of the public key $k$, context $c$ and message $m$. A subset of $\blob[96]$. See section \ref{sec:cryptography}.
   \item[$\bsringproof{r}{c}{m}$] The set of $\mathbb{V}$alid Bandersnatch Ring\textsc{vrf} proofs of the root $r$, context $c$ and message $m$. A subset of $\blob[784]$. See section \ref{sec:cryptography}.
   \item[$\workitem$] The set of $\mathbb{W}$ork items. See equation \ref{eq:workitem}.
-  \item[$\defxfer$] The set of deferred transfers. See equation \ref{eq:defxfer}.
+  \item[$\privilegestype$] The set representing privilege assignments. See equation \ref{eq:privilegestype}.
   \item[$\avspec$] The set of availability specifications. See equation \ref{eq:avspec}.
 \end{description}
 
@@ -273,6 +274,8 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{M}$] Host-function gas costs, see below.
   \item[$\Cmaxextrinsicverdicts = 16$] The maximum number of verdicts which may be included in a single extrinsic. See equation \ref{eq:disputesextrinsics}.
   \item[$\Cmaxextrinsicoffenses = 16$] The maximum number each of culprits or faults which may be included in a single extrinsic. See equation \ref{eq:disputesextrinsics}.
+  \item[$\Cmaxxtpreimageslen = 256$] The maximum length of the preimages component of the extrinsic ($\xtpreimages$). See equation \ref{eq:xtpreimages}.
+  \item[$\Cmaxxtpreimagesdatasize = 2^{25}$] The maximum number of data octets in the preimages component of the extrinsic ($\xtpreimages$). See equation \ref{eq:maxxtpreimagesdatasize}.
   \item[$\Cauthpoolsize = 8$] The maximum number of items in the authorizations pool. See equation \ref{eq:authstatecomposition}.
   \item[$\Cslotseconds = 6$] The slot period, in seconds. See equation \ref{sec:epochsandslots}.
   \item[$\Cauthqueuesize = 80$] The number of items in the authorizations queue. See equation \ref{eq:authstatecomposition}.
@@ -280,11 +283,12 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Cminpublicindex = 2^{16}$] The minimum public service index. Services of indices below these may only be created by the Registrar. See equation \ref{eq:newserviceindex}.
   \item[$\Cmaxpackagexts = 128$] The maximum number of extrinsics in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
   \item[$\Cassurancetimeoutperiod = 5$] The period in timeslots after which reported but unavailable work is cleared. See equation \ref{eq:availassignmentspostassurancesdef}.
-  \item[$\Cmaxauthcodesize = 64,000$] The maximum size of is-authorized code in octets. See equation \ref{eq:isauthinvocation}.
-  \item[$\Cmaxbundlesize = 13,791,360$] The maximum size of the concatenated variable-size blobs, extrinsics and imported segments of a work-package, in octets. See equation \ref{eq:checkextractsize}.
+  \item[$\Cmaxauthcodesize = 196,608$] The maximum size of is-authorized code in octets. See equation \ref{eq:isauthinvocation}.
+  \item[$\Cmaxbundlesize = 13,904,950$] The maximum size of a work-package bundle in octets. See equation \ref{eq:maxbundlesize}.
   \item[$\Cmaxservicecodesize = 4,000,000$] The maximum size of service code in octets. See equations \ref{eq:refinvocation} \& \ref{eq:accinvocation}.
   \item[$\Csegmentsize = 4104$] The size of a segment in octets. See section \ref{sec:segments}.
   \item[$\Csegmentfootprint = \Csegmentsize + 32\ceil{\log_2(\Cmaxpackageexports)} = 4488$] The additional footprint in the Audits DA of a single imported segment. See equation \ref{eq:segmentfootprint}.
+  \item[$\Cmaxinputsize = 13,791,360$] The maximum size of the input data of a work-package, in octets: its concatenated variable-size blobs, extrinsics and imported segments. See equation \ref{eq:checkextractsize}.
   \item[$\Cmaxpackageimports = 3,072$] The maximum number of imports in a work-package. See equation \ref{eq:limitworkpackagebandwidth}.
   \item[$\Cmaxreportvarsize = 48\cdot2^{10}$] The maximum total size of all unbounded blobs in a work-report, in octets. See equation \ref{eq:limitworkreportsize}.
   \item[$\Cmemosize = 128$] The size of a transfer memo in octets. See equation \ref{eq:defxfer}.
@@ -292,7 +296,9 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\mathsf{X}$] Context strings, see below.
   \item[$\Cepochtailstart = 500$] The number of slots into an epoch at which ticket-submission ends. See sections \ref{sec:slotkeysequence}, \ref{sec:epochmarker} and \ref{sec:safrolextandtickets}.
   \item[$\Cpvmdynaddralign = 2$] The \textsc{pvm} dynamic address alignment factor. See equation \ref{eq:jumptablealignment}.
+  \item[$\Cpvmmaxcodesize = 2^{25}$] The maximum size of the instruction data of a \textsc{pvm} program blob, in octets. See equation \ref{eq:deblob}.
   \item[$\Cpvminitinputsize = 2^{24}$] The standard \textsc{pvm} program initialization input data size. See equation \ref{sec:standardprograminit}.
+  \item[$\Cpvmmaxjumptableentries = 2^{24}$] The maximum number of entries in the dynamic jump table of a \textsc{pvm} program blob. See equation \ref{eq:deblob}.
   \item[$\Cpvmpagesize = 2^{12}$] The \textsc{pvm} memory page size. See equation \ref{eq:pvmmemory}.
   \item[$\Cpvminitzonesize = 2^{16}$] The standard \textsc{pvm} program initialization zone size. See section \ref{sec:standardprograminit}.
 \end{description}
@@ -305,7 +311,7 @@ These constants are used in the host function gas cost equations in appendix \re
   \item[$\Cgasunknown = 1000$] Gas cost charged for an unknown host-call.
   \item[$\CgasA = 1818$] $\Omega_A$ (\texttt{assign}) base gas cost.
   \item[$\CgasBconst = 422$] $\Omega_B$ (\texttt{bless}) base gas cost.
-  \item[$\CgasBlinear = 20$] $\Omega_B$ (\texttt{bless}) gas per item.
+  \item[$\CgasBlinear = 20$] $\Omega_B$ (\texttt{bless}) gas per record.
   \item[$\CgasC = 103$] $\Omega_C$ (\texttt{checkpoint}) base gas cost.
   \item[$\CgasDconst = 1100$] $\Omega_D$ (\texttt{designate}) base gas cost.
   \item[$\CgasDlinear = 302$] $\Omega_D$ (\texttt{designate}) gas per validator.
