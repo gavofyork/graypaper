@@ -72,7 +72,7 @@ Every $\Ctrancheseconds = 8$ seconds following a new time slot, a new tranche be
   \using n = \ffrac{\wallclock - \Cslotseconds\cdot\H_\¬timeslot}{\Ctrancheseconds}
 \end{equation}
 
-New tranches may contain items from $\local¬reports$ stemming from one of two reasons: either a negative judgment has been received; or the number of judgments from the previous tranche is less than the number of announcements from said tranche. In the first case, the validator is always required to issue a judgment on the work-report. In the second case, a new special-purpose \textsc{vrf} must be constructed to determine if an audit and judgment is warranted from us.
+New tranches may contain items from $\local¬reports$ stemming from one of two reasons: either a negative judgment has been received from a validator not in the punish-set $\offenders'$; or the number of positive judgments from the previous tranche is less than the number of announcements from said tranche. In the first case, the validator is always required to issue a judgment on the work-report. In the second case, a new special-purpose \textsc{vrf} must be constructed to determine if an audit and judgment is warranted from us.
 
 In all cases, we publish a signed statement of which of the cores we believe we are required to audit (an \emph{announcement}) together with evidence of the \textsc{vrf} signature to select them and the other validators' announcements from the previous tranche unmatched with a judgment in order that all other validators are capable of verifying the announcement. \emph{Publication of an announcement should be taken as a contract to complete the audit regardless of any future information.}
 
@@ -154,10 +154,10 @@ From the mapping $e\sub{n}$ the validator issues a set of judgments $\mathbf{j}\
 
 All judgments $\mathbf{j}_*$ should be published to other validators in order that they build their view of $J$ and in the case of a negative judgment arising, can form an extrinsic for $\xtdisputes$.
 
-We consider a work-report as audited under two circumstances. Either, when it has no negative judgments and there exists some tranche in which we see a positive judgment from all validators who we believe are required to audit it; or when we see positive judgments for it from greater than two-thirds of the validator set.
+We consider a work-report as audited under two circumstances. Either, when it has no negative judgments other than from validators in the punish-set and there exists some tranche in which we see a positive judgment from all validators who we believe are required to audit it; or when we see positive judgments for it from greater than two-thirds of the validator set.
 \begin{align}
   U(\wrX) &\Leftrightarrow \bigvee\,\abracegroup[\,]{
-    &J_\bot(\wrX) = \emptyset \wedge \exists n : A\sub{n}(\wrX) \subseteq J_\top(\wrX) \\
+    &\set{\build{\activeset\subb{i}_\vk¬ed}{i \in J_\bot(\wrX)}} \subseteq \offenders' \wedge \exists n : A\sub{n}(\wrX) \subseteq J_\top(\wrX) \\
     &\len{J_\top(\wrX)} > \twothirds\len{\activeset}
   }
 \end{align}
