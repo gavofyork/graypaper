@@ -6,9 +6,9 @@ Nodes take part in the \textsc{Grandpa} protocol as defined by \cite{stewart2020
 \newcommand*{\best}{\flat}
 \newcommand*{\bestaudited}{{\flat\isaudited}}
 
-We define the latest finalized block as $\block^\final$. All associated terms concerning block and state are similarly superscripted. We define the \emph{best block given base block $B$}, $\block^\best(B)$, as the descendant of $B$ containing the most ticket-sealed ancestor blocks with non-equivocated headers. To that end we define an \emph{equivocated} header as one for which the node has observed another distinct header sharing its timeslot:
+We define the latest finalized block as $\block^\final$. All associated terms concerning block and state are similarly superscripted. We define the \emph{best block given base block $B$}, $\block^\best(B)$, as the descendant of $B$ containing the most ticket-sealed ancestor blocks with non-equivocated headers. To that end we define an \emph{equivocated} header as one for which the node has observed another distinct header, with the finalized block as an ancestor, sharing its timeslot:
 \begin{align}
-  \isequivocated^A &\equiv \exists \header^B \ne \header^A : \header^B_\¬timeslot = \header^A_\¬timeslot
+  \isequivocated^A &\equiv \exists \header^B \ne \header^A : \header^B_\¬timeslot = \header^A_\¬timeslot \wedge \header^\final \in \ancestors(\header^B)
 \end{align}
 
 Formally, $\block^\best(B)$ is defined as:
