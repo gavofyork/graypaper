@@ -31,6 +31,7 @@
 \usepackage{hyperref}
 \usepackage{changepage}
 \usepackage{accents}
+\usepackage{siunitx}
 
 \numberwithin{equation}{section}
 \renewcommand{\theequation}{\thesection.\arabic{equation}}
@@ -245,6 +246,11 @@
 
 %%%%%%%%%%%%
 % CONSTANTS (Sans-serif upper letters)
+
+% Clock speed in GHz of the reference hardware, used to derive gas limits from wall-clock time.
+\newcommand*{\Creferenceghz}{4.7}
+% Gas for #1 milliseconds on the reference hardware, rounded down.
+\newcommand*{\gasfromms}[1]{\num[group-separator={,},group-minimum-digits=4]{\fpeval{floor(#1 * \Creferenceghz * 1000000)}}}
 
 % Numeric
 \newcommand*{\Ctrancheseconds}{\mathsf{A}}
