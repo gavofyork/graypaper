@@ -76,14 +76,14 @@ Unlike the other invocation functions, the Refine invocation function implicitly
     \label{eq:refinvocation}
     \tuple{\coreindex, \N, \workpackage, \blob, \sequence{\sequence{\segment}}, \N} &\to \tuple{\blob \cup \workerror, \sequence{\segment}, \gas} \\
     \tup{c, i, p, \mathbf{r}, \overline{\mathbf{i}}, \segoff} &\mapsto \begin{cases}
-      \tup{\token{BAD}, \sq{}, 0} &\when w_\wi¬serviceindex \not\in \keys{\accounts} \vee \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash) = \none \\
-      \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)} > \Cmaxservicecodesize \\
+      \tup{\token{BAD}, \sq{}, 0} &\when w_\wi¬serviceindex \not\in \keys{\accounts} \vee \jam¬blob = \none \\
+      \tup{\token{BIG}, \sq{}, 0} &\otherwhen \len{\jam¬blob} > \Cmaxservicecodesize \\
       &\otherwise: \\
-      &\quad\using \mathbf{a} = \encode{c, i, w_\wi¬serviceindex, \var{w_\wi¬payload}, \blake{p}}\;,\ \encode{\var{\mathbf{z}}, \jam¬blob} = \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)\\
+      &\quad\using \mathbf{a} = \encode{c, i, w_\wi¬serviceindex, \var{w_\wi¬payload}, \blake{p}}\\
       &\quad\also \tup{u, \mathbf{o}, \tup{\mathbf{m}, \pvm¬module¬map, \mathbf{e}}} = \Psi_M(\jam¬blob, 0, w_\wi¬refgaslimit, \mathbf{a}, F, \tup{\emptyset, \emptyset, \sq{}})\ \colon\\
       \tup{\mathbf{o}, \sq{}, u} &\quad\when \mathbf{o} \in \set{ \oog, \panic }  \\
       \tup{\mathbf{o}, \mathbf{e}, u} &\quad\otherwise \\
-      \multicolumn{2}{l}{\where w = p_\wp¬workitems\subb{i}}
+      \multicolumn{2}{l}{\where w = p_\wp¬workitems\subb{i}\;,\ \jam¬blob = \histlookup(\accounts\subb{w_\wi¬serviceindex}, (p_\wp¬context)_\wc¬lookupanchortime, w_\wi¬codehash)}
     \end{cases} \\
   } \\
   \label{eq:refinemutator}
@@ -332,7 +332,7 @@ These make no assumptions about the context $\context$; it is always passed thro
     % of whether anything has changed.
     %
     % Extract the RO data size and the stack size from the JAM program blob.
-    \using (\mathbf{o}, s) &\mapsto \jam¬blob \text{ according to eq. \ref{eq:conditions}} \\
+    \using (\mathbf{o}, s) &\mapsto \jam¬blob \text{ according to eq. \ref{eq:jamblobformat}} \\
     % Page index of the start of the RW data region.
     \using a &= \frac{2\Cpvminitzonesize + \rnq{\len{\mathbf{o}}}}{\Cpvmpagesize} \\
     % Page index plus one of the last possible RW data region page.

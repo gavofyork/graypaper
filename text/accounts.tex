@@ -40,13 +40,11 @@ Thus, the balance of the service of index $s$ would be denoted $\accounts\subb{s
 
 \subsection{Code and Gas}
 
-The code and associated metadata of a service account is identified by a hash which, if the service is to be functional, must be present within its preimage lookup (see section \ref{sec:lookups}) and have a preimage which is a proper encoding of the two blobs. We thus define the actual code $\sa¬code$ and metadata $\sa¬metadata$:
+The code of a service account is identified by a hash which, if the service is to be functional, must be present within its preimage lookup (see section \ref{sec:lookups}). We thus define the actual code $\sa¬code$:
 \begin{align}
-  \forall \mathbf{a} \in \serviceaccount : \tup{\mathbf{a}_\sa¬metadata, \mathbf{a}_\sa¬code} \equiv \begin{cases}
-    \tup{\mathbf{m}, \mathbf{c}} &\when \encode{\var{\mathbf{m}}, \mathbf{c}} = \mathbf{a}_\sa¬preimages[\mathbf{a}_\sa¬codehash] \\
-    \tup{\none, \none} &\otherwise
-  \end{cases}
+  \forall \mathbf{a} \in \serviceaccount : \mathbf{a}_\sa¬code \equiv \mathbf{a}_\sa¬preimages[\mathbf{a}_\sa¬codehash]
 \end{align}
+To be functional, service code must follow the standard \Jam program blob format, defined in appendix \ref{sec:standardprograminit}.
 
 There are two entry-points in the code:
 \begin{description}
