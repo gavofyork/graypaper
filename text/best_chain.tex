@@ -9,7 +9,7 @@ We define the latest finalized block as $\block^\final$. All associated terms co
 
 \begin{itemize}
   \item Has the finalized block as an ancestor.
-  \item Contains no unfinalized blocks where we see an equivocation (two valid blocks at the same timeslot).
+  \item Contains no unfinalized blocks where we see an equivocation (two valid blocks at the same timeslot, both of which have the finalized block as an ancestor).
   \item Is considered audited.
 \end{itemize}
 
@@ -21,7 +21,7 @@ Formally:
     \header^A &\ne \header^B \\
     \header^A_\¬timeslot &= \header^B_\¬timeslot \\
     \header^A &\in \ancestors(\header^\best) \\
-    \header^A &\not\in \ancestors(\header^\final)
+    \header^\final &\in \ancestors(\header^B)
   }
 \end{align}
 
