@@ -48,6 +48,7 @@
   \item[$\workpackage$] The set of work-$\mathbb{P}$ackages. See equation \ref{eq:workpackage}.
   \item[$\workreport$] The set of work-$\mathbb{R}$eports. See equation \ref{eq:workreport}. \emph{Not used for the set of real numbers.}
   \item[$\partialstate$] The set representating a portion of overall $\mathbb{S}$tate, used during accumulation. See equation \ref{eq:partialstate}.
+  \item[$\defxfer$] The set of deferred $\mathbb{t}$ransfers. See equation \ref{eq:defxfer}.
   \item[$\safroleticket$] The set of slot-sealer $\mathbb{T}$ickets. See equation \ref{eq:ticket}.
   \item[$\operandtuple$] The information concerning a single work-item once prepared as an operand for the accumulation function. See equation \ref{eq:operandtuple}.
   \item[$\valcount$] The set of $\mathbb{V}$alidator key-set sizes. See equation \ref{eq:valcount}.
@@ -57,7 +58,7 @@
   \item[$\bssignature{k}{c}{m}$] The set of $\mathbb{V}$alid Bandersnatch signatures of the public key $k$, context $c$ and message $m$. A subset of $\blob[96]$. See section \ref{sec:cryptography}.
   \item[$\bsringproof{r}{c}{m}$] The set of $\mathbb{V}$alid Bandersnatch Ring\textsc{vrf} proofs of the root $r$, context $c$ and message $m$. A subset of $\blob[784]$. See section \ref{sec:cryptography}.
   \item[$\workitem$] The set of $\mathbb{W}$ork items. See equation \ref{eq:workitem}.
-  \item[$\defxfer$] The set of deferred transfers. See equation \ref{eq:defxfer}.
+  \item[$\privilegestype$] The set representing privilege assignments. See equation \ref{eq:privilegestype}.
   \item[$\avspec$] The set of availability specifications. See equation \ref{eq:avspec}.
 \end{description}
 
@@ -261,10 +262,10 @@ Here, the prime annotation indicates posterior state. Individual components may 
   \item[$\Ccorecount = 341$] The total number of cores.
   \item[$\Cexpungeperiod = 19,200$] The period in timeslots after which an unreferenced preimage may be expunged. See \texttt{forget} definition in section \ref{sec:accumulatefunctions}.
   \item[$\Cepochlen = 600$] The length of an epoch in timeslots. See section \ref{sec:epochsandslots}.
-  \item[$\Creportaccgas = 10,000,000$] The gas allocated to invoke a work-report's Accumulation logic.
-  \item[$\Cpackageauthgas = 50,000,000$] The gas allocated to invoke a work-package's Is-Authorized logic.
-  \item[$\Cpackagerefgas = 5,000,000,000$] The gas allocated to invoke a work-package's Refine logic.
-  \item[$\Cblockaccgas = 3,500,000,000$] The total gas allocated across for all Accumulation. Should be no smaller than $\Creportaccgas\cdot\Ccorecount + \sum_{g \in \values{\alwaysaccers}}(g)$.
+  \item[$\Creportaccgas = \gasfromms{10}$] The gas allocated to invoke a work-report's Accumulation logic. Equivalent to 10\,ms on the reference hardware clocked at \Creferenceghz\,GHz.
+  \item[$\Cpackageauthgas = \gasfromms{50}$] The gas allocated to invoke a work-package's Is-Authorized logic. Equivalent to 50\,ms on the reference hardware clocked at \Creferenceghz\,GHz.
+  \item[$\Cpackagerefgas = \gasfromms{5000}$] The gas allocated to invoke a work-package's Refine logic. Equivalent to 5\,s on the reference hardware clocked at \Creferenceghz\,GHz.
+  \item[$\Cblockaccgas = \gasfromms{3500}$] The total gas allocated across for all Accumulation. Should be no smaller than $\Creportaccgas\cdot\Ccorecount + \sum_{g \in \values{\alwaysaccers}}(g)$. Equivalent to 3.5\,s on the reference hardware clocked at \Creferenceghz\,GHz.
   \item[$\Crecenthistorylen = 8$] The size of recent history, in blocks. See equation \ref{eq:recenthistorydef}.
   \item[$\Cmaxpackageitems = 16$] The maximum amount of work items in a package. See equations \ref{eq:workreport} and \ref{eq:workpackage}.
   \item[$\Cmaxreportdeps = 8$] The maximum sum of dependency items in a work-report. See equation \ref{eq:limitreportdeps}.
@@ -310,7 +311,7 @@ These constants are used in the host function gas cost equations in appendix \re
   \item[$\Cgasunknown = 1000$] Gas cost charged for an unknown host-call.
   \item[$\CgasA = 1818$] $\Omega_A$ (\texttt{assign}) base gas cost.
   \item[$\CgasBconst = 422$] $\Omega_B$ (\texttt{bless}) base gas cost.
-  \item[$\CgasBlinear = 20$] $\Omega_B$ (\texttt{bless}) gas per item.
+  \item[$\CgasBlinear = 20$] $\Omega_B$ (\texttt{bless}) gas per record.
   \item[$\CgasC = 103$] $\Omega_C$ (\texttt{checkpoint}) base gas cost.
   \item[$\CgasDconst = 1100$] $\Omega_D$ (\texttt{designate}) base gas cost.
   \item[$\CgasDlinear = 302$] $\Omega_D$ (\texttt{designate}) gas per validator.

@@ -246,6 +246,30 @@
 %%%%%%%%%%%%
 % CONSTANTS (Sans-serif upper letters)
 
+% Clock speed in GHz of the reference hardware, used to derive gas limits from wall-clock time.
+\newcommand*{\Creferenceghz}{4.7}
+% Gas for #1 milliseconds on the reference hardware, rounded down.
+\ExplSyntaxOn
+\tl_new:N \l__gp_digits_tl
+\int_new:N \l__gp_digits_int
+\int_new:N \l__gp_digit_idx_int
+\NewDocumentCommand{\gasfromms}{m}
+  {
+    \tl_set:Ne \l__gp_digits_tl { \fp_eval:n { floor(#1 * \Creferenceghz * 1000000) } }
+    \int_set:Nn \l__gp_digits_int { \tl_count:N \l__gp_digits_tl }
+    \int_zero:N \l__gp_digit_idx_int
+    \tl_map_inline:Nn \l__gp_digits_tl
+      {
+        ##1
+        \int_incr:N \l__gp_digit_idx_int
+        \bool_lazy_and:nnT
+          { \int_compare_p:nNn { \l__gp_digit_idx_int } < { \l__gp_digits_int } }
+          { \int_compare_p:nNn { \int_mod:nn { \l__gp_digits_int - \l__gp_digit_idx_int } { 3 } } = { 0 } }
+          { , }
+      }
+  }
+\ExplSyntaxOff
+
 % Numeric
 \newcommand*{\Cnoshowseconds}{\mathsf{A}_N}
 \newcommand*{\Cmintrancheageseconds}{\mathsf{A}_T}
@@ -501,7 +525,6 @@
 % derived fields
 \newcommand*{\wp¬authorizer}{\¬authorizer}
 \newcommand*{\wp¬authcode}{\mathbf{u}}
-\newcommand*{\wp¬metadata}{\mathbf{m}}
 
 \newcommand*{\workitem}{\mathbb{W}}
 \newcommand*{\wiX}{\mathbf{w}}
@@ -595,7 +618,6 @@
 \newcommand*{\sa¬items}{i}
 \newcommand*{\sa¬octets}{o}
 \newcommand*{\sa¬minbalance}{t}
-\newcommand*{\sa¬metadata}{\mathbf{m}}
 \newcommand*{\sa¬code}{\mathbf{c}}
 % Takes two arguments, a service accounts dictionary and a service identifier, and returns the
 % service's effective supervisor. This looks like a derived field but is a bit magic, see the
@@ -603,7 +625,7 @@
 \newcommand*{\effectivesupervisor}[2]{#1\subb{#2}_e}
 
 % Fields of deferred transfer.
-\newcommand*{\defxfer}{\mathbb{X}}
+\newcommand*{\defxfer}{\mathbb{t}}
 \newcommand*{\defxfers}{\sequence\defxfer}
 \newcommand*{\dxX}{x}
 \newcommand*{\dx¬source}{s}
@@ -623,16 +645,19 @@
 \newcommand*{\vk¬metadata}{m}
 \newcommand*{\allvalkeys}{\sequence[\valcount]{\valkey}}
 
+\newcommand*{\privilegestype}{\mathbb{X}}
+\newcommand*{\pr¬manager}{m}
+\newcommand*{\pr¬delegator}{v}
+\newcommand*{\pr¬registrar}{r}
+\newcommand*{\pr¬assigners}{\mathbf{a}}
+\newcommand*{\pr¬alwaysaccers}{\mathbf{z}}
+
 \newcommand*{\partialstate}{\mathbb{S}}
 \newcommand*{\psX}{\mathbf{e}}
 \newcommand*{\ps¬accounts}{\mathbf{d}}
 \newcommand*{\ps¬stagingset}{\mathbf{i}}
 \newcommand*{\ps¬authqueue}{\mathbf{q}}
-\newcommand*{\ps¬manager}{m}
-\newcommand*{\ps¬assigners}{\mathbf{a}}
-\newcommand*{\ps¬delegator}{v}
-\newcommand*{\ps¬registrar}{r}
-\newcommand*{\ps¬alwaysaccers}{\mathbf{z}}
+\newcommand*{\ps¬privileges}{\mathbf{x}}
 
 %%%%%%%%%%%%%%
 % State item tuples (fields of lower greek letters)
@@ -798,11 +823,11 @@
 \newcommand*{\entropyaccumulator}{\eta_0}
 
 \newcommand*{\privileges}{\chi}
-\newcommand*{\manager}{\privileges_M}
-\newcommand*{\delegator}{\privileges_V}
-\newcommand*{\registrar}{\privileges_R}
-\newcommand*{\assigners}{\privileges_A}
-\newcommand*{\alwaysaccers}{\privileges_Z}
+\newcommand*{\manager}{\privileges_\pr¬manager}
+\newcommand*{\delegator}{\privileges_\pr¬delegator}
+\newcommand*{\registrar}{\privileges_\pr¬registrar}
+\newcommand*{\assigners}{\privileges_\pr¬assigners}
+\newcommand*{\alwaysaccers}{\privileges_\pr¬alwaysaccers}
 
 \newcommand*{\accumulated}{\xi}
 \newcommand*{\accumulatedcup}{\overbrace{\accumulated}}

@@ -107,23 +107,23 @@ Rather than passing whole work-digests into accumulate, we extract the salient i
   \label{eq:operandtuple}
   \operandtuple &\equiv \tuple{
     \begin{alignedat}{3}
-      \isa{\ot¬packagehash&}{\hash},\;
-      \isa{&\ot¬segroot&}{\hash},\;
-      \isa{&\ot¬authorizer&}{\hash},\;
-      \isa{\ot¬payloadhash}{\hash},\;\\
-      \isa{\ot¬gaslimit&}{\gas},\;
-      \isa{&\ot¬authtrace&}{\blob},\;
+      \isa{\ot¬packagehash&}{\hash}\,,\;
+      \isa{&\ot¬segroot&}{\hash}\,,\;
+      \isa{&\ot¬authorizer&}{\hash}\,,\;
+      \isa{\ot¬payloadhash}{\hash}\,,\;\\
+      \isa{\ot¬gaslimit&}{\gas}\,,\;
+      \isa{&\ot¬authtrace&}{\blob}\,,\;
       \isa{&\ot¬result&}{\blob \cup \workerror}
     \end{alignedat}
   }\\
   \label{eq:defxfer}
   \defxfer &\equiv \tuple{
     \begin{alignedat}{3}
-      \isa{\dx¬source&}{\serviceid},\;
-      \isa{&\dx¬dest&}{\serviceid},\;
-      \isa{&\dx¬destsupervisor&}{\bool},\;\\
-      \isa{\dx¬amount&}{\balance},\;
-      \isa{&\dx¬memo&}{\memo},\;
+      \isa{\dx¬source&}{\serviceid}\,,\;
+      \isa{&\dx¬dest&}{\serviceid}\,,\;
+      \isa{&\dx¬destsupervisor&}{\bool}\,,\;\\
+      \isa{\dx¬amount&}{\balance}\,,\;
+      \isa{&\dx¬memo&}{\memo}\,,\;
       \isa{&\dx¬gas&}{\gas}
     \end{alignedat}
   }
@@ -134,16 +134,12 @@ The union of the two $\operandtuple \cup \defxfer$ characterizes inputs to the A
 Our formalisms continue by defining $\partialstate$ as a characterization of (\ie values capable of representing) state components which are both needed and mutable by the accumulation process. This comprises the service accounts state (as in $\accountspre$), the upcoming validator keys $\stagingset$, the queue of authorizers $\authqueue$ and the privileges state $\privileges$. Formally:
 \begin{equation}
   \label{eq:partialstate}
-  \partialstate \equiv \tuple{\begin{aligned}
-    &\isa{\ps¬accounts}{\dictionary{\serviceid}{\serviceaccount}} \,,\;
-    \isa{\ps¬stagingset}{\allvalkeys} \,,\;
-    \isa{\ps¬authqueue}{\sequence[\Ccorecount]{\sequence[\Cauthqueuesize]{\hash}}} \,,\;
-    \isa{\ps¬manager}{\serviceid} \,,\\
-    &\isa{\ps¬assigners}{\sequence[\Ccorecount]{\serviceid}} \,,\;
-    \isa{\ps¬delegator}{\serviceid} \,,\;
-    \isa{\ps¬registrar}{\serviceid} \,,\;
-    \isa{\ps¬alwaysaccers}{\dictionary{\serviceid}{\gas}}
-  \end{aligned}}
+  \partialstate \equiv \tuple{\begin{alignedat}{2}
+    \isa{\ps¬accounts&}{\dictionary{\serviceid}{\serviceaccount}}\,,\;
+    \isa{&\ps¬stagingset&}{\allvalkeys}\,,\;\\
+    \isa{\ps¬authqueue&}{\sequence[\Ccorecount]{\sequence[\Cauthqueuesize]{\hash}}}\,,\;
+    \isa{&\ps¬privileges&}{\privilegestype}
+  \end{alignedat}}
 \end{equation}
 
 Finally, we define $\local¬fnservouts$ and $\local¬fngasused$, the sets characterizing service-indexed commitments to accumulation output and service-indexed gas usage respectively:
@@ -204,7 +200,6 @@ We define the outer accumulation function $\accseq$ which transforms a gas-limit
 \newcommand*{\local¬stagingset}{\mathbf{i}}
 \newcommand*{\local¬authqueue}{\mathbf{q}}
 \newcommand*{\local¬acc}{\accumulate}
-\newcommand*{\local¬manpost}{\mathbf{e}^*}
 
 We come to define the parallelized accumulation function $\accpar$ which, with the help of the single-service accumulation function $\accone$, transforms an initial state-context, together with a sequence of deferred transfers, a sequence of work-reports and a dictionary of privileged always-accumulate services, into a tuple of the posterior state-context, the resultant deferred-transfers and accumulation-output pairings, and the service-indexed gas usage. Note that for the privileges we employ a function $R$ which selects the service to which the manager service changed, or if no change was made, then that which the service itself changed to. This allows privileges to be `owned' and facilitates the removal of the manager service which we see as a helpful possibility. Formally:
 \begin{gather}
@@ -212,14 +207,12 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
   \accpar\colon\abracegroup[\;]{\begin{aligned}
     &\tuple{\partialstate, \defxfers, \workreports, \dictionary{\serviceid}{\gas}} \to \tuple{\partialstate, \defxfers, \local¬fnservouts, \local¬fngasused} \\
     &\tup{\psX, \mathbf{t}, \mathbf{r}, \mathbf{f}} \mapsto \tup{
-      \tup{
-        \ps¬accounts', \ps¬stagingset', \ps¬authqueue', \ps¬manager', \ps¬assigners', \ps¬delegator', \ps¬registrar', \ps¬alwaysaccers'
-      }, \concatall{\mathbf{t}'}, \mathbf{b}, \mathbf{u}
+      \tup{\ps¬accounts', \ps¬stagingset', \ps¬authqueue', \ps¬privileges'}, \concatall{\mathbf{t}'}, \mathbf{b}, \mathbf{u}
     }\!\!\!\!\!\!\\
     &\text{where:}\\
     &\ \begin{aligned}
       \using &\tup{
-        \ps¬accounts, \ps¬stagingset, \ps¬authqueue, \ps¬manager, \ps¬assigners, \ps¬delegator, \ps¬registrar, \ps¬alwaysaccers
+        \ps¬accounts, \ps¬stagingset, \ps¬authqueue, \is{\ps¬privileges}{\tup{\pr¬manager, \pr¬delegator, \pr¬registrar, \pr¬assigners, \pr¬alwaysaccers}}
       } = \psX \\
       \mathbf{s} &= \set{\build{
         d_\wd¬serviceindex
@@ -261,31 +254,31 @@ We come to define the parallelized accumulation function $\accpar$ which, with t
         \mathbf{m} \cup \mathbf{n},
         \bigcup_{s \in \mathbf{s}} \local¬acc(s)_\ao¬provisions
       ) \\
-      \local¬manpost &= \local¬acc(m)_\ao¬poststate \\
-      \tup{\ps¬manager'\!,\ps¬alwaysaccers'} &=
-        \local¬manpost_{\tup{\ps¬manager, \ps¬alwaysaccers}} \\
-      \forall c \in \coreindex :
-        \ps¬assigners'\sub{c} &= R(
-          \ps¬assigners\sub{c},
-          (\local¬manpost_\ps¬assigners)\sub{c},
-          ((\local¬acc(\ps¬assigners\sub{c})_\ao¬poststate)_\ps¬assigners)\sub{c}
+      X(s) &\equiv (\local¬acc(s)_\ao¬poststate)_\ps¬privileges \\
+      \ps¬privileges'_{\tup{\pr¬manager, \pr¬alwaysaccers}} &=
+        X(m)_{\tup{\pr¬manager, \pr¬alwaysaccers}} \\
+      \ps¬privileges'_\pr¬delegator &= R(
+        \pr¬delegator,
+        X(m)_\pr¬delegator,
+        X(\pr¬delegator)_\pr¬delegator
+      ) \\
+      \ps¬privileges'_\pr¬registrar &= R(
+        \pr¬registrar,
+        X(m)_\pr¬registrar,
+        X(\pr¬registrar)_\pr¬registrar
+      ) \\
+      \forall c \in \coreindex &:
+        \ps¬privileges'_\pr¬assigners\subb{c} = R(
+          \pr¬assigners\sub{c},
+          (X(m)_\pr¬assigners)\sub{c},
+          (X(\pr¬assigners\sub{c})_\pr¬assigners)\sub{c}
         ) \\
-      \ps¬delegator' &= R(
-        \ps¬delegator,
-        \local¬manpost_\ps¬delegator,
-        (\local¬acc(\ps¬delegator)_\ao¬poststate)_\ps¬delegator
-      ) \\
-      \ps¬registrar' &= R(
-        \ps¬registrar,
-        \local¬manpost_\ps¬registrar,
-        (\local¬acc(\ps¬registrar)_\ao¬poststate)_\ps¬registrar
-      ) \\
       \ps¬stagingset' &= (
-          \local¬acc(\ps¬delegator)_\ao¬poststate
+        \local¬acc(\pr¬delegator)_\ao¬poststate
       )_\ps¬stagingset \\
-      \forall c \in \coreindex :
-        \ps¬authqueue'\sub{c} &= ((
-          \local¬acc(\ps¬assigners\sub{c})_\ao¬poststate
+      \forall c \in \coreindex &:
+        \ps¬authqueue'\sub{c} = ((
+          \local¬acc(\pr¬assigners\sub{c})_\ao¬poststate
         )_\ps¬authqueue)\sub{c} \\
       M(s) &\equiv \begin{cases}
         (\local¬acc(s)_\ao¬poststate)_\ps¬accounts\subb{s} &\when s \in \local¬acc(s)_\ao¬modifiedaccounts \\
@@ -398,11 +391,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
       \is{\ps¬accounts}{\accountspre},
       \is{\ps¬stagingset}{\stagingset},
       \is{\ps¬authqueue}{\authqueue},
-      \is{\ps¬manager}{\manager},
-      \is{\ps¬assigners}{\assigners},
-      \is{\ps¬delegator}{\delegator},
-      \is{\ps¬registrar}{\registrar},
-      \is{\ps¬alwaysaccers}{\alwaysaccers}
+      \is{\ps¬privileges}{\privileges}
     }
   \end{aligned} \\
   \label{eq:finalstateaccumulation}
@@ -415,11 +404,7 @@ Given the result of the top-level $\accseq$, we may define the posterior state $
     \is\ps¬accounts{\accountspostacc},
     \is\ps¬stagingset{\stagingset'},
     \is\ps¬authqueue{\authqueue'},
-    \is\ps¬manager{\manager'},
-    \is\ps¬assigners{\assigners'},
-    \is\ps¬delegator{\delegator'},
-    \is\ps¬registrar{\registrar'},
-    \is\ps¬alwaysaccers{\alwaysaccers'}
+    \is\ps¬privileges{\privileges'}
   } \equiv \psX'
   \!\!\!\!\!
 \end{gather}
