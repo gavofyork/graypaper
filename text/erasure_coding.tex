@@ -31,15 +31,15 @@ Formally we begin by defining two utility functions for splitting some large seq
 
 We define the transposition operator hence:
 \begin{equation}\label{eq:transpose}
-  {}^\text{T}\sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{0, 1}, \mathbf{x}_{0, 2}, \dots}, \sq{\mathbf{x}_{1, 0}, \mathbf{x}_{1, 1}, \dots}, \dots} \equiv \sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{1, 0}, \mathbf{x}_{2, 0}, \dots}, \sq{\mathbf{x}_{0, 1}, \mathbf{x}_{1, 1}, \dots}, \dots}
+  \transpose{}\sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{0, 1}, \mathbf{x}_{0, 2}, \dots}, \sq{\mathbf{x}_{1, 0}, \mathbf{x}_{1, 1}, \dots}, \dots} \equiv \sq{\sq{\mathbf{x}_{0, 0}, \mathbf{x}_{1, 0}, \mathbf{x}_{2, 0}, \dots}, \sq{\mathbf{x}_{0, 1}, \mathbf{x}_{1, 1}, \dots}, \dots}
 \end{equation}
-We write ${}^\text{T}_m$ for the same operator where the result is known to have $m$ items, which also defines the empty case: ${}^\text{T}_m\sq{}$ is a sequence of $m$ empty sequences.
+We write $\transpose{m}$ for the same operator where the result is known to have $m$ items, which also defines the empty case: $\transpose{m}\sq{}$ is a sequence of $m$ empty sequences.
 
 We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into $2 \cdot \fnecoriginalshards(v)$ octets and results in a sequence of $v$ smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
   \fnerasurecode{v \in \valcount}{k \in \N}\colon\abracegroup{
     \blob[2k \cdot \fnecoriginalshards(v)] &\to \sequence[v]{\blob[2k]} \\
-    \mathbf{d} &\mapsto \join^\#\left({}^{\text{T}}\sq{\build{\erasurecode{v}{}{\mathbf{p}}}{\mathbf{p} \orderedin {}^\text{T}\spl{2}^\#(\spl{2k}(\mathbf{d}))}}\right)
+    \mathbf{d} &\mapsto \join^\#\left(\transpose{}\sq{\build{\erasurecode{v}{}{\mathbf{p}}}{\mathbf{p} \orderedin \transpose{}\spl{2}^\#(\spl{2k}(\mathbf{d}))}}\right)
   }
 \end{equation}
 
@@ -50,7 +50,7 @@ The original data may be reconstructed with any $\fnecoriginalshards(v)$ of the 
     \protoset{\tuple{\blob[2k], \Nmax{v}}}_{\fnecoriginalshards(v)} &\to \blob[2k \cdot \fnecoriginalshards(v)] \\
     \mathbf{c} &\mapsto \begin{cases}
       \encode{\sq{\build{\mathbf{x}}{\tup{\mathbf{x}, i} \orderedin \sqorderby{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}}}} &\when \set{\build{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}} = \Nmax{\fnecoriginalshards(v)}\\
-      \join(\join^\#({}^\text{T}\sq{
+      \join(\join^\#(\transpose{}\sq{
         \build{
           \ecrecover{v}{}{{\set{\build{
            (\spl{2}(\mathbf{x})\sub{p}, i)
