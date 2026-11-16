@@ -246,30 +246,6 @@
 %%%%%%%%%%%%
 % CONSTANTS (Sans-serif upper letters)
 
-% Clock speed in GHz of the reference hardware, used to derive gas limits from wall-clock time.
-\newcommand*{\Creferenceghz}{4.7}
-% Gas for #1 milliseconds on the reference hardware, rounded down.
-\ExplSyntaxOn
-\tl_new:N \l__gp_digits_tl
-\int_new:N \l__gp_digits_int
-\int_new:N \l__gp_digit_idx_int
-\NewDocumentCommand{\gasfromms}{m}
-  {
-    \tl_set:Ne \l__gp_digits_tl { \fp_eval:n { floor(#1 * \Creferenceghz * 1000000) } }
-    \int_set:Nn \l__gp_digits_int { \tl_count:N \l__gp_digits_tl }
-    \int_zero:N \l__gp_digit_idx_int
-    \tl_map_inline:Nn \l__gp_digits_tl
-      {
-        ##1
-        \int_incr:N \l__gp_digit_idx_int
-        \bool_lazy_and:nnT
-          { \int_compare_p:nNn { \l__gp_digit_idx_int } < { \l__gp_digits_int } }
-          { \int_compare_p:nNn { \int_mod:nn { \l__gp_digits_int - \l__gp_digit_idx_int } { 3 } } = { 0 } }
-          { , }
-      }
-  }
-\ExplSyntaxOff
-
 % Numeric
 \newcommand*{\Ctrancheseconds}{\mathsf{A}}
 \newcommand*{\Citemdeposit}{\mathsf{B}_I}
