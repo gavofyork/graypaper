@@ -327,7 +327,7 @@ No guarantees may be placed on cores which already have availability assignments
 We require that the gas allotted for accumulation of each work-digest in each work-report respects its service's minimum gas requirements. We also require that all work-reports' total allotted accumulation gas is no greater than the overall gas limit $\Creportaccgas$:
 \begin{equation}
   \forall \wrX \in \incomingreports:
-    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \Creportaccgas \ \wedge \
+    \sum_{\wdX \orderedin \wrX_\wr¬digests}\!(\wdX_\wd¬gaslimit) \le \Creportaccgas \ \wedge \
     \forall \wdX \in \wrX_\wr¬digests: \wdX_\wd¬gaslimit \ge \accounts\subb{\wdX_\wd¬serviceindex}_\sa¬minaccgas
 \end{equation}
 
@@ -335,11 +335,11 @@ Work-packages are not available on-chain, so consistency between a work-report a
 \begin{equation}
   \label{eq:reportrefineload}
   \forall \wrX \in \incomingreports: \bigwedge \abracegroup{
-    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬gasused) &\le \Cpackagerefgas \\
-    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬importcount) &\le \Cmaxpackageimports \\
-    (\wrX_\wr¬avspec)_\as¬segcount = \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬exportcount) &\le \Cmaxpackageexports \\
-    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬xtcount) &\le \Cmaxpackagexts \\
-    \sum_{\wdX \in \wrX_\wr¬digests}\!(\wdX_\wd¬xtsize + \wdX_\wd¬importcount \cdot \Csegmentfootprint) &\le \Cmaxinputsize \\
+    \sum_{\wdX \orderedin \wrX_\wr¬digests}\!(\wdX_\wd¬gasused) &\le \Cpackagerefgas \\
+    \sum_{\wdX \orderedin \wrX_\wr¬digests}\!(\wdX_\wd¬importcount) &\le \Cmaxpackageimports \\
+    (\wrX_\wr¬avspec)_\as¬segcount = \sum_{\wdX \orderedin \wrX_\wr¬digests}\!(\wdX_\wd¬exportcount) &\le \Cmaxpackageexports \\
+    \sum_{\wdX \orderedin \wrX_\wr¬digests}\!(\wdX_\wd¬xtcount) &\le \Cmaxpackagexts \\
+    \sum_{\wdX \orderedin \wrX_\wr¬digests}\!(\wdX_\wd¬xtsize + \wdX_\wd¬importcount \cdot \Csegmentfootprint) &\le \Cmaxinputsize \\
     (\wrX_\wr¬avspec)_\as¬bundlelen &\le \Cmaxbundlesize \\
     \wrX_\wr¬authgasused &\le \Cpackageauthgas
   }
