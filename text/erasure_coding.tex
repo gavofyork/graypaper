@@ -19,13 +19,13 @@ For the Import \textsc{da} system, we deal with an input size of $\Csegmentsize 
 
 \subsection{Blob Encoding and Recovery}
 
-We assume $v \in \valcount$ validators and some data blob $\mathbf{d} \in \blob[2k \cdot \fnecoriginalshards(v)], k \in \N$. This blob is split into a whole number of $k$ pieces, each a sequence of $\fnecoriginalshards(v)$ octet pairs. Each piece is erasure-coded using $\fnerasurecode{v}{}$ as above to give $v$ octet pairs per piece.
+We assume $v \in \valcount$ validators and some data blob $\mathbf{d} \in \blob[2k \cdot \fnecoriginalshards(v)], k \in \Nclamp{1}{}$. This blob is split into a whole number of $k$ pieces, each a sequence of $\fnecoriginalshards(v)$ octet pairs. Each piece is erasure-coded using $\fnerasurecode{v}{}$ as above to give $v$ octet pairs per piece.
 
 The resulting matrix is grouped by its pair-index and concatenated to form $v$ \emph{chunks}, each of $k$ octet-pairs. Any $\fnecoriginalshards(v)$ of these chunks may then be used to reconstruct the original data $\mathbf{d}$.
 
 Formally we begin by defining two utility functions for splitting some large sequence into a number of equal-sized sub-sequences and for reconstituting such subsequences back into a single large sequence:
 \begin{align}
-  \forall n \in \N, k \in \N :\ &\spl{n}(\mathbf{d} \in \blob[kn]) \in \sequence[k]{\blob[n]} \equiv \sq{\mathbf{d}\subrange{0}{n}, \mathbf{d}\subrange{n}{n}, \cdots, \mathbf{d}\subrange{(k-1)n}{n}} \\
+  \forall n \in \Nclamp{1}{}, k \in \N :\ &\spl{n}(\mathbf{d} \in \blob[kn]) \in \sequence[k]{\blob[n]} \equiv \sq{\mathbf{d}\subrange{0}{n}, \mathbf{d}\subrange{n}{n}, \cdots, \mathbf{d}\subrange{(k-1)n}{n}} \\
   \forall n \in \N, k \in \N :\ &\join(\mathbf{c} \in \sequence[k]{\blob[n]}) \in \blob[kn] \equiv \mathbf{c}_0 \concat \mathbf{c}_1 \concat \dots
 \end{align}
 
@@ -37,7 +37,7 @@ We write $\transpose{m}$ for the same operator where the result is known to have
 
 We may then define our erasure-code chunking function which accepts an arbitrary sized data blob whose length divides wholly into $2 \cdot \fnecoriginalshards(v)$ octets and results in a sequence of $v$ smaller blobs:
 \begin{equation}\label{eq:erasurecoding}
-  \fnerasurecode{v \in \valcount}{k \in \N}\colon\abracegroup{
+  \fnerasurecode{v \in \valcount}{k \in \Nclamp{1}{}}\colon\abracegroup{
     \blob[2k \cdot \fnecoriginalshards(v)] &\to \sequence[v]{\blob[2k]} \\
     \mathbf{d} &\mapsto \join^\#\left(\transpose{}\sq{\build{\erasurecode{v}{}{\mathbf{p}}}{\mathbf{p} \orderedin \transpose{}\spl{2}^\#(\spl{2k}(\mathbf{d}))}}\right)
   }
@@ -46,14 +46,14 @@ We may then define our erasure-code chunking function which accepts an arbitrary
 The original data may be reconstructed with any $\fnecoriginalshards(v)$ of the $v$ resultant items (along with their indices). If the original $\fnecoriginalshards(v)$ items are known then reconstruction is just their concatenation.
 \begin{equation}
   \label{eq:erasurecodinginv}
-  \fnecrecover{v \in \valcount}{k \in \N}\colon\abracegroup{
+  \fnecrecover{v \in \valcount}{k \in \Nclamp{1}{}}\colon\abracegroup{
     \protoset{\tuple{\blob[2k], \Nmax{v}}}_{\fnecoriginalshards(v)} &\to \blob[2k \cdot \fnecoriginalshards(v)] \\
     \mathbf{c} &\mapsto \begin{cases}
       \encode{\sq{\build{\mathbf{x}}{\tup{\mathbf{x}, i} \orderedin \sqorderby{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}}}} &\when \set{\build{i}{\tup{\mathbf{x}, i} \in \mathbf{c}}} = \Nmax{\fnecoriginalshards(v)}\\
       \join(\join^\#(\transpose{}\sq{
         \build{
           \ecrecover{v}{}{{\set{\build{
-           (\spl{2}(\mathbf{x})\sub{p}, i)
+            (\spl{2}(\mathbf{x})\sub{p}, i)
           }{
             \tup{\mathbf{x}, i} \in \mathbf{c}
           }}}}
