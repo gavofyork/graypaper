@@ -819,7 +819,11 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_A(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{assign} = 17} &
   $\begin{aligned}
-    \using \sq{c, o, a} &= \registers\subrange{7}{3} \\
+    \using \sq{c, o} &= \registers\subrange{7}{2} \\
+    \using a &= \begin{cases}
+      \imX_\im¬id &\when \registers_9 = 2^{64} - 1 \\
+      \registers_9 &\otherwise
+    \end{cases} \\
     \using \mathbf{q} &= (\imX_\im¬state)_\ps¬authqueue \\
     \using \mathbf{q}' &= \mathbf{q} \exc \mathbf{q}'\subb{c} = \sq{\build{\memory\subrange{o + 32i}{32}}{i \orderedin \N_\Cauthqueuesize}} \\
     \using \mathbf{a} &= ((\imX_\im¬state)_\ps¬privileges)_\pr¬assigners \\
