@@ -819,18 +819,21 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   $\Omega_A(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{assign} = 17} &
   $\begin{aligned}
-    \using \sq{c, o, a} &= \registers\subrange{7}{3} \\
-    \using \mathbf{q} &= \begin{cases}
-      \sq{\build{\memory\subrange{o + 32i}{32}}{i \orderedin \N_\Cauthqueuesize}} &\when \Nrange{o}{32\Cauthqueuesize} \subseteq \readable{\memory} \\
-      \error &\otherwise
+    \using \sq{c, o} &= \registers\subrange{7}{2} \\
+    \using a &= \begin{cases}
+      \imX_\im¬id &\when \registers_9 = 2^{64} - 1 \\
+      \registers_9 &\otherwise
     \end{cases} \\
+    \using \mathbf{q} &= (\imX_\im¬state)_\ps¬authqueue \\
+    \using \mathbf{q}' &= \mathbf{q} \exc \mathbf{q}'\subb{c} = \sq{\build{\memory\subrange{o + 32i}{32}}{i \orderedin \N_\Cauthqueuesize}} \\
     \using \mathbf{a} &= ((\imX_\im¬state)_\ps¬privileges)_\pr¬assigners \\
-    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬authqueue\subb{c}, ((\imX'_\im¬state)_\ps¬privileges)_\pr¬assigners\subb{c}} &\equiv \begin{cases}
-      \tup{\panic, \registers_7, (\imX_\im¬state)_\ps¬authqueue\subb{c}, \mathbf{a}\subb{c}} &\when \mathbf{q} = \error \\
-      \tup{\continue, \mathtt{CORE}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, \mathbf{a}\subb{c}} &\otherwhen c \ge \Ccorecount \\
-      \tup{\continue, \mathtt{HUH}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, \mathbf{a}\subb{c}} &\otherwhen \imX_\im¬id \ne \mathbf{a}\subb{c}\\
-      \tup{\continue, \mathtt{WHO}, (\imX_\im¬state)_\ps¬authqueue\subb{c}, \mathbf{a}\subb{c}} &\otherwhen a \not\in \serviceid \\
-      \tup{\continue, \mathtt{OK}, \mathbf{q}, a} &\otherwise \\
+    \using \mathbf{a}' &= \mathbf{a} \exc \mathbf{a}'\subb{c} = a \\
+    \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬authqueue, ((\imX'_\im¬state)_\ps¬privileges)_\pr¬assigners} &\equiv \begin{cases}
+      \tup{\panic, \registers_7, \mathbf{q}, \mathbf{a}} &\when \Nrange{o}{32\Cauthqueuesize} \not\subseteq \readable{\memory} \\
+      \tup{\continue, \mathtt{CORE}, \mathbf{q}, \mathbf{a}} &\otherwhen c \ge \Ccorecount \\
+      \tup{\continue, \mathtt{HUH}, \mathbf{q}, \mathbf{a}} &\otherwhen \imX_\im¬id \ne \mathbf{a}\subb{c}\\
+      \tup{\continue, \mathtt{WHO}, \mathbf{q}, \mathbf{a}} &\otherwhen a \not\in \serviceid \\
+      \tup{\continue, \mathtt{OK}, \mathbf{q}', \mathbf{a}'} &\otherwise \\
     \end{cases} \\
     g &\equiv \CgasA
   \end{aligned}$\\
