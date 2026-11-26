@@ -23,17 +23,17 @@ The proposition of accumulation is in fact quite simple: we merely wish to execu
 
 \subsection{History and Queuing}
 
-Accumulation of a work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what has been accumulated. This history, $\accumulated$, is sufficiently large for an epoch worth of work-reports. Formally:
+Accumulation of a work-report is deferred in the case that it has a not-yet-fulfilled dependency and is cancelled entirely in the case of an invalid dependency. Dependencies are specified as work-package hashes and in order to know which work-packages have been accumulated already, we maintain a history of what has been accumulated. This history, $\accumulated$, is sufficiently large to cover any possible dependency of a work-report which has not yet been made available.\footnote{A work-report guarantee must be reported within $\Crecenthistorylen$ blocks of its dependencies (see equation \ref{eq:depsreportedrecently}) and will be discarded if it is not made available within $\Cassurancetimeoutperiod$ slots (see equation \ref{eq:availassignmentspostassurancesdef}).} Formally:
 \begin{align}
   \label{eq:accumulatedspec}
-  \accumulated &\in \sequence[\Cepochlen]{\protoset{\hash}} \\
+  \accumulated &\in \sequence[\Crecenthistorylen + \Cassurancetimeoutperiod - 1]{\protoset{\hash}} \\
   \accumulatedcup &\equiv \bigcup_{x \in \accumulated}(x)
 \end{align}
 
-We also maintain knowledge of ready (\ie available and/or audited) but not-yet-accumulated work-reports in the state item $\ready$. Each of these were made available at most one epoch ago but have or had unfulfilled dependencies. Alongside the work-report itself, we retain its unaccumulated dependencies, a set of work-package hashes. Formally:
+We also maintain knowledge of ready (\ie available and/or audited) but not-yet-accumulated work-reports in the state item $\ready$. Each of these were made available at most one epoch ago but have or had unfulfilled dependencies. Alongside the work-report itself, we retain the timeslot in which it was made available and its unaccumulated dependencies, a set of work-package hashes. Formally:
 \begin{align}
   \label{eq:readyspec}
-  \ready &\in \sequence[\Cepochlen]{\sequence{\tuple{\workreport, \protoset{\hash}}}}
+  \ready &\in \sequence[:\Cmaxreadyreports]{\tuple{\timeslot, \workreport, \protoset{\hash}}}
 \end{align}
 
 The newly available work-reports, $\justbecameavailable$, are partitioned into two sequences based on the condition of having zero prerequisite work-reports. Those meeting the condition, $\justbecameavailable^!$, are accumulated immediately. Those not, $\justbecameavailable^Q$, are for queued execution. Formally:
@@ -44,18 +44,18 @@ The newly available work-reports, $\justbecameavailable$, are partitioned into t
     r \orderedin \justbecameavailable,
     \len{(r_\wr¬context)_\wc¬prerequisites} > 0 \vee r_\wr¬srlookup \ne \emset
   }, \accumulatedcup)\!\!\!\!\\
-  D(r) &\equiv (r, (r_\wr¬context)_\wc¬prerequisites \cup \keys{r_\wr¬srlookup})
+  D(r) &\equiv (\thetime', r, (r_\wr¬context)_\wc¬prerequisites \cup \keys{r_\wr¬srlookup})
 \end{align}
 
 We define the queue-editing function $E$, which is essentially a mutator function for items such as those of $\ready$, parameterized by sets of now-accumulated work-package hashes (those in $\accumulated$). It is used to update queues of work-reports when some of them are accumulated. Functionally, it removes all entries whose work-report's hash is in the set provided as a parameter, and removes any dependencies which appear in said set. Formally:
 \begin{equation}
   E\colon\abracegroup{
-      &\tuple{\sequence{\tuple{\workreport, \protoset{\hash}}}, \protoset{\hash}} \to \sequence{\tuple{\workreport, \protoset{\hash}}} \\
+    &\tuple{\sequence{\tuple{\timeslot, \workreport, \protoset{\hash}}}, \protoset{\hash}} \to \sequence{\tuple{\timeslot, \workreport, \protoset{\hash}}} \\
     &\tup{\mathbf{r}, \mathbf{x}} \mapsto \sq{\build{
-      \tup{r, \mathbf{d} \setminus \mathbf{x}}
+      \tup{t, r, \mathbf{d} \setminus \mathbf{x}}
     }{
       \begin{aligned}
-        &\tup{r, \mathbf{d}} \orderedin \mathbf{r} ,\\
+        &\tup{t, r, \mathbf{d}} \orderedin \mathbf{r} ,\\
         &(r_\wr¬avspec)_\as¬packagehash \not\in \mathbf{x}
       \end{aligned}
     }}
@@ -65,11 +65,11 @@ We define the queue-editing function $E$, which is essentially a mutator functio
 We further define the accumulation priority queue function $Q$, which provides the sequence of work-reports which are able to be accumulated given a set of not-yet-accumulated work-reports and their dependencies.
 \begin{equation}
   Q\colon\abracegroup{
-    &\sequence{\tuple{\workreport, \protoset{\hash}}} \to \workreports \\
+    &\sequence{\tuple{\timeslot, \workreport, \protoset{\hash}}} \to \workreports \\
     &\mathbf{r} \mapsto \begin{cases}
       \sq{} &\when \mathbf{g} = \sq{} \\
       \mathbf{g} \concat Q(E(\mathbf{r}, \local¬fnsrmap(\mathbf{g})))\!\!\!\! &\otherwise \\
-      \multicolumn{2}{l}{\,\where \mathbf{g} = \sq{\build{r}{\tup{r, \emset} \orderedin \mathbf{r}}}}
+      \multicolumn{2}{l}{\,\where \mathbf{g} = \sq{\build{r}{\tup{t, r, \emset} \orderedin \mathbf{r}}}}
     \end{cases}
   }
 \end{equation}
@@ -86,9 +86,8 @@ Finally, we define the mapping function $\local¬fnsrmap$ which extracts the cor
 
 We may now define the sequence of accumulatable work-reports in this block as $\justbecameavailable^*$:
 \begin{align}
-  \using m &= \H_\¬timeslot \bmod \Cepochlen\\
   \justbecameavailable^* &\equiv \justbecameavailable^! \concat Q(\mathbf{q}) \\
-  \quad\where \mathbf{q} &= E(\concatall{\ready\interval{m}{}} \concat \concatall{\ready\interval{}{m}} \concat \justbecameavailable^Q, \local¬fnsrmap(\justbecameavailable^!))
+  \quad\where \mathbf{q} &= E(\ready \concat \justbecameavailable^Q, \local¬fnsrmap(\justbecameavailable^!))
 \end{align}
 
 \subsection{Execution}
@@ -446,16 +445,11 @@ The second intermediate state $\accountspostxfer$ may then be defined with the l
   \end{cases}
 \end{align}
 
-We define the final state of the ready queue and the accumulated map by integrating those work-reports which were accumulated in this block and shifting any from the prior state with the oldest such items being dropped entirely:
+We define the final state of the ready queue and the accumulated map by integrating those work-reports which were accumulated in this block and dropping any items which are now too old:
 \begin{align}
-  \accumulated'_{\Cepochlen - 1} &= \local¬fnsrmap(\justbecameavailable^*\sub{\dots n}) \\
-  \forall i \in \Nmax{\Cepochlen - 1}: \accumulated'\sub{i} &\equiv \accumulated\sub{i + 1} \\
-  \forall i \in \N_\Cepochlen : \cyclic{\ready'}\sub{m - i} &\equiv \begin{cases}
-    E(\justbecameavailable^Q, \accumulated'\sub{\Cepochlen - 1}) &\when i = 0 \\
-    \sq{} &\when 1 \le i < \thetime' - \thetime \\
-    E(\cyclic{\ready}\sub{m - i}, \accumulated'\sub{\Cepochlen - 1}) &\when i \ge \thetime' - \thetime
-  \end{cases}
-  \!\!\!\!
+  \accumulated' &\equiv \accumulated\interval{1}{} \append \local¬fnsrmap(\justbecameavailable^*\sub{\dots n}) \\
+  \ready^\dagger &\equiv \sq{\build{\tup{t, r, \mathbf{d}}}{\tup{t, r, \mathbf{d}} \orderedin \ready, t > \thetime' - \Cepochlen}} \\
+  \ready' &\equiv {\overleftarrow{E(\ready^\dagger \concat \justbecameavailable^Q, \text{last}(\accumulated'))}}^\Cmaxreadyreports
 \end{align}
 
 
