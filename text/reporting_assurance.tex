@@ -435,7 +435,7 @@ We require that any segment roots mentioned in the segment-root lookup be verifi
   &\forall \wrX \in \incomingreports: \wrX_\wr¬srlookup \subseteq \local¬incomingpackagehashes \cup \bigcup_{b \in \recenthistory} b_\rh¬reportedpackagehashes
 \end{align}
 
-(Note that these checks leave open the possibility of accepting work-reports in apparent dependency loops. We do not consider this a problem: the pre-accumulation stage effectively guarantees that accumulation never happens in these cases and the reports are simply ignored.)
+Note that these checks leave open the possibility of accepting work-reports in apparent dependency loops. In such a loop we can be certain that at least one work-report is invalid; it is not possible for \emph{work-packages} to form a dependency loop as they reference each other by hash. Invalid work-reports ought to be discovered by the auditing system, and any remaining work-reports will simply be ignored by the pre-accumulation stage due to unmet dependencies.
 
 Finally, we require that all work-digests within the extrinsic predicted the correct code hash for their corresponding service:
 \begin{align}\label{eq:reportcodesarecorrect}
