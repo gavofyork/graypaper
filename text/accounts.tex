@@ -140,14 +140,13 @@ We define the dependent values $\sa¬items$ and $\sa¬octets$ as the storage foo
 Furthermore, as we will see in the account serialization function in section \ref{sec:serialization}, these are expected to be found explicitly within the Merklized state data.
 
 We may then define a third dependent term $\sa¬minbalance$, the minimum, or \emph{threshold}, balance needed for any given service account in terms of its storage footprint.
-\begin{align}
+\begin{equation}\label{eq:deposits}
   \forall \mathbf{a} \in \serviceaccount\colon \abracegroup{
     \mathbf{a}_\sa¬items &\equiv
       2\cdot\len{\,\mathbf{a}_\sa¬requests\,} + \len{\,\mathbf{a}_\sa¬storage\,} \\
     \mathbf{a}_\sa¬octets &\equiv
-      \sum\limits_{\,\tup{h, z} \in \keys{\mathbf{a}_\sa¬requests}\,} \!\!\!\!85 + z \\
+      \sum\limits_{\,\tup{h, z} \in \keys{\mathbf{a}_\sa¬requests}\,} \!\!\!\!\max(85 + z, \Cminpreimagefootprint) \\
     &\phantom{\equiv\ } + \sum\limits_{\tup{x, y} \in \mathbf{a}_\sa¬storage} 34 + \len{y} + \len{x} \\
-    \label{eq:deposits}
     \mathbf{a}_\sa¬minbalance &\equiv
       \max(0,
         \Cbasedeposit
@@ -156,7 +155,7 @@ We may then define a third dependent term $\sa¬minbalance$, the minimum, or \em
         - \mathbf{a}_\sa¬gratis
       )
   }
-\end{align}
+\end{equation}
 
 
 
