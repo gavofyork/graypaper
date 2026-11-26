@@ -211,7 +211,7 @@ We define $\Psi_A$, the Accumulation invocation function as:
     \Omega_V(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{supervisor} \\
     \Omega_U(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{upgrade} \\
     \Omega_T(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{transfer} \\
-    \Omega_J(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{eject} \\
+    \Omega_J(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{eject} \\
     \Omega_Q(\gascounter, \registers, \memory, \imXY) &\when n = \mathtt{query} \\
     \Omega_S(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{solicit} \\
     \Omega_F(\gascounter, \registers, \memory, \imXY, \H_\¬timeslot) &\when n = \mathtt{forget} \\
@@ -363,29 +363,30 @@ These make no assumptions about the context $\context$; it is always passed thro
           \encode[8]{\Cbytedeposit},
           \encode[8]{\Cbasedeposit},
           \encode[2]{\Ccorecount},
-          \encode[4]{\Cexpungeperiod},
-          \encode[4]{\Cepochlen},
-          \encode[8]{\Creportaccgas},\\
-          &\encode[8]{\Cpackageauthgas},
+          \encode[4]{\Cminsolicitperiod},
+          \encode[4]{\Cexpungeperiod},\\
+          &\encode[4]{\Cepochlen},
+          \encode[8]{\Creportaccgas},
+          \encode[8]{\Cpackageauthgas},
           \encode[8]{\Cpackagerefgas},
           \encode[8]{\Cblockaccgas},
-          \encode[2]{\Crecenthistorylen},
-          \encode[2]{\Cmaxpackageitems},
+          \encode[2]{\Crecenthistorylen},\\
+          &\encode[2]{\Cmaxpackageitems},
           \encode[2]{\Cmaxreportdeps},
-          \encode[2]{\Cmaxblocktickets},\\
-          &\encode[4]{\Cmaxlookupanchorage},
+          \encode[2]{\Cmaxblocktickets},
+          \encode[4]{\Cmaxlookupanchorage},
           \encode[2]{\Cauthpoolsize},
           \encode[2]{\Cslotseconds},
-          \encode[2]{\Cauthqueuesize},
-          \encode[2]{\Crotationperiod},
+          \encode[2]{\Cauthqueuesize},\\
+          &\encode[2]{\Crotationperiod},
           \encode[2]{\Cmaxpackagexts},
-          \encode[2]{\Cassurancetimeoutperiod},\\
-          &\encode[4]{\Cmaxauthcodesize},
+          \encode[2]{\Cassurancetimeoutperiod},
+          \encode[4]{\Cmaxauthcodesize},
           \encode[4]{\Cmaxinputsize},
-          \encode[4]{\Cmaxservicecodesize},
-          \encode[4]{\Cmaxpackageimports},
-          \encode[4]{\Cmaxreportvarsize},\\
-          &\encode[4]{\Cmemosize},
+          \encode[4]{\Cmaxservicecodesize},\\
+          &\encode[4]{\Cmaxpackageimports},
+          \encode[4]{\Cmaxreportvarsize},
+          \encode[4]{\Cmemosize},
           \encode[4]{\Cmaxpackageexports},
           \encode[4]{\Cepochtailstart}
         \end{aligned}
@@ -879,7 +880,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \mathbf{a} \in \serviceaccount &= \tup{\begin{aligned}
       &\sa¬codehash,
       \is{\mathbf{\sa¬storage}}{\emset},
-      \is{\mathbf{\sa¬requests}}{\set{\kv{\tup{\sa¬codehash, l}}{\sq{}}}},
+      \is{\mathbf{\sa¬requests}}{\set{\kv{\tup{\sa¬codehash, l}}{\sq{t}}}},
       \sa¬balance,
       \is{\sa¬supervisor}{\imX_\im¬id},
       \is{\sa¬supervisorcreated}{(\imX_\im¬self)_\sa¬created},
@@ -1031,7 +1032,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
   \end{aligned}$\\
   \cmidrule(lr){1-1}\cmidrule(lr){2-2}
   \makecell*[l]{
-  $\Omega_J(\gascounter, \registers, \memory, \imXY, t)$ \\
+  $\Omega_J(\gascounter, \registers, \memory, \imXY)$ \\
   \texttt{eject} = 23} &
   $\begin{aligned}
     \using d &= \registers_7 \\
@@ -1042,8 +1043,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     } \\
     \tup{\registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
       \tup{\mathtt{WHO}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\when d \not\in \keys{\mathbf{d}} \\
-      \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d = \imX_\im¬id \vee \imX_\im¬id \ne \effectivesupervisor{\mathbf{d}}{d} \vee {} \\
-      &\phantom{\otherwhen} \mathbf{d}\subb{d}_\sa¬created = t \vee \mathbf{d}\subb{d}_\sa¬items \ne 0 \\
+      \tup{\mathtt{HUH}, \mathbf{d}, \imX_\im¬modifiedaccounts} &\otherwhen d = \imX_\im¬id \vee \imX_\im¬id \ne \effectivesupervisor{\mathbf{d}}{d} \vee \mathbf{d}\subb{d}_\sa¬items \ne 0 \\
       \tup{\mathtt{OK}, \mathbf{d}', \imX_\im¬modifiedaccounts \cup \set{d, \imX_\im¬id}} &\otherwise
     \end{cases} \\
     g &\equiv \CgasJ
@@ -1062,16 +1062,13 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \memory\subrange{o}{32} &\when \Nrange{o}{32} \subseteq \readable{\memory} \\
       \error &\otherwise
     \end{cases} \\
-    \using \mathbf{a} &= \mathbf{s}_\sa¬requests\subb{\tup{h, z}} \\
+    \using \mathbf{a} &= \mathbf{s}_\sa¬requests\subb{\tup{h, z}} \concat \sq{2^{32} - 1, 2^{32} - 1, 2^{32} - 1} \\
     \tup{\execst', \registers'_7, \registers'_8} &\equiv \begin{cases}
       \tup{\continue, \mathtt{HUH}, \registers_8} &\when z \not\in \preimagelen \\
       \tup{\panic, \registers_7, \registers_8} &\otherwhen h = \error \\
       \tup{\continue, \mathtt{WHO}, \registers_8} &\otherwhen \mathbf{s} = \none \\
-      \tup{\continue, \mathtt{NONE}, 0} &\otherwhen \mathbf{a} = \none \\
-      \tup{\continue, 0, 0} &\otherwhen \mathbf{a} = \sq{} \\
-      \tup{\continue, 1 + 2^{32}x, 0} &\otherwhen \mathbf{a} = \sq{x} \\
-      \tup{\continue, 2 + 2^{32}x, y} &\otherwhen \mathbf{a} = \sq{x, y} \\
-      \tup{\continue, 3 + 2^{32}x, y + 2^{32}z} &\otherwhen \mathbf{a} = \sq{x, y, z} \\
+      \tup{\continue, \mathtt{NONE}, 0} &\otherwhen \tup{h, z} \not\in \mathbf{s}_\sa¬requests \\
+      \tup{\continue, \mathbf{a}_0 + 2^{32}\mathbf{a}_1, \mathbf{a}_2 + 2^{32}\mathbf{a}_3} &\otherwise
     \end{cases} \\
     g &\equiv \CgasQ
   \end{aligned}$\\
@@ -1092,8 +1089,8 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
     \using \mathbf{d}' &= \begin{cases}
       \mathbf{d} \text{ except: } &\\
-      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{} &\when \tup{h, z} \not\in \keys{\mathbf{d}\subb{d}_\sa¬requests} \\
-      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, y, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, y} \\
+      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{t} &\when \tup{h, z} \not\in \keys{\mathbf{d}\subb{d}_\sa¬requests} \\
+      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{r, x, y, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{r, x, y} \\
       \error &\otherwise\\
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
@@ -1124,15 +1121,15 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
     \using \mathbf{d} &= (\imX_\im¬state)_\ps¬accounts \\
     \using \mathbf{d}' &= \begin{cases}
       \mathbf{d} \text{ except:} &\\
-      \quad \tup{h, z} \not\in \keys{\mathbf{d}'\subb{d}_\sa¬requests} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{} \\
+      \quad \tup{h, z} \not\in \keys{\mathbf{d}'\subb{d}_\sa¬requests} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{r}, r < t - \Cminsolicitperiod \\
       \quad \left.
         \begin{aligned}
           \tup{h, z} &\not\in \keys{\mathbf{d}'\subb{d}_\sa¬requests}\ ,\\[2pt]
           h &\not\in \keys{\mathbf{d}'\subb{d}_\sa¬preimages}
         \end{aligned}
-      \ \right\} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, y},\ y < t - \Cexpungeperiod \\
-      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x} \\
-      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{w, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{x, y, w},\ y < t - \Cexpungeperiod \\
+      \ \right\} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{r, x, y},\ y < t - \Cexpungeperiod \\
+      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{r, x, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{r, x} \\
+      \quad \mathbf{d}'\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{r, w, t} &\when \mathbf{d}\subb{d}_\sa¬requests\subb{\tup{h, z}} = \sq{r, x, y, w},\ y < t - \Cexpungeperiod \\
       \error &\otherwise\\
     \end{cases} \\
     \tup{\execst', \registers'_7, (\imX'_\im¬state)_\ps¬accounts, \imX'_\im¬modifiedaccounts} &\equiv \begin{cases}
@@ -1183,7 +1180,7 @@ These assume a context $\imXY \in \implications^2$; see equation \ref{eq:implica
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\when z \not \in \preimagelen \\
       \tup{\panic, \registers_7, \imX_\im¬provisions} &\otherwhen \mathbf{i} = \error \\
       \tup{\continue, \mathtt{WHO}, \imX_\im¬provisions} &\otherwhen \mathbf{a} = \none \\
-      \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \mathbf{a}_\sa¬requests[\tup{\blake{\mathbf{i}}, z}] \ne \sq{} \\
+      \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \mathbf{a}_\sa¬requests[\tup{\blake{\mathbf{i}}, z}] \not\in \sequence[1]{\timeslot} \\
       \tup{\continue, \mathtt{HUH}, \imX_\im¬provisions} &\otherwhen \tup{s, \mathbf{i}} \in \imX_\im¬provisions \\
       \tup{\continue, \mathtt{OK}, \imX_\im¬provisions \cup \set{\tup{s, \mathbf{i}}}} &\otherwise \\
     \end{cases} \\

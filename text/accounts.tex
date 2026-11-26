@@ -13,7 +13,7 @@ The service account is defined as the tuple of storage dictionary $\sa¬storage$
   \serviceaccount \equiv \tuple{\ \begin{aligned}
     \sa¬storage &\in \dictionary{\blob}{\blob}\,,\
     \sa¬preimages \in \dictionary{\hash}{\blob}\,,\\
-    \sa¬requests &\in \dictionary{\tuple{\hash,\preimagelen}}{\sequence[:3]{\timeslot}}\,,\
+    \sa¬requests &\in \dictionary{\tuple{\hash,\preimagelen}}{\sequence[1:4]{\timeslot}}\,,\
     \sa¬gratis \in \balance\,,\
     \sa¬codehash \in \hash\,,\\
     \sa¬balance &\in \balance\,,\
@@ -102,12 +102,12 @@ The state of the lookup system naturally satisfies a number of invariants. First
 
 \subsubsection{Semantics}
 
-The historical status component $h \in \sequence[:3]{\timeslot}$ is a sequence of up to three time slots and the cardinality of this sequence implies one of four modes:
+The historical status component $h \in \sequence[1:4]{\timeslot}$ is a sequence of one to four time slots and the cardinality of this sequence implies one of four modes:
 \begin{itemize}
-  \item{$h = \sequence{}$}: The preimage is \emph{requested}, but has not yet been supplied.
-  \item{$h \in \sequence[1]{\timeslot}$}: The preimage is \emph{available} and has been from time $h_0$.
-  \item{$h \in \sequence[2]{\timeslot}$}: The previously available preimage is now \emph{unavailable} since time $h_1$. It had been available from time $h_0$.
-  \item{$h \in \sequence[3]{\timeslot}$}: The preimage is \emph{available} and has been from time $h_2$. It had previously been available from time $h_0$ until time $h_1$.
+  \item{$h \in \sequence[1]{\timeslot}$}: The preimage was \emph{requested} at time $h_0$, but has not yet been supplied.
+  \item{$h \in \sequence[2]{\timeslot}$}: The preimage was requested at time $h_0$ and has been \emph{available} since time $h_1$.
+  \item{$h \in \sequence[3]{\timeslot}$}: The previously available preimage is now \emph{unavailable} since time $h_2$. It had been available from time $h_1$ after being requested at time $h_0$.
+  \item{$h \in \sequence[4]{\timeslot}$}: The preimage is \emph{available} and has been from time $h_3$. It had previously been available from time $h_1$ until time $h_2$, and was first requested at time $h_0$.
 \end{itemize}
 
 The historical lookup function $\histlookup$ may now be defined as:
@@ -119,10 +119,10 @@ The historical lookup function $\histlookup$ may now be defined as:
       \none &\otherwise
     \end{cases}\\
     &\where I(\mathbf{l}, t) = \begin{cases}
-      \bot &\when \sq{} = \mathbf{l} \\
-      x \le t &\when \sq{x} = \mathbf{l} \\
-      x \le t < y &\when \sq{x, y} = \mathbf{l} \\
-      x \le t < y \vee z \le t &\when \sq{x, y, z} = \mathbf{l} \\
+      \bot &\when \sq{r} = \mathbf{l} \\
+      x \le t &\when \sq{r, x} = \mathbf{l} \\
+      x \le t < y &\when \sq{r, x, y} = \mathbf{l} \\
+      x \le t < y \vee z \le t &\when \sq{r, x, y, z} = \mathbf{l} \\
     \end{cases}
   \end{aligned}
 \end{equation}
@@ -140,14 +140,13 @@ We define the dependent values $\sa¬items$ and $\sa¬octets$ as the storage foo
 Furthermore, as we will see in the account serialization function in section \ref{sec:serialization}, these are expected to be found explicitly within the Merklized state data.
 
 We may then define a third dependent term $\sa¬minbalance$, the minimum, or \emph{threshold}, balance needed for any given service account in terms of its storage footprint.
-\begin{align}
+\begin{equation}\label{eq:deposits}
   \forall \mathbf{a} \in \serviceaccount\colon \abracegroup{
     \mathbf{a}_\sa¬items &\equiv
       2\cdot\len{\,\mathbf{a}_\sa¬requests\,} + \len{\,\mathbf{a}_\sa¬storage\,} \\
     \mathbf{a}_\sa¬octets &\equiv
-      \sum\limits_{\,\tup{h, z} \in \keys{\mathbf{a}_\sa¬requests}\,} \!\!\!\!81 + z \\
+      \sum\limits_{\,\tup{h, z} \in \keys{\mathbf{a}_\sa¬requests}\,} \!\!\!\!\max(85 + z, \Cminpreimagefootprint) \\
     &\phantom{\equiv\ } + \sum\limits_{\tup{x, y} \in \mathbf{a}_\sa¬storage} 34 + \len{y} + \len{x} \\
-    \label{eq:deposits}
     \mathbf{a}_\sa¬minbalance &\equiv
       \max(0,
         \Cbasedeposit
@@ -156,7 +155,7 @@ We may then define a third dependent term $\sa¬minbalance$, the minimum, or \em
         - \mathbf{a}_\sa¬gratis
       )
   }
-\end{align}
+\end{equation}
 
 
 

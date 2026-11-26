@@ -306,13 +306,13 @@ $\local¬fnprovide$ is the preimage integration function, which transforms a dic
     &\tup{\mathbf{d}, \mathbf{p}} \mapsto \mathbf{d}'\;\where \mathbf{d}' = \mathbf{d}\;\text{except:} \\
     &\quad\forall \tup{s, \mathbf{i}} \in \mathbf{p},\;
       \local¬fnprovidable(\mathbf{d}, s, \mathbf{i}):\\
-    &\qquad \mathbf{d}'\subb{s}_\sa¬requests\subb{\tup{\blake{\mathbf{i}}, \len{\mathbf{i}}}} =\sq{\thetime'}\\
+    &\qquad \mathbf{d}'\subb{s}_\sa¬requests\subb{\tup{\blake{\mathbf{i}}, \len{\mathbf{i}}}} = \mathbf{d}\subb{s}_\sa¬requests\subb{\tup{\blake{\mathbf{i}}, \len{\mathbf{i}}}} \concat \sq{\thetime'}\\
     &\qquad \mathbf{d}'\subb{s}_\sa¬preimages\subb{\blake{\mathbf{i}}} = \mathbf{i}
   } \\
   \local¬fnprovidable &\colon\abracegroup{
     &\tuple{\dictionary{\serviceid}{\serviceaccount}, \serviceid, \blob} \to \bool \\
     &\tup{\mathbf{d}, s, \mathbf{i}} \mapsto \begin{cases}
-      \mathbf{d}\subb{s}_\sa¬requests\subb{\tup{\blake{\mathbf{i}}, \len{\mathbf{i}}}} = \sq{} &\when s \in \keys{\mathbf{d}} \\
+      \mathbf{d}\subb{s}_\sa¬requests\subb{\tup{\blake{\mathbf{i}}, \len{\mathbf{i}}}} \in \sequence[1]{\timeslot} &\when s \in \keys{\mathbf{d}} \\
       \bot &\otherwise
     \end{cases}
   }
