@@ -76,15 +76,11 @@ The state serialization is then defined as the dictionary built from the amalgam
       }}}}
     } \;, \\
     &&C(14) &\mapsto \encode{
-      \sq{\build{
-        \var{\sq{\build{
-          \tup{\mathbf{r}, \var{\mathbf{d}}}
-        }{
-          \tup{\mathbf{r}, \mathbf{d}} \orderedin \mathbf{i}
-        }}}
+      \var{\sq{\build{
+        \tup{\encode[4]{t}, \mathbf{r}, \var{\mathbf{d}}}
       }{
-        \mathbf{i} \orderedin \ready
-      }}
+        \tup{t, \mathbf{r}, \mathbf{d}} \orderedin \ready
+      }}}
     } \;, \\
     &&C(15) &\mapsto \encode{
       \sq{\build{\var{\mathbf{i}}}{\mathbf{i} \orderedin \accumulated}}
