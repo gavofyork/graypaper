@@ -15,7 +15,7 @@ A node considers a work-report \emph{audited} if either:
 \begin{enumerate}
   \item The node has evaluated the work-report itself, and found it to be good.
   \item At some juncture, among other minor conditions which will be covered later in this section, all announced intentions for the work-report have been matched by either a positive judgment or a non-empty tranche, and no negative judgments have been observed.
-  \item Positive judgments have been seen from over one-third of the validator set and no negative judgments have been seen.
+  \item Positive judgments have been seen from at least one-third of the validator set and no negative judgments have been seen.
 \end{enumerate}
 Once all of any given block's newly available work-reports are audited, then the block is considered to be \emph{audited}. One prerequisite of a node voting to finalize a block is for it to view the block as audited. Finality is discussed further in section \ref{sec:grandpa}.
 
@@ -130,12 +130,12 @@ We further define $\local¬judgments_\top$ and $\local¬judgments_\bot$ to be th
   \local¬judgments_\bool: \workreport \to \protoset{\Nmax{\len{\activeset}}}
 \end{align}
 
-We now define the last-tranche function $\local¬lasttranche$, which given a work-report provides a pair $\tup{n, u}$. $n$ is the index of the last tranche that is currently required for the work-report and $u$ is either $\top$ if no more tranches are scheduled and this tranche is considered old enough for us to have observed all announcements for it, or $\bot$ otherwise. Note that if positive judgments have been seen from over one-third of the validator set, we do not require any tranches beyond the initial tranche. Otherwise, we require one additional tranche per no-show and one per empty tranche.
+We now define the last-tranche function $\local¬lasttranche$, which given a work-report provides a pair $\tup{n, u}$. $n$ is the index of the last tranche that is currently required for the work-report and $u$ is either $\top$ if no more tranches are scheduled and this tranche is considered old enough for us to have observed all announcements for it, or $\bot$ otherwise. Note that if positive judgments have been seen from at least one-third of the validator set, we do not require any tranches beyond the initial tranche. Otherwise, we require one additional tranche per no-show and one per empty tranche.
 \begin{gather}
   \local¬lasttranche \colon \abracegroup{
     &\workreport \to \tuple{\isa{n}{\N}, \isa{u}{\bool}} \\
     &\wrX \mapsto \begin{cases}
-      \tup{\is{n}{0}, \is{u}{\top}} &\when \len{\local¬judgments_\top(\wrX)} > \onethird\len{\activeset} \\
+      \tup{\is{n}{0}, \is{u}{\top}} &\when \len{\local¬judgments_\top(\wrX)} \ge \onethird\len{\activeset} \\
       \local¬lasttranche^*(\wrX, 0, a_0, \sq{}) &\otherwise
     \end{cases}
   } \\
