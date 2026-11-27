@@ -10,7 +10,7 @@ We define the serialization of $\none$ as the empty sequence:
   \encode{\none} \equiv \sq{}
 \end{equation}
 
-We also define the serialization of an octet-sequence as itself:
+We also define the serialization of an octet-sequence as itself. In particular this means that hashes ($\hash$ and its variants) have an identity serialization.
 \begin{equation}
   \encode{x \in \blob} \equiv x
 \end{equation}
@@ -47,8 +47,6 @@ We define the sequence serialization function $\encode{\sequence{T}}$ for any $T
 \begin{equation}
   \encode{[\mathbf{i}_0, \mathbf{i}_1, ...]} \equiv \encode{\mathbf{i}_0} \concat \encode{\mathbf{i}_1} \concat \dots
 \end{equation}
-
-Thus, conveniently, fixed length octet sequences (\eg hashes $\hash$ and its variants) have an identity serialization.
 
 \subsubsection{Discriminator Encoding}
 When we have sets of heterogeneous items such as a union of different kinds of tuples or sequences of different length, we require a discriminator to determine the nature of the encoded item for successful deserialization. Discriminators are encoded as a natural and are encoded immediately prior to the item.
