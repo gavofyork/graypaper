@@ -136,7 +136,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
 \newcommand*{\encodeimportref}[1]{I\left(#1\right)}
 \newcommand*{\encodeimportrefs}[1]{I^\#\left(#1\right)}
 \begin{align}
-  \encode{\block} &= \encode{
+  \encode{\block} &\equiv \encode{
     \header,
     \encodetickets{\xttickets},
     \encodepreimages{\xtpreimages},
@@ -145,30 +145,30 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \encodedisputes{\xtdisputes}
   }
   \\
-  \encodetickets{\xttickets} &= \encode{
+  \encodetickets{\xttickets} &\equiv \encode{
     \var{\sq{\build{
       \tup{\encode[1]{\xt¬entryindex}, \xt¬proof}
     }{
       \tup{\xt¬entryindex, \xt¬proof} \orderedin \xttickets}
     }}}
   \\
-  \encodepreimages{\xtpreimages} &= \encode{
+  \encodepreimages{\xtpreimages} &\equiv \encode{
     \var{\sq{\build{
       \tup{\encode[4]{\xp¬serviceindex}, \var{\xp¬data}}
     }{
       \tup{\xp¬serviceindex, \xp¬data} \orderedin \xtpreimages}
     }}}
   \\
-  \encodeguarantees{\xtguarantees} &= \encode{\var{\xtguarantees}}
+  \encodeguarantees{\xtguarantees} &\equiv \encode{\var{\xtguarantees}}
   \\
-  \encodeassurances{\xtassurances} &= \encode{
+  \encodeassurances{\xtassurances} &\equiv \encode{
     \var{\sq{\build{
       \tup{\xa¬availabilities, \encode[2]{\xa¬assurer}, \xa¬signature}
     }{
       \tup{\xa¬availabilities, \xa¬assurer, \xa¬signature} \orderedin \xtassurances}
     }}}
   \\
-  \encodedisputes{\tup{\mathbf{v}, \mathbf{c}, \mathbf{f}}} &= \encode{
+  \encodedisputes{\tup{\mathbf{v}, \mathbf{c}, \mathbf{f}}} &\equiv \encode{
     \var{\sq{\build{
       \tup{\xv¬reporthash, \encode[4]{\xv¬epochindex},
         \var{\sq{\build{
@@ -184,12 +184,12 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \var{\mathbf{f}}
   }
   \\
-  \encode{\header} &= \encode{
+  \encode{\header} &\equiv \encode{
     \encodeunsignedheader{\header},
     \H_\¬sealsig
   }
   \\
-  \encodeunsignedheader{\header} &= \encode{
+  \encodeunsignedheader{\header} &\equiv \encode{
     \H_\¬parent,
     \H_\¬priorstateroot,
     \H_\¬extrinsichash,
@@ -201,9 +201,9 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \var{\H_\¬offendersmark}
   }
   \\
-  \encodeepochmark{\none} &= \encode{0}
+  \encodeepochmark{\none} &\equiv \encode{0}
   \\
-  \encodeepochmark{\tup{\entropyaccumulator, \entropy_1, \mathbf{k}}} &= \encode{1, \entropyaccumulator, \entropy_1, \var{\mathbf{k}}}
+  \encodeepochmark{\tup{\entropyaccumulator, \entropy_1, \mathbf{k}}} &\equiv \encode{1, \entropyaccumulator, \entropy_1, \var{\mathbf{k}}}
   \\
   \encode{\wcX \in \workcontext} &\equiv \encode{
     \wcX_\wc¬anchorhash,
