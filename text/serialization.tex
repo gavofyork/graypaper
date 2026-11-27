@@ -2,7 +2,7 @@
 
 \subsection{Common Terms}
 
-Our codec function $\mathcal{E}$ is used to serialize some term into a sequence of octets. We define the deserialization function $\fndecode$ as the inverse of $\mathcal{E}$ and able to decode some sequence into the original value. The codec is designed such that exactly one value is encoded into any given sequence of octets, and in cases where this is not desirable then we use special codec functions.
+Our codec function $\mathcal{E}$ is used to serialize some term into a sequence of octets. The codec is \emph{not} self-describing; to deserialize a sequence of octets the set of possibly encoded values must be known. In some cases, even this is insufficient, and special codec functions are required in order for deserialization to be unambiguous. See in particular section \ref{sec:discriminators} below.
 
 \subsubsection{Trivial Encodings}
 We define the serialization of $\none$ as the empty sequence:
@@ -10,7 +10,7 @@ We define the serialization of $\none$ as the empty sequence:
   \encode{\none} \equiv \sq{}
 \end{equation}
 
-We also define the serialization of an octet-sequence as itself:
+We also define the serialization of an octet-sequence as itself. In particular this means that hashes and keys ($\hash$ and its variants) have an identity serialization.
 \begin{equation}
   \encode{x \in \blob} \equiv x
 \end{equation}
@@ -48,9 +48,7 @@ We define the sequence serialization function $\encode{\sequence{T}}$ for any $T
   \encode{[\mathbf{i}_0, \mathbf{i}_1, ...]} \equiv \encode{\mathbf{i}_0} \concat \encode{\mathbf{i}_1} \concat \dots
 \end{equation}
 
-Thus, conveniently, fixed length octet sequences (\eg hashes $\hash$ and its variants) have an identity serialization.
-
-\subsubsection{Discriminator Encoding}
+\subsubsection{Discriminator Encoding}\label{sec:discriminators}
 When we have sets of heterogeneous items such as a union of different kinds of tuples or sequences of different length, we require a discriminator to determine the nature of the encoded item for successful deserialization. Discriminators are encoded as a natural and are encoded immediately prior to the item.
 
 We generally use a \emph{length discriminator} when serializing sequence terms which have variable length (\eg general blobs $\blob$ or unbound numeric sequences $\sequence{\N}$) (though this is omitted in the case of fixed-length terms such as hashes $\hash$).\footnote{Note that since specific values may belong to both sets which would need a discriminator and those that would not then we are sadly unable to introduce a function capable of serializing corresponding to the \emph{term}'s limitation. A more sophisticated formalism than basic set-theory would be needed, capable of taking into account not simply the value but the term from which or to which it belongs in order to do this succinctly.} In this case, we simply prefix the term its length prior to encoding. Thus, for some term $y \in \tup{x \in \blob, \dots}$, we would generally define its serialized form to be $\encode{\len{x}}\concat\encode{x}\concat\dots$. To avoid repetition of the term in such cases, we define the notation $\var{x}$ to mean that the term of value $x$ is variable in size and requires a length discriminator. Formally:
@@ -113,6 +111,14 @@ We first define the trivial natural number serialization functions which are sub
   }
 \end{equation}
 
+For convenience, we define the deserialization functions $\fndecode[l \in \N]$ as the inverse of these:
+\begin{equation}
+  \fndecode[l \in \N]\colon\abracegroup{
+    \blob[l] &\to \Nbits{8l} \\
+    \encode[l]{x} &\mapsto x
+  }
+\end{equation}
+
 For non-natural arguments, $\fnencode[l \in \N]$ corresponds to the definitions of $\fnencode$, except that recursive elements are made as $\fnencode[l]$ rather than $\fnencode$. Thus:
 \begin{align}
   \encode[l \in \N]{a, b, \dots} &\equiv \encode[l]{\tup{a, b, \dots}}\\
@@ -130,7 +136,7 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
 \newcommand*{\encodeimportref}[1]{I\left(#1\right)}
 \newcommand*{\encodeimportrefs}[1]{I^\#\left(#1\right)}
 \begin{align}
-  \encode{\block} &= \encode{
+  \encode{\block} &\equiv \encode{
     \header,
     \encodetickets{\xttickets},
     \encodepreimages{\xtpreimages},
@@ -139,30 +145,30 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \encodedisputes{\xtdisputes}
   }
   \\
-  \encodetickets{\xttickets} &= \encode{
+  \encodetickets{\xttickets} &\equiv \encode{
     \var{\sq{\build{
       \tup{\encode[1]{\xt¬entryindex}, \xt¬proof}
     }{
       \tup{\xt¬entryindex, \xt¬proof} \orderedin \xttickets}
     }}}
   \\
-  \encodepreimages{\xtpreimages} &= \encode{
+  \encodepreimages{\xtpreimages} &\equiv \encode{
     \var{\sq{\build{
       \tup{\encode[4]{\xp¬serviceindex}, \var{\xp¬data}}
     }{
       \tup{\xp¬serviceindex, \xp¬data} \orderedin \xtpreimages}
     }}}
   \\
-  \encodeguarantees{\xtguarantees} &= \encode{\var{\xtguarantees}}
+  \encodeguarantees{\xtguarantees} &\equiv \encode{\var{\xtguarantees}}
   \\
-  \encodeassurances{\xtassurances} &= \encode{
+  \encodeassurances{\xtassurances} &\equiv \encode{
     \var{\sq{\build{
       \tup{\xa¬availabilities, \encode[2]{\xa¬assurer}, \xa¬signature}
     }{
       \tup{\xa¬availabilities, \xa¬assurer, \xa¬signature} \orderedin \xtassurances}
     }}}
   \\
-  \encodedisputes{\tup{\mathbf{v}, \mathbf{c}, \mathbf{f}}} &= \encode{
+  \encodedisputes{\tup{\mathbf{v}, \mathbf{c}, \mathbf{f}}} &\equiv \encode{
     \var{\sq{\build{
       \tup{\xv¬reporthash, \encode[4]{\xv¬epochindex},
         \var{\sq{\build{
@@ -178,12 +184,12 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \var{\mathbf{f}}
   }
   \\
-  \encode{\header} &= \encode{
+  \encode{\header} &\equiv \encode{
     \encodeunsignedheader{\header},
     \H_\¬sealsig
   }
   \\
-  \encodeunsignedheader{\header} &= \encode{
+  \encodeunsignedheader{\header} &\equiv \encode{
     \H_\¬parent,
     \H_\¬priorstateroot,
     \H_\¬extrinsichash,
@@ -195,9 +201,9 @@ A block $\block$ is serialized as a tuple of its elements in regular order, as i
     \var{\H_\¬offendersmark}
   }
   \\
-  \encodeepochmark{\none} &= \encode{0}
+  \encodeepochmark{\none} &\equiv \encode{0}
   \\
-  \encodeepochmark{\tup{\entropyaccumulator, \entropy_1, \mathbf{k}}} &= \encode{1, \entropyaccumulator, \entropy_1, \var{\mathbf{k}}}
+  \encodeepochmark{\tup{\entropyaccumulator, \entropy_1, \mathbf{k}}} &\equiv \encode{1, \entropyaccumulator, \entropy_1, \var{\mathbf{k}}}
   \\
   \encode{\wcX \in \workcontext} &\equiv \encode{
     \wcX_\wc¬anchorhash,
